@@ -19,6 +19,7 @@ import { DML_NS } from '../../core/shapes/constants';
 import { asMutable, findChild, getAttr, MutableOoxmlElement } from '../../core/shapes/dom-utils';
 import { TextBody } from '../../core/text/text-body';
 import { OoxmlAttribute, OoxmlElement, OoxmlText } from '../../core/xml/index';
+import { partNameOptions, TablesError } from './errors';
 import { DirectTableCellProperties, DirectTableCellPropertiesPatch, TableMergeInfo } from './table-types';
 import { arrayAt, objectGet } from '../../core/util/es5-compat';
 /** XSD default `marL` / `marR` on `CT_TableCellProperties` (EMU). */
@@ -31,6 +32,19 @@ const DEFAULT_VERT: string = 'horz';
 const DEFAULT_ANCHOR: string = 't';
 /** XSD default `horzOverflow`. */
 const DEFAULT_HORZ_OVERFLOW: string = 'clip';
+/**
+ * Owning-table services used by {@link TableCell} span and column-width members.
+ *
+ * @internal
+ */
+export interface TableCellOwner {
+    /** Writes a merge span and the covered-cell flags. */
+    setSpan(row: number, column: number, axis: 'column' | 'row', value: number): void;
+    /** Column width in points. */
+    getColumnWidth(column: number): number;
+    /** Sets column width in points. */
+    setColumnWidth(column: number, points: number): void;
+}
 /**
  * One cell in a DrawingML table grid.
  *
@@ -46,6 +60,7 @@ export class TableCell {
     private readonly _column: number;
     private readonly _merge: TableMergeInfo;
     private readonly _id: string | undefined;
+    private readonly owner: TableCellOwner | undefined;
     /**
      * @internal
      * @param {OoxmlElement} element - The element value.
@@ -55,9 +70,11 @@ export class TableCell {
      * @param {string} partName - The partName value.
      * @param {*} onFillMutate - Optional post-commit fill notification.
      * @param {*} assertFillLive - Optional owning-table structural validity check.
+     * @param {TableCellOwner} owner - Optional owning-table services (spans, column width).
      */
     constructor(element: OoxmlElement, row: number, column: number, limits: SecurityLimits, partName?: string,
-                onFillMutate?: () => void, assertFillLive?: () => void) {
+                onFillMutate?: () => void, assertFillLive?: () => void, owner?: TableCellOwner) {
+        this.owner = owner;
         this.onFillMutate = onFillMutate; this.assertFillLive = assertFillLive;
         this.element = element;
         this.limits = limits;
@@ -91,6 +108,52 @@ export class TableCell {
      */
     get merge(): TableMergeInfo {
         return this._merge;
+    }
+    /**
+     * Horizontal merge span (`a:tc/@gridSpan`, XSD default `1`). Live read.
+     *
+     * @remarks Setting writes `gridSpan` (removed when `1`) and marks the covered cells `hMerge="1"`; reducing the span clears the cells
+     * it no longer covers. Existing {@link TableCell.merge} remains a construction-time snapshot.
+     * @throws {RangeError} When the value is not an integer >= 1 or the span leaves the grid.
+     * @returns {number} The result.
+     */
+    get columnSpan(): number {
+        return readIntAttr(this.element, 'gridSpan', 1);
+    }
+    set columnSpan(value: number) {
+        this.requireOwner().setSpan(this._row, this._column, 'column', value);
+    }
+    /**
+     * Vertical merge span (`a:tc/@rowSpan`, XSD default `1`). Live read.
+     *
+     * @remarks Setting writes `rowSpan` (removed when `1`) and marks the covered cells `vMerge="1"`.
+     * @throws {RangeError} When the value is not an integer >= 1 or the span leaves the grid.
+     * @returns {number} The result.
+     */
+    get rowSpan(): number {
+        return readIntAttr(this.element, 'rowSpan', 1);
+    }
+    set rowSpan(value: number) {
+        this.requireOwner().setSpan(this._row, this._column, 'row', value);
+    }
+    /**
+     * Width in **points** of the grid column this cell sits in (`a:gridCol/@w`).
+     *
+     * @remarks Shared with every cell in the column; same value as `table.columns[column].width`.
+     * @throws {Error} When the value is not a finite positive number.
+     * @returns {number} The result.
+     */
+    get columnWidth(): number {
+        return this.requireOwner().getColumnWidth(this._column);
+    }
+    set columnWidth(value: number) {
+        this.requireOwner().setColumnWidth(this._column, value);
+    }
+    private requireOwner(): TableCellOwner {
+        if (this.owner === undefined) {
+            throw new TablesError('Table cell is not bound to a table', partNameOptions(this.partName));
+        }
+        return this.owner;
     }
     /**
      * Optional `CT_TableCell/@id` when authored.

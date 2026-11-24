@@ -12,7 +12,7 @@ import { IPivotRows, IAxisSet, INumberIndex } from '../../base/engine';
 import { Button, ButtonModel } from '@syncfusion/ej2-buttons';
 import { DragAndDropEventArgs, NodeCheckEventArgs, SelectEventArgs } from '@syncfusion/ej2-navigations';
 import { ButtonPropsModel, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
-import { Operators, FilterType } from '../../base/types';
+import { Operators, FilterType, TopBottomMode } from '../../base/types';
 import { AggregateMenu } from '../popups/aggregate-menu';
 import { AxisFieldRenderer } from '../../pivotfieldlist/renderer/axis-field-renderer';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
@@ -194,6 +194,10 @@ export class PivotButton implements IAction {
                 }
                 if (axis === 'values') {
                     const parent: PivotView = this.parent as PivotView;
+                    // Every value field — including a date-typed Min/Max field — is
+                    // offered as a chart measure: a date Min/Max measure is plotted
+                    // as its per-cell contributing record count
+                    // (PIVOT-MINMAX, OQ-MINMAX-06 count fallback).
                     const valueData: { text: string, value: string }[] = field.map((item: IFieldOptions) =>
                         ({ text: item.caption ? item.caption : item.name, value: item.name })
                     );
@@ -326,6 +330,8 @@ export class PivotButton implements IAction {
                     id: this.parent.element.id + '_' + field[i as number].name, className: cls.PIVOT_BUTTON_CLASS + ' ' + field[i as number].name.replace(/[^A-Z0-9]/ig, '') + ((this.parent as PivotView).isTabular ? (' ' + cls.TABULAR_ROW_BUTTON) : ''),
                     attrs: {
                         'data-uid': field[i as number].name,
+                        'data-instance-id': field[i as number].instanceId || '',
+                        'data-instance-index': axis === 'values' ? i.toString() : '',
                         'tabindex': (this.parent.getModuleName() === 'pivotview' && (this.parent as PivotView).grid && axis === 'rows' && !element.classList.contains(cls.GROUP_CHART_ROW)) ? '-1' : '0',
                         'isvalue': (i === valuePos || isMeasureAvail && !isMeasureFieldsAvail) ? 'true' : 'false',
                         'aria-disabled': 'false', 'aria-label': buttonCaption,
@@ -333,6 +339,7 @@ export class PivotButton implements IAction {
                         'data-caption': buttonCaption,
                         'data-basefield': this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(field[i as number].baseField) : field[i as number].baseField,
                         'data-baseitem': this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(field[i as number].baseItem) : field[i as number].baseItem,
+                        'data-allowcrossgroup': field[i as number].allowCrossGroupCalculation ? 'true' : 'false',
                         'role': 'button'
                     }
                 });
@@ -434,20 +441,42 @@ export class PivotButton implements IAction {
             engineModule = this.parent.engineModule;
         }
         let fieldObj: IField | IOlapField;
+        let isCalculatedField: boolean = field[i as number].type === 'CalculatedField';
         if (engineModule.fieldList) {
-            fieldObj = engineModule.fieldList[field[i as number].name];
+            fieldObj = this.parent.dataType === 'pivot' && field[i as number].instanceId ?
+                (engineModule as PivotEngine).getValueInstanceFieldListEntry(field[i as number].instanceId) :
+                engineModule.fieldList[field[i as number].name];
+            if (isNullOrUndefined(fieldObj) && field[i as number].instanceId) {
+                fieldObj = engineModule.fieldList[field[i as number].name];
+            }
         }
         if (!isNullOrUndefined(fieldObj)) {
-            aggregation = fieldObj.aggregateType;
-            if (aggregation !== 'DistinctCount' && fieldObj.type !== 'number') {
+            isCalculatedField = isCalculatedField || fieldObj.aggregateType === 'CalculatedField' || fieldObj.type === 'CalculatedField';
+            // A calculated field keeps its formula aggregation, even when the value
+            // instance carries a default `type`.
+            aggregation = fieldObj.aggregateType === 'CalculatedField' ? 'CalculatedField' :
+                (axis === 'values' && field[i as number].type ? field[i as number].type : fieldObj.aggregateType);
+            if (axis === 'values') {
+                aggregation = aggregation || 'Sum';
+                if (this.parent.dataType === 'pivot' && fieldObj.type === 'string' && !isCalculatedField &&
+                    this.menuOption.stringAggregateTypes.indexOf(aggregation as AggregateTypes) === -1) {
+                    aggregation = 'Count';
+                }
+            } else if (aggregation !== 'DistinctCount' && fieldObj.type !== 'number') {
+                // Date-typed value fields keep their configured Min/Max summary in
+                // the button caption and tooltip (PIVOT-MINMAX); string and other
+                // non-number fields keep the Count behavior.
                 if (fieldObj.type === 'string' &&
                     this.menuOption.stringAggregateTypes.indexOf(fieldObj.aggregateType as AggregateTypes) !== -1) {
+                    aggregation = fieldObj.aggregateType;
+                } else if ((fieldObj.type === 'date' || fieldObj.type === 'datetime') &&
+                    (fieldObj.aggregateType === 'Min' || fieldObj.aggregateType === 'Max')) {
                     aggregation = fieldObj.aggregateType;
                 } else {
                     aggregation = 'Count';
                 }
             } else {
-                aggregation = aggregation === undefined ? 'Sum' : fieldObj.aggregateType;
+                aggregation = aggregation === undefined ? 'Sum' : aggregation;
             }
         }
         let text: string = field[i as number].caption ? field[i as number].caption : field[i as number].name;
@@ -456,7 +485,7 @@ export class PivotButton implements IAction {
             attrs: {
                 title: axis === 'filters' ? (this.parent.dataType === 'olap' && engineModule.fieldList[field[i as number].name].type === 'CalculatedField') ?
                     text : (text + ' (' + filterMem + ')') : (this.parent.dataType === 'olap' ?
-                    text : (((!this.parent.dataSourceSettings.showAggregationOnValueField || axis !== 'values' || aggregation === 'CalculatedField') ?
+                    text : (((!this.parent.dataSourceSettings.showAggregationOnValueField || axis !== 'values' || isCalculatedField || aggregation === 'CalculatedField') ?
                         text : this.parent.localeObj.getConstant(aggregation) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + text))),
                 'tabindex': '-1', 'aria-disabled': 'false', 'data-type': valuePos === i ? '' : aggregation
             },
@@ -466,7 +495,7 @@ export class PivotButton implements IAction {
         });
         buttonText.innerText = axis === 'filters' ? (this.parent.dataType === 'olap' && fieldObj && fieldObj.type === 'CalculatedField') ?
             text : (text + ' (' + filterMem + ')') : (this.parent.dataType === 'olap' ?
-            text : (!this.parent.dataSourceSettings.showAggregationOnValueField || axis !== 'values' || aggregation === 'CalculatedField' ?
+            text : (!this.parent.dataSourceSettings.showAggregationOnValueField || axis !== 'values' || isCalculatedField || aggregation === 'CalculatedField' ?
                 text : this.parent.localeObj.getConstant(aggregation) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + text));
         return buttonText;
     }
@@ -479,7 +508,12 @@ export class PivotButton implements IAction {
         }
         if (engineModule.fieldList)
         {
-            const fieldListItem: IField = engineModule.fieldList[field[i as number].name];
+            let fieldListItem: IField = this.parent.dataType === 'pivot' && field[i as number].instanceId ?
+                (engineModule as PivotEngine).getValueInstanceFieldListEntry(field[i as number].instanceId) :
+                engineModule.fieldList[field[i as number].name];
+            if (isNullOrUndefined(fieldListItem) && field[i as number].instanceId) {
+                fieldListItem = engineModule.fieldList[field[i as number].name];
+            }
             if (fieldListItem && fieldListItem.aggregateType !== 'CalculatedField' && this.validateDropdown(fieldListItem.type)) {
                 this.createSummaryType(buttonElement, field[i as number].name, field[i as number]);
             }
@@ -539,7 +573,10 @@ export class PivotButton implements IAction {
             placeholder: this.parent.localeObj.getConstant('valueAxisPrompt'),
             change: (args: ChangeEventArgs) => {
                 if (args.e && args.e !== null) {
-                    parent.chartSettings.value = args.value as string;
+                    // Route the selected measure through setProperties so the
+                    // chartSettings 'value' change is processed (chart re-render,
+                    // layout refresh) instead of silently mutating the settings.
+                    parent.setProperties({ chartSettings: { value: args.value as string } }, false);
                 }
             }
         });
@@ -930,6 +967,10 @@ export class PivotButton implements IAction {
             thisObj.parent.axisFieldModule.render();
         }
     }
+    private getButtonIdentity(button: HTMLElement): string {
+        // Duplicate value instances share the field-based DOM id; the instance id is unique per button.
+        return button.getAttribute('data-instance-id') || button.id;
+    }
     private isButtonDropped(dropTarget: HTMLElement, target: HTMLElement): boolean {
         const axisPanel: HTMLElement = closest(target, '.' + cls.DROPPABLE_CLASS) as HTMLElement;
         const droppableElement: HTMLElement = closest(dropTarget, '.' + cls.DROPPABLE_CLASS) as HTMLElement;
@@ -940,12 +981,12 @@ export class PivotButton implements IAction {
             let sourcePosition: number;
             let droppedPosition: number = -1;
             for (let i: number = 0, n: number = pivotButtons.length; i < n; i++) {
-                if (pivotButtons[i as number].id === target.id) {
+                if (this.getButtonIdentity(pivotButtons[i as number]) === this.getButtonIdentity(target)) {
                     sourcePosition = i;
                 }
                 if (droppableTarget) {
                     const droppableButton: HTMLElement = droppableTarget.querySelector('.' + cls.PIVOT_BUTTON_CLASS) as HTMLElement;
-                    if (pivotButtons[i as number].id === droppableButton.id) {
+                    if (this.getButtonIdentity(pivotButtons[i as number]) === this.getButtonIdentity(droppableButton)) {
                         droppedPosition = i;
                     }
                 }
@@ -1158,14 +1199,23 @@ export class PivotButton implements IAction {
         const operand2: string = dialogElement.getAttribute('data-value2');
         const type: FilterType = ((filterType === 'value') ? 'Value' : (filterType === 'date') ? 'Date' :
             (filterType === 'number') ? 'Number' : 'Label');
+        const mode: TopBottomMode = (type === 'Value' && (operator === 'Top' || operator === 'Bottom')) ?
+            (dialogElement.getAttribute('data-mode') as TopBottomMode || 'Items') : 'Items';
         let filterItem: IFilter = {
             name: fieldName,
             type: type,
             measure: measure,
             condition: operator as Operators,
             value1: filterType === 'date' ? new Date(operand1) : operand1 as string,
-            value2: filterType === 'date' ? new Date(operand2) : operand2 as string
+            value2: filterType === 'date' ? new Date(operand2) : operand2 as string,
+            mode: mode
         };
+        if (mode === 'Percent' && operand1 !== null && operand1 !== undefined && operand1 !== '' &&
+            !(/^[0-9]+$/.test(String(operand1).trim()) && Number(operand1) >= 1 && Number(operand1) <= 100)) {
+            this.parent.pivotCommon.errorDialog.createErrorDialog(
+                this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('invalidPercentage'));
+            return;
+        }
         let filterObject: IFilter;
         if (this.parent.dataType === 'olap') {
             filterItem.selectedField = levelName;
@@ -1207,6 +1257,7 @@ export class PivotButton implements IAction {
                     filterObject.condition = filterItem.condition as Operators;
                     filterObject.value1 = filterItem.value1;
                     filterObject.value2 = filterItem.value2;
+                    filterObject.mode = filterItem.mode;
                     if (this.parent.dataType === 'olap') {
                         filterObject.selectedField = filterItem.selectedField;
                     }
@@ -1249,7 +1300,8 @@ export class PivotButton implements IAction {
     }
     private removeButton(args: Event): void {
         const target: HTMLElement = args.target as HTMLElement;
-        const fieldName: string = target.parentElement.getAttribute('data-uid');
+        const buttonElement: HTMLElement = target.parentElement;
+        const fieldName: string = buttonElement.getAttribute('data-uid');
         const fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(fieldName, this.parent);
         this.parent.actionObj.actionName = events.removeField;
         this.parent.actionObj.fieldInfo = fieldInfo;
@@ -1266,8 +1318,13 @@ export class PivotButton implements IAction {
                 (this.parent as PivotFieldList).isPopupView ? (this.parent as PivotFieldList).pivotGridModule : this.parent;
             control.trigger(events.fieldRemove, removeFieldArgs, (observedArgs: FieldRemoveEventArgs) => {
                 if (!observedArgs.cancel) {
-                    if (target.parentElement.getAttribute('isvalue') === 'true') {
-                        this.parent.setProperties({ dataSourceSettings: { values: [] } }, true);
+                    if (buttonElement.getAttribute('isvalue') === 'true') {
+                        const instanceId: string = buttonElement.getAttribute('data-instance-id');
+                        if (instanceId && this.parent.dataType === 'pivot') {
+                            (this.parent.engineModule as PivotEngine).removeValueInstance(instanceId);
+                        } else {
+                            this.parent.setProperties({ dataSourceSettings: { values: [] } }, true);
+                        }
                         if (this.parent.dataType === 'olap') {
                             this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport('[Measures]');
                         }

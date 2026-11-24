@@ -7,7 +7,7 @@ import { PivotFieldList, PivotFieldListModel } from '../pivotfieldlist';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { SummaryTypes } from './types';
 import { IOlapCustomProperties, IOlapField, IOlapFieldListOptions, OlapEngine } from './olap/engine';
-import { HeadersSortEventArgs, PivotActionInfo } from '../common/base/interface';
+import { HeadersSortEventArgs, PivotActionInfo, CSVParseResult } from '../common/base/interface';
 import { PdfPageSize } from '@syncfusion/ej2-grids';
 import { SizeF } from '@syncfusion/ej2-pdf-export';
 import { PivotChart } from '../pivotchart/base/pivotchart';
@@ -108,6 +108,66 @@ export class PivotUtil {
         }
     }
 
+    /**
+     * Generates a deterministic identifier for a value-field instance.
+     *
+     * @param {string} name - Source field name.
+     * @param {string} [type] - Aggregation type.
+     * @param {string} [caption] - Field caption.
+     * @returns {string} - Generated instance identifier.
+     * @hidden
+     */
+    public static generateInstanceId(name: string, type?: string, caption?: string): string {
+        if (!name) {
+            return '';
+        }
+        const instanceSignature: string = name + '\u0000' + (type || '') + '\u0000' + (caption || '');
+        let hash: number = 5381;
+        for (let i: number = 0; i < instanceSignature.length; i++) {
+            hash = ((hash << 5) + hash) + instanceSignature.charCodeAt(i);
+            hash = hash & hash;
+        }
+        const unsigned: number = hash >>> 0;
+        const hex: string = unsigned.toString(16);
+        return 'val_' + (hex.length < 8 ? ('00000000' + hex).slice(-8) : hex);
+    }
+
+    /**
+     * Returns an existing instance identifier or generates one when absent.
+     * This helper does not mutate the supplied field; callers that need to
+     * materialize the identifier must assign the returned value explicitly.
+     *
+     * @param {IFieldOptions} field - Value-field instance.
+     * @param {number} [arrayIndex] - Optional position used as a tie-breaker.
+     * @returns {string} - Existing or generated instance identifier.
+     * @hidden
+     */
+    public static getOrGenerateInstanceId(field: IFieldOptions, arrayIndex?: number): string {
+        if (!field) {
+            return '';
+        }
+        if (field.instanceId) {
+            return field.instanceId;
+        }
+        let id: string;
+        if (typeof arrayIndex === 'number' && arrayIndex >= 0) {
+            const instanceSignature: string = (field.name || '') + '\u0000' +
+                (field.type || '') + '\u0000' +
+                (field.caption || '') + '\u0000' + arrayIndex;
+            let hash: number = 5381;
+            for (let i: number = 0; i < instanceSignature.length; i++) {
+                hash = ((hash << 5) + hash) + instanceSignature.charCodeAt(i);
+                hash = hash & hash;
+            }
+            const unsigned: number = hash >>> 0;
+            const hex: string = unsigned.toString(16);
+            id = 'val_' + (hex.length < 8 ? ('00000000' + hex).slice(-8) : hex);
+        } else {
+            id = this.generateInstanceId(field.name, field.type, field.caption);
+        }
+        return id;
+    }
+
     public static getClonedDataSourceSettings(dataSourceSettings: IDataOptions): IDataOptions {
         const clonesDataSource: IDataOptions = this.getDefinedObj({
             type: dataSourceSettings.type,
@@ -115,6 +175,8 @@ export class PivotUtil {
             cube: dataSourceSettings.cube,
             providerType: dataSourceSettings.providerType,
             url: dataSourceSettings.url,
+            delimiter: dataSourceSettings.delimiter,
+            enableQuotedLineBreaks: dataSourceSettings.enableQuotedLineBreaks,
             localeIdentifier: dataSourceSettings.localeIdentifier,
             excludeFields: isNullOrUndefined(dataSourceSettings.excludeFields) ? [] : [...dataSourceSettings.excludeFields],
             expandAll: dataSourceSettings.expandAll,
@@ -185,6 +247,7 @@ export class PivotUtil {
                     aggregateType: fieldlistObj.aggregateType,
                     baseField: fieldlistObj.baseField,
                     baseItem: fieldlistObj.baseItem,
+                    allowCrossGroupCalculation: fieldlistObj.allowCrossGroupCalculation,
                     dateMember: isMemberIncluded ? [] : this.cloneDateMembers(fieldlistObj.dateMember),
                     members: isMemberIncluded ? {} : this.cloneFormatMembers(fieldlistObj.members),
                     formatString: fieldlistObj.formatString,
@@ -287,6 +350,8 @@ export class PivotUtil {
                     cube: dataSourceSettings.cube,
                     providerType: dataSourceSettings.providerType,
                     url: dataSourceSettings.url,
+                    delimiter: dataSourceSettings.delimiter,
+                    enableQuotedLineBreaks: dataSourceSettings.enableQuotedLineBreaks,
                     localeIdentifier: dataSourceSettings.localeIdentifier,
                     excludeFields: isNullOrUndefined(dataSourceSettings.excludeFields) ? [] : dataSourceSettings.excludeFields,
                     expandAll: dataSourceSettings.expandAll,
@@ -298,7 +363,7 @@ export class PivotUtil {
                     columns: dataSourceSettings.columns,
                     filters: dataSourceSettings.filters,
                     values: dataSourceSettings.values,
-                    filterSettings: dataSourceSettings.filterSettings,
+                    filterSettings: this.cloneFilterSettings(dataSourceSettings.filterSettings),
                     sortSettings: dataSourceSettings.sortSettings,
                     drilledMembers: dataSourceSettings.drilledMembers,
                     valueSortSettings: dataSourceSettings.valueSortSettings,
@@ -334,8 +399,10 @@ export class PivotUtil {
                     name: set.name,
                     caption: set.caption,
                     axis: set.axis,
+                    instanceId: set.instanceId,
                     baseField: set.baseField,
                     baseItem: set.baseItem,
+                    allowCrossGroupCalculation: set.allowCrossGroupCalculation,
                     isCalculatedField: set.isCalculatedField,
                     isNamedSet: set.isNamedSet,
                     showNoDataItems: set.showNoDataItems,
@@ -416,7 +483,8 @@ export class PivotUtil {
                     showLabelFilter: set.showLabelFilter,
                     showNumberFilter: set.showNumberFilter,
                     value1: set.value1,
-                    value2: set.value2
+                    value2: set.value2,
+                    mode: set.mode
                 } as IFilter));
             }
             return clonedCollection;
@@ -739,6 +807,7 @@ export class PivotUtil {
             caption: fieldList.caption,
             baseField: fieldList.baseField,
             baseItem: fieldList.baseItem,
+            allowCrossGroupCalculation: fieldList.allowCrossGroupCalculation,
             isCalculatedField: fieldList.isCalculatedField,
             isNamedSet: fieldList.isNamedSets,
             showNoDataItems: fieldList.showNoDataItems,
@@ -1147,17 +1216,19 @@ export class PivotUtil {
      * @param {string} sortOrder - It denotes the sorting order.
      * @returns {IAxisSet[]} - It returns the sorted collection in the provided sort order.
      * @hidden */
-    public static getSortedValue(aggreColl: { 'header': IAxisSet; 'value'?: number }[], sortOrder: string): IAxisSet[] {
-        aggreColl.sort((a: { value?: number, header: { type: string } }, b: { value?: number, header: { type: string } }) => {
+    public static getSortedValue(aggreColl: { 'header': IAxisSet; 'value'?: number | Date }[], sortOrder: string): IAxisSet[] {
+        aggreColl.sort((a: { value?: number | Date, header: { type: string } }, b: { value?: number | Date, header: { type: string } }) => {
+            // Date-typed Min/Max cells sort chronologically via their epoch (PIVOT-MINMAX-009).
+            const toEpoch: Function = (val: number | Date): number => val instanceof Date ? val.valueOf() : val;
             return sortOrder === 'Descending' ? (
-                (b['value'] || b['header']['type'] === 'grand sum' ? b['value'] : 0) -
-                (a['value'] || a['header']['type'] === 'grand sum' ? a['value'] : 0)
+                (b['value'] || b['header']['type'] === 'grand sum' ? toEpoch(b['value']) : 0) -
+                (a['value'] || a['header']['type'] === 'grand sum' ? toEpoch(a['value']) : 0)
             ) : (
-                (a['value'] || a['header']['type'] === 'grand sum' ? a['value'] : 0) -
-                (b['value'] || b['header']['type'] === 'grand sum' ? b['value'] : 0)
+                (a['value'] || a['header']['type'] === 'grand sum' ? toEpoch(a['value']) : 0) -
+                (b['value'] || b['header']['type'] === 'grand sum' ? toEpoch(b['value']) : 0)
             );
         });
-        return aggreColl.map((item: { 'header': IAxisSet; 'value'?: number }) => {
+        return aggreColl.map((item: { 'header': IAxisSet; 'value'?: number | Date }) => {
             return item['header'];
         });
     }
@@ -1343,6 +1414,128 @@ export class PivotUtil {
         } else if (actionEvent === events.actionComplete) {
             parent.actionCompleteMethod();
         }
+    }
+
+    /**
+     * Parses CSV text into records using a quote-aware single-pass field parser (RFC 4180).
+     *
+     * @param {string} text - The raw CSV text.
+     * @param {string} [delimiter] - Field delimiter. Non-empty string without double quotes or line breaks; defaults to ",".
+     * @param {boolean} [enableQuotedLineBreaks] - When true, a line break inside a quoted field stays in the value.
+     * @returns {CSVParseResult} - The parsed records plus flags for an invalid delimiter and an unterminated quote.
+     * @hidden
+     */
+    public static parseCSV(text: string, delimiter?: string, enableQuotedLineBreaks?: boolean): CSVParseResult {
+        const result: CSVParseResult = { records: [], hasUnterminatedQuote: false, isDelimiterInvalid: false };
+        if (typeof text !== 'string' || text === '') {
+            return result;
+        }
+        let delimiterValue: string = delimiter;
+        if (isNullOrUndefined(delimiterValue)) {
+            delimiterValue = ',';
+        } else if (typeof delimiterValue !== 'string' || delimiterValue === '' ||
+            delimiterValue.indexOf('"') > -1 || delimiterValue.indexOf('\r') > -1 || delimiterValue.indexOf('\n') > -1) {
+            delimiterValue = ',';
+            result.isDelimiterInvalid = true;
+        }
+        const parseFields: (record: string) => string[] = (record: string): string[] => {
+            const fields: string[] = [];
+            let field: string = '';
+            let index: number = 0;
+            let isQuoted: boolean = false;
+            let isFieldStart: boolean = true;
+            const pushField: () => void = (): void => {
+                fields.push(field);
+                field = '';
+                isFieldStart = true;
+            };
+            while (index < record.length) {
+                const char: string = record.charAt(index);
+                if (!isQuoted && record.startsWith(delimiterValue, index)) {
+                    pushField();
+                    index += delimiterValue.length;
+                } else if (!isQuoted && isFieldStart && char === '"') {
+                    isQuoted = true;
+                    isFieldStart = false;
+                    index++;
+                } else if (isQuoted && char === '"' && record[index + 1] === '"') {
+                    field += '"';
+                    index += 2;
+                } else if (isQuoted && char === '"') {
+                    isQuoted = false;
+                    index++;
+                } else {
+                    field += char;
+                    isFieldStart = false;
+                    index++;
+                }
+            }
+            if (isQuoted) {
+                result.hasUnterminatedQuote = true;
+            }
+            pushField();
+            return fields;
+        };
+        const pushRecord: (record: string) => void = (record: string): void => {
+            if (!isNullOrUndefined(record) && record !== '') {
+                result.records.push(parseFields(record));
+            }
+        };
+        if (enableQuotedLineBreaks) {
+            let record: string = '';
+            let inQuotes: boolean = false;
+            let isFieldStart: boolean = true;
+            for (let i: number = 0; i < text.length; i++) {
+                const char: string = text.charAt(i);
+                if (char === '"') {
+                    if (inQuotes && text.charAt(i + 1) === '"') {
+                        record += '""';
+                        i++;
+                    } else if (isFieldStart) {
+                        inQuotes = true;
+                        isFieldStart = false;
+                        record += '"';
+                    } else if (inQuotes) {
+                        inQuotes = false;
+                        isFieldStart = false;
+                        record += '"';
+                    } else {
+                        record += '"';
+                    }
+                } else if (!inQuotes && (char === '\r' || char === '\n')) {
+                    if (char === '\r' && text.charAt(i + 1) === '\n') {
+                        i++;
+                    }
+                    pushRecord(record);
+                    record = '';
+                    isFieldStart = true;
+                } else if (!inQuotes && record !== '' && text.startsWith(delimiterValue, i)) {
+                    record += delimiterValue;
+                    i += delimiterValue.length - 1;
+                    isFieldStart = true;
+                } else {
+                    record += char;
+                }
+            }
+            if (record !== '') {
+                pushRecord(record);
+            }
+            if (inQuotes) {
+                result.hasUnterminatedQuote = true;
+            }
+        } else {
+            const lines: string[] = text.split(/\r?\n|\r/);
+            for (const line of lines) {
+                pushRecord(line);
+            }
+        }
+        if (result.records.length > 0) {
+            const firstField: string = result.records[0][0];
+            if (firstField && firstField.charCodeAt(0) === 0xFEFF) {
+                result.records[0][0] = firstField.substring(1);
+            }
+        }
+        return result;
     }
 
     /**

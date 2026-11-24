@@ -1,6 +1,6 @@
 import { PdfLayerStateOperation } from '../enumerator';
 import { PdfLayer } from '../layers/layer';
-import { PdfLayerCollection } from '../layers/layer-collection';
+import { PdfLayerCollection, PdfLayerGroup } from '../layers/layer-collection';
 import { PdfAction } from '../pdf-action';
 import { _PdfCrossReference } from '../pdf-cross-reference';
 import { PdfDocument } from '../pdf-document';
@@ -245,7 +245,15 @@ export class PdfSetOCGStateAction extends PdfAction {
      */
     private _getLayer(value: any, layers: PdfLayerCollection): PdfLayer { // eslint-disable-line
         for (let i: number = 0; i < layers.count; i++) {
-            const layer: PdfLayer = layers.at(i);
+            const item: PdfLayer | PdfLayerGroup = layers.at(i);
+            if (item._isGroup) {
+                const found: PdfLayer = this._getLayer(value, item as PdfLayerGroup);
+                if (found) {
+                    return found;
+                }
+                continue;
+            }
+            const layer: PdfLayer = item as PdfLayer;
             if (value instanceof _PdfReference && layer._referenceHolder &&
                 layer._referenceHolder.objectNumber === value.objectNumber &&
                 layer._referenceHolder.generationNumber === value.generationNumber) {

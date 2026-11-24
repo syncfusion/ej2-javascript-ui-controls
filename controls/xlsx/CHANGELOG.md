@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 35.2.13 (2026-11-24)
+
+### Excel
+
+#### Bug Fixes
+
+- Resolve an issue where eval('require') Node fallbacks trigger Vite/Rollup build warnings
+
 ## 35.2.12 (2026-11-18)
 
 ### Excel

@@ -36,37 +36,43 @@ import { OpenXmlElement } from '../../core/xml/index';
  */
 export class Chart extends ParagraphItem {
     /**
-     * Entity type discriminant for {@link Paragraph.items}.
+     * Gets the entity type.
+     *
      * @public
      */
     readonly entityType: EntityType.Chart = EntityType.Chart;
 
     /**
      * Relationship ID linking to the chart part in the owning story.
+     *
      * @private
      */
     private relationshipIdValue: string;
 
     /**
      * Width in points.
+     *
      * @private
      */
     private widthPtValue: number;
 
     /**
      * Height in points.
+     *
      * @private
      */
     private heightPtValue: number;
 
     /**
      * Chart name (used in drawing properties).
+     *
      * @private
      */
     private nameValue: string;
 
     /**
      * Drawing object ID (unique within owning story part).
+     *
      * @private
      */
     private docPrIdValue: number;
@@ -74,23 +80,27 @@ export class Chart extends ParagraphItem {
     /**
      * Internal XLSX backend state.
      * Encapsulates workbook, worksheet, and chart handle.
+     *
      * @private
      */
     private backendStateValue: ChartBackendState;
 
     /**
      * Preserved XML host element (for round-trip of unsupported properties).
+     *
      * @private
      */
     private preservedHostValue: any | undefined;
 
     /**
      * Series collection.
+     *
      * @private
      */
 
     /**
      * Chart data accessor wrapper.
+     *
      * @private
      */
     private chartDataValue: ChartData;
@@ -104,6 +114,7 @@ export class Chart extends ParagraphItem {
     /**
      * Original chart part and baseline model export captured on load; merged with the
      * current model export on save so DrawingML the model does not cover survives.
+     *
      * @private
      */
     loadedPart: LoadedChartPart | undefined;
@@ -124,6 +135,9 @@ export class Chart extends ParagraphItem {
         relationshipId: string,
         widthPt: number,
         heightPt: number,
+        /**
+         * Gets or sets the name.
+         */
         name: string,
         docPrId: number,
         backendState: ChartBackendState,
@@ -145,7 +159,8 @@ export class Chart extends ParagraphItem {
     // ========================================================================
 
     /**
-     * Gets or sets the type of the chart (for example <see cref="ChartType">ChartType.ColumnClustered</see>).
+     * Gets or sets the type of the chart (for example {@link ChartType | ChartType.ColumnClustered}).
+     *
      * @public
      */
     get chartType(): XlsxChart['type'] {
@@ -160,6 +175,7 @@ export class Chart extends ParagraphItem {
 
     /**
      * Gets or sets the title of the chart.
+     *
      * @public
      */
     get chartTitle(): string | undefined {
@@ -175,6 +191,7 @@ export class Chart extends ParagraphItem {
 
     /**
      * Gets or sets the width of the chart, in points.
+     *
      * @public
      */
     get width(): number {
@@ -191,6 +208,7 @@ export class Chart extends ParagraphItem {
 
     /**
      * Gets or sets the height of the chart, in points.
+     *
      * @public
      */
     get height(): number {
@@ -207,6 +225,7 @@ export class Chart extends ParagraphItem {
 
     /**
      * Gets or sets the name of the chart.
+     *
      * @public
      */
     get name(): string {
@@ -219,7 +238,7 @@ export class Chart extends ParagraphItem {
     }
 
     /**
-     * Gets the <see cref="ChartData">ChartData</see> used to read and write the cells of the chart data worksheet. Read-only.
+     * Gets the {@link ChartData} used to read and write the cells of the chart data worksheet. Read-only.
      *
      * Rows and columns are 1-based, as in Excel.
      *
@@ -242,7 +261,7 @@ export class Chart extends ParagraphItem {
      * Gets the format (fill and border) of the chart area. Read-only.
      *
      * @remarks
-     * Returns the <see cref="ChartFrameFormat">ChartFrameFormat</see> instance.
+     * Returns the {@link ChartFrameFormat} instance.
      *
      * @public
      */
@@ -255,7 +274,7 @@ export class Chart extends ParagraphItem {
      * Gets the format (fill and border) of the plot area. Read-only.
      *
      * @remarks
-     * Returns the <see cref="ChartFrameFormat">ChartFrameFormat</see> instance.
+     * Returns the {@link ChartFrameFormat} instance.
      *
      * @public
      */
@@ -268,7 +287,7 @@ export class Chart extends ParagraphItem {
      * Gets the text format (font name, size, color, bold, italic) of the chart title. Read-only.
      *
      * @remarks
-     * Returns the <see cref="ChartTextArea">ChartTextArea</see> instance.
+     * Returns the {@link ChartTextArea} instance.
      *
      * @public
      */
@@ -279,6 +298,7 @@ export class Chart extends ParagraphItem {
 
     /**
      * Gets or sets a value indicating whether the chart has a title.
+     *
      * @public
      */
     get hasTitle(): boolean {
@@ -293,6 +313,7 @@ export class Chart extends ParagraphItem {
 
     /**
      * Gets or sets a value indicating whether the chart shows a data table below the plot area.
+     *
      * @public
      */
     get hasDataTable(): boolean {
@@ -306,6 +327,7 @@ export class Chart extends ParagraphItem {
 
     /**
      * Gets or sets a value indicating whether each worksheet row is a series. When false, each column is a series.
+     *
      * @public
      */
     get isSeriesInRows(): boolean {
@@ -319,6 +341,7 @@ export class Chart extends ParagraphItem {
 
     /**
      * Gets or sets the scatter chart style: "none", "line", "lineMarker", "marker", "smooth" or "smoothMarker".
+     *
      * @public
      */
     get scatterStyle(): string | undefined {
@@ -332,6 +355,7 @@ export class Chart extends ParagraphItem {
 
     /**
      * Gets or sets a value indicating whether the chart has a legend.
+     *
      * @public
      */
     get hasLegend(): boolean {
@@ -347,7 +371,7 @@ export class Chart extends ParagraphItem {
      * Gets the primary category (X) axis of the chart. Read-only.
      *
      * @remarks
-     * Returns the <see cref="ChartAxis">ChartAxis</see> instance.
+     * Returns the {@link ChartAxis} instance.
      *
      * @public
      */
@@ -360,7 +384,7 @@ export class Chart extends ParagraphItem {
      * Gets the primary value (Y) axis of the chart. Read-only.
      *
      * @remarks
-     * Returns the <see cref="ChartAxis">ChartAxis</see> instance.
+     * Returns the {@link ChartAxis} instance.
      *
      * @public
      */
@@ -373,7 +397,7 @@ export class Chart extends ParagraphItem {
      * Gets the legend of the chart. Read-only.
      *
      * @remarks
-     * Returns the <see cref="ChartLegend">ChartLegend</see> instance.
+     * Returns the {@link ChartLegend} instance.
      *
      * @public
      */
@@ -383,10 +407,10 @@ export class Chart extends ParagraphItem {
     }
 
     /**
-     * Gets the collection of <see cref="ChartSeries">ChartSeries</see> present in the chart. Read-only.
+     * Gets the collection of {@link ChartSeries} present in the chart. Read-only.
      *
      * @remarks
-     * Add or remove series with <see cref="Chart.addSeries">addSeries</see> and <see cref="Chart.removeSeries">removeSeries</see>.
+     * Add or remove series with {@link Chart.addSeries} and {@link Chart.removeSeries}.
      *
      * @public
      */
@@ -398,9 +422,8 @@ export class Chart extends ParagraphItem {
     /**
      * Adds a new series to the chart.
      *
-     * @param {string} title - The name of the series. Optional.
-     * @returns {ChartSeries} The newly added series.
-     * @public
+     * @param {string} title - Specifies the name of the series.
+     * @returns {ChartSeries} - Returns the newly added series.
      */
     addSeries(title?: string): ChartSeries {
         this.mutate();
@@ -410,9 +433,8 @@ export class Chart extends ParagraphItem {
     /**
      * Removes a series from the chart.
      *
-     * @param {ChartSeries | number} target - The series to remove, or its zero-based index.
-     * @returns {void} Nothing is returned.
-     * @public
+     * @param {ChartSeries | number} target - Specifies the series to remove, or its zero-based index.
+     * @returns {void}
      */
     removeSeries(target: ChartSeries | number): void {
         this.mutate();
@@ -429,6 +451,7 @@ export class Chart extends ParagraphItem {
 
     /**
      * Relationship ID to the chart part.
+     *
      * @private
      */
     get relationshipId(): string {
@@ -437,6 +460,7 @@ export class Chart extends ParagraphItem {
 
     /**
      * Drawing object ID.
+     *
      * @private
      */
     get docPrId(): number {
@@ -445,6 +469,7 @@ export class Chart extends ParagraphItem {
 
     /**
      * Internal backend XLSX state.
+     *
      * @private
      */
     get backendState(): ChartBackendState {
@@ -453,6 +478,7 @@ export class Chart extends ParagraphItem {
 
     /**
      * Preserved host XML element.
+     *
      * @private
      */
     get preservedHost(): any | undefined {
@@ -487,6 +513,7 @@ export class Chart extends ParagraphItem {
 
     /**
      * 1-based index used in `charts/chartN.xml` once the chart has been saved.
+     *
      * @private
      */
     get packageIndex(): number | undefined {

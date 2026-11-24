@@ -882,7 +882,7 @@ export class WebMcpDiagram {
      *
      * @param {Diagram} parent - The diagram instance that owns this adapter.
      */
-    public constructor(parent?: Diagram) {
+    constructor(parent?: Diagram) {
         this.parent = parent || null;
         if (parent) {
             this.addEventListener();
@@ -895,6 +895,7 @@ export class WebMcpDiagram {
      *
      * @param {Diagram} parent - The diagram instance that owns this adapter.
      * @returns {void}
+     * @private
      */
     public init(parent: Diagram): void {
         if (this.parent && this.parent !== parent) {

@@ -1,5 +1,6 @@
 /**
  * Public WrapFormat owned by Shape / GroupShape (Shape.md §8).
+ *
  * @packageDocumentation
  */
 import {
@@ -12,6 +13,7 @@ import {
 
 /**
  * Owner hooks for {@link WrapFormat}.
+ *
  * @private
  */
 export interface WrapFormatOwner {
@@ -75,6 +77,7 @@ export interface WrapFormatOwner {
 
 /**
  * Drawing host text-wrap formatting.
+ *
  * @public
  */
 export class WrapFormat {
@@ -89,7 +92,9 @@ export class WrapFormat {
         this.owner = owner;
     }
 
-    /** @public */
+    /**
+     * @public
+     */
     get textWrappingStyle(): TextWrappingStyle {
         return this.owner.readWrapStyle();
     }
@@ -99,7 +104,9 @@ export class WrapFormat {
         this.owner.writeWrapStyle(value);
     }
 
-    /** @public */
+    /**
+     * @public
+     */
     get textWrappingType(): TextWrappingType {
         return this.owner.readWrapType();
     }
@@ -112,7 +119,9 @@ export class WrapFormat {
         this.owner.writeWrapType(value);
     }
 
-    /** @public */
+    /**
+     * @public
+     */
     get allowOverlap(): boolean {
         return this.owner.readAllowOverlap();
     }
@@ -124,7 +133,9 @@ export class WrapFormat {
         this.owner.writeAllowOverlap(value);
     }
 
-    /** @public */
+    /**
+     * @public
+     */
     get distanceTop(): number {
         return this.owner.readDistanceTop();
     }
@@ -136,7 +147,9 @@ export class WrapFormat {
         this.owner.writeDistanceTop(value);
     }
 
-    /** @public */
+    /**
+     * @public
+     */
     get distanceBottom(): number {
         return this.owner.readDistanceBottom();
     }
@@ -148,7 +161,9 @@ export class WrapFormat {
         this.owner.writeDistanceBottom(value);
     }
 
-    /** @public */
+    /**
+     * @public
+     */
     get distanceLeft(): number {
         return this.owner.readDistanceLeft();
     }
@@ -160,7 +175,9 @@ export class WrapFormat {
         this.owner.writeDistanceLeft(value);
     }
 
-    /** @public */
+    /**
+     * @public
+     */
     get distanceRight(): number {
         return this.owner.readDistanceRight();
     }

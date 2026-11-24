@@ -2,6 +2,7 @@ import { Body } from './body';
 import { BlockContent, Paragraph } from './paragraph';
 import { Document, WordDocument } from './document';
 import { Section } from './section';
+import { Watermark } from '../watermark/model';
 import { DetachedObjectError } from '../../core/errors/docx-error';
 
 /**
@@ -19,7 +20,7 @@ export type HeaderFooterSlotRef = 'default' | 'first' | 'even';
 export type HeaderFooterKind = 'header' | 'footer';
 
 /**
- * Header or footer story body (`w:hdr` / `w:ftr`).
+ * Header or footer story body.
  *
  * Extends {@link Body} so section body and header/footer stories share one
  * collection architecture. Header/footer-specific state only: kind, slot,
@@ -35,6 +36,7 @@ export class HeaderFooter extends Body {
     private syncHandler: (() => void) | undefined;
     private suppressSync: boolean;
     private requireFeatureOnMutate: boolean;
+    private watermarkValue: Watermark | undefined;
 
     /**
      * @param {Section | undefined} section - The section.
@@ -47,8 +49,14 @@ export class HeaderFooter extends Body {
      */
     constructor(
         section: Section | undefined,
+        /**
+         * Gets or sets the kind.
+         */
         kind: HeaderFooterKind,
         refType: HeaderFooterSlotRef,
+        /**
+         * Gets or sets the items.
+         */
         items: ReadonlyArray<BlockContent> = [],
         document?: Document,
         relationshipId: string = ''
@@ -76,7 +84,44 @@ export class HeaderFooter extends Body {
     }
 
     /**
-     * Header or footer kind for this story.
+     * Gets the watermark held by this header or footer, when any.
+     *
+     * @private
+     */
+    get watermark(): Watermark | undefined {
+        return this.watermarkValue;
+    }
+
+    /**
+     * @param {Watermark | undefined} value - The watermark.
+     * @returns {void} Nothing is returned.
+     * @private
+     */
+    setWatermark(value: Watermark | undefined): void {
+        this.watermarkValue = value;
+        if (value !== undefined) {
+            value.setOwner(this);
+        }
+    }
+
+    /**
+     * Creates a detached copy owned by `section`, including a clone of the watermark.
+     *
+     * @param {Section} section - The section that will own the copy.
+     * @returns {HeaderFooter} The cloned header or footer.
+     * @private
+     */
+    cloneForSection(section: Section): HeaderFooter {
+        const body: Body = super.clone();
+        const copy: HeaderFooter = new HeaderFooter(section, this.kindValue, this.refTypeValue, body.listBlocks());
+        if (this.watermarkValue !== undefined) {
+            copy.setWatermark(this.watermarkValue.clone());
+        }
+        return copy;
+    }
+
+    /**
+     * Gets the header or footer kind for this story.
      *
      * @public
      */
@@ -287,7 +332,7 @@ export class HeadersFooters {
     }
 
     /**
-     * Odd/default-page header (OOXML `w:type="default"`).
+     * Gets the odd/default-page header.
      *
      * @public
      */
@@ -296,7 +341,7 @@ export class HeadersFooters {
     }
 
     /**
-     * Header used on the first page when different first page is enabled.
+     * Gets the header used on the first page when different first page is enabled.
      *
      * @public
      */
@@ -305,7 +350,7 @@ export class HeadersFooters {
     }
 
     /**
-     * Header used on even pages when different odd and even is enabled.
+     * Gets the header used on even pages when different odd and even is enabled.
      *
      * @public
      */
@@ -314,7 +359,7 @@ export class HeadersFooters {
     }
 
     /**
-     * Odd/default-page footer (OOXML `w:type="default"`).
+     * Gets the odd/default-page footer.
      *
      * @public
      */
@@ -323,7 +368,7 @@ export class HeadersFooters {
     }
 
     /**
-     * Footer used on the first page when different first page is enabled.
+     * Gets the footer used on the first page when different first page is enabled.
      *
      * @public
      */
@@ -332,7 +377,7 @@ export class HeadersFooters {
     }
 
     /**
-     * Footer used on even pages when different odd and even is enabled.
+     * Gets the footer used on even pages when different odd and even is enabled.
      *
      * @public
      */
@@ -341,9 +386,7 @@ export class HeadersFooters {
     }
 
     /**
-     * When `true`, this section inherits headers/footers from the previous
-     * section (no local header/footer references). Setting `false` materializes
-     * empty local parts so the section no longer inherits.
+     * Gets or sets a value indicating whether the link to previous option is enabled.
      *
      * @public
      */
@@ -362,6 +405,28 @@ export class HeadersFooters {
             // Feature not registered: force materialize attempt via empty mutate path is unavailable.
             // Leaving local flag only; feature handler applies package-side unlink when registered.
             return;
+        }
+    }
+
+    /**
+     * @param {HeadersFooters} source - Source slots.
+     * @param {Section} section - Section that owns the cloned slots.
+     * @returns {void} Nothing is returned.
+     * @private
+     * Clone every materialized header/footer slot of `source` into this instance.
+     */
+    cloneFrom(source: HeadersFooters, section: Section): void {
+        this.section = section;
+        const refs: HeaderFooterSlotRef[] = ['default', 'first', 'even'];
+        for (const ref of refs) {
+            const header: HeaderFooter | undefined = source.cachedHeader(ref);
+            if (header !== undefined) {
+                this.cacheHeader(ref, header.cloneForSection(section));
+            }
+            const footer: HeaderFooter | undefined = source.cachedFooter(ref);
+            if (footer !== undefined) {
+                this.cacheFooter(ref, footer.cloneForSection(section));
+            }
         }
     }
 
@@ -393,7 +458,7 @@ export class HeadersFooters {
         return created;
     }
 
-    private cachedHeader(refType: HeaderFooterSlotRef): HeaderFooter | undefined {
+    cachedHeader(refType: HeaderFooterSlotRef): HeaderFooter | undefined {
         switch (refType) {
         case 'default':
             return this.oddHeaderInstance;
@@ -418,7 +483,7 @@ export class HeadersFooters {
         }
     }
 
-    private cachedFooter(refType: HeaderFooterSlotRef): HeaderFooter | undefined {
+    cachedFooter(refType: HeaderFooterSlotRef): HeaderFooter | undefined {
         switch (refType) {
         case 'default':
             return this.oddFooterInstance;

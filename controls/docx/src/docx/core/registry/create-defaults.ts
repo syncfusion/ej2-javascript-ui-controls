@@ -1,7 +1,7 @@
 /**
  * Feature-owned default state attached when {@link WordDocument.create} builds a
  * fresh, empty document (for example Word's own default `settings.xml`
- * content, TASK-8027). Mirrors the shape of `materialize-handlers.ts`, but runs
+ * content). Mirrors the shape of the owning module, but runs
  * once at construction time instead of on every save, and never runs for
  * `WordDocument.fromPackage` / `WordDocument.openSync` — a loaded package that has no
  * state for a given feature keeps round-tripping without gaining any.

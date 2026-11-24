@@ -50,20 +50,20 @@ export class NodeStateModified {
                 nodeDropped = false;
                 return nodeDropped;
             } else if ((this.parent.dataSourceUpdate.btnElement &&
-                (this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'true' &&
+                (this.parent.dataSourceUpdate.btnElement.getAttribute('isvalue') === 'true' &&
                     (droppedClass === 'filters' || droppedClass === 'values'))) ||
                 (this.parent.dataSourceUpdate.btnElement &&
-                    (this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'false' &&
+                    (this.parent.dataSourceUpdate.btnElement.getAttribute('isvalue') === 'false' &&
                         actualFieldName.toLowerCase().indexOf('[measures].') > -1 && this.parent.dataType === 'olap' &&
                         (droppedClass === 'filters' || droppedClass === 'rows' || droppedClass === 'columns'))) ||
                 (this.parent.dataSourceUpdate.btnElement &&
-                    (this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'false' && this.parent.dataType === 'olap' &&
+                    (this.parent.dataSourceUpdate.btnElement.getAttribute('isvalue') === 'false' && this.parent.dataType === 'olap' &&
                         actualFieldName.toLowerCase().indexOf('[measures].') === -1 &&
                         this.parent.engineModule.fieldList[fieldName as string] &&
                         (this.parent.engineModule as OlapEngine).fieldList[fieldName as string].isNamedSets &&
                         (droppedClass === 'filters' || droppedClass === 'values'))) ||
                 (this.parent.dataSourceUpdate.btnElement &&
-                    (this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'false' && this.parent.dataType === 'olap' &&
+                    (this.parent.dataSourceUpdate.btnElement.getAttribute('isvalue') === 'false' && this.parent.dataType === 'olap' &&
                         actualFieldName.toLowerCase().indexOf('[measures].') === -1 && droppedClass === 'values'))) {
                 const title: string = this.parent.localeObj.getConstant('warning');
                 const description: string = this.parent.localeObj.getConstant('fieldDropErrorAction');
@@ -73,7 +73,7 @@ export class NodeStateModified {
             }
         } else {
             if ((args.cancel && droppedClass === '') ||
-                (this.parent.dataSourceUpdate.btnElement && this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'true' &&
+                (this.parent.dataSourceUpdate.btnElement && this.parent.dataSourceUpdate.btnElement.getAttribute('isvalue') === 'true' &&
                     ((droppedClass === 'filters' || droppedClass === 'values') ||
                         droppedClass.indexOf(this.parent.dataSourceSettings.valueAxis) > -1))) {
                 nodeDropped = false;
@@ -127,6 +127,7 @@ export class NodeStateModified {
                 target.querySelector('.' + cls.PIVOT_BUTTON_WRAPPER_CLASS);
             if (!isNullOrUndefined(targetBtn)) {
                 targetBtn = targetBtn.querySelector('.' + cls.PIVOT_BUTTON_CLASS);
+                const targetButtonId: string = targetBtn.getAttribute('data-instance-id') || targetBtn.id;
                 const DraggedField: string = element.closest('.e-pivot-button').getAttribute('data-uid');
                 const targetField: string = targetBtn.getAttribute('data-uid');
                 if (DraggedField === '[Measures]') {
@@ -137,7 +138,8 @@ export class NodeStateModified {
                         allRowButtons.push(...buttons);
                     });
                     for (let i: number = 0; i < allRowButtons.length; i++) {
-                        if (allRowButtons[i as number].id === targetBtn.id) {
+                        const buttonId: string = allRowButtons[i as number].getAttribute('data-instance-id') || allRowButtons[i as number].id;
+                        if (buttonId === targetButtonId) {
                             droppedPosition = i;
                             break;
                         }
@@ -157,8 +159,10 @@ export class NodeStateModified {
                 targetBtn = targetBtn.querySelector('.' + cls.PIVOT_BUTTON_CLASS);
                 const axisPanel: Element = this.parent.element.querySelector('.e-' + droppedClass);
                 const pivotButtons: HTMLElement[] = [].slice.call(axisPanel.querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS));
+                const targetButtonId: string = targetBtn.getAttribute('data-instance-id') || targetBtn.id;
                 for (let i: number = 0, n: number = pivotButtons.length; i < n; i++) {
-                    if (pivotButtons[i as number].id === targetBtn.id) {
+                    const buttonId: string = pivotButtons[i as number].getAttribute('data-instance-id') || pivotButtons[i as number].id;
+                    if (buttonId === targetButtonId) {
                         droppedPosition = i;
                         break;
                     }

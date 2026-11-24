@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 35.2.13 (2026-11-24)
+
+### Tab
+
+#### Bug Fixes
+
+- `#FB76100` - Resolved an accessibility issue that occurred when the Tab header overflow state changed dynamically.
+
 ## 35.1.46 (2026-11-11)
 
 ### Menu

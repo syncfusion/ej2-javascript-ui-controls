@@ -1,5 +1,5 @@
 /**
- * OLE object typed DOM (TASK-8053): enums, wire-form model, and attribute /
+ * OLE object typed DOM: enums, wire-form model, and attribute /
  * child patch codec over the stored `w:object` element.
  *
  * One semantic model over two schema-backed wire encodings:
@@ -11,7 +11,7 @@
  *
  * Non-negotiable (`.agent/policies/security.md`): this DOM never executes,
  * activates, or fetches anything. Payload bytes are not surfaced here
- * (TASK-8054 owns that decision under human GO Q1).
+ * (owns that decision under human GO Q1).
  *
  * @packageDocumentation
  */
@@ -93,7 +93,7 @@ const WML_ASPECT_TOKENS: { Content: string; Icon: string; } = { Content: 'conten
 const WML_UPDATE_TOKENS: { Always: string; OnCall: string; } = { Always: 'always', OnCall: 'onCall' };
 /**
  * Internal mutable state parsed from (and patched back onto) the stored
- * `w:object` element. The typed `OleObject` class in `index.ts` delegates
+ * `w:object` element. The typed `OleObject` class in the owning module delegates
  * here; this type is not part of the public surface.
  *
  * @private
@@ -133,7 +133,7 @@ function attributeValue(el: OpenXmlElement, namespaceUri: string, localName: str
 /**
  * Resolve the OLE child of a `w:object` element and its wire form.
  * Returns `undefined` when no recognized OLE child exists (the element
- * stays opaque per the TASK-8022 rule).
+ * stays opaque per the rule).
  *
  * @param {OpenXmlElement} element - The element.
  * @returns {Object} The result.
@@ -590,7 +590,7 @@ function formatPointsAsTwipsMeasure(points: number): string {
  * Every setter builds a `mutation` describing which modeled member changes;
  * this function clones the stored tree once and patches exactly those
  * members, leaving every other attribute/child byte-identical (patch-in-place
- * serialization rule, TASK-8053 spec).
+ * serialization rule, spec).
  *
  * @private
  */

@@ -1,14 +1,14 @@
 /**
- * Vertical text position relative to the baseline (`w:vertAlign`).
+ * Vertical text position relative to the baseline.
  *
  * @public
  */
 export enum SubSuperScript {
     /** Normal baseline text (`w:vertAlign` baseline / omitted). */
     None = 0,
-    /** Raised superscript. */
+    /** Specifies that the text is raised above the baseline as a superscript. */
     SuperScript = 1,
-    /** Lowered subscript. */
+    /** Specifies that the text is lowered below the baseline as a subscript. */
     SubScript = 2,
 }
 

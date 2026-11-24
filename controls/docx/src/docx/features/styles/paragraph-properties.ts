@@ -3,7 +3,7 @@
  *
  * Spacing and indentation lengths are plain point `number`s. Codecs delegate to
  * {@link parseParagraphSpacingPoints} / {@link parseParagraphIndentationPoints}
- * and their serialize counterparts on `paragraph-format` (TASK-9020-D shared
+ * and their serialize counterparts on `paragraph-format` (shared
  * ownership with body `w:pPr`).
  *
  * Citation: ECMA-376-1 §17.3.1 `w:pPr` children — `w:keepNext` (§17.3.1.14),

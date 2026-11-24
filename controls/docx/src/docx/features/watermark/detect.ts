@@ -1,5 +1,5 @@
 /**
- * Conservative watermark shape detectors (TASK-8061).
+ * Conservative watermark shape detectors.
  *
  * Prefer false negatives over false positives. Same predicates feed parse,
  * replace, and remove. Normative rules:
@@ -18,9 +18,9 @@ export const TEXT_WATERMARK_TYPE: string = '#_x0000_t136';
 export const PICTURE_WATERMARK_TYPE: string = '#_x0000_t75';
 /** Malformed but tolerated picture type (parse only; dirty normalizes to single `#`). */
 export const PICTURE_WATERMARK_TYPE_DOUBLE_HASH: string = '##_x0000_t75';
-/** Word DocIO / UI text watermark id prefix. */
+/** Word UI text watermark id prefix. */
 export const TEXT_WATERMARK_ID_PREFIX: string = 'PowerPlusWaterMarkObject';
-/** Word DocIO / UI picture watermark id prefix. */
+/** Word UI picture watermark id prefix. */
 export const PICTURE_WATERMARK_ID_PREFIX: string = 'WordPictureWatermark';
 /**
  * Parsed `v:shape/@style` declaration map (lower-cased keys, trimmed values).

@@ -826,6 +826,49 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             this.setRTL(this.enableRtl);
         }
     }
+    private updateTablistRole(): void {
+        if (isNOU(this.tbObj) || isNOU(this.tbObj.element)) {
+            return;
+        }
+        const scrollContent: HTEle = this.tbObj.element.querySelector(
+            '.' + (this.isVertical() ? CLS_VSCRCNT : CLS_HSCRCNT)
+        ) as HTEle;
+        const toolbarHeader: HTEle = this.tbObj.element.querySelector(
+            '.' + CLS_TB_ITEMS
+        ) as HTEle;
+        const popupContainer: HTEle = this.tbObj.element.querySelector(
+            '.' + CLS_TB_POP
+        ) as HTEle;
+        const isScrollableMode: boolean =
+            this.overflowMode === 'Scrollable' ||
+            this.overflowMode === 'MultiRow';
+        const isPopupMode: boolean =
+            this.overflowMode === 'Popup' ||
+            this.overflowMode === 'Extended';
+        if (!isNOU(scrollContent)) {
+            scrollContent.removeAttribute('role');
+        }
+        if (!isNOU(toolbarHeader)) {
+            toolbarHeader.removeAttribute('role');
+        }
+        if (!isNOU(popupContainer)) {
+            popupContainer.removeAttribute('role');
+        }
+        if (isScrollableMode) {
+            if (!isNOU(scrollContent)) {
+                this.setTablistRole(scrollContent);
+            } else if (!isNOU(toolbarHeader)) {
+                this.setTablistRole(toolbarHeader);
+            }
+        } else if (isPopupMode) {
+            if (!isNOU(popupContainer)) {
+                this.setTablistRole(popupContainer);
+            }
+            if (!isNOU(toolbarHeader)) {
+                this.setTablistRole(toolbarHeader);
+            }
+        }
+    }
     private renderHeader(): void {
         const hdrPlace: HeaderPosition = this.headerPlacement;
         let tabItems: Object[] = [];
@@ -2902,6 +2945,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             const hdrEle: HTEle = this.getTabHeader();
             setStyle(this.cntEle, { 'height': (this.element.clientHeight - hdrEle.offsetHeight) + 'px' });
         }
+        this.updateTablistRole();
         const activeEle: Element = select('.' + CLS_TB_ITEM + '.' + CLS_TB_POPUP + '.' + CLS_ACTIVE, this.element);
         if (!isNOU(activeEle) && this.reorderActiveTab) {
             this.select(this.getEleIndex(<HTEle>activeEle));

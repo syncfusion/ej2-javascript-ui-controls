@@ -264,7 +264,7 @@ export class Selection {
      * @returns {void} .
      */
     public selectRow(index: number, isToggle?: boolean, isPreventFocus?: boolean): void {
-        const ganttRow: HTMLElement[] = [].slice.call(this.parent.ganttChartModule.chartBodyContent.querySelector('tbody').children);
+        const allowVirtualSelect: boolean = this.parent.enableVirtualization || this.parent.enableDomVirtualization;
         if (this.parent.enableVirtualization && (this.parent.treeGridModule.addedRecord ||
             (this.parent.editModule && this.parent.editModule.isAdded))) {
             index = this.parent.getExpandedRecords(this.parent.flatData).indexOf(this.parent.flatData[index as number]);
@@ -273,9 +273,12 @@ export class Selection {
                 this.parent.editModule.isAdded = false;
             }
         }
-        const selectedRow: HTMLElement = ganttRow.filter((e: HTMLElement) => parseInt(e.getAttribute('aria-rowindex'), 10) - 1 === index)[0];
+        const selectedRow: HTMLElement = allowVirtualSelect ? this.parent.getRowByIndex(index) :
+            [].slice.call(this.parent.ganttChartModule.chartBodyContent.querySelector('tbody').children)
+                .filter((e: HTMLElement) => parseInt(e.getAttribute('aria-rowindex'), 10) - 1 === index)[0];
         let condition: boolean;
-        if (index === -1 || (isNullOrUndefined(selectedRow) && !this.parent.enableVirtualization) || this.parent.selectionSettings.mode === 'Cell') {
+        if (index === -1 || (isNullOrUndefined(selectedRow) && !allowVirtualSelect) ||
+            this.parent.selectionSettings.mode === 'Cell') {
             return;
         }
         if (this.parent.showActiveElement && !isNullOrUndefined(isPreventFocus) && !isPreventFocus || this.isFromChart) {
@@ -286,8 +289,36 @@ export class Selection {
         } else {
             this.parent.treeGrid.grid.selectionModule.preventFocus = false;
         }
-        if ((!isNullOrUndefined(this.selectedClass) && (this.selectedClass === selectedRow) && (!isToggle))) {
+        if (!isNullOrUndefined(selectedRow) && !isNullOrUndefined(this.selectedClass) &&
+            (this.selectedClass === selectedRow) && (!isToggle)) {
             condition = true;
+        }
+        if ((this.parent.isLoad || (!isNullOrUndefined(this.parent.editModule) && this.parent.editModule.isAdded &&
+            !this.parent.selectionSettings.persistSelection)) && allowVirtualSelect &&
+            index > -1 && (isNullOrUndefined(selectedRow) ||
+            this.parent.treeGrid.grid.selectionModule.selectedRowIndexes.indexOf(index) === -1)) {
+            const virtualSelection: number[] = [index];
+            this.parent.setProperties({ selectedRowIndex: index }, true);
+            this.parent.treeGrid.selectedRowIndex = index;
+            this.parent.treeGrid.grid.selectedRowIndex = index;
+            this.selectedRowIndexes = virtualSelection;
+            this.parent.treeGrid.grid.selectionModule.selectedRowIndexes = virtualSelection;
+            const scrollObject: any = this.parent.ganttChartModule && this.parent.ganttChartModule['scrollObject'];
+            const virtualScrollbar: HTMLElement = scrollObject && scrollObject['virtualScrollbar'];
+            if (!isNullOrUndefined(this.parent.domVirtualizationModule)) {
+                const result: { records: IGanttData[], startIndex: number } =
+                this.parent.domVirtualizationModule.getVisibleRecordsFromScroll(scrollObject.previousScroll.top);
+                const isVisibleRecord: IGanttData = result.records.find((record: IGanttData) => record.index === index);
+                const isLastVisibleRecord: boolean = result.records.length > 0 && result.records[result.records.length - 1].index === index;
+                if ((!isVisibleRecord || isLastVisibleRecord) && virtualScrollbar) {
+                    const rowHeight: number = this.parent.rowHeight as number || 36;
+                    virtualScrollbar.scrollTop = index * rowHeight;
+                    if (!this.parent.isLoad && this.parent.editModule.isAdded) {
+                        this.parent.editModule.isAdded = false;
+                        this.parent.notify('chartScroll', { top: virtualScrollbar.scrollTop });
+                    }
+                }
+            }
         }
         if (condition !== true) {
             this.parent.treeGrid.selectRow(index, isToggle);
@@ -633,7 +664,7 @@ export class Selection {
     public maintainSelectedRecords(i: number): void {
         const index: number =  this.parent.selectionModule.getSelectedRowIndexes().indexOf(i);
         if (index > -1) {
-            this.addRemoveClass([i]);
+            this.addRemoveClass([i], 'rowSelected');
         }
     }
     /**

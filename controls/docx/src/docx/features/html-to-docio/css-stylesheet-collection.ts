@@ -6,7 +6,7 @@
  * @private
  */
 
-import { CSSRuleDefinition, parseCSSRules } from './css-selector-parser.js';
+import { CSSRuleDefinition, parseCSSRules } from './css-selector-parser';
 
 /**
  * Represents a single CSS stylesheet.
@@ -29,9 +29,9 @@ export class CSSStyleSheet {
     /**
      * Creates a CSS stylesheet.
      *
-     * @param cssText - The CSS text content
-     * @param href - Optional URL for external stylesheet
-     * @param title - Optional stylesheet title
+     * @param {string} cssText - The CSS text content
+     * @param {string} href - Optional URL for external stylesheet
+     * @param {string} title - Optional stylesheet title
      */
     constructor(cssText: string, href?: string, title?: string) {
         this.href = href;
@@ -61,7 +61,8 @@ export class StyleSheetCollection {
     /**
      * Adds a stylesheet to the collection.
      *
-     * @param sheet - The stylesheet to add
+     * @param {CSSStyleSheet} sheet - The stylesheet to add
+     * @returns {void}
      * @private
      */
     add(sheet: CSSStyleSheet): void {
@@ -73,18 +74,19 @@ export class StyleSheetCollection {
     /**
      * Gets a stylesheet by index.
      *
-     * @param index - The index
-     * @returns The stylesheet or undefined
+     * @param {number} index - The index
+     * @returns {CSSStyleSheet | undefined} The stylesheet or undefined
      * @private
      */
     item(index: number): CSSStyleSheet | undefined {
+        // eslint-disable-next-line security/detect-object-injection
         return this._sheets[index];
     }
 
     /**
      * Gets all stylesheets.
      *
-     * @returns Array of stylesheets
+     * @returns {CSSStyleSheet[]} Array of stylesheets
      * @private
      */
     getAll(): CSSStyleSheet[] {
@@ -96,7 +98,7 @@ export class StyleSheetCollection {
      *
      * Returns rules in order (respects cascade).
      *
-     * @returns Array of CSS rules
+     * @returns {CSSRuleDefinition[]} Array of CSS rules
      * @private
      */
     getAllRules(): CSSRuleDefinition[] {
@@ -114,6 +116,7 @@ export class StyleSheetCollection {
     /**
      * Clears all stylesheets.
      *
+     * @returns {void}
      * @private
      */
     clear(): void {

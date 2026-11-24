@@ -253,6 +253,7 @@ export class WUniqueFormat {
             case 'underlineColor': return 27;
             case 'fontHintType': return 28;
             case 'ligature': return 29;
+            case 'specVanish': return 30;
             default: return 0;
         }
     }
@@ -411,6 +412,9 @@ export class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('hidden', source, modifiedProperty, modifiedValue, 2)) {
+            return false;
+        }
+        if (this.isNotEqual('specVanish', source, modifiedProperty, modifiedValue, 2)) {
             return false;
         }
         if (this.isNotEqual('fontFamilyFarEast', source, modifiedProperty, modifiedValue, 2)) {

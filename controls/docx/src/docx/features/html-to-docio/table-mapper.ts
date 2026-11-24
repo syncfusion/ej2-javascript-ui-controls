@@ -2,25 +2,27 @@
  */
 /* eslint-disable security/detect-object-injection, valid-jsdoc */
 
-import { WordDocument } from '../document/document.js';
-import { Body } from '../document/body.js';
-import { TextRange } from '../document/text-range.js';
-import { Table, createTable, TableRow, TableCell, AutoFitType } from '../tables/index.js';
-import { TableAlignment, TableRowHeightRule } from '../tables/tbl-pr.js';
-import { TableCellVerticalAlignment } from '../tables/tc-pr.js';
+import { WordDocument } from '../document/document';
+import { Body } from '../document/body';
+import { TextRange } from '../document/text-range';
+import { Table, createTable, TableRow, TableCell, AutoFitType } from '../tables/index';
+import { TableAlignment, TableRowHeightRule } from '../tables/tbl-pr';
+import { TableCellVerticalAlignment } from '../tables/tc-pr';
 import {
     _HTMLTableElement,
     _HTMLTableRowElement,
     _HTMLTableCellElement,
     _HTMLElement,
     _HTMLGenericElement
-} from '../html-parser/dom-node.js';
-import {  _ParagraphMapper } from './paragraph-mapper.js';
-import { _ListMapper } from './list-mapper.js';
-import { _ImageMapper } from './image-mapper.js';
-import { BorderStyle } from '../document/page-setup.js';
-import { parseCssHex } from './css-paragraph-style-builder.js';
-import { HorizontalAlignment } from '../images/layout-types.js';
+} from '../html-parser/dom-node';
+import {  _ParagraphMapper } from './paragraph-mapper';
+import { _ListMapper } from './list-mapper';
+import { _ImageMapper } from './image-mapper';
+import { BorderStyle } from '../document/page-setup';
+import { parseCssHex } from './css-paragraph-style-builder';
+import { HorizontalAlignment } from '../images/layout-types';
+import { Border } from '../tables/borders';
+import { Paragraph } from '../document/paragraph';
 
 /** Position of one HTML cell on the logical table grid. */
 interface CellPlacement {
@@ -41,10 +43,13 @@ interface TableGrid {
 type _Paragraph = any;
 
 /**
+ * Maps HTML tables to document tables.
+ *
+ * @private
  */
 export class _TableMapper {
     /**
-     * Map an HTML table element to a DocIO Table with applied styles.
+     * Map an HTML table element to a document Table with applied styles.
      *
      * Handles:
      * - Table structure (rows and cells)
@@ -118,6 +123,7 @@ export class _TableMapper {
                 try {
                     table.autoFit(AutoFitType.FitToWindow);
                 } catch (fitError) {
+                    // eslint-disable-next-line no-console
                     console.debug('Could not fit the table to the window:', fitError);
                 }
             }
@@ -167,6 +173,7 @@ export class _TableMapper {
                         toColumn: toColumn
                     });
                 } catch (error) {
+                    // eslint-disable-next-line no-console
                     console.debug('Could not merge table cells:', error);
                 }
             }
@@ -253,7 +260,7 @@ export class _TableMapper {
     }
 
     /**
-     * Map a single HTML table row to a DocIO TableRow.
+     * Map a single HTML table row to a document TableRow.
      *
      * @param {unknown} table - The table value
      * @param {unknown} rowElement - The rowElement value
@@ -284,8 +291,8 @@ export class _TableMapper {
                 if (childTag === 'td' || childTag === 'th') {
                     const gridColumn: number = columns && columns[cellIndex] !== undefined ? columns[cellIndex] : cellIndex;
                     // Ensure we don't exceed column count
-                    if (gridColumn >= row.cells.length) { 
-                        break; 
+                    if (gridColumn >= row.cells.length) {
+                        break;
                     }
 
                     const cell: TableCell = row.cells[gridColumn];
@@ -728,43 +735,46 @@ export class _TableMapper {
 
                 // Apply border styles from inline CSS
                 if (tableElement._styles.borderColor || tableElement._styles['border-color']) {
-                    const borderColor = tableElement._styles.borderColor || tableElement._styles['border-color'];
+                    const borderColor: string = tableElement._styles.borderColor || tableElement._styles['border-color'];
                     if (borderColor && table.tableFormat.borders) {
                         try {
                             table.tableFormat.borders.color = borderColor;
                         } catch (error) {
+                            // eslint-disable-next-line no-console
                             console.debug('Could not set table border color:', error);
                         }
                     }
                 }
 
                 if (tableElement._styles.borderStyle || tableElement._styles['border-style']) {
-                    const borderStyle = tableElement._styles.borderStyle || tableElement._styles['border-style'];
+                    const borderStyle: string = tableElement._styles.borderStyle || tableElement._styles['border-style'];
                     if (borderStyle && table.tableFormat.borders) {
                         try {
                             // Map CSS border styles to OOXML
-                            const styleValue = String(borderStyle).toLowerCase();
+                            const styleValue: string = String(borderStyle).toLowerCase();
                             if (styleValue === 'solid') {
                                 table.tableFormat.borders.borderType = BorderStyle.Single;
                             } else {
                                 table.tableFormat.borders.borderType = BorderStyle.None;
                             }
                         } catch (error) {
+                            // eslint-disable-next-line no-console
                             console.debug('Could not set table border style:', error);
                         }
                     }
                 }
 
                 if (tableElement._styles.borderWidth || tableElement._styles['border-width']) {
-                    const borderWidth = tableElement._styles.borderWidth || tableElement._styles['border-width'];
+                    const borderWidth: string = tableElement._styles.borderWidth || tableElement._styles['border-width'];
                     if (borderWidth && table.tableFormat.borders) {
                         try {
                             // Parse border width (e.g., "2pt" -> 2)
-                            const widthMatch = String(borderWidth).match(/(\d+)/);
+                            const widthMatch: RegExpMatchArray = String(borderWidth).match(/(\d+)/);
                             if (widthMatch) {
                                 table.tableFormat.borders.lineWidth = parseInt(widthMatch[1], 10);
                             }
                         } catch (error) {
+                            // eslint-disable-next-line no-console
                             console.debug('Could not set table border width:', error);
                         }
                     }
@@ -833,6 +843,7 @@ export class _TableMapper {
                     row.heightType = TableRowHeightRule.AtLeast;
                     row.height = Math.max(row.height, rowMargin.top + rowMargin.bottom);
                 } catch (heightError) {
+                    // eslint-disable-next-line no-console
                     console.debug('Could not apply margin to row height:', heightError);
                 }
             }
@@ -884,7 +895,7 @@ export class _TableMapper {
 
                 // Border styles
                 if (cellElement._styles.borderColor || cellElement._styles['border-color']) {
-                    const borderColor = cellElement._styles.borderColor || cellElement._styles['border-color'];
+                    const borderColor: string = cellElement._styles.borderColor || cellElement._styles['border-color'];
                     if (borderColor) {
                         // Apply border color to all borders
                         this.applyBorderColor(cell, borderColor);
@@ -899,7 +910,7 @@ export class _TableMapper {
 
                 // Text alignment from inline styles
                 if (cellElement._styles.textAlign || cellElement._styles['text-align']) {
-                    const textAlign = cellElement._styles.textAlign || cellElement._styles['text-align'];
+                    const textAlign: string = cellElement._styles.textAlign || cellElement._styles['text-align'];
                     this.applyTextAlignment(cell, textAlign);
                 }
 
@@ -910,7 +921,7 @@ export class _TableMapper {
 
                 // Vertical alignment from inline styles
                 if (cellElement._styles.verticalAlign || cellElement._styles['vertical-align']) {
-                    const vAlign = cellElement._styles.verticalAlign || cellElement._styles['vertical-align'];
+                    const vAlign: string = cellElement._styles.verticalAlign || cellElement._styles['vertical-align'];
                     this.applyCellVerticalAlignment(cell, vAlign);
                 }
             }
@@ -938,6 +949,7 @@ export class _TableMapper {
                         // Cell height can be set indirectly via row height or row format
                     }
                 } catch (error) {
+                    // eslint-disable-next-line no-console
                     console.debug('Could not parse cell height:', error);
                 }
             }
@@ -981,11 +993,13 @@ export class _TableMapper {
      * Expands a CSS margin shorthand / longhands on a styles record to points.
      * Returns undefined when no margin is set.
      */
-    private static parseMarginBox(st: Record<string, string> | undefined): { left: number; right: number; top: number; bottom: number } | undefined {
+    private static parseMarginBox(
+        st: Record<string, string> | undefined
+    ): { left: number; right: number; top: number; bottom: number } | undefined {
         if (!st) {
             return undefined;
         }
-        const shorthand: string[] = (st.margin || '').trim().split(/\s+/).filter((v) => v.length > 0);
+        const shorthand: string[] = (st.margin || '').trim().split(/\s+/).filter((v: string) => v.length > 0);
         const top: number | undefined = shorthand.length > 0 ? this.cssLengthToPoints(shorthand[0]) : this.cssLengthToPoints(st.marginTop);
         const right: number | undefined = shorthand.length > 1 ? this.cssLengthToPoints(shorthand[1]) :
             (shorthand.length === 1 ? top : this.cssLengthToPoints(st.marginRight));
@@ -1008,7 +1022,7 @@ export class _TableMapper {
         for (const row of rows) {
             const cells: TableCell[] = row.listCells();
             for (const cell of cells) {
-                const paras = cell.listParagraphs();
+                const paras: ReadonlyArray<Paragraph> = cell.listParagraphs();
                 for (const para of paras) {
                     const format: any = para.paragraphFormat; // eslint-disable-line @typescript-eslint/no-explicit-any
                     if (format) {
@@ -1024,11 +1038,11 @@ export class _TableMapper {
     }
 
     private static cssLengthToPoints(value: string | undefined): number | undefined {
-        const m = value ? /^(-?\d*\.?\d+)(px|pt|cm|mm|in|em)?$/.exec(value.trim().toLowerCase()) : null;
+        const m: RegExpExecArray = value ? /^(-?\d*\.?\d+)(px|pt|cm|mm|in|em)?$/.exec(value.trim().toLowerCase()) : null;
         if (!m) {
             return undefined;
         }
-        const n = parseFloat(m[1]);
+        const n: number = parseFloat(m[1]);
         switch (m[2]) {
         case 'pt': return n;
         case 'cm': return n * 28.35;
@@ -1043,11 +1057,11 @@ export class _TableMapper {
      * Parses a CSS border shorthand ("1px solid #ccc") into width (pt), style and hex color.
      */
     private static parseBorderShorthand(value: string): { width: number; style: BorderStyle; color: string } | undefined {
-        let width = 0.75;
+        let width: number = 0.75;
         let style: BorderStyle | undefined;
-        let color = '000000';
+        let color: string = '000000';
         for (const token of value.trim().split(/\s+(?![^(]*\))/)) {
-            const lower = token.toLowerCase();
+            const lower: string = token.toLowerCase();
             if (lower === 'none' || lower === 'hidden') {
                 return undefined;
             }
@@ -1055,12 +1069,12 @@ export class _TableMapper {
             if (lower === 'double') { style = BorderStyle.Double; continue; }
             if (lower === 'dotted') { style = BorderStyle.Dotted; continue; }
             if (lower === 'dashed') { style = BorderStyle.Dashed; continue; }
-            const len = this.cssLengthToPoints(lower);
+            const len: number = this.cssLengthToPoints(lower);
             if (len !== undefined) { width = len; continue; }
             if (lower === 'thin') { width = 0.75; continue; }
             if (lower === 'medium') { width = 2.25; continue; }
             if (lower === 'thick') { width = 4.5; continue; }
-            const hex = parseCssHex(token);
+            const hex: string = parseCssHex(token);
             if (hex) { color = hex; }
         }
         return { width, style: style !== undefined ? style : BorderStyle.Single, color };
@@ -1072,30 +1086,30 @@ export class _TableMapper {
      */
     private static applyTableCss(table: Table, tableElement: _HTMLTableElement): void {
         try {
-            const st = tableElement._styles;
-            const width = st.width ? st.width.trim() : '';
+            const st: Record<string, string> = tableElement._styles;
+            const width: string = st.width ? st.width.trim() : '';
             if (width.endsWith('%')) {
-                const pct = parseFloat(width);
+                const pct: number = parseFloat(width);
                 if (pct > 0) {
                     // pct widths are stored as fiftieths of a percent through the twips bridge
                     table.tableFormat.preferredWidth = { type: 'pct', value: pct * 50 / 20 };
                 }
             } else {
-                const pts = this.cssLengthToPoints(width);
+                const pts: number = this.cssLengthToPoints(width);
                 if (pts !== undefined && pts > 0) {
                     table.tableFormat.preferredWidth = { type: 'dxa', value: pts };
                 }
             }
-            const margin = (st.margin || '').trim().toLowerCase().split(/\s+/);
-            const marginLeft = (st.marginLeft || '').toLowerCase();
-            const marginRight = (st.marginRight || '').toLowerCase();
+            const margin: string[] = (st.margin || '').trim().toLowerCase().split(/\s+/);
+            const marginLeft: string = (st.marginLeft || '').toLowerCase();
+            const marginRight: string = (st.marginRight || '').toLowerCase();
             if ((margin.length >= 2 && margin[1] === 'auto' && (margin.length < 4 || margin[3] === 'auto')) ||
                 (marginLeft === 'auto' && marginRight === 'auto')) {
                 table.tableFormat.horizontalAlignment = TableAlignment.Center;
             } else if (marginLeft === 'auto') {
                 table.tableFormat.horizontalAlignment = TableAlignment.Right;
             }
-            const paddings = this.parsePaddingBox(st);
+            const paddings: { top: number; right: number; bottom: number; left: number; } = this.parsePaddingBox(st);
             if (paddings && table.tableFormat.paddings) {
                 table.tableFormat.paddings.top = paddings.top;
                 table.tableFormat.paddings.right = paddings.right;
@@ -1104,7 +1118,7 @@ export class _TableMapper {
             }
             // Inherited font-family from the table applies to runs without their own.
             if (st.fontFamily) {
-                const font = st.fontFamily.split(',')[0].trim().replace(/^["']|["']$/g, '');
+                const font: string = st.fontFamily.split(',')[0].trim().replace(/^["']|["']$/g, '');
                 for (const row of table.rows) {
                     for (const cell of row.cells) {
                         this.forEachRun(cell, (fmt: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -1116,16 +1130,21 @@ export class _TableMapper {
                 }
             }
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.debug('Could not apply table CSS:', error);
         }
     }
 
     private static parsePaddingBox(st: Record<string, string>): { top: number; right: number; bottom: number; left: number } | undefined {
-        const sides = { top: undefined as number | undefined, right: undefined as number | undefined,
-            bottom: undefined as number | undefined, left: undefined as number | undefined };
+        const sides: { top: number; right: number; bottom: number; left: number; } = {
+            top: undefined as number | undefined,
+            right: undefined as number | undefined,
+            bottom: undefined as number | undefined,
+            left: undefined as number | undefined
+        };
         if (st.padding) {
-            const t = st.padding.trim().split(/\s+/).map((v) => this.cssLengthToPoints(v));
-            if (t.length === 0 || t.length > 4 || t.some((v) => v === undefined)) {
+            const t: number[] = st.padding.trim().split(/\s+/).map((v: string) => this.cssLengthToPoints(v));
+            if (t.length === 0 || t.length > 4 || t.some((v: number) => v === undefined)) {
                 return undefined;
             }
             sides.top = t[0];
@@ -1133,8 +1152,8 @@ export class _TableMapper {
             sides.bottom = t.length > 2 ? t[2] : t[0];
             sides.left = t.length > 3 ? t[3] : sides.right;
         }
-        const edge = (v: string | undefined, cur: number | undefined): number | undefined => {
-            const n = this.cssLengthToPoints(v);
+        const edge: (v: string, cur: number) => number = (v: string | undefined, cur: number | undefined): number | undefined => {
+            const n: number = this.cssLengthToPoints(v);
             return n !== undefined ? n : cur;
         };
         sides.top = edge(st.paddingTop, sides.top);
@@ -1171,28 +1190,28 @@ export class _TableMapper {
      */
     private static applyCellCss(cell: TableCell, cellElement: _HTMLTableCellElement): void {
         try {
-            const st = cellElement._styles;
+            const st: Record<string, string> = cellElement._styles;
             const edges: Array<['top' | 'right' | 'bottom' | 'left', string | undefined]> = [
                 ['top', st.borderTop || st.border], ['right', st.borderRight || st.border],
-                ['bottom', st.borderBottom || st.border], ['left', st.borderLeft || st.border],
+                ['bottom', st.borderBottom || st.border], ['left', st.borderLeft || st.border]
             ];
             for (const [edge, value] of edges) {
-                const parsed = value ? this.parseBorderShorthand(value) : undefined;
+                const parsed: { width: number; style: BorderStyle; color: string; } = value ? this.parseBorderShorthand(value) : undefined;
                 if (parsed) {
-                    const b = cell.cellFormat.borders[edge];
+                    const b: Border = cell.cellFormat.borders[edge];
                     b.borderType = parsed.style;
                     b.lineWidth = parsed.width;
                     b.color = parsed.color;
                 }
             }
-            const pad = this.parsePaddingBox(st);
+            const pad: { top: number; right: number; bottom: number; left: number; } = this.parsePaddingBox(st);
             if (pad) {
                 cell.cellFormat.paddings.top = pad.top;
                 cell.cellFormat.paddings.right = pad.right;
                 cell.cellFormat.paddings.bottom = pad.bottom;
                 cell.cellFormat.paddings.left = pad.left;
             }
-            let hex = parseCssHex(st.color);
+            let hex: string = parseCssHex(st.color);
             if (!hex) {
                 // CSS inheritance: cell -> row -> thead/tbody/tfoot section
                 let ancestor: _HTMLElement | null | undefined = cellElement._parentNode;
@@ -1206,11 +1225,11 @@ export class _TableMapper {
                     ancestor = ancestor._parentNode;
                 }
             }
-            const font = st.fontFamily ? st.fontFamily.split(',')[0].trim().replace(/^["']|["']$/g, '') : undefined;
-            const size = st.fontSize ? this.cssLengthToPoints(st.fontSize) : undefined;
+            const font: string = st.fontFamily ? st.fontFamily.split(',')[0].trim().replace(/^["']|["']$/g, '') : undefined;
+            const size: number = st.fontSize ? this.cssLengthToPoints(st.fontSize) : undefined;
             if (hex || font || size) {
-                this.forEachRun(cell, (fmt) => {
-                    const snap = fmt.snapshot();
+                this.forEachRun(cell, (fmt: any) => {
+                    const snap: any = fmt.snapshot();
                     if (hex && !snap.textColorValue) {
                         snap.textColorValue = hex;
                         snap.textColorTheme = undefined;
@@ -1221,6 +1240,7 @@ export class _TableMapper {
                 });
             }
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.debug('Could not apply cell CSS:', error);
         }
     }
@@ -1300,7 +1320,7 @@ export class _TableMapper {
     private static applyBorderColor(cell: TableCell, borderColor: string): void {
         try {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const cellFormat = cell.cellFormat as any;
+            const cellFormat: any = cell.cellFormat as any;
             if (cellFormat.borders) {
                 cellFormat.borders.top.color = borderColor;
                 cellFormat.borders.bottom.color = borderColor;
@@ -1308,6 +1328,7 @@ export class _TableMapper {
                 cellFormat.borders.right.color = borderColor;
             }
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.debug('Could not apply border color to cell:', error);
         }
     }
@@ -1321,16 +1342,16 @@ export class _TableMapper {
     private static applyBorderStyles(cell: TableCell, styles: any): void {
         try {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const cellFormat = cell.cellFormat as any;
-            
-            const borderWidth = styles.borderWidth || styles['border-width'];
-            const borderStyle = styles.borderStyle || styles['border-style'];
+            const cellFormat: any = cell.cellFormat as any;
+
+            const borderWidth: any = styles.borderWidth || styles['border-width'];
+            const borderStyle: any = styles.borderStyle || styles['border-style'];
 
             if (cellFormat.borders) {
                 // Apply border width if specified (convert CSS to OOXML)
                 if (borderWidth) {
                     // Parse border width (e.g., "1pt" -> 1)
-                    const widthMatch = String(borderWidth).match(/(\d+)/);
+                    const widthMatch: RegExpMatchArray = String(borderWidth).match(/(\d+)/);
                     if (widthMatch && cellFormat.borders.top) {
                         cellFormat.borders.top.lineWidth = parseInt(widthMatch[1], 10);
                         cellFormat.borders.bottom.lineWidth = parseInt(widthMatch[1], 10);
@@ -1342,7 +1363,7 @@ export class _TableMapper {
                 // Apply border style if specified
                 if (borderStyle) {
                     // Map CSS border styles to OOXML
-                    const styleValue = String(borderStyle).toLowerCase();
+                    const styleValue: string = String(borderStyle).toLowerCase();
                     cellFormat.borders.top.lineStyle = styleValue === 'solid' ? 'Single' : styleValue;
                     cellFormat.borders.bottom.lineStyle = styleValue === 'solid' ? 'Single' : styleValue;
                     cellFormat.borders.left.lineStyle = styleValue === 'solid' ? 'Single' : styleValue;
@@ -1350,6 +1371,7 @@ export class _TableMapper {
                 }
             }
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.debug('Could not apply border styles to cell:', error);
         }
     }
@@ -1362,7 +1384,7 @@ export class _TableMapper {
      */
     private static applyTextAlignment(cell: TableCell, alignment: string): void {
         try {
-            const alignLower = String(alignment).toLowerCase();
+            const alignLower: string = String(alignment).toLowerCase();
             let alignValue: HorizontalAlignment = HorizontalAlignment.Left;
 
             if (alignLower === 'center' || alignLower === 'centered') {
@@ -1378,6 +1400,7 @@ export class _TableMapper {
                 }
             }
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.debug('Could not apply text alignment to cell:', error);
         }
     }
@@ -1390,14 +1413,14 @@ export class _TableMapper {
      */
     private static applyCellWidth(cell: TableCell, widthValue: string): void {
         try {
-            const widthStr = String(widthValue).trim();
+            const widthStr: string = String(widthValue).trim();
             if (!widthStr) {
                 return;
             }
 
             // Parse numeric value and unit
-            let numValue = 0;
-            let unit = 'px';
+            let numValue: number = 0;
+            let unit: string = 'px';
 
             // Try to extract number and unit
             if (widthStr.endsWith('%')) {
@@ -1429,7 +1452,7 @@ export class _TableMapper {
             }
 
             // Convert to appropriate unit for DOCX (points)
-            let points = numValue;
+            let points: number = numValue;
             if (unit === 'px') {
                 // 1px ≈ 0.75pt
                 points = numValue * 0.75;
@@ -1442,11 +1465,11 @@ export class _TableMapper {
             } else if (unit === '%') {
                 // For percentage, set as percentage type
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const cellFormat = cell.cellFormat as any;
+                const cellFormat: any = cell.cellFormat as any;
                 if (cellFormat && cellFormat.preferredWidth !== undefined) {
                     cellFormat.preferredWidth = {
                         type: 'pct',
-                        value: numValue * 50, // OOXML uses fiftieths of a percent
+                        value: numValue * 50 // OOXML uses fiftieths of a percent
                     };
                 }
                 return;
@@ -1454,14 +1477,15 @@ export class _TableMapper {
 
             // Set preferred width in dxa (twips)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const cellFormat = cell.cellFormat as any;
+            const cellFormat: any = cell.cellFormat as any;
             if (cellFormat && cellFormat.preferredWidth !== undefined) {
                 cellFormat.preferredWidth = {
                     type: 'dxa',
-                    value: Math.round(points), // Store as points, OOXML will convert to twips
+                    value: Math.round(points) // Store as points, OOXML will convert to twips
                 };
             }
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.debug('Could not apply cell width:', error);
         }
     }
@@ -1474,7 +1498,7 @@ export class _TableMapper {
      */
     private static applyCellVerticalAlignment(cell: TableCell, vAlign: string): void {
         try {
-            const valignLower = String(vAlign).toLowerCase();
+            const valignLower: string = String(vAlign).toLowerCase();
             if (valignLower === 'top') {
                 cell.cellFormat.verticalAlignment = TableCellVerticalAlignment.Top;
             } else if (valignLower === 'middle' || valignLower === 'center') {
@@ -1483,6 +1507,7 @@ export class _TableMapper {
                 cell.cellFormat.verticalAlignment = TableCellVerticalAlignment.Bottom;
             }
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.debug('Could not apply cell vertical alignment:', error);
         }
     }

@@ -2,11 +2,12 @@
  */
 /* eslint-disable valid-jsdoc, security/detect-object-injection */
 
-import { WordDocument } from '../document/document.js';
-import { Paragraph, ParagraphOwner } from '../document/paragraph.js';
-import { _HTMLElement, _HTMLGenericElement } from '../html-parser/dom-node.js';
-import { _ParagraphMapper } from './paragraph-mapper.js';
-import { numberingFor } from '../numbering/index.js';
+import { WordDocument } from '../document/document';
+import { Paragraph } from '../document/paragraph';
+import { Body } from '../document/body';
+import { _HTMLElement, _HTMLGenericElement } from '../html-parser/dom-node';
+import { _ParagraphMapper } from './paragraph-mapper';
+import { numberingFor } from '../numbering/index';
 
 // Type aliases for compatibility
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -27,7 +28,7 @@ interface ListContext {
 export class _ListMapper {
 
     /**
-     * Map an HTML list element (ul/ol) and its items to DocIO paragraphs with list formatting.
+     * Map an HTML list element (ul/ol) and its items to document paragraphs with list formatting.
      *
      * Handles:
      * - Unordered lists (<ul>) with bullet styles
@@ -46,7 +47,7 @@ export class _ListMapper {
     static mapHTMLList(
         listElement: _HTMLElement,
         document: WordDocument,
-        owner?: ParagraphOwner,
+        owner?: Body,
         level: number = 0,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         parentContext?: ListContext
@@ -106,7 +107,7 @@ export class _ListMapper {
     }
 
     /**
-     * Map a single HTML list item (<li>) to one or more DocIO paragraphs.
+     * Map a single HTML list item (<li>) to one or more document paragraphs.
      *
      * @param {unknown} liElement - The liElement value
      * @param {unknown} document - The document value
@@ -118,7 +119,7 @@ export class _ListMapper {
     private static mapListItem(
         liElement: _HTMLElement,
         document: WordDocument,
-        owner: ParagraphOwner | undefined,
+        owner: Body | undefined,
         context: ListContext,
         isFirstInList: boolean
     ): Paragraph[] {
@@ -178,8 +179,8 @@ export class _ListMapper {
                     // Nested list
                     // IMPORTANT: Always preserve nesting level for proper Word multi-level list hierarchy
                     // Word requires listLevelNumber to differ (0, 1, 2...) for items to appear indented
-                    const nestingLevel = context.level + 1;
-                    
+                    const nestingLevel: number = context.level + 1;
+
                     const nestedContext: ListContext = {
                         listType: blockTag === 'ol' ? 'ol' : 'ul',
                         level: nestingLevel,
@@ -298,7 +299,7 @@ export class _ListMapper {
     private static createListItemParagraphForInlineOnly(
         inlineWrapper: _HTMLElement,
         document: WordDocument,
-        owner: ParagraphOwner | undefined,
+        owner: Body | undefined,
         context: ListContext,
         isFirstInList: boolean
     ): Paragraph | null {
@@ -309,11 +310,7 @@ export class _ListMapper {
             // Attach to owner if provided
             if (owner) {
                 try {
-                    // eslint-disable-next-line
-          const ownerItems = (owner as any).items;
-                    if (ownerItems && ownerItems.add) {
-                        ownerItems.add(para);
-                    }
+                    owner.items.add(para);
                 } catch (error) {
                     console.error('Error adding paragraph to owner:', error);
                     return null;
@@ -354,7 +351,7 @@ export class _ListMapper {
     private static createListItemParagraph(
         element: _HTMLElement,
         document: WordDocument,
-        owner: ParagraphOwner | undefined,
+        owner: Body | undefined,
         context: ListContext,
         isFirstInList: boolean
     ): Paragraph | null {
@@ -365,11 +362,7 @@ export class _ListMapper {
             // Attach to owner if provided
             if (owner) {
                 try {
-                    // eslint-disable-next-line
-          const ownerItems = (owner as any).items;
-                    if (ownerItems && ownerItems.add) {
-                        ownerItems.add(para);
-                    }
+                    owner.items.add(para);
                 } catch (error) {
                     console.error('Error adding paragraph to owner:', error);
                     return null;
@@ -411,7 +404,7 @@ export class _ListMapper {
      */
     private static createEmptyListItemParagraph(
         document: WordDocument,
-        owner: ParagraphOwner | undefined,
+        owner: Body | undefined,
         context: ListContext,
         isFirstInList: boolean,
         liElement?: _HTMLElement
@@ -421,11 +414,7 @@ export class _ListMapper {
 
         if (owner) {
             try {
-                // eslint-disable-next-line
-        const ownerItems = (owner as any).items;
-                if (ownerItems && ownerItems.add) {
-                    ownerItems.add(para);
-                }
+                owner.items.add(para);
             } catch (error) {
                 console.error('Error adding paragraph to owner:', error);
             }
@@ -433,7 +422,7 @@ export class _ListMapper {
 
         // Apply list formatting
         this.applyListFormatting(para, context, isFirstInList, document);
-        
+
         // Note: Empty list items don't go through paragraph mapper, so CSS class styles
         // won't be applied here. That's acceptable since empty items have no content anyway.
 
@@ -488,15 +477,16 @@ export class _ListMapper {
                                 context.listId = htmlNumId;
                             }
                         } catch (numberingError) {
+                            // eslint-disable-next-line no-console
                             console.debug('Could not use the HTML decimal numbering instance:', numberingError);
                         }
                     }
                 }
-                
+
                 // After applying the style, use increaseIndentLevel() to reach the target level
                 // This ensures Word's multi-level list mechanism properly handles nesting
                 if (para.listFormat.increaseIndentLevel) {
-                    for (let i = 0; i < context.level; i++) {
+                    for (let i: number = 0; i < context.level; i++) {
                         para.listFormat.increaseIndentLevel();
                     }
                 }
@@ -508,8 +498,8 @@ export class _ListMapper {
                 para.listFormat.listLevelNumber = context.level;
             } else {
                 // Subsequent items: continue numbering at the current level
-                let shouldApplyStyle = false;
-                
+                let shouldApplyStyle: boolean = false;
+
                 if (para.listFormat.continueListNumbering) {
                     try {
                         para.listFormat.continueListNumbering();
@@ -520,7 +510,7 @@ export class _ListMapper {
                 } else {
                     shouldApplyStyle = true;
                 }
-                
+
                 if (shouldApplyStyle) {
                     try {
                         if (context.listType === 'ul') {
@@ -532,10 +522,10 @@ export class _ListMapper {
                                 para.listFormat.applyDefNumberedStyle();
                             }
                         }
-                        
+
                         // Indent to the target level
                         if (para.listFormat.increaseIndentLevel) {
-                            for (let i = 0; i < context.level; i++) {
+                            for (let i: number = 0; i < context.level; i++) {
                                 para.listFormat.increaseIndentLevel();
                             }
                         }
@@ -644,16 +634,16 @@ export class _ListMapper {
         if (styleAttr && styleAttr.includes('list-style:none')) {
             return true;
         }
-        
+
         // Also check the parsed _styles object
         if (listElement._styles) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const style = (listElement._styles as any);
+            const style: any = (listElement._styles as any);
             if (style.listStyle === 'none' || style.listStyleType === 'none') {
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -695,7 +685,7 @@ export class _ListMapper {
     static mapListItemDirect(
         liElement: _HTMLElement,
         document: WordDocument,
-        owner: ParagraphOwner | undefined,
+        owner: Body | undefined,
         level: number = 0
     ): Paragraph[] {
         const context: ListContext = {
@@ -763,7 +753,7 @@ export class _ListMapper {
     }
 
     /**
-     * Map list properties from HTML to DocIO list styles.
+     * Map list properties from HTML to document list styles.
      * This is a placeholder for more advanced list style mapping.
      *
      * @param {unknown} para - The para value

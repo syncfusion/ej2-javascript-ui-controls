@@ -70,14 +70,14 @@ export class OleObject implements FeatureRunLeaf {
     private state: OleObjectDomState;
     private relationshipIdValue: string | undefined;
     /**
-     *  Image relationship id from `v:imagedata/@r:id` (TASK-8056
-     * icon/preview media). Distinct from the OLE embed/link `r:id`.
+     *  Image relationship id from `v:imagedata/@r:id` (icon/preview
+     * media). Distinct from the OLE embed/link `r:id`.
      *
      * @private
      */
     private imageRelationshipIdValue: string | undefined;
     /**
-     *  Pending payload registered by embed authoring (TASK-8054);
+     *  Pending payload registered by embed authoring;
      * resolved through the catalog at save. `undefined` for loaded objects
      * and for pending links.
      *
@@ -89,14 +89,14 @@ export class OleObject implements FeatureRunLeaf {
     } | undefined;
     /**
      *  True when link authoring registered a pending external target
-     * (TASK-8055) that still awaits save-time materialization.
+     * that still awaits save-time materialization.
      *
      * @private
      */
     private pendingLink: boolean = false;
     /**
      *  True when icon/preview media authoring registered pending
-     * image bytes (TASK-8056) that still await save-time materialization.
+     * image bytes that still await save-time materialization.
      *
      * @private
      */
@@ -119,7 +119,7 @@ export class OleObject implements FeatureRunLeaf {
             this.state = parseOleObjectDomState(objectElement, resolved.oleElement, resolved.wireForm);
         }
         this.relationshipIdValue = oleAttributeValue(oleElement, 'http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id');
-        // TASK-8056: bind icon media from VML `v:imagedata/@r:id` when present
+        // bind icon media from VML `v:imagedata/@r:id` when present
         // (ECMA-376-4 §19.2.2.20; ECMA-376-1 §15.2.14).
         this.imageRelationshipIdValue = readImageDataRelationshipId(objectElement);
     }
@@ -326,7 +326,7 @@ export class OleObject implements FeatureRunLeaf {
         return this.relationshipIdValue;
     }
     /**
-     * Image relationship id from `v:imagedata/@r:id` (TASK-8056 icon/preview
+     * Image relationship id from `v:imagedata/@r:id` (icon/preview
      * media). Empty until a pending authored icon is materialized at save.
      *
      * @private
@@ -335,7 +335,7 @@ export class OleObject implements FeatureRunLeaf {
         return this.imageRelationshipIdValue;
     }
     /**
-     * Icon/preview image bytes (TASK-8056) — PNG or JPEG only.
+     * Icon/preview image bytes — PNG or JPEG only.
      *
      * **Get** returns pending icon bytes registered by
      * {@link Paragraph.appendOleObject} before the first save, otherwise the
@@ -501,7 +501,7 @@ export class OleObject implements FeatureRunLeaf {
     }
     /**
      * Whether authored icon/preview media still awaits save-time
-     * materialization (TASK-8056; {@link PendingIconHost}).
+     * materialization ({@link PendingIconHost}).
      *
      * @returns {boolean} The result.
      * @private
@@ -511,7 +511,7 @@ export class OleObject implements FeatureRunLeaf {
     }
     /**
      * Bind the materialized image relationship id after catalog icon
-     * allocation. Patches `v:imagedata/@r:id` (TASK-8056).
+     * allocation. Patches `v:imagedata/@r:id`.
      *
      * @param {string} relationshipId - The relationship id.
      * @returns {void} Nothing is returned.
@@ -635,7 +635,6 @@ const VML_NAMESPACE_URI: string = 'urn:schemas-microsoft-com:vml';
 const R_NAMESPACE_URI: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
 /**
  * Read `v:imagedata/@r:id` from a `w:object` element when present
- * (TASK-8056 load path).
  *
  * @param {OpenXmlElement} objectElement - The object element.
  * @returns {string | undefined} The result.
@@ -877,7 +876,7 @@ export function oleObjectsInDocument(document: WordDocument): ReadonlyArray<OleO
     return found;
 }
 // ---------------------------------------------------------------------------
-// Authoring (TASK-8054): appendOleObject embed path
+// Authoring: appendOleObject embed path
 // ---------------------------------------------------------------------------
 /** ObjectID upper bound ([MS-OI29500] §2.1.1834: `_<0..2147483647>`). */
 const OBJECT_ID_MAX: number = 2147483647;
@@ -944,20 +943,23 @@ export interface AppendOleObjectOptions {
     readonly linkTypeDescription?: string;
     /**
      * Placeholder width (`w:object/@w:dxaOrig` + `v:shape` style).
+     *
      * @defaultValue 1 inch
      */
     readonly width?: number;
     /**
      * Placeholder height (`w:object/@w:dyaOrig` + `v:shape` style).
+     *
      * @defaultValue 1 inch
      */
     readonly height?: number;
     /**
      * Display a placeholder icon instead of the object content
      * (`@DrawAspect` `Icon` vs `Content`). The library never renders icons;
-     * with no icon bytes (TASK-8056) Word re-renders the placeholder on open
+     * with no icon bytes Word re-renders the placeholder on open
      * (program GO decision Q3). Product reference XML for linked icons
      * commonly uses `Icon`.
+     *
      * @defaultValue `false` (content)
      */
     readonly displayAsIcon?: boolean;
@@ -971,7 +973,7 @@ export interface AppendOleObjectOptions {
      */
     readonly description?: string;
     /**
-     * Icon/preview image bytes (TASK-8056). Must sniff as PNG or JPEG
+     * Icon/preview image bytes. Must sniff as PNG or JPEG
      * (`image/png` / `image/jpeg`). When set, the library writes a media
      * part under `/word/media/`, an image relationship, and
      * `v:imagedata/@r:id` (ECMA-376-4 §19.2.2.20; ECMA-376-1 §15.2.14).
@@ -1236,7 +1238,7 @@ function el(namespaceUri: string, prefix: string, localName: string, attributes:
  * <w:object w:dxaOrig="…" w:dyaOrig="…" w14:anchorId="…">
  *   <v:shape id="_x0000_iNNNN" type="#_x0000_t75" style="width:…pt;height:…pt"
  *            o:ole="" alt="…">
- *     <v:imagedata/>  <!-- only when icon bytes exist (TASK-8056) -->
+ *     <v:imagedata/>  <!-- only when icon bytes exist -->
  *   </v:shape>
  *   <o:OLEObject Type="Embed|Link" ProgID="…" ShapeID="…" DrawAspect="…"
  *                [UpdateMode="Always|OnCall"] [ObjectID="_…"] r:id="rIdN">
@@ -1288,7 +1290,7 @@ function buildAuthoredOleObjectElement(resolved: ResolvedAuthoringInput): {
             value: resolved.description
         });
     }
-    // v:imagedata only when icon bytes exist (TASK-8056; ECMA-376-4 §19.2.2.20).
+    // v:imagedata only when icon bytes exist (ECMA-376-4 §19.2.2.20).
     // r:id is empty here and patched at materialization (same pattern as OLE r:id).
     const shapeChildren: OpenXmlElement[] = [];
     if (resolved.iconBytes !== undefined && resolved.iconContentType !== undefined) {
@@ -1412,12 +1414,12 @@ function catalogForAuthoring(paragraph: Paragraph): OleObjectCatalog {
  * Author one embedded or linked OLE object and append it to the paragraph
  * (receiver-owns R2.1; one statement R3.2).
  *
- * **Embed path (TASK-8054):** registers payload bytes with the document
+ * **Embed path:** registers payload bytes with the document
  * catalog at append (pending-relationship pattern, images/ink precedent);
  * the embedding part `word/embeddings/oleObject{N}.bin`, its main-document
  * relationship, and the content-type Override are allocated at save.
  *
- * **Link path (TASK-8055):** registers an external target string only —
+ * **Link path:** registers an external target string only —
  * no package part. Save allocates a Main-WordDocument oleObject relationship
  * with `TargetMode="External"` using the transitional relationship type
  * (never the Office 2019 long-path type). The target is **never fetched
@@ -1475,7 +1477,7 @@ export function appendOleObjectToParagraph(paragraph: Paragraph, options: Append
         object.registerPendingPayload(resolved.bytes, resolved.contentType);
         catalog.registerPendingEmbed(object, resolved.bytes, resolved.contentType);
     }
-    // TASK-8056: pending icon media (PNG/JPEG only; already sniffed).
+    // pending icon media (PNG/JPEG only; already sniffed).
     if (resolved.iconBytes !== undefined && resolved.iconContentType !== undefined) {
         object.registerPendingIconMedia();
         catalog.registerPendingIcon(object, resolved.iconBytes, resolved.iconContentType);
@@ -1512,7 +1514,7 @@ export function removeOleObject(document: WordDocument, paragraph: Paragraph, ob
                 else if (object.relationshipId !== undefined && object.relationshipId.length > 0) {
                     catalog.removeEntry(object.relationshipId);
                 }
-                // TASK-8056: drop pending or materialized icon media with the object.
+                // drop pending or materialized icon media with the object.
                 if (object.isPendingIcon()) {
                     catalog.discardPendingIcon(object);
                 }

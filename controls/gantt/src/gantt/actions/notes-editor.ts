@@ -589,6 +589,7 @@ export class NotesEditor {
             document.execCommand(COMMANDS[command as string], false, null);
         }
         this.saveSelection();
+        this.updatePlaceholder();
         this.updateToolbarState();
     }
     private prepareEditorSelection(): void {
@@ -1062,7 +1063,7 @@ export class NotesEditor {
             return;
         }
         const hasNonTextContent: boolean =
-            !!this.contentElement.querySelector('img, table, video, audio, iframe, hr');
+            !!this.contentElement.querySelector('hr, ul, ol');
         const isEmpty: boolean = !this.contentElement.textContent.trim() && !hasNonTextContent;
         this.placeholderElement.classList.toggle('e-placeholder-enabled', isEmpty);
     }

@@ -450,6 +450,9 @@ export class FormDesignerToolbar {
     }
 
     private onToolbarClicked(args: ClickEventArgs): void {
+        if (this.pdfViewer.readOnlySettings.formFields) {
+            return;
+        }
         if (args && (args as IToolbarClick).item && this.pdfViewer.formDesignerModule) {
             // Check datetime before textbox — id must not be treated as plain textbox.
             if ((args as IToolbarClick).item.id.indexOf('barcode') !== -1) {

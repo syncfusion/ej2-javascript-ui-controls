@@ -4268,6 +4268,38 @@ export interface ScrollSettingsModel {
 }
 
 /**
+ * Interface for a class ReadOnlySettings
+ */
+export interface ReadOnlySettingsModel {
+
+    /**
+     * When true, existing annotations stay visible but cannot be added, edited, moved, resized, or deleted.
+     * Annotation comments are also read-only. Form filling is not affected.
+     *
+     * @default false
+     */
+    annotations?: boolean;
+
+    /**
+     * When true, form field values cannot be changed and Form Designer create, property edit, move, resize, and delete are blocked.
+     * Existing field values stay visible. Annotation editing and comments are not affected.
+     *
+     * @default false
+     */
+    formFields?: boolean;
+
+    /**
+     * When true, comments cannot be added, edited, replied to, resolved, or deleted.
+     * Viewing, expanding or collapsing, and navigating to comments stay available.
+     * Annotation geometry and form fields are not affected.
+     *
+     * @default false
+     */
+    comments?: boolean;
+
+}
+
+/**
  * Interface for a class FormField
  */
 export interface FormFieldModel {
@@ -7213,6 +7245,13 @@ export interface PdfViewerModel extends ComponentModel{
      *
      */
     scrollSettings?: ScrollSettingsModel;
+
+    /**
+     * Defines the read only settings.
+     *
+     * @default { annotations: false, formFields: false, comments: false }
+     */
+    readOnlySettings?: ReadOnlySettingsModel;
 
     /**
      * Get or set the text field settings.

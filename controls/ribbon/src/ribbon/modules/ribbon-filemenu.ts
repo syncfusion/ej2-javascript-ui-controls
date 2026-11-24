@@ -5,6 +5,7 @@ import { BeforeOpenCloseMenuEventArgs as BeforeDDBArgs, OpenCloseMenuEventArgs a
 import { BeforeOpenCloseMenuEventArgs as BeforeMenuArgs, OpenCloseMenuEventArgs as AfterMenuArgs } from '@syncfusion/ej2-navigations';
 import { FileMenuBeforeOpenCloseEventArgs, FileMenuEventArgs, FileMenuOpenCloseEventArgs, FileMenuSettings, FileMenuSettingsModel } from '../models/index';
 import { commonProperties, getIndex, isTooltipPresent, Ribbon, ribbonTooltipData } from '../base/index';
+import { observeElementSize, publishPositiveWidth, SizeObserver } from '../base/utils';
 import * as constants from '../base/constant';
 
 /**
@@ -15,6 +16,7 @@ export class RibbonFileMenu {
     private fileMenuDDB: DropDownButton;
     private menuctrl: Menu;
     private ddbElement: HTMLButtonElement;
+    private sizeObserver: SizeObserver;
 
     constructor(parent: Ribbon) {
         this.parent = parent;
@@ -51,7 +53,7 @@ export class RibbonFileMenu {
             enableRtl: this.parent.enableRtl,
             cssClass: 'e-ribbon-file-menu e-caret-hide',
             created: () => {
-                tabEle.style.setProperty(constants.RIBBON_FILE_MENU_WIDTH, this.ddbElement.offsetWidth + 'px');
+                this.refreshWidth();
             },
             beforeClose: this.ddbBeforeEvent.bind(this, false),
             beforeOpen: this.ddbBeforeEvent.bind(this, true),
@@ -66,6 +68,19 @@ export class RibbonFileMenu {
         this.parent.tabObj.refreshActiveTabBorder();
         this.addFileMenuTooltip(fileMenuOptions);
         this.addFileMenuKeytip();
+        this.sizeObserver = observeElementSize(this.ddbElement, () => { this.refreshWidth(); });
+    }
+
+    /**
+     * Re-measures the file menu button and publishes it as `--fileMenuWidth` when it has a real size.
+     *
+     * @returns {void}
+     * @hidden
+     */
+    public refreshWidth(): void {
+        if (this.ddbElement && this.parent && this.parent.tabObj) {
+            publishPositiveWidth(this.parent.tabObj.element, constants.RIBBON_FILE_MENU_WIDTH, this.ddbElement.offsetWidth);
+        }
     }
     private addFileMenuTooltip(fileMenuOptions: FileMenuSettingsModel): void {
         if (isTooltipPresent(fileMenuOptions.ribbonTooltipSettings)) {
@@ -227,7 +242,7 @@ export class RibbonFileMenu {
                     this.fileMenuDDB.setProperties({
                         content: fileMenuOptions.text
                     });
-                    this.parent.tabObj.element.style.setProperty(constants.RIBBON_FILE_MENU_WIDTH, this.ddbElement.offsetWidth + 'px');
+                    this.refreshWidth();
                 }
                 if (fileMenuOptions.popupTemplate) {
                     if (this.menuctrl) {
@@ -270,6 +285,10 @@ export class RibbonFileMenu {
         }
     }
     private destroyDDB(): void {
+        if (this.sizeObserver) {
+            this.sizeObserver.disconnect();
+            this.sizeObserver = null;
+        }
         this.removeFileMenuTooltip();
         this.removeFileMenuKeytip();
         const tabEle: HTMLElement = this.parent.tabObj.element;

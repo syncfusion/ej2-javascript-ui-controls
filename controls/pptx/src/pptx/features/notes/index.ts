@@ -21,7 +21,7 @@
  * Authoring (req/spec `043`, TASK-1107 / TASK-1108):
  * - `notes.addNumberedParagraph(text)` appends a numbered (`a:buAutoNum
  *   type="arabicPeriod"`) paragraph to the body placeholder.
- * - `slide.removeNotesSlide()` (attached on import) removes the slide →
+ * - `slide.removeNotesSlide()` removes the slide →
  *   notesSlide relationship and deletes an unshared notes part + Override.
  *   No-op when absent. Never deletes notesMaster parts.
  *
@@ -36,7 +36,6 @@ import { getNotes } from './get-notes';
 import { NotesSlide, NotesMutationOptions } from './notes-slide';
 import { removeNotesSlide } from './remove-notes';
 import { addNotesSlide } from './attach-notes';
-import './attach-notes';
 registerFeature({ id: NOTES_FEATURE_ID });
 export { NOTES_FEATURE_ID, NOTES_MASTER_CONTENT_TYPE, NOTES_MASTER_REL_TYPE, NOTES_SLIDE_CONTENT_TYPE,
     NOTES_SLIDE_REL_TYPE, NotesSlide, NotesMutationOptions, addNotesSlide, ensureNotes, getNotes, removeNotesSlide, NotesError };

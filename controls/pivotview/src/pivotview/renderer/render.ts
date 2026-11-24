@@ -96,6 +96,10 @@ export class Render {
     /** @hidden */
 
     public render(refreshRequired?: boolean): void {
+        if (this.parent.gridSettings.layout === 'Flat' && this.parent.flatLayoutModule) {
+            this.renderFlat();
+            return;
+        }
         if (refreshRequired) {
             if (this.timeOutObj) {
                 clearTimeout(this.timeOutObj);
@@ -168,6 +172,10 @@ export class Render {
             this.parent.grid.appendTo(gridElement);
         }
         this.parent.grid.on(headerRefreshed, this.refreshHeader, this);
+    }
+
+    private renderFlat(): void {
+        this.parent.flatLayoutModule.gridAdapter.render();
     }
 
     private initProperties(): void {
@@ -494,6 +502,10 @@ export class Render {
             });
         }
         this.parent.notify(events.contentReady, {});
+        if (this.gridSettings.allowSelection && this.gridSettings.selectedRowIndex > -1 && this.parent.grid.selectionModule) {
+            this.parent.grid.selectionModule.selectRow(this.gridSettings.selectedRowIndex);
+            this.parent.grid.selectedRowIndex = this.gridSettings.selectedRowIndex;
+        }
     }
 
     private setFocusOnLastCell(): void {
@@ -931,6 +943,7 @@ export class Render {
             ele.setAttribute('data-type', this.engine.fieldList[pivotValue.actualText.toString()].aggregateType);
             ele.setAttribute('data-basefield', this.engine.fieldList[pivotValue.actualText.toString()].baseField);
             ele.setAttribute('data-baseItem', this.engine.fieldList[pivotValue.actualText.toString()].baseItem);
+            ele.setAttribute('data-allowcrossgroup', this.engine.fieldList[pivotValue.actualText.toString()].allowCrossGroupCalculation ? 'true' : 'false');
             this.aggMenu.createValueSettingsDialog(ele as HTMLElement, this.parent.element, aggregateType);
             break;
         }
@@ -1071,6 +1084,9 @@ export class Render {
         this.parent.grid.printMode = this.gridSettings.printMode;
         this.parent.grid.rowHeight = this.gridSettings.rowHeight;
         this.parent.grid.gridLines = this.gridSettings.gridLines;
+        if (this.gridSettings.allowSelection && this.gridSettings.selectedRowIndex > -1 && this.parent.grid.selectionModule) {
+            this.parent.grid.selectionModule.selectRow(this.gridSettings.selectedRowIndex);
+        }
         if (this.parent.lastGridSettings) {
             const keys: string[] = Object.keys(this.parent.lastGridSettings);
             if (keys.indexOf('height') > -1) {
@@ -1291,7 +1307,7 @@ export class Render {
                 if (cell.axis === 'value') {
                     pivotArgs.selectedCellsInfo.push({
                         currentCell: cell,
-                        value: cell.value,
+                        value: cell.value as string | number,
                         columnHeaders: cell.columnHeaders,
                         rowHeaders: cell.rowHeaders,
                         measure: cell.actualText.toString()

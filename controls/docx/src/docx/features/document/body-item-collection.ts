@@ -5,7 +5,8 @@ import {
     isSupportedBodyItem,
     projectBlockToBodyItem
 } from './body-item-adapters';
-import { BodyItem } from './body-item';
+import { BodyItem, isBodyItemInstance } from './body-item';
+import { Body } from './body';
 import { BlockContent, Paragraph } from './paragraph';
 import { WordDocument } from './document';
 import { Section } from './section';
@@ -118,14 +119,14 @@ export class BodyItemCollection implements Iterable<BodyItem> {
     }
 
     /**
-     * Number of public body items (paragraphs, tables, block content controls).
+     * Gets the number of public body items (paragraphs, tables, block content controls).
      */
     get count(): number {
         return this.project().length;
     }
 
     /**
-     * Alias of {@link count} for array-like consumers (`toHaveLength`, `items.length`).
+     * Gets the number of items in the collection. This is an alias of {@link count}.
      */
     get length(): number {
         return this.count;
@@ -134,12 +135,12 @@ export class BodyItemCollection implements Iterable<BodyItem> {
     /**
      * Append a body item after existing public children.
      *
-     * @param {BodyItem} item - Paragraph, table, or block content control instance.
-     * @returns {BodyItem} The same `item` reference.
+     * @param {T} item - Paragraph, table, or block content control instance.
+     * @returns {T} The same `item` reference, with its concrete type preserved.
      * @throws TypeError when `item` is not a supported body item.
      * @throws DetachedObjectError when `item` is already owned.
      */
-    add(item: BodyItem): BodyItem {
+    add<T extends BodyItem>(item: T): T {
         return this.insert(this.count, item);
     }
 
@@ -147,13 +148,13 @@ export class BodyItemCollection implements Iterable<BodyItem> {
      * Insert a body item at a public-items index (`0…count` inclusive).
      *
      * @param {number} index - Insert-before index; `count` appends.
-     * @param {BodyItem} item - Paragraph, table, or block content control instance.
-     * @returns {BodyItem} The same `item` reference.
+     * @param {T} item - Paragraph, table, or block content control instance.
+     * @returns {T} The same `item` reference, with its concrete type preserved.
      * @throws RangeError when `index` is outside `0…count`.
      * @throws TypeError when `item` is not a supported body item.
      * @throws DetachedObjectError when `item` is already owned.
      */
-    insert(index: number, item: BodyItem): BodyItem {
+    insert<T extends BodyItem>(index: number, item: T): T {
         if (!isSupportedBodyItem(item)) {
             throw new TypeError('BodyItemCollection accepts only Paragraph, Table, or block content control instances');
         }
@@ -172,8 +173,8 @@ export class BodyItemCollection implements Iterable<BodyItem> {
     /**
      * Remove a body item by instance identity.
      *
-     * @param {BodyItem} item - Item currently in this collection.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {BodyItem} item - Specifies the item.
      * @throws DetachedObjectError when `item` is not in this collection.
      */
     remove(item: BodyItem): void {
@@ -187,8 +188,8 @@ export class BodyItemCollection implements Iterable<BodyItem> {
     /**
      * Remove the public body item at `index` (`0…count-1`).
      *
-     * @param {number} index - The index.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {number} index - Specifies the index.
      * @throws RangeError when `index` is out of range.
      */
     removeAt(index: number): void {
@@ -209,7 +210,7 @@ export class BodyItemCollection implements Iterable<BodyItem> {
      * Remove all body items (paragraphs, tables, block content controls) and
      * detach/release owned content. Opaque unmodeled blocks are also cleared.
      *
-     * @returns {void} Nothing is returned.
+     * @returns {void}
      */
     clear(): void {
         const raw: BlockContent[] = this.host.rawBlocks();
@@ -221,11 +222,7 @@ export class BodyItemCollection implements Iterable<BodyItem> {
         const snapshot: BlockContent[] = raw.slice();
         this.host.replaceRawBlocks([]);
         for (const block of snapshot) {
-            if (block.type === 'paragraph') {
-                block.paragraph.detach();
-            } else if (block.type === 'feature') {
-                releaseFeatureBlock(block.value);
-            }
+            this.detachBlock(block);
         }
         this.rebuildIndexProperties();
         this.notifyHostBodyItemsChanged();
@@ -234,8 +231,8 @@ export class BodyItemCollection implements Iterable<BodyItem> {
     /**
      * Index of `item` in this collection, or `-1` when absent.
      *
-     * @param {BodyItem} item - The item.
-     * @returns {number} The result.
+     * @returns {number} - Returns the number.
+     * @param {BodyItem} item - Specifies the item.
      */
     indexOf(item: BodyItem): number {
         const projected: BodyItem[] = this.project();
@@ -250,7 +247,7 @@ export class BodyItemCollection implements Iterable<BodyItem> {
     /**
      * Snapshot of public body items in order.
      *
-     * @returns {BodyItem[]} The result.
+     * @returns {BodyItem[]} - Returns the BodyItem[].
      */
     toArray(): BodyItem[] {
         return this.project();
@@ -259,8 +256,8 @@ export class BodyItemCollection implements Iterable<BodyItem> {
     /**
      * Invoke `fn` for each public body item.
      *
-     * @param {Function} fn - The fn.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {Function} fn - Specifies the fn.
      */
     forEach(fn: (item: BodyItem, index: number) => void): void {
         const items: BodyItem[] = this.project();
@@ -272,8 +269,8 @@ export class BodyItemCollection implements Iterable<BodyItem> {
     /**
      * True when at least one public body item satisfies `predicate`.
      *
-     * @param {Function} predicate - The predicate.
-     * @returns {boolean} The result.
+     * @returns {boolean} - Returns the result.
+     * @param {Function} predicate - Specifies the predicate.
      */
     some(predicate: (item: BodyItem, index: number) => boolean): boolean {
         const items: BodyItem[] = this.project();
@@ -288,8 +285,8 @@ export class BodyItemCollection implements Iterable<BodyItem> {
     /**
      * Public body items that satisfy `predicate`.
      *
-     * @param {Function} predicate - The predicate.
-     * @returns {BodyItem[]} The result.
+     * @returns {BodyItem[]} - Returns the BodyItem[].
+     * @param {Function} predicate - Specifies the predicate.
      */
     filter(predicate: (item: BodyItem, index: number) => boolean): BodyItem[] {
         const items: BodyItem[] = this.project();
@@ -305,8 +302,8 @@ export class BodyItemCollection implements Iterable<BodyItem> {
     /**
      * First public body item that satisfies `predicate`, or `undefined`.
      *
-     * @param {Function} predicate - The predicate.
-     * @returns {BodyItem | undefined} The result.
+     * @returns {BodyItem | undefined} - Returns the BodyItem, or undefined.
+     * @param {Function} predicate - Specifies the predicate.
      */
     find(predicate: (item: BodyItem, index: number) => boolean): BodyItem | undefined {
         const items: BodyItem[] = this.project();
@@ -321,8 +318,8 @@ export class BodyItemCollection implements Iterable<BodyItem> {
     /**
      * Map public body items with `fn`.
      *
-     * @param {Function} fn - The fn.
-     * @returns {U[]} The result.
+     * @returns {U[]} - Returns the U[].
+     * @param {Function} fn - Specifies the fn.
      */
     map<U>(fn: (item: BodyItem, index: number) => U): U[] {
         const items: BodyItem[] = this.project();
@@ -334,9 +331,9 @@ export class BodyItemCollection implements Iterable<BodyItem> {
     }
 
     /**
-     * Iterate public body items in document order.
+     * Returns an iterator over the body items in document order.
      *
-     * @returns {Iterator<BodyItem>} The result.
+     * @returns {Iterator<BodyItem>} - Returns an iterator over the body items.
      */
     [Symbol.iterator](): Iterator<BodyItem> {
         const items: BodyItem[] = this.project();
@@ -377,15 +374,18 @@ export class BodyItemCollection implements Iterable<BodyItem> {
             throw new RangeError(`Body item index ${String(index)} is out of range`);
         }
         const document: WordDocument = this.host.owningDocument();
-        if (block.type === 'paragraph') {
-            block.paragraph.attach(this.host);
-        } else if (block.type === 'feature') {
-            bindDocumentToFeatureBlock(block.value, document);
-        }
         const next: BlockContent[] = raw.slice();
         next.splice(index, 0, block);
-        this.host.replaceRawBlocks(next);
-        bindAltChunkDocument([block], document);
+        // Attach once; roll back ownership if the store update or document bind fails.
+        this.attachBlock(block, document);
+        try {
+            this.host.replaceRawBlocks(next);
+            bindAltChunkDocument([block], document);
+        } catch (err) {
+            this.host.replaceRawBlocks(raw);
+            this.detachBlock(block);
+            throw err;
+        }
         this.rebuildIndexProperties();
         this.notifyHostBodyItemsChanged();
     }
@@ -405,11 +405,7 @@ export class BodyItemCollection implements Iterable<BodyItem> {
         const next: BlockContent[] = raw.slice();
         next.splice(index, 1);
         this.host.replaceRawBlocks(next);
-        if (block.type === 'paragraph') {
-            block.paragraph.detach();
-        } else if (block.type === 'feature') {
-            releaseFeatureBlock(block.value);
-        }
+        this.detachBlock(block);
         this.rebuildIndexProperties();
         this.notifyHostBodyItemsChanged();
     }
@@ -440,6 +436,47 @@ export class BodyItemCollection implements Iterable<BodyItem> {
             }
         }
         return -1;
+    }
+
+    /**
+     * Attach a block's public item (paragraph, table, block content control) to this body.
+     *
+     * @param {BlockContent} block - The block being inserted.
+     * @param {WordDocument} document - The owning document.
+     * @returns {void} Nothing is returned.
+     * @private
+     */
+    private attachBlock(block: BlockContent, document: WordDocument): void {
+        if (block.type === 'paragraph') {
+            block.paragraph.attach(this.host);
+        } else if (block.type === 'feature') {
+            bindDocumentToFeatureBlock(block.value, document);
+        }
+        const item: unknown = block.type === 'paragraph' ? block.paragraph : block.type === 'feature' ? block.value : undefined;
+        // The host is a Body at runtime, even though it is typed as BodyItemCollectionHost.
+        if (isBodyItemInstance(item) && item.ownerTextBody === undefined) {
+            item.attachToBody(this.host as unknown as Body);
+        }
+    }
+
+    /**
+     * Detach a block's public item from this body and release owned content.
+     *
+     * @param {BlockContent} block - The block being removed.
+     * @returns {void} Nothing is returned.
+     * @private
+     */
+    private detachBlock(block: BlockContent): void {
+        if (block.type === 'paragraph') {
+            block.paragraph.detach();
+        }
+        const item: unknown = block.type === 'paragraph' ? block.paragraph : block.type === 'feature' ? block.value : undefined;
+        if (isBodyItemInstance(item) && item.ownerTextBody === (this.host as unknown as Body)) {
+            item.detachFromBody(this.host as unknown as Body);
+        }
+        if (block.type === 'feature') {
+            releaseFeatureBlock(block.value);
+        }
     }
 
     private project(): BodyItem[] {
@@ -497,7 +534,7 @@ export class BodyItemCollection implements Iterable<BodyItem> {
         }
         // Feature instances: detect via bindDocument presence + optional owner probe.
         if (typeof item === 'object' && item !== null && 'owningDocument' in item) {
-            const owning: () => WordDocument = (item as { owningDocument?: () => WordDocument | undefined }).owningDocument;
+            const owning: () => WordDocument = (item as unknown as { owningDocument?: () => WordDocument | undefined }).owningDocument;
             if (typeof owning === 'function') {
                 let owner: WordDocument | undefined;
                 try {
@@ -538,6 +575,20 @@ export class BodyItemCollection implements Iterable<BodyItem> {
             }
         }
         this.cachedLength = nextLen;
+    }
+
+    /**
+     * Assert that a body item is attached to this collection.
+     *
+     * @param {BodyItem} item - The item.
+     * @returns {void}
+     * @private
+     */
+    assertAttached(item: BodyItem): void {
+        const raw: BlockContent[] = this.host.rawBlocks();
+        if (item.ownerTextBody !== (this.host as unknown as Body) || findBlockIndexForBodyItem(raw, item) === -1) {
+            throw new DetachedObjectError('This body item is no longer in this body');
+        }
     }
 
     private notifyHostBodyItemsChanged(): void {

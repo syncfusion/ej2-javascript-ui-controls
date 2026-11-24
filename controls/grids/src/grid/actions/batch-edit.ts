@@ -273,7 +273,6 @@ export class BatchEdit {
         this.parent.clearSelection();
         this.parent.focusModule.clearIndicator();
         this.undoAction(action);
-        this.isUndoAction = false;
         if (this.parent.aggregates.length > 0) {
             if (!(this.parent.isReact || this.parent.isVue)) {
                 this.parent.notify(events.refreshFooterRenderer, {});
@@ -292,6 +291,7 @@ export class BatchEdit {
         this.parent.trigger(events.cellSaved, cellSaveArgs);
         this.pushToStack(this.redoStack, action);
         this.parent.notify(events.toolbarRefresh, {});
+        this.isUndoAction = false;
     }
 
     /**
@@ -310,7 +310,6 @@ export class BatchEdit {
         }
         this.isRedoAction = true;
         this.redoAction(action);
-        this.isRedoAction = false;
         if (this.parent.aggregates.length > 0) {
             if (!(this.parent.isReact || this.parent.isVue)) {
                 this.parent.notify(events.refreshFooterRenderer, {});
@@ -329,6 +328,7 @@ export class BatchEdit {
         this.parent.trigger(events.cellSaved, cellSaveArgs);
         this.pushToStack(this.undoStack, action);
         this.parent.notify(events.toolbarRefresh, {});
+        this.isRedoAction = false;
     }
 
     /**

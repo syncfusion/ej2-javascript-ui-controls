@@ -8,6 +8,9 @@ import { DetachedObjectError, DocxError } from '../../core/errors/docx-error';
 import { FeatureId } from '../../core/registry/feature-registry';
 import { tryParseFeatureInline, FeatureInlineContent } from '../../core/registry/inline-handlers';
 import { OpenXmlAttribute, OpenXmlElement } from '../../core/xml/index';
+import { BodyItem, isBodyItemInstance } from './body-item';
+import { Body } from './body';
+import { BodyBlockParseContext } from '../../core/registry/block-handlers';
 import { FeatureBlock } from './feature-block';
 import { FeatureInline } from './feature-inline';
 import { FeatureRunLeaf } from './feature-run-leaf';
@@ -28,16 +31,16 @@ import {
     CnfStyle,
     NormalizedCnfStyle
 } from '../tables/tbl-pr';
-import { ParagraphItem } from './paragraph-item';
+import { ParagraphItem, isDirectInlineFeatureItem } from './paragraph-item';
 import {
     ParagraphItemCollection,
     ParagraphItemCollectionHost
 } from './paragraph-item-collection';
 import {
     Break,
+    CarriageReturn,
     BreakClearType,
     BreakType,
-    ConcreteParagraphItem,
     createStandaloneBreakItem,
     createStandaloneSymbolItem,
     createTextAndTabItems,
@@ -55,6 +58,7 @@ import { elementChildren, isWml, wValAttribute, wmlAttr, wmlElement } from './wm
 
 /**
  * Generate a unique form field identifier.
+ *
  * @param {string} prefix - The prefix for the identifier (CheckBox, DropDown, TextInput).
  * @returns {string} A unique identifier.
  * @private
@@ -66,6 +70,7 @@ function generateFormFieldId(prefix: string): string {
 /**
  * Default text for text form fields when none is provided.
  * Five en-space characters (U+2002).
+ *
  * @private
  */
 const TEXT_FORM_FIELD_DEFAULT_TEXT: string = '\u2002\u2002\u2002\u2002\u2002';
@@ -73,6 +78,7 @@ const TEXT_FORM_FIELD_DEFAULT_TEXT: string = '\u2002\u2002\u2002\u2002\u2002';
 /**
  * Factory for {@link Paragraph.listFormat} — registered by the numbering feature
  * to avoid Vitest ESM-breaking extensionless CJS require of list-format.
+ *
  * @private
  */
 let listFormatFactory: ((paragraph: Paragraph) => any) | undefined;
@@ -101,6 +107,7 @@ export function resetListFormatFactoryForTests(): void {
 /**
  * Chart creation bridge, registered by the charts feature (loaded from the package root)
  * so this module needs no runtime import of the charts feature.
+ *
  * @private
  */
 let appendChartFactory: ((paragraph: Paragraph, chartType: string, width: number, height: number) => Chart) | undefined;
@@ -108,7 +115,7 @@ let appendChartFactory: ((paragraph: Paragraph, chartType: string, width: number
 /**
  * @param {Function} factory - The factory.
  * @returns {void} Nothing is returned.
- *  Registers the chart creation bridge used by <see cref="Paragraph.appendChart">appendChart</see>.
+ *  Registers the chart creation bridge used by {@link Paragraph.appendChart}.
  *
  * @private
  */
@@ -121,9 +128,10 @@ export function setAppendChartFactory(
 /**
  * Post-processor for paragraph items (e.g., field structure reconstruction).
  * Registered by features that need to transform items after parsing but before hydration.
+ *
  * @private
  */
-type ParagraphItemsPostProcessor = (items: ConcreteParagraphItem[]) => void;
+type ParagraphItemsPostProcessor = (items: ParagraphItem[]) => void;
 let paragraphItemsPostProcessor: ParagraphItemsPostProcessor | undefined;
 
 /**
@@ -172,11 +180,11 @@ export type BlockContent = {
 };
 /**
  * Body owner that can splice raw blocks. Used when newline text creates
- * sibling paragraphs. Not every {@link ParagraphOwner} (for example a table
- * cell that only implements attachment) exposes this surface.
+ * sibling paragraphs.
+ *
  * @private
  */
-interface ParagraphBlockHost extends ParagraphOwner {
+interface ParagraphBlockHost {
     rawBlocks(): ReadonlyArray<BlockContent>;
     replaceRawBlocks(blocks: ReadonlyArray<BlockContent>): void;
     notifyBodyItemsChanged?(): void;
@@ -185,25 +193,10 @@ interface ParagraphBlockHost extends ParagraphOwner {
     };
 }
 
-function isParagraphBlockHost(owner: ParagraphOwner): owner is ParagraphBlockHost {
+function isParagraphBlockHost(owner: unknown): owner is ParagraphBlockHost {
     const candidate: ParagraphBlockHost = owner as ParagraphBlockHost;
     return typeof candidate.rawBlocks === 'function'
         && typeof candidate.replaceRawBlocks === 'function';
-}
-
-export interface ParagraphOwner {
-    assertAttachedParagraph(target: Paragraph): void;
-    /**
-     * @private
-     */
-    owningDocument(): WordDocument;
-    /**
-     * Optional body-owner kind used for ownership queries without circular imports.
-     * Table cells set this to `'tableCell'`.
-     *
-     * @private
-     */
-    readonly bodyOwnerKind?: 'tableCell' | string;
 }
 
 /**
@@ -213,27 +206,20 @@ export interface ParagraphOwner {
  */
 export interface AppendBreakOptions {
     /**
-     * Text-wrapping clear (`ST_BrClear`). Only valid with
-     * {@link BreakType.LineBreak} or {@link BreakType.TextWrappingBreak}.
+     * Gets the clear type that specifies where text resumes after a line or text-wrapping break.
      */
     readonly clear?: BreakClearType;
 }
 
 /**
- * WordprocessingML paragraph (`w:p`).
+ * Represents a paragraph in a document.
  *
- * Paragraph properties live on {@link Paragraph.paragraphFormat} (`w:pPr`).
- * Paragraph-mark character formatting lives on
- * {@link Paragraph.breakCharacterFormat} (`w:pPr/w:rPr`). Text-range character
- * formatting remains on {@link TextRange.characterFormat} (`w:r/w:rPr`).
- *
- * Items appear directly on {@link Paragraph.items} — there is no nested run
- * collection. Physical `w:r` grouping is reconstructed on serialize.
+ * Paragraph formatting is available through {@link Paragraph.paragraphFormat}, and the content is available through {@link Paragraph.items}.
  *
  * @public
  */
-export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, ParagraphItemCollectionHost {
-    private owner: ParagraphOwner | undefined;
+export class Paragraph extends BodyItem implements ParagraphFormatHost, CharacterFormatHost, ParagraphItemCollectionHost {
+    private legacyOwner: BodyBlockParseContext | undefined;
     private extraAttributes: ReadonlyArray<OpenXmlAttribute>;
     private styleIdValue: string | undefined;
     private numIdValue: number | undefined;
@@ -249,7 +235,7 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
      * hydrate/clear mutate contents in place.
      */
     private readonly paragraphItems: ParagraphItemCollection;
-    /** TASK-9020-B: all typed `w:pPr` formatting state lives on ParagraphFormat. */
+    /** all typed `w:pPr` formatting state lives on ParagraphFormat. */
     private paragraphFormatField: ParagraphFormat | undefined;
     /** Paragraph-mark character formatting (`w:pPr/w:rPr`). */
     private breakCharacterFormatField: CharacterFormat | undefined;
@@ -266,10 +252,11 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
     /**
      *  @private
      *
-     * @param {ParagraphOwner | undefined} owner - The owner.
+     * @param {BodyBlockParseContext | undefined} owner - The owning body or body-like host.
      */
-    constructor(owner: ParagraphOwner | undefined) {
-        this.owner = owner;
+    constructor(owner: BodyBlockParseContext | undefined) {
+        super();
+        this.legacyOwner = owner;
         this.extraAttributes = [];
         this.numPrExtra = [];
         this.sectionBreakSectPrElement = undefined;
@@ -279,15 +266,7 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
         this.listFormatField = undefined;
     }
     /**
-     * The direct paragraph formatting (`w:pPr`) of this paragraph — the only
-     * public paragraph-formatting surface.
-     *
-     * A live view over the typed `w:pPr` state: every read/write goes to the
-     * same storage the parser fills and the serializer reads. Lazily created
-     * on first access and cached; never null.
-     *
-     * Mutating it validates attachment — writes on a detached paragraph throw
-     * {@link DetachedObjectError}.
+     * Gets the paragraph formatting of the paragraph.
      *
      * @example
      * ```ts
@@ -296,7 +275,6 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
      * paragraph.paragraphFormat.firstLineIndent = 10; // negative = hanging
      * paragraph.paragraphFormat.backColor = 'D3D3D3';
      * ```
-     *
      * @public
      */
     get paragraphFormat(): ParagraphFormat {
@@ -306,10 +284,7 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
         return this.paragraphFormatField;
     }
     /**
-     * Character formatting of the paragraph mark (`w:pPr/w:rPr`).
-     *
-     * Reuses the same {@link CharacterFormat} type as {@link TextRange.characterFormat}.
-     * Lazily constructed; never null. Empty format does not emit an empty `w:rPr`.
+     * Gets the character formatting of the paragraph mark.
      *
      * @example
      * ```ts
@@ -317,7 +292,6 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
      * paragraph.breakCharacterFormat.italic = true;
      * paragraph.breakCharacterFormat.fontSize = 14;
      * ```
-     *
      * @public
      */
     get breakCharacterFormat(): CharacterFormat {
@@ -327,11 +301,9 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
         return this.breakCharacterFormatField;
     }
     /**
-     * Paragraph list formatting (`w:numPr`).
+     * Gets the paragraph list formatting.
      *
-     * A live list-format interface for applying and modifying numbering and
-     * bullet formatting on this paragraph. Lazily created on first access
-     * and cached; never null.
+     * A live list-format interface for applying and modifying numbering and bullet formatting on this paragraph. Lazily created on first access and cached; never null.
      *
      * @example
      * ```ts
@@ -339,7 +311,6 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
      * paragraph.listFormat.increaseIndentLevel();
      * paragraph.listFormat.listId = 5;
      * ```
-     *
      * @public
      */
     get listFormat(): ListFormat {
@@ -370,7 +341,7 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
         }
         const snap: ParagraphFormatSnapshot = this.paragraphFormat.snapshot();
         for (const paragraph of cohort) {
-            if (paragraph === undefined || paragraph.owner === undefined) {
+            if (paragraph === undefined || paragraph.legacyOwner === undefined) {
                 continue;
             }
             paragraph.newlineCohort = undefined;
@@ -391,7 +362,7 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
         }
         const snap: CharacterFormatSnapshot = this.breakCharacterFormat.snapshot();
         for (const sibling of cohort) {
-            if (sibling === undefined || sibling.owner === undefined) {
+            if (sibling === undefined || sibling.legacyOwner === undefined) {
                 continue;
             }
             sibling.newlineCohort = undefined;
@@ -404,18 +375,32 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
      * @returns {void} Nothing is returned.
      */
     detach(): void {
-        this.owner = undefined;
+        this.legacyOwner = undefined;
         this.paragraphItems.detachAll();
     }
     /**
      *  @private
      *
-     * @param {ParagraphOwner} owner - The owner.
+     * @param {Body} owner - The owning body.
      * @returns {void} Nothing is returned.
      */
-    attach(owner: ParagraphOwner): void {
-        this.owner = owner;
+    attach(owner: BodyBlockParseContext): void {
+        this.legacyOwner = owner;
         this.paragraphItems.reattachAll();
+
+        // Also trigger new BodyItem attachment if owner is a Body instance
+        // This enables gradual migration to the new model
+        if (owner !== undefined && 'items' in owner && isBodyItemInstance(this)) {
+            try {
+                const bodyHost: Body = owner as unknown as Body;
+                // Only attach via new model if not already attached
+                if (this.ownerTextBody === undefined) {
+                    this.attachToBody(bodyHost);
+                }
+            } catch {
+                // Silent failure - owner may not support attachToBody yet
+            }
+        }
     }
     /**
      * @param {ParagraphItem} target - The target.
@@ -440,10 +425,18 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
         this.mutate();
     }
     private mutate(): void {
-        if (this.owner === undefined) {
+        // Prefer new BodyItem ownership model, fall back to legacy owner
+        const bodyOwner: Body = this.ownerTextBody;
+        if (bodyOwner !== undefined) {
+            // Use new model - item is attached via BodyItem
+            bodyOwner.items.assertAttached(this);
+            return;
+        }
+        // Fall back to legacy model for transitional code paths
+        if (this.legacyOwner === undefined) {
             throw new DetachedObjectError('This paragraph is no longer in a document');
         }
-        this.owner.assertAttachedParagraph(this);
+        this.legacyOwner.assertAttachedParagraph(this);
     }
     /**
      * @returns {void} Nothing is returned.
@@ -460,10 +453,17 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
      * @returns {WordDocument} The result.
      */
     owningDocument(): WordDocument {
-        if (this.owner === undefined) {
+        // Prefer new BodyItem ownership model, fall back to legacy owner
+        const bodyOwner: Body = this.ownerTextBody;
+        if (bodyOwner !== undefined) {
+            // Use inherited BodyItem method
+            return super.owningDocument();
+        }
+        // Fall back to legacy model
+        if (this.legacyOwner === undefined) {
             throw new DetachedObjectError('This paragraph is no longer in a document');
         }
-        return this.owner.owningDocument();
+        return this.legacyOwner.owningDocument();
     }
     /**
      * Gets or sets the identifier of the paragraph style applied to this paragraph.
@@ -487,8 +487,8 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
      * Applies a paragraph style by id or BuiltInStyle.
      * Implementation is registered by the styles feature (writes resolved styleId only).
      *
-     * @param {string} _style - The  style.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {string} _style - Specifies the style.
      * @public
      */
     applyStyle(_style: string): void {
@@ -570,15 +570,17 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
     }
 
     /**
-     * True when this paragraph’s nearest body owner is a table cell
-     * (including nested table cells). False for body, header/footer, text box,
-     * footnote, endnote, or detached paragraphs.
+     * Gets a value indicating whether this paragraph’s nearest body owner is a table cell (including nested table cells). False for body, header/footer, text box, footnote, endnote, or detached paragraphs.
      *
      * @public
      */
     get isInCell(): boolean {
-        const owner: ParagraphOwner = this.owner;
-        return owner !== undefined && owner.bodyOwnerKind === 'tableCell';
+        const body: BodyBlockParseContext = this.legacyOwner;
+        if (body === undefined) {
+            return false;
+        }
+        // Check if body is a TableCell by looking for isTableCell marker
+        return (body as any).isTableCell === true;
     }
 
     /**
@@ -601,7 +603,7 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
      * When already attached, still assert ownership via {@link mutate}.
      */
     replaceSectionBreakSectPr(value: OpenXmlElement | undefined): void {
-        if (this.owner !== undefined) {
+        if (this.legacyOwner !== undefined) {
             this.mutate();
         }
         this.sectionBreakSectPrElement = value;
@@ -627,12 +629,12 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
      * When set, clears preserved `w:sectPr` XML so the model is the sole source of truth.
      *
      * Same attach rules as {@link replaceSectionBreakSectPr}: dual-hold is allowed
-     * before body ownership is established (TASK-8075 partition/flatten).
+     * before body ownership is established.
      */
     replaceSectionBreakPropertiesModel(value: {
         toOpenXml(): OpenXmlElement;
     } | undefined): void {
-        if (this.owner !== undefined) {
+        if (this.legacyOwner !== undefined) {
             this.mutate();
         }
         this.sectionBreakPropertiesModelValue = value;
@@ -641,11 +643,7 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
         }
     }
     /**
-     * Ordered paragraph items (text ranges, breaks, tabs, symbols, feature
-     * content, opaque markup) in document order.
-     *
-     * Stable collection identity for the life of the paragraph. Physical `w:r`
-     * grouping is reconstructed on serialize via shared wire groups.
+     * Gets the collection of items in the paragraph, such as text ranges, breaks, tabs, and pictures, in document order.
      *
      * @public
      */
@@ -653,20 +651,15 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
         return this.paragraphItems;
     }
     /**
-     * Gets the concatenated plain text of modeled text ranges and tab characters
-     * in document order.
+     * Gets the plain text of the paragraph.
      *
-     * Opaque and feature inlines (for example hyperlinks owned by feature modules)
-     * are skipped. Field instruction text is also skipped; only field result text
-     * is included. {@link Tab} items contribute U+0009 so plain-text views match
-     * run-level tab characters authored via {@link appendText} or loaded from
-     * `w:tab`.
+     * Tab items are returned as tab characters. Field codes and items that are not text, such as hyperlinks, are not included.
      *
      * @public
      */
     get text(): string {
         const parts: string[] = [];
-        const items: ConcreteParagraphItem[] = this.paragraphItems.snapshot();
+        const items: ParagraphItem[] = this.paragraphItems.snapshot();
         const fieldStack: Array<{ phase: 'instruction' | 'result' }> = [];
 
         for (const item of items) {
@@ -712,7 +705,7 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
     /**
      * Appends an empty text range to the end of this paragraph and returns it.
      *
-     * @returns {TextRange} The newly created empty text range.
+     * @returns {TextRange} - Returns the newly created empty text range.
      * @throws DetachedObjectError if this paragraph is no longer attached to a document.
      *
      * @public
@@ -724,10 +717,9 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
         return textRange;
     }
     /**
-     * Appends an empty native math item (display `m:oMathPara`) to the end of this paragraph.
+     * Appends an empty display equation to the end of the paragraph.
      *
-     * @returns The new {@link Math} item (display `m:oMathPara` until `changeToInline()` is called).
-     *
+     * @returns {DocMath} - Returns the new {@link Math} item, which is a display equation until `changeToInline()` is called.
      * @public
      */
     appendMath(): DocMath;
@@ -736,8 +728,8 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
      *
      * Unsupported or malformed LaTeX degrades to plain math text instead of throwing.
      *
-     * @param latex - LaTeX source, for example `\\frac{a}{b}`.
-     * @returns The new {@link Math} item.
+     * @param {string} latex - Specifies the laTeX source, for example `\\frac{a}{b}`.
+     * @returns {DocMath} - Returns the new {@link Math} item.
      *
      * @example
      * ```typescript
@@ -758,24 +750,15 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
         return math;
     }
     /**
-     * Append text as one or more paragraph items, optionally with common character
-     * formatting. U+0009 (tab) characters become dedicated {@link Tab} items
-     * (`w:r/w:tab`) interleaved with {@link TextRange} segments that share one
-     * wire run group, matching Word / OOXML run-inner content.
+     * Appends text to the paragraph, optionally with character formatting.
      *
-     * Newline characters (U+000A `\n`, U+000D `\r`, or `\r\n` sequences) create
-     * new paragraphs. When newlines are detected:
-     * - The input text is split by newline sequences
-     * - Text segments are appended to separate paragraphs
-     * - Each newly created paragraph inherits the formatting of the source paragraph
-     * - The new paragraphs are inserted immediately after the source paragraph
+     * Tab characters become tab items. Newline characters start new paragraphs.
      *
-     * @param {string} text - The text.
-     * @param {Object} options - The options.
-     * @returns {TextRange} The first {@link TextRange} created for non-empty text segments, or
+     * @returns {TextRange} - Returns the first {@link TextRange} created for non-empty text segments, or.
      * an empty trailing {@link TextRange} when `text` is empty or tab-only (so the
      * return type stays {@link TextRange}).
-     *
+     * @param {string} text - Specifies the text.
+     * @param {Object} options - Specifies the options.
      * @public
      */
     appendText(text: string, options?: {
@@ -791,7 +774,7 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
         }
 
         const group: WireRunGroup = new WireRunGroup();
-        const items: ConcreteParagraphItem[] = createTextAndTabItems(text, group);
+        const items: ParagraphItem[] = createTextAndTabItems(text, group);
         let firstTextRange: TextRange | undefined;
         for (const item of items) {
             if (item === undefined) {
@@ -839,7 +822,7 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
         if (parts.length <= 1) {
             // No newlines found, process normally
             const group: WireRunGroup = new WireRunGroup();
-            const items: ConcreteParagraphItem[] = createTextAndTabItems(text, group);
+            const items: ParagraphItem[] = createTextAndTabItems(text, group);
             let firstTextRange: TextRange | undefined;
             for (const item of items) {
                 if (item === undefined) {
@@ -867,7 +850,7 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
         }
 
         // Multiple segments: append to current paragraph and create new ones
-        if (this.owner === undefined) {
+        if (this.legacyOwner === undefined) {
             throw new DetachedObjectError('This paragraph is no longer in a document');
         }
 
@@ -877,7 +860,7 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
         const firstSegment: string = parts[0];
         if (firstSegment !== undefined && firstSegment.length > 0) {
             const group: WireRunGroup = new WireRunGroup();
-            const items: ConcreteParagraphItem[] = createTextAndTabItems(firstSegment, group);
+            const items: ParagraphItem[] = createTextAndTabItems(firstSegment, group);
             for (const item of items) {
                 if (item === undefined) {
                     continue;
@@ -909,8 +892,8 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
 
         const cohort: Paragraph[] = [];
         // Insert sibling paragraphs when the owner stores raw blocks.
-        if (isParagraphBlockHost(this.owner)) {
-            const ownerAsHost: ParagraphBlockHost = this.owner;
+        if (isParagraphBlockHost(this.legacyOwner)) {
+            const ownerAsHost: ParagraphBlockHost = this.legacyOwner;
             const bodyItems: ReadonlyArray<BlockContent> = ownerAsHost.rawBlocks();
             let currentIndex: number = -1;
             for (const [i, content] of bodyItems.entries()) {
@@ -929,7 +912,7 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
                     if (itemsCollection != null && typeof itemsCollection.insertRawBlockAt === 'function') {
                         itemsCollection.insertRawBlockAt(insertAt, { type: 'paragraph', paragraph: newParagraph });
                     } else {
-                        newParagraph.attach(this.owner);
+                        newParagraph.attach(this.legacyOwner);
                         const next: BlockContent[] = ownerAsHost.rawBlocks().slice();
                         next.splice(insertAt, 0, { type: 'paragraph', paragraph: newParagraph });
                         ownerAsHost.replaceRawBlocks(next);
@@ -964,7 +947,7 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
         readonly fontSize?: number;
     }): void {
         const group: WireRunGroup = new WireRunGroup();
-        const items: ConcreteParagraphItem[] = createTextAndTabItems(segment, group);
+        const items: ParagraphItem[] = createTextAndTabItems(segment, group);
         let firstTextRange: TextRange | undefined;
         for (const item of items) {
             if (item === undefined) {
@@ -1008,22 +991,17 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
         }
     }
     /**
-     * Append a break (`w:br`) as a direct paragraph item.
+     * Appends a break to the paragraph.
      *
-     * Always run content on the wire (`w:r/w:br`), never a paragraph-level
-     * sibling of `w:r`. Serialization rebuilds the physical run.
-     *
-     * @param {BreakType} type - Break kind ({@link BreakType}).
-     * @param {AppendBreakOptions} options - Optional text-wrapping clear (Line / TextWrappingBreak only).
-     * @returns {Break} The break item.
+     * @returns {Break} - Returns the break item.
+     * @param {BreakType} type - Specifies the type.
+     * @param {AppendBreakOptions} options - Specifies the options.
      * @throws DocxError `content/invalid-break` if `clear` is set on Page or Column.
-     *
      * @example
      * ```ts
      * paragraph.appendBreak(BreakType.PageBreak);
      * paragraph.appendBreak(BreakType.LineBreak, { clear: BreakClearType.All });
      * ```
-     *
      * @public
      */
     appendBreak(type: BreakType, options?: AppendBreakOptions): Break {
@@ -1034,24 +1012,22 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
         return item;
     }
     /**
-     * Append a symbol character (`w:sym`) as a direct paragraph item.
+     * Appends a symbol character to the paragraph.
      *
-     * Always run content on the wire (`w:r/w:sym`, ECMA-376-1 §17.3.3.30).
-     *
-     * @param {string} font - Symbol font name (`w:font`), for example `"Wingdings"`.
-     * @param {string} char - `ST_ShortHexNumber` hex digits for `w:char` (four hex digits, e.g. `"F0FC"`).
-     * @returns {Symbol} The symbol paragraph item that was created.
-     *
+     * @param {string} font - Specifies the symbol font name, for example `"Wingdings"`.
+     * @param {string} char - Specifies the four-digit hexadecimal character code, for example `"F0FC"`.
+     * @returns {Symbol} - Returns the symbol that was added.
      * @example
      * ```ts
      * paragraph.appendText('checkmark: ');
      * paragraph.appendSymbol('Wingdings', 'F0FC');
      * ```
-     *
      * @public
      */
+    // eslint-disable-next-line @typescript-eslint/ban-types -- project Symbol class, not the global primitive wrapper
     appendSymbol(font: string, char: string): Symbol {
         this.mutate();
+        // eslint-disable-next-line @typescript-eslint/ban-types -- project Symbol class, not the global primitive wrapper
         const item: Symbol = createStandaloneSymbolItem(font, char);
         this.paragraphItems.add(item);
         return item;
@@ -1064,10 +1040,10 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
      *
      * No async prerequisite is required - `appendChart()` is synchronous.
      *
-     * @param {string} chartType - Chart type identifier (e.g., `ChartType.ColumnClustered`).
-     * @param {number} width - Width in points (must be positive and finite).
-     * @param {number} height - Height in points (must be positive and finite).
-     * @returns {Chart} Live Chart paragraph item with full API access.
+     * @returns {Chart} - Returns the live Chart paragraph item with full API access.
+     * @param {string} chartType - Specifies the chart type.
+     * @param {number} width - Specifies the width.
+     * @param {number} height - Specifies the height.
      * @throws {DocxError} If ej2-xlsx module cannot be loaded (package not installed)
      * @throws {Error} If width or height are not positive and finite numbers
      *
@@ -1093,10 +1069,10 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
     }
 
     /**
-     * Append a bookmark start marker (`w:bookmarkStart`) at the end of the paragraph.
+     * Append a bookmark start marker at the end of the paragraph.
      *
-     * @param {string} name - Bookmark name (`w:name`); must be non-empty / not whitespace-only.
-     * @returns {BookmarkStart} The authored start marker (pending negative id until save).
+     * @returns {BookmarkStart} - Returns the authored start marker (pending negative id until save).
+     * @param {string} name - Specifies the name.
      * @throws DocxError `content/invalid-bookmark` for an invalid name.
      * @public
      */
@@ -1108,14 +1084,14 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
     }
 
     /**
-     * Append a bookmark end marker (w:bookmarkEnd).
+     * Append a bookmark end marker.
      *
      * The end marker will pair with the most recent unmatched start marker
      * that has the same name (after normalization). Place after the desired
      * enclosed content (same or a later paragraph) so the pair spans the intended range.
      *
-     * @param {string} name - Bookmark name to close; must match a prior start marker.
-     * @returns {BookmarkEnd} The authored end marker.
+     * @returns {BookmarkEnd} - Returns the authored end marker.
+     * @param {string} name - Specifies the name.
      * @public
      */
     appendBookmarkEnd(name: string): BookmarkEnd {
@@ -1126,9 +1102,9 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
     }
 
     /**
-     * Append a checkbox form field (w:ffData with w:checkBox).
+     * Append a checkbox form field.
      *
-     * @returns {CheckBoxFormField} The checkbox form field.
+     * @returns {CheckBoxFormField} - Returns the checkbox form field.
      * @public
      */
     appendCheckBoxFormField(): CheckBoxFormField;
@@ -1143,44 +1119,44 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
     appendCheckBoxFormField(name: string, defaultChecked?: boolean): CheckBoxFormField;
     appendCheckBoxFormField(name?: string, defaultChecked?: boolean): CheckBoxFormField {
         this.mutate();
-        const field = new CheckBoxFormField();
-        
+        const field: CheckBoxFormField = new CheckBoxFormField();
+
         // Generate a bookmark name if not set
         const bookmarkName: string = (name !== undefined && name !== null && name.length > 0) ?
             name : generateFormFieldId('CheckBox');
-        
+
         // Assign the generated name to the field
         field.name = bookmarkName;
         if (defaultChecked !== undefined) {
             field.defaultCheckBoxValue = defaultChecked;
             field.checked = defaultChecked;
         }
-        
+
         // Add bookmark start
-        const bookmarkStart = new BookmarkStart(bookmarkName);
+        const bookmarkStart: BookmarkStart = new BookmarkStart(bookmarkName);
         this.paragraphItems.add(bookmarkStart);
-        
+
         // Add the form field as the begin item (it extends Field and serializes as w:fldChar begin)
         this.paragraphItems.add(field);
-        
+
         // Add field code text range (FORMCHECKBOX)
         this.appendText('FORMCHECKBOX');
-        
+
         // Add end mark
-        const endMark = new ParagraphFieldMark(ParagraphFieldMarkType.End, undefined, undefined, []);
+        const endMark: ParagraphFieldMark = new ParagraphFieldMark(ParagraphFieldMarkType.End, undefined, undefined, []);
         this.paragraphItems.add(endMark);
-        
+
         // Add bookmark end
-        const bookmarkEnd = new BookmarkEnd(bookmarkStart.name, bookmarkStart.bookmarkId);
+        const bookmarkEnd: BookmarkEnd = new BookmarkEnd(bookmarkStart.name, bookmarkStart.bookmarkId);
         this.paragraphItems.add(bookmarkEnd);
-        
+
         return field;
     }
 
     /**
-     * Append a dropdown form field (w:ffData with w:ddList).
+     * Append a dropdown form field.
      *
-     * @returns {DropDownFormField} The dropdown form field.
+     * @returns {DropDownFormField} - Returns the dropdown form field.
      * @public
      */
     appendDropDownFormField(): DropDownFormField;
@@ -1194,33 +1170,33 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
     appendDropDownFormField(name: string): DropDownFormField;
     appendDropDownFormField(name?: string): DropDownFormField {
         this.mutate();
-        const field = new DropDownFormField();
-        
+        const field: DropDownFormField = new DropDownFormField();
+
         // Generate a bookmark name if not set
         const bookmarkName: string = (name !== undefined && name !== null && name.length > 0) ?
             name : generateFormFieldId('DropDown');
-        
+
         // Assign the generated name to the field
         field.name = bookmarkName;
-        
+
         // Add bookmark start
-        const bookmarkStart = new BookmarkStart(bookmarkName);
+        const bookmarkStart: BookmarkStart = new BookmarkStart(bookmarkName);
         this.paragraphItems.add(bookmarkStart);
-        
+
         // Add the form field as the begin item (it extends Field and serializes as w:fldChar begin)
         this.paragraphItems.add(field);
-        
+
         // Add field code text range (FORMDROPDOWN)
         this.appendText('FORMDROPDOWN');
-        
+
         // Add end mark
-        const endMark = new ParagraphFieldMark(ParagraphFieldMarkType.End, undefined, undefined, []);
+        const endMark: ParagraphFieldMark = new ParagraphFieldMark(ParagraphFieldMarkType.End, undefined, undefined, []);
         this.paragraphItems.add(endMark);
-        
+
         // Add bookmark end
-        const bookmarkEnd = new BookmarkEnd(bookmarkStart.name, bookmarkStart.bookmarkId);
+        const bookmarkEnd: BookmarkEnd = new BookmarkEnd(bookmarkStart.name, bookmarkStart.bookmarkId);
         this.paragraphItems.add(bookmarkEnd);
-        
+
         return field;
     }
 
@@ -1249,51 +1225,51 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
         }
 
         this.mutate();
-        const field = new TextFormField();
-        
+        const field: TextFormField = new TextFormField();
+
         // Use default text if none provided
-        const textValue: string = (defaultText === undefined || defaultText === null || defaultText === '') ? 
-            TEXT_FORM_FIELD_DEFAULT_TEXT : 
+        const textValue: string = (defaultText === undefined || defaultText === null || defaultText === '') ?
+            TEXT_FORM_FIELD_DEFAULT_TEXT :
             defaultText;
-        
+
         field.name = name;
-        
+
         // Set both defaultText and display text to the same value
         field.defaultText = textValue;
-        
+
         // Use name as bookmark name
-        const bookmarkName: string = field.name && field.name.length > 0 ? 
-            field.name : 
+        const bookmarkName: string = field.name && field.name.length > 0 ?
+            field.name :
             generateFormFieldId('TextInput');
-        
+
         // Assign the name to the field
         field.name = bookmarkName;
-        
+
         // Add bookmark start
-        const bookmarkStart = new BookmarkStart(bookmarkName);
+        const bookmarkStart: BookmarkStart = new BookmarkStart(bookmarkName);
         this.paragraphItems.add(bookmarkStart);
-        
+
         // Add the form field as the begin item (it extends Field and serializes as w:fldChar begin)
         this.paragraphItems.add(field);
-        
+
         // Add field code text range (FORMTEXT)
         this.appendText('FORMTEXT');
-        
+
         // Add separator mark (for TextFormField)
-        const separatorMark = new ParagraphFieldMark(ParagraphFieldMarkType.Separator, undefined, undefined, []);
+        const separatorMark: ParagraphFieldMark = new ParagraphFieldMark(ParagraphFieldMarkType.Separator, undefined, undefined, []);
         this.paragraphItems.add(separatorMark);
-        
+
         // Add result text range (displays the default text or current value)
         this.appendText(textValue);
-        
+
         // Add end mark
-        const endMark = new ParagraphFieldMark(ParagraphFieldMarkType.End, undefined, undefined, []);
+        const endMark: ParagraphFieldMark = new ParagraphFieldMark(ParagraphFieldMarkType.End, undefined, undefined, []);
         this.paragraphItems.add(endMark);
-        
+
         // Add bookmark end
-        const bookmarkEnd = new BookmarkEnd(bookmarkStart.name, bookmarkStart.bookmarkId);
+        const bookmarkEnd: BookmarkEnd = new BookmarkEnd(bookmarkStart.name, bookmarkStart.bookmarkId);
         this.paragraphItems.add(bookmarkEnd);
-        
+
         return field;
     }
 
@@ -1317,12 +1293,12 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
      *
      * @param {FeatureId} featureId - The feature id.
      * @param {FeatureInline} value - The value.
-     * @returns {FeatureInlineParagraphItem} The result.
+     * @returns {ParagraphItem} The stored item (the value itself for modeled inline items, otherwise its wrapper).
      * @private
      */
-    appendFeatureInline(featureId: FeatureId, value: FeatureInline): FeatureInlineParagraphItem {
+    appendFeatureInline(featureId: FeatureId, value: FeatureInline): ParagraphItem {
         this.mutate();
-        const item: FeatureInlineParagraphItem = new FeatureInlineParagraphItem(featureId, value);
+        const item: ParagraphItem = isDirectInlineFeatureItem(value) ? value : new FeatureInlineParagraphItem(featureId, value);
         this.paragraphItems.add(item);
         return item;
     }
@@ -1332,12 +1308,12 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
      * @param {number} index - The index.
      * @param {FeatureId} featureId - The feature id.
      * @param {FeatureInline} value - The value.
-     * @returns {FeatureInlineParagraphItem} The result.
+     * @returns {ParagraphItem} The stored item (the value itself for modeled inline items, otherwise its wrapper).
      * @private
      */
-    insertFeatureInlineAt(index: number, featureId: FeatureId, value: FeatureInline): FeatureInlineParagraphItem {
+    insertFeatureInlineAt(index: number, featureId: FeatureId, value: FeatureInline): ParagraphItem {
         this.mutate();
-        const item: FeatureInlineParagraphItem = new FeatureInlineParagraphItem(featureId, value);
+        const item: ParagraphItem = isDirectInlineFeatureItem(value) ? value : new FeatureInlineParagraphItem(featureId, value);
         this.paragraphItems.insert(index, item);
         return item;
     }
@@ -1350,9 +1326,9 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
      */
     removeFeatureInline(value: FeatureInline): void {
         this.mutate();
-        const items: ConcreteParagraphItem[] = this.paragraphItems.snapshot();
+        const items: ParagraphItem[] = this.paragraphItems.snapshot();
         for (const [i, item] of items.entries()) {
-            if (item instanceof FeatureInlineParagraphItem && item.value === value) {
+            if (item === (value as unknown) || (item instanceof FeatureInlineParagraphItem && item.value === value)) {
                 this.paragraphItems.removeAt(i);
                 return;
             }
@@ -1368,7 +1344,7 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
      */
     removeFeatureRunItem(value: FeatureRunLeaf): void {
         this.mutate();
-        const items: ConcreteParagraphItem[] = this.paragraphItems.snapshot();
+        const items: ParagraphItem[] = this.paragraphItems.snapshot();
         for (const [i, item] of items.entries()) {
             if (item instanceof FeatureRunParagraphItem && item.value === value) {
                 this.paragraphItems.removeAt(i);
@@ -1378,13 +1354,13 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
         throw new DetachedObjectError('This item is no longer in its paragraph');
     }
     /**
-     * @param {ConcreteParagraphItem} item - The item.
+     * @param {ParagraphItem} item - The item.
      * @returns {void} Nothing is returned.
      *  Append a pre-built paragraph item (feature modules).
      *
      * @private
      */
-    appendParagraphItem(item: ConcreteParagraphItem): void {
+    appendParagraphItem(item: ParagraphItem): void {
         this.mutate();
         this.paragraphItems.add(item);
     }
@@ -1416,10 +1392,10 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
      *  @private
      *
      * @param {OpenXmlElement} el - The el.
-     * @param {ParagraphOwner} owner - The owner.
+     * @param {BodyBlockParseContext} owner - The owning body or body-like host.
      * @returns {Paragraph} The result.
      */
-    static fromXml(el: OpenXmlElement, owner: ParagraphOwner): Paragraph {
+    static fromXml(el: OpenXmlElement, owner: BodyBlockParseContext): Paragraph {
         return parseParagraph(el, owner);
     }
     /**
@@ -1430,7 +1406,7 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
      * @private
      */
     hydrateItems(items: ReadonlyArray<ParagraphItem>): void {
-        this.paragraphItems.hydrate(items as ReadonlyArray<ConcreteParagraphItem>);
+        this.paragraphItems.hydrate(items as ReadonlyArray<ParagraphItem>);
     }
     /**
      *  @private
@@ -1445,7 +1421,7 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
         listLevelValue: number | undefined;
         numPrExtra: OpenXmlElement[];
         sectionBreakSectPr: OpenXmlElement | undefined;
-        items: ConcreteParagraphItem[];
+        items: ParagraphItem[];
         paragraphFormat: ParagraphFormatSnapshot;
         breakCharacterFormat?: CharacterFormatSnapshot;
     }): void {
@@ -1462,7 +1438,7 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
             }
         }
         this.paragraphItems.hydrate(data.items);
-        // TASK-9020-C: formatting state hydrates from parseParagraphFormat snapshot.
+        // formatting state hydrates from parseParagraphFormat snapshot.
         this.paragraphFormat.hydrate(data.paragraphFormat);
         if (data.breakCharacterFormat !== undefined) {
             this.breakCharacterFormat.hydrate(data.breakCharacterFormat);
@@ -1480,7 +1456,7 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
         listLevelValue: number | undefined;
         numPrExtra: OpenXmlElement[];
         sectionBreakSectPr: OpenXmlElement | undefined;
-        items: ConcreteParagraphItem[];
+        items: ParagraphItem[];
         paragraphFormat: ParagraphFormatSnapshot;
         breakCharacterFormat: CharacterFormatSnapshot;
     } {
@@ -1499,7 +1475,140 @@ export class Paragraph implements ParagraphFormatHost, CharacterFormatHost, Para
             breakCharacterFormat: this.breakCharacterFormat.snapshot()
         };
     }
+
+    /**
+     * Create an independent copy of this paragraph.
+     * All formatting, list format, and items are cloned.
+     *
+     * The cloned paragraph is detached and has no owner until attached to a body
+     * or section.
+     *
+     * @returns {Paragraph} Cloned paragraph.
+     * @public
+     */
+    clone(): Paragraph {
+        const cloned: Paragraph = new Paragraph(undefined);
+        const snap: ReturnType<Paragraph['snapshot']> = this.snapshot();
+        const clonedItems: ParagraphItem[] = snap.items.map(
+            (item: ParagraphItem): ParagraphItem => cloneParagraphItem(item)
+        );
+
+        // hydrate copies the style id, list ids, and the paragraph/break formats into
+        // formats that the cloned paragraph owns; items attach to the cloned paragraph.
+        cloned.hydrate({
+            extraAttributes: snap.extraAttributes,
+            styleIdValue: snap.styleIdValue,
+            numIdValue: snap.numIdValue,
+            listLevelValue: snap.listLevelValue,
+            numPrExtra: snap.numPrExtra,
+            sectionBreakSectPr: snap.sectionBreakSectPr,
+            items: clonedItems,
+            // Format clones own their records, so edits to the source never reach the copy.
+            paragraphFormat: this.paragraphFormat.clone().snapshot(),
+            breakCharacterFormat: this.breakCharacterFormat.clone().snapshot()
+        });
+        return cloned;
+    }
 }
+
+/**
+ * Clone a single paragraph item recursively.
+ * Used by Paragraph.clone() to deep-copy all items.
+ *
+ * @param {ParagraphItem} source - Source paragraph item to clone
+ * @returns {ParagraphItem} Cloned paragraph item
+ * @private
+ */
+function cloneParagraphItem(source: ParagraphItem): ParagraphItem {
+    // Clone TextRange
+    if (source instanceof TextRange) {
+        return source.clone();
+    }
+
+    // Clone Break
+    if (source instanceof Break) {
+        return new Break(source.breakType, source.clear, source.extras);
+    }
+
+    // Clone Symbol
+    if (source instanceof Symbol) {
+        return new Symbol(source.font, source.char);
+    }
+
+    // Clone Tab
+    if (source instanceof Tab) {
+        return new Tab();
+    }
+
+    // Clone CarriageReturn
+    if (source instanceof CarriageReturn) {
+        return new CarriageReturn();
+    }
+
+    // Clone FeatureRunParagraphItem - try to clone wrapped FeatureRunLeaf values
+    // Picture, DrawingShape, and other FeatureRunLeaf types should implement clone()
+    if (source instanceof FeatureRunParagraphItem) {
+        const wrappedValue: FeatureRunLeaf = source.value;
+        const clonedValue: FeatureRunLeaf = cloneFeatureRunLeaf(wrappedValue);
+        return new FeatureRunParagraphItem(source.featureId, clonedValue);
+    }
+
+    // Clone FeatureInlineParagraphItem - try to clone wrapped FeatureInline values
+    // ContentControl and other FeatureInline types should implement clone()
+    if (source instanceof FeatureInlineParagraphItem) {
+        const wrappedValue: FeatureInline = source.value;
+        const clonedValue: FeatureInline = cloneFeatureInline(wrappedValue);
+        return new FeatureInlineParagraphItem(source.featureId, clonedValue);
+    }
+
+    // For OpaqueParagraphItem, preserve as-is (unmodeled XML)
+    if (source instanceof OpaqueParagraphItem) {
+        return source;
+    }
+
+    // Fallback: return as-is (should not reach here in normal operation)
+    return source;
+}
+
+/**
+ * Clone a FeatureRunLeaf value (Picture, DrawingShape, Field, etc.).
+ * Checks instanceof and calls clone() if available.
+ *
+ * @param {FeatureRunLeaf} source - The feature run leaf to clone
+ * @returns {FeatureRunLeaf} Cloned value or preserved if clone not available
+ * @private
+ */
+function cloneFeatureRunLeaf(source: FeatureRunLeaf): FeatureRunLeaf {
+    // Import types dynamically to avoid circular dependencies
+    // Check by class name pattern rather than instanceof to keep dependencies minimal
+    const cloneable: { clone?: () => FeatureRunLeaf } = source as { clone?: () => FeatureRunLeaf };
+    if (typeof cloneable.clone === 'function') {
+        // Picture, DrawingShape, Field, FieldMark, and other cloneable types
+        return cloneable.clone();
+    }
+    // Preserve as-is if not cloneable
+    return source;
+}
+
+/**
+ * Clone a FeatureInline value (ContentControl, etc.).
+ * Checks instanceof and calls clone() if available.
+ *
+ * @param {FeatureInline} source - The feature inline to clone
+ * @returns {FeatureInline} Cloned value or preserved if clone not available
+ * @private
+ */
+function cloneFeatureInline(source: FeatureInline): FeatureInline {
+    // Check if clone method exists and call it
+    const cloneable: { clone?: () => FeatureInline } = source as { clone?: () => FeatureInline };
+    if (typeof cloneable.clone === 'function') {
+        // InlineContentControl and other cloneable types
+        return cloneable.clone();
+    }
+    // Preserve as-is if not cloneable
+    return source;
+}
+
 function parseDecimalVal(raw: string | undefined): number | undefined {
     if (raw === undefined || !/^-?\d+$/.test(raw)) {
         return undefined;
@@ -1511,17 +1620,17 @@ function parseDecimalVal(raw: string | undefined): number | undefined {
  * Format-owned `w:pPr` children go through {@link parseParagraphFormat}.
  *
  * @param {OpenXmlElement} el - The el.
- * @param {ParagraphOwner} owner - The owner.
+ * @param {Body} owner - The owning body.
  * @returns {Paragraph} The result.
  */
-function parseParagraph(el: OpenXmlElement, owner: ParagraphOwner): Paragraph {
+function parseParagraph(el: OpenXmlElement, owner: BodyBlockParseContext): Paragraph {
     const paragraph: Paragraph = new Paragraph(owner);
     let styleIdValue: string | undefined;
     let numIdValue: number | undefined;
     let listLevelValue: number | undefined;
     let sectionBreakSectPr: OpenXmlElement | undefined;
     const numPrExtra: OpenXmlElement[] = [];
-    const items: ConcreteParagraphItem[] = [];
+    const items: ParagraphItem[] = [];
     let formatSnap: ParagraphFormatSnapshot | undefined;
     let breakCfSnap: CharacterFormatSnapshot | undefined;
     for (const child of elementChildren(el)) {
@@ -1568,13 +1677,13 @@ function parseParagraph(el: OpenXmlElement, owner: ParagraphOwner): Paragraph {
                     continue;
                 }
             }
-            // TASK-9020-C: format-owned pPr interpretation (skips pStyle/numPr/rPr/sectPr).
+            // format-owned pPr interpretation (skips pStyle/numPr/rPr/sectPr).
             formatSnap = parseParagraphFormat(child);
             continue;
         }
         if (isWml(child, 'r')) {
             // Owner is applied by paragraph.hydrate → collection.hydrate.
-            const groupItems: ConcreteParagraphItem[] = parseTextRangeGroup(child, undefined);
+            const groupItems: ParagraphItem[] = parseTextRangeGroup(child, undefined);
             for (const item of groupItems) {
                 items.push(item);
             }
@@ -1597,7 +1706,9 @@ function parseParagraph(el: OpenXmlElement, owner: ParagraphOwner): Paragraph {
         }
         const feature: FeatureInlineContent = tryParseFeatureInline(child);
         if (feature !== undefined) {
-            items.push(new FeatureInlineParagraphItem(feature.featureId, feature.value));
+            items.push(isDirectInlineFeatureItem(feature.value)
+                ? feature.value
+                : new FeatureInlineParagraphItem(feature.featureId, feature.value));
             continue;
         }
         items.push(new OpaqueParagraphItem(child));
@@ -1623,7 +1734,7 @@ function parseParagraph(el: OpenXmlElement, owner: ParagraphOwner): Paragraph {
 }
 /**
  * Serialize a paragraph. `w:pPr` children after `pStyle` come from
- * {@link ParagraphFormat.buildPPrChildren} (CT_PPr order; TASK-9020-D).
+ * {@link ParagraphFormat.buildPPrChildren} (CT_PPr order).
  * Mark `w:rPr` is injected from {@link Paragraph.breakCharacterFormat}.
  *
  * @param {Paragraph} paragraph - The paragraph.
@@ -1638,7 +1749,7 @@ export function serializeParagraph(paragraph: Paragraph): OpenXmlElement {
         listLevelValue: number;
         numPrExtra: OpenXmlElement[];
         sectionBreakSectPr: OpenXmlElement;
-        items: ConcreteParagraphItem[];
+        items: ParagraphItem[];
         paragraphFormat: ParagraphFormatSnapshot;
         breakCharacterFormat: CharacterFormatSnapshot;
     } = paragraph.snapshot();
@@ -1684,10 +1795,10 @@ export function serializeParagraph(paragraph: Paragraph): OpenXmlElement {
     for (const element of itemXml) {
         children.push(element);
     }
-    // DocIO pageBreakAfter has no ECMA pPr child. Body serializers emit a
+    // Word pageBreakAfter has no ECMA pPr child. Body serializers emit a
     // following page-break-only paragraph via shouldEmitPageBreakAfterParagraph /
     // createPageBreakAfterParagraphElement — do not append w:br into this w:p.
-    // Citation: docs/specs/paragraph-formatting.md (deliberate omissions); ECMA-376-1 §17.3.3.1 w:br.
+    // Citation: the format specification (deliberate omissions); ECMA-376-1 §17.3.3.1 w:br.
     return wmlElement('p', { attributes: snap.extraAttributes, children: children });
 }
 
@@ -1710,7 +1821,7 @@ export function shouldEmitPageBreakAfterParagraph(paragraph: Paragraph): boolean
         listLevelValue: number;
         numPrExtra: OpenXmlElement[];
         sectionBreakSectPr: OpenXmlElement;
-        items: ConcreteParagraphItem[];
+        items: ParagraphItem[];
         paragraphFormat: ParagraphFormatSnapshot;
         breakCharacterFormat: CharacterFormatSnapshot;
     } = paragraph.snapshot();

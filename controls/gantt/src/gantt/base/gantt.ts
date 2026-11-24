@@ -77,6 +77,8 @@ import { cyclicValidator } from '../actions/validator';
 import { CalendarModule } from './calendar-module';
 import { CalendarContext } from './calendar-context';
 import { WebMcpGantt } from '../actions/webmcp-adapter';
+import { DomVirtualization } from '../actions/dom-virtualization';
+import { DomVirtualizationSettings, DomVirtualizationSettingsModel } from '../models/models';
 /**
  *
  * Represents the Gantt chart component.
@@ -398,6 +400,11 @@ export class Gantt extends Component<HTMLElement>
      * The `virtualScrollModule` is used to handle virtual scroll in Gantt.
      */
     public virtualScrollModule: VirtualScroll;
+    /**
+     * The `domVirtualizationModule` handles DOM row recycling and chart row rendering
+     * when `enableDomVirtualization` is true.
+     */
+    public domVirtualizationModule: DomVirtualization;
     /**
      * The `excelExportModule` is used for exporting Gantt data to an Excel file.
      * This module provides the functionality to export task data, dependencies, and other Gantt-related information in Excel format.
@@ -946,6 +953,25 @@ export class Gantt extends Component<HTMLElement>
      */
     @Property(false)
     public enableTimelineVirtualization: boolean;
+
+    /**
+     * If `enableDomVirtualization` is set to true, the Gantt chart renders only the rows visible
+     * within the viewport and a configurable buffer, using DOM row recycling for memory efficiency.
+     * A single virtual scrollbar drives both chart and TreeGrid for smooth, jank-free scrolling.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableDomVirtualization: boolean;
+
+    /**
+     * Configures the DOM virtualization row buffer and related settings.
+     * Only applies when `enableDomVirtualization: true`.
+     *
+     * @default { rowBuffer: 20 }
+     */
+    @Complex<DomVirtualizationSettingsModel>({}, DomVirtualizationSettings)
+    public domVirtualizationSettings: DomVirtualizationSettingsModel;
 
     /**
      * `toolbar` defines the toolbar items of the Gantt.
@@ -2400,6 +2426,20 @@ export class Gantt extends Component<HTMLElement>
         this.connectorLineModule = new ConnectorLine(this);
         this.splitterModule = new Splitter(this);
         this.tooltipModule = new Tooltip(this);
+        // T-9: only instantiate DomVirtualization if the module was explicitly injected via
+        // Gantt.Inject(DomVirtualization). Creating it unconditionally bypasses EJ2's module
+        // system (D9). Guard with getInjectedModules() check.
+        if (this.enableDomVirtualization) {
+            if (this.enableVirtualization) {
+                // eslint-disable-next-line no-console
+                console.warn('[EJ2 Gantt] enableDomVirtualization and enableVirtualization cannot both be true. enableVirtualization is disabled.');
+                this.enableVirtualization = false;
+                if (this.virtualScrollModule) {
+                    this.virtualScrollModule = null;
+                }
+            }
+            this.domVirtualizationModule = new DomVirtualization(this);
+        }
         this.keyConfig = {
             home: 'home',
             end: 'end',
@@ -2740,6 +2780,7 @@ export class Gantt extends Component<HTMLElement>
         checkModule('columnMenu', this.showColumnMenu, this.injectedModules, failureCases);
         checkModule('pdfExport', this.allowPdfExport, this.injectedModules, failureCases);
         checkModule('virtualScroll', this.enableVirtualization, this.injectedModules, failureCases);
+        checkModule('domVirtualization', this.enableDomVirtualization, this.injectedModules, failureCases);
         let freeze: boolean;
         const hasFreezeProp: boolean = Array.isArray(this.columns) &&
         (this.columns as ColumnModel[]).some((col: ColumnModel) => !!col.freeze);
@@ -3529,13 +3570,16 @@ export class Gantt extends Component<HTMLElement>
      */
     public updateContentHeight(args?: object): void {
         if ((!this.allowTaskbarOverlap && !this.ganttChartModule.isCollapseAll && !this.ganttChartModule.isExpandAll
-            && !this.isOnAddOrDelete) && !this.isLoad) {
+            && !this.isOnAddOrDelete) && !this.isLoad && !(this as any).enableDomVirtualization) {
             return;
         }
         else {
             if (this.virtualScrollModule && this.enableVirtualization && !isNullOrUndefined(args)) {
                 const length: number = getValue('result.length', args);
                 this.contentHeight = length * this.rowHeight;
+                if ((this as any).enableDomVirtualization && this.ganttChartModule && this.ganttChartModule.scrollObject) {
+                    this.ganttChartModule.scrollObject.updateVirtualScrollbarHeight();
+                }
             } else {
                 const expandedRecords: IGanttData[] = this.virtualScrollModule && this.enableVirtualization ?
                     this.currentViewData : this.expandedRecords;
@@ -3549,6 +3593,9 @@ export class Gantt extends Component<HTMLElement>
                     height = this.rowHeight;
                 }
                 this.contentHeight = expandedRecords.length * height;
+                if ((this as any).enableDomVirtualization && this.ganttChartModule && this.ganttChartModule.scrollObject) {
+                    this.ganttChartModule.scrollObject.updateVirtualScrollbarHeight();
+                }
                 this.isOnAddOrDelete = false;
             }
         }
@@ -3995,6 +4042,13 @@ export class Gantt extends Component<HTMLElement>
                 }
                 const timelineContainer: number = this.element.getElementsByClassName('e-timeline-header-container')[0]['offsetHeight'];
                 scrollContainer['style'].height = 'calc(100% - ' + timelineContainer +  'px)';
+                if ((this as any).enableDomVirtualization && this.ganttChartModule && this.ganttChartModule.scrollObject) {
+                    let domVirtToolbarH: number = 0;
+                    if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.toolbarModule.element)) {
+                        domVirtToolbarH = this.toolbarModule.element.offsetHeight;
+                    }
+                    this.ganttChartModule.scrollObject.setHeight(this.ganttHeight - timelineContainer - domVirtToolbarH);
+                }
                 this.treeGrid.setProperties({ height: '100%' }, false);
                 this.notify('tree-grid-created', {});
                 this.createGanttPopUpElement();
@@ -4073,6 +4127,13 @@ export class Gantt extends Component<HTMLElement>
             this.ganttChartModule.virtualRender.adjustTable();
             this.ganttChartModule.scrollObject.updateTopPosition();
         }
+        if ((this as any).enableDomVirtualization && this.chartRowsModule) {
+            this.chartRowsModule.clearDomVirtPool();
+            this.chartRowsModule.refreshGanttRows();
+            if (this.predecessorModule && this.taskFields.dependency) {
+                this.ganttChartModule.reRenderConnectorLines();
+            }
+        }
     }
     private handleTaskSchedulingChanges(prop: string, newProp: GanttModel, refreshState: { isRefresh: boolean }): void {
         let workingTimeChange: boolean = false;
@@ -4103,11 +4164,17 @@ export class Gantt extends Component<HTMLElement>
             this.dataOperation.reUpdateGanttData();
             this.treeGrid.refreshColumns();
             this.chartRowsModule.initiateTemplates();
+            if ((this as any).enableDomVirtualization && this.chartRowsModule) {
+                (this.chartRowsModule as any).clearDomVirtPool();
+            }
             this.chartRowsModule.refreshGanttRows();
             this.isLoad = false;
             if (this.taskFields.dependency) {
                 this.predecessorModule.updatedRecordsDateByPredecessor();
                 this.treeGrid.refreshColumns();
+                if ((this as any).enableDomVirtualization && this.chartRowsModule) {
+                    (this.chartRowsModule as any).clearDomVirtPool();
+                }
                 this.chartRowsModule.refreshGanttRows();
             }
         }
@@ -4138,6 +4205,9 @@ export class Gantt extends Component<HTMLElement>
         // Refresh UI
         this.treeGrid.refreshColumns();
         this.chartRowsModule.initiateTemplates();
+        if ((this as any).enableDomVirtualization && this.chartRowsModule) {
+            (this.chartRowsModule as any).clearDomVirtPool();
+        }
         this.chartRowsModule.refreshGanttRows();
     }
 
@@ -4154,10 +4224,6 @@ export class Gantt extends Component<HTMLElement>
         const refreshState: {
             isRefresh: boolean;
         } = { isRefresh: false };
-        if (isNullOrUndefined(this.treeGrid) || isNullOrUndefined(this.treeGrid.grid) ||
-            isNullOrUndefined(this.treeGrid.grid.contentModule)) {
-            return;
-        }
         // eslint-disable-next-line
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
@@ -4184,6 +4250,9 @@ export class Gantt extends Component<HTMLElement>
                 this.chartRowsModule.initiateTemplates();
                 if (this.taskFields.dependency) {
                     this.predecessorModule.updatedRecordsDateByPredecessor();
+                }
+                if ((this as unknown as Gantt).enableDomVirtualization && this.chartRowsModule) {
+                    (this.chartRowsModule as any).clearDomVirtPool();
                 }
                 this.chartRowsModule.refreshGanttRows();
                 this.treeGrid.refreshColumns();
@@ -4225,6 +4294,10 @@ export class Gantt extends Component<HTMLElement>
                 this.timelineModule.updateChartByNewTimeline();
                 if (this.taskFields.dependency) {
                     this.ganttChartModule.reRenderConnectorLines();
+                }
+                if ((this as any).enableDomVirtualization && this.ganttChartModule &&
+                        this.ganttChartModule.scrollObject) {
+                    (this.ganttChartModule.scrollObject as any).updateVirtualScrollbarHeight();
                 }
                 break;
             case 'daysPerWeek':
@@ -4325,6 +4398,9 @@ export class Gantt extends Component<HTMLElement>
             case 'baselineColor':
                 this.isFromRenderBaseline = true;
                 this.chartRowsModule.initiateTemplates();
+                if ((this as unknown as Gantt).enableDomVirtualization && this.chartRowsModule) {
+                    (this.chartRowsModule as any).clearDomVirtPool();
+                }
                 this.chartRowsModule.refreshGanttRows();
                 this.isFromRenderBaseline = false;
                 break;
@@ -4334,6 +4410,9 @@ export class Gantt extends Component<HTMLElement>
                 this.dataOperation.reUpdateResources();
                 this.treeGrid.refreshColumns();
                 this.chartRowsModule.initiateTemplates();
+                if ((this as unknown as Gantt).enableDomVirtualization && this.chartRowsModule) {
+                    (this.chartRowsModule as any).clearDomVirtPool();
+                }
                 this.chartRowsModule.refreshGanttRows();
                 break;
             case 'includeWeekend':
@@ -4492,6 +4571,38 @@ export class Gantt extends Component<HTMLElement>
                 refreshState.isRefresh = !isSame;
                 break;
             }
+            case 'enableDomVirtualization':
+                if ((this as any).domVirtualizationModule) {
+                    (this as any).domVirtualizationModule.destroy();
+                    (this as any).domVirtualizationModule = null;
+                }
+                if ((this as any).enableDomVirtualization) {
+                    const injectedModules: any[] = (this as any).getInjectedModules ? (this as any).getInjectedModules() : [];
+                    const DomVirtClass: any = injectedModules.find(
+                        (m: any) => m.prototype && m.prototype.getModuleName &&
+                        m.prototype.getModuleName() === 'domVirtualization');
+                    if (DomVirtClass) {
+                        (this as any).domVirtualizationModule = new DomVirtClass(this);
+                    }
+                }
+                if (this.ganttChartModule && this.ganttChartModule.scrollObject) {
+                    this.ganttChartModule.scrollObject.destroy();
+                    (this.ganttChartModule as any).scrollObject =
+                        new ((this.ganttChartModule.scrollObject as any).constructor)(this);
+                }
+                if (this.chartRowsModule) {
+                    (this.chartRowsModule as any).clearDomVirtPool();
+                    this.chartRowsModule.refreshGanttRows();
+                }
+                break;
+            case 'domVirtualizationSettings':
+                if ((this as any).enableDomVirtualization && (this as any).domVirtualizationModule) {
+                    if (this.chartRowsModule) {
+                        (this.chartRowsModule as any).clearDomVirtPool();
+                        this.chartRowsModule.refreshGanttRows();
+                    }
+                }
+                break;
             }
         }
         if (refreshState.isRefresh) {
@@ -4757,6 +4868,12 @@ export class Gantt extends Component<HTMLElement>
         if (this.enableVirtualization) {
             modules.push({
                 member: 'virtualScroll',
+                args: [this]
+            });
+        }
+        if (this.enableDomVirtualization) {
+            modules.push({
+                member: 'domVirtualization',
                 args: [this]
             });
         }
@@ -6438,12 +6555,12 @@ export class Gantt extends Component<HTMLElement>
      */
     public getRowByIndex(index: number): HTMLElement {
         try {
-            const gridRows: NodeList = this.element.querySelectorAll('.e-chart-row');
-            if (!isNullOrUndefined(index)) {
-                return gridRows[index as number] as HTMLElement;
-            } else {
-                return null;
+            if (isNullOrUndefined(index)) { return null; }
+            if ((this as any).enableDomVirtualization && this.chartRowsModule) {
+                return (this.chartRowsModule as any).domVirtRowPool.get(index) as HTMLElement || null;
             }
+            const gridRows: NodeList = this.element.querySelectorAll('.e-chart-row');
+            return gridRows[index as number] as HTMLElement;
         } catch (e) {
             return null;
         }

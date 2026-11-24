@@ -21,8 +21,8 @@ import { CharacterFormat } from '../document/character-format';
  * - Class selector: "title" → "User_defined_title"
  * - ID selector: "CSS_title" → "CSS_title" (already prefixed)
  *
- * @param cssClassName - The CSS class name or selector ID (e.g., "title", "my-class", "CSS_title")
- * @returns Style ID in format "User_defined_<normalized_name>" or "CSS_<normalized_name>"
+ * @param {string} cssClassName - The CSS class name or selector ID (e.g., "title", "my-class", "CSS_title")
+ * @returns {string} Style ID in format "User_defined_<normalized_name>" or "CSS_<normalized_name>"
  * @private
  */
 export declare function createStyleIdFromClassName(cssClassName: string): string;
@@ -35,8 +35,8 @@ export declare function createStyleIdFromClassName(cssClassName: string): string
  * - RGB colors (rgb(255, 0, 0))
  * - Returns hex string (RRGGBB format, no #) for use with colorFromWire
  *
- * @param colorValue - CSS color value
- * @returns Hex color string (RRGGBB, no #) or undefined if invalid
+ * @param {string} colorValue - CSS color value
+ * @returns {string | undefined} Hex color string (RRGGBB, no #) or undefined if invalid
  * @private
  */
 export declare function parseColorValue(colorValue: string): string | undefined;
@@ -46,8 +46,8 @@ export declare function parseColorValue(colorValue: string): string | undefined;
  * Supports: px, pt, em, rem, %
  * Conversion: px→pt (×0.75), em→pt (×12), rem→pt (×12), %→pt (×0.12)
  *
- * @param sizeValue - CSS font-size value (e.g., "16px", "12pt", "1.5em")
- * @returns Size in points, or undefined if invalid
+ * @param {string} sizeValue - CSS font-size value (e.g., "16px", "12pt", "1.5em")
+ * @returns {number | undefined} Size in points, or undefined if invalid
  * @private
  */
 export declare function parseFontSize(sizeValue: string): number | undefined;
@@ -79,14 +79,20 @@ export declare function parseFontSize(sizeValue: string): number | undefined;
  * - `display: none` → hidden; `visibility: hidden` → webHidden; `textShadow` → shadow
  * - `textEmphasisStyle` → emphasisMark
  *
- * @param style - The ParagraphStyle to configure
- * @param declarations - CSS declarations as key-value pairs (camelCase keys)
+ * @param {ParagraphStyle} style - The ParagraphStyle to configure
+ * @param {Record<string, string>} declarations - CSS declarations as key-value pairs (camelCase keys)
+ * @returns {void}
  * @private
  */
 export declare function applyDeclarationsToStyle(style: ParagraphStyle, declarations: Record<string, string>): void;
 export declare function applyParagraphDeclarations(pFormat: ParagraphFormat, d: Record<string, string>): void;
 export declare function applyCharacterDeclarations(cFormat: CharacterFormat, d: Record<string, string>, rawFontFamily?: string): void;
-/** Parses a CSS color to an RRGGBB hex string (named, hex, rgb()). */
+/**
+ * Parses a CSS color to an RRGGBB hex string (named, hex, rgb()).
+ *
+ * @param {string | undefined} value - The value.
+ * @returns {string | undefined} The result of the operation.
+ */
 export declare function parseCssHex(value: string | undefined): string | undefined;
 /**
  * Manages CSS class styles created for a document.
@@ -102,7 +108,7 @@ export declare class CSSStyleCache {
     /**
      * Create a new CSS style cache.
      *
-     * @param document - The WordDocument to create styles in
+     * @param {WordDocument} document - The WordDocument to create styles in
      * @private
      */
     constructor(document: WordDocument);
@@ -112,31 +118,32 @@ export declare class CSSStyleCache {
      * Returns cached style if already created, otherwise creates new style,
      * applies declarations, caches it, and returns it.
      *
-     * @param cssClassName - The CSS class name (e.g., "title")
-     * @param declarations - CSS property declarations (camelCase keys)
-     * @returns The created or cached ParagraphStyle
+     * @param {string} cssClassName - The CSS class name (e.g., "title")
+     * @param {Record<string, string>} declarations - CSS property declarations (camelCase keys)
+     * @returns {ParagraphStyle} The created or cached ParagraphStyle
      * @private
      */
     getOrCreateStyle(cssClassName: string, declarations: Record<string, string>): ParagraphStyle;
     /**
      * Check if a style has been created for a CSS class.
      *
-     * @param cssClassName - The CSS class name
-     * @returns True if style exists in cache or document
+     * @param {string} cssClassName - The CSS class name
+     * @returns {boolean} True if style exists in cache or document
      * @private
      */
     hasStyle(cssClassName: string): boolean;
     /**
      * Get a previously created style.
      *
-     * @param cssClassName - The CSS class name
-     * @returns The ParagraphStyle or undefined if not created
+     * @param {string} cssClassName - The CSS class name
+     * @returns {ParagraphStyle | undefined} The ParagraphStyle or undefined if not created
      * @private
      */
     getStyle(cssClassName: string): ParagraphStyle | undefined;
     /**
      * Clear all cached styles.
      *
+     * @returns {void}
      * @private
      */
     clear(): void;

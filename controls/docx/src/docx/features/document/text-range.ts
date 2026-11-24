@@ -14,22 +14,17 @@ import {
 } from './character-format';
 import { FeatureInline } from './feature-inline';
 import { FeatureRunLeaf } from './feature-run-leaf';
-import { ParagraphItem, ParagraphItemOwner } from './paragraph-item';
+import { ParagraphItem, ParagraphItemOwner, isDirectInlineFeatureItem } from './paragraph-item';
 export { ParagraphItem, ParagraphItemOwner } from './paragraph-item';
 import { EntityType } from './entity-type';
 import { elementChildren, isWml, textContent, wmlAttr, wmlElement, xmlSpaceIsPreserve, xmlSpacePreserve } from './wml';
-import { Field, FieldMark, FormField } from '../fields/paragraph-field';
+import { Field, FieldMark } from '../fields/paragraph-field';
 
 // ---------------------------------------------------------------------------
 // Break leaf — ECMA-376-1 §17.3.3.1–2; CT_Br / ST_BrType / ST_BrClear
 // ---------------------------------------------------------------------------
 /**
- * Break kind for `w:br` (`ST_BrType` plus the Line default).
- *
- * OOXML has no `@w:type="line"` value: a line break is a bare `w:br` (type omitted).
- * Text-wrapping breaks use `@w:type="textWrapping"`.
- *
- * Citation: ECMA-376-1 §17.3.3.1–2; transitional `wml.xsd` `CT_Br` / `ST_BrType`.
+ * Specifies the type of a break.
  *
  * @public
  */
@@ -134,6 +129,7 @@ abstract class WireRunParagraphItem extends ParagraphItem implements CharacterFo
     }
     /**
      * Character formatting for this item (`w:rPr`), shared with siblings from the same `w:r`.
+     *
      * @public
      */
     get characterFormat(): CharacterFormat {
@@ -153,12 +149,14 @@ abstract class WireRunParagraphItem extends ParagraphItem implements CharacterFo
 // ---------------------------------------------------------------------------
 
 /**
- * Tab stop character in a paragraph (`w:r/w:tab`).
+ * Tab stop character in a paragraph.
+ *
  * @public
  */
 export class Tab extends WireRunParagraphItem {
     /**
-     * Discriminant for {@link Paragraph.items} / {@link paragraphElementTypeOf}.
+     * Gets the entity type of the item. Always {@link EntityType.AbsoluteTab}.
+     *
      * @public
      */
     readonly type: EntityType.AbsoluteTab = EntityType.AbsoluteTab;
@@ -174,11 +172,13 @@ export class Tab extends WireRunParagraphItem {
 
 /**
  * Carriage return in a paragraph (`w:r/w:cr`).
+ *
  * @private
  */
 export class CarriageReturn extends WireRunParagraphItem {
     /**
      * Discriminant for {@link Paragraph.items} / {@link paragraphElementTypeOf}.
+     *
      * @public
      */
     readonly type: string = 'carriageReturn';
@@ -194,11 +194,13 @@ export class CarriageReturn extends WireRunParagraphItem {
 
 /**
  * Symbol character in a paragraph (`w:r/w:sym`).
+ *
  * @private
  */
 export class Symbol extends WireRunParagraphItem {
     /**
      * Discriminant for {@link Paragraph.items} / {@link paragraphElementTypeOf}.
+     *
      * @public
      */
     readonly type: EntityType.Symbol = EntityType.Symbol;
@@ -217,6 +219,7 @@ export class Symbol extends WireRunParagraphItem {
     }
     /**
      * Symbol font name (`w:font`).
+     *
      * @public
      */
     get font(): string {
@@ -228,6 +231,7 @@ export class Symbol extends WireRunParagraphItem {
     }
     /**
      * Character code as `ST_ShortHexNumber` hex digits (`w:char`).
+     *
      * @public
      */
     get char(): string {
@@ -240,18 +244,14 @@ export class Symbol extends WireRunParagraphItem {
 }
 
 /**
- * Break in a paragraph (`w:r/w:br` / `CT_Br`).
- *
- * Always serialized as run content (`w:r/w:br`). Clear and extras are internal
- * round-trip state — not part of the public authoring API.
- *
- * Citation: ECMA-376-1 §17.3.3.1–2; transitional `wml.xsd` `CT_Br`.
+ * Represents a break in a paragraph, such as a line, page, or column break.
  *
  * @public
  */
 export class Break extends WireRunParagraphItem {
     /**
-     * Discriminant for {@link Paragraph.items} / {@link paragraphElementTypeOf}.
+     * Gets the entity type of the item. Always {@link EntityType.Break}.
+     *
      * @public
      */
     readonly type: EntityType.Break = EntityType.Break;
@@ -276,6 +276,9 @@ export class Break extends WireRunParagraphItem {
      * @private
      */
     constructor(
+        /**
+         * Gets or sets the break type.
+         */
         breakType: BreakType,
         clear?: BreakClearType,
         extras?: ReadonlyArray<OpenXmlAttribute>,
@@ -291,7 +294,8 @@ export class Break extends WireRunParagraphItem {
         this.extrasValue = extras != null ? extras : [];
     }
     /**
-     * Break kind (`ST_BrType` plus the Line default).
+     * Gets or sets the break kind.
+     *
      * @public
      */
     get breakType(): BreakType {
@@ -402,10 +406,17 @@ export class FeatureInlineParagraphItem extends ParagraphItem {
 
 /**
  * Opaque unmodeled paragraph child preserved for round-trip.
+ *
  * @public
  */
 export class OpaqueParagraphItem extends ParagraphItem {
+    /**
+     * Gets the discriminant of the opaque paragraph item. Always `opaque`.
+     */
     readonly type: 'opaque';
+    /**
+     * Gets the preserved XML element that is written back unchanged on save.
+     */
     readonly xml: OpenXmlElement;
     /**
      *  @private
@@ -444,33 +455,27 @@ interface TextRangeHydrateData extends CharacterFormatSnapshot {
 }
 
 /**
- * WordprocessingML text range — public face of text + character formatting.
+ * Represents a run of text with the same character formatting in a paragraph.
  *
- * Physical OOXML remains `w:r` with optional `w:rPr` and `w:t`. Non-text run
- * children (breaks, tabs, symbols, images, …) appear as sibling
- * {@link ParagraphItem}s sharing a private {@link WireRunGroup} so serialization
- * can reconstruct the original run.
- *
- * Character formatting lives on {@link TextRange.characterFormat} only
- * (`docs/specs/run-character-format.md` Rev 2 / TASK-9019).
+ * Character formatting is available through {@link TextRange.characterFormat}.
  *
  * @public
  */
 export class TextRange extends WireRunParagraphItem {
     /**
      * Discriminant for {@link Paragraph.items} / {@link paragraphElementTypeOf}.
+     * Widened so field subclasses (which expose their own `type`) can override it.
+     *
      * @public
      */
-    readonly type: EntityType.TextRange = EntityType.TextRange;
+    readonly type: EntityType | string = EntityType.TextRange;
     private textValue: string;
     private xmlSpacePreserveValue: boolean;
     /**
-     * Create a text range. Prefer `new TextRange(document)` so property setters
-     * work before the range is appended to a paragraph. Passing a paragraph-item
-     * owner attaches immediately (internal / load paths).
+     * Initializes a new instance of the TextRange class.
      *
-     * @param {ParagraphItemOwner | object} ownerOrDocument - The owner or document.
-     * @param {WireRunGroup} wireGroup - The wire group.
+     * @param {ParagraphItemOwner | object} ownerOrDocument - Specifies the document that owns the text range.
+     * @param {WireRunGroup} wireGroup - Specifies the wire run group.
      * @public
      */
     constructor(ownerOrDocument?: ParagraphItemOwner | object, wireGroup?: WireRunGroup) {
@@ -490,7 +495,8 @@ export class TextRange extends WireRunParagraphItem {
         this.setDocumentContext(ownerOrDocument);
     }
     /**
-     * Plain text of this range (`w:t`). Setter replaces the text content.
+     * Gets or sets the plain text of this range. Setter replaces the text content.
+     *
      * @public
      */
     get text(): string {
@@ -505,13 +511,13 @@ export class TextRange extends WireRunParagraphItem {
         this.xmlSpacePreserveValue = needsXmlSpacePreserve(value);
     }
     /**
-     * Apply character formatting onto this range (DocIO-aligned).
+     * Apply character formatting onto this range.
      *
      * - {@link CharacterFormatDelta}: merges listed properties (`assign`).
      * - {@link CharacterFormat}: copies the full snapshot into this range's `rPr`.
      *
-     * @param {CharacterFormatDelta | CharacterFormat} source - The source.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {CharacterFormatDelta | CharacterFormat} source - Specifies the source.
      * @public
      */
     applyCharacterFormat(source: CharacterFormatDelta | CharacterFormat): void {
@@ -554,7 +560,7 @@ export class TextRange extends WireRunParagraphItem {
      * @private
      */
     static fromXml(el: OpenXmlElement, owner: ParagraphItemOwner): TextRange {
-        const items: ConcreteParagraphItem[] = parseTextRangeGroup(el, owner);
+        const items: ParagraphItem[] = parseTextRangeGroup(el, owner);
         for (const item of items) {
             if (item instanceof TextRange) {
                 return item as TextRange;
@@ -645,6 +651,21 @@ export class TextRange extends WireRunParagraphItem {
             snapToGridValue: cf.snapToGridValue
         };
     }
+
+    /**
+     * Create an independent copy of this text range.
+     * Text, character formatting, and wire-group state are all cloned.
+     *
+     * The cloned range is detached and has no owner until attached to a paragraph.
+     *
+     * @returns {TextRange} Cloned text range.
+     * @public
+     */
+    clone(): TextRange {
+        const cloned: TextRange = new TextRange();
+        cloned.hydrate(this.snapshot());
+        return cloned;
+    }
 }
 
 // Re-export base types for consumers that import from text-range.
@@ -686,6 +707,7 @@ export function createStandaloneBreakItem(type: BreakType, clear?: BreakClearTyp
  *
  * @private
  */
+// eslint-disable-next-line @typescript-eslint/ban-types -- project Symbol class, not the global primitive wrapper
 export function createStandaloneSymbolItem(font: string, char: string): Symbol {
     return new Symbol(font, char, new WireRunGroup());
 }
@@ -710,17 +732,18 @@ export function createStandaloneTabItem(): Tab {
  *
  * @param {string} text - The text.
  * @param {WireRunGroup} wireGroup - The wire group.
- * @returns {ConcreteParagraphItem[]} The result.
+ * @returns {ParagraphItem[]} The result.
  * @private
  */
-export function createTextAndTabItems(text: string, wireGroup?: WireRunGroup): ConcreteParagraphItem[] {
+export function createTextAndTabItems(text: string, wireGroup?: WireRunGroup): ParagraphItem[] {
     const group: WireRunGroup = wireGroup != null ? wireGroup : new WireRunGroup();
     if (text.indexOf('\t') < 0) {
         return [createDetachedTextRange(text, group)];
     }
     const parts: string[] = text.split('\t');
-    const items: ConcreteParagraphItem[] = [];
+    const items: ParagraphItem[] = [];
     for (let i: number = 0; i < parts.length; i += 1) {
+        // eslint-disable-next-line security/detect-object-injection -- key/index is internal (bounded loop index or fixed lookup table), not user-controlled property path
         const part: string = parts[i];
         if (part !== undefined && part.length > 0) {
             items.push(createDetachedTextRange(part, group));
@@ -779,6 +802,7 @@ function appendSerializedTextLeaves(
     }
     const parts: string[] = text.split('\t');
     for (let i: number = 0; i < parts.length; i += 1) {
+        // eslint-disable-next-line security/detect-object-injection -- key/index is internal (bounded loop index or fixed lookup table), not user-controlled property path
         const part: string = parts[i];
         if (part !== undefined && part.length > 0) {
             const attributes: OpenXmlAttribute[] = needsXmlSpacePreserve(part) ? [xmlSpacePreserve()] : [];
@@ -802,12 +826,12 @@ function appendSerializedTextLeaves(
  *
  * @param {OpenXmlElement} el - The el.
  * @param {ParagraphItemOwner | undefined} owner - The owner.
- * @returns {ConcreteParagraphItem[]} The result.
+ * @returns {ParagraphItem[]} The result.
  * @private
  */
-export function parseTextRangeGroup(el: OpenXmlElement, owner: ParagraphItemOwner | undefined): ConcreteParagraphItem[] {
+export function parseTextRangeGroup(el: OpenXmlElement, owner: ParagraphItemOwner | undefined): ParagraphItem[] {
     const group: WireRunGroup = new WireRunGroup(el.attributes);
-    const items: ConcreteParagraphItem[] = [];
+    const items: ParagraphItem[] = [];
     let characterFormatData: CharacterFormatSnapshot | undefined;
     for (const child of elementChildren(el)) {
         if (isWml(child, 'rPr')) {
@@ -829,7 +853,7 @@ export function parseRunChildToItem(
     child: OpenXmlElement,
     group: WireRunGroup,
     owner: ParagraphItemOwner | undefined
-): ConcreteParagraphItem {
+): ParagraphItem {
     if (isWml(child, 't')) {
         const text: string = textContent(child);
         const tr: TextRange = new TextRange(owner, group);
@@ -857,9 +881,9 @@ export function parseRunChildToItem(
 /**
  * Parse `w:br` (`CT_Br`: optional `w:type`, `w:clear`).
  *
- * @param {OpenXmlElement} child - The child.
- * @param {WireRunGroup} group - The group.
- * @returns {Break} The result.
+ * @param {OpenXmlElement} child - Specifies the child.
+ * @param {WireRunGroup} group - Specifies the group.
+ * @returns {Break} Returns the result.
  */
 function parseBreakItem(child: OpenXmlElement, group: WireRunGroup): Break {
     let breakType: BreakType = BreakType.LineBreak;
@@ -948,7 +972,7 @@ function serializeBreakItem(leaf: Break): OpenXmlElement {
     }
     return wmlElement('br', { attributes });
 }
-function parseSymItem(child: OpenXmlElement, group: WireRunGroup): ConcreteParagraphItem {
+function parseSymItem(child: OpenXmlElement, group: WireRunGroup): ParagraphItem {
     for (const attr of child.attributes) {
         if (attr.localName === 'font' || attr.localName === 'char') {
             if (attr.prefix !== 'w' && attr.prefix !== '') {
@@ -972,6 +996,12 @@ function parseSymItem(child: OpenXmlElement, group: WireRunGroup): ConcreteParag
     return new Symbol(font, char, group);
 }
 export function serializeRunLevelItem(item: ParagraphItem, isFieldInstruction: boolean = false): OpenXmlElement | undefined {
+    // Field begin / FieldMark separator|end: emit w:fldChar as run child.
+    // Check BEFORE TextRange since Field extends TextRange.
+    if (typeof item === 'object' && item !== null && 'toOpenXml' in item &&
+        ('fieldType' in item || 'fieldMarkType' in item)) {
+        return (item as { toOpenXml(): OpenXmlElement }).toOpenXml();
+    }
     if (item instanceof TextRange) {
         // Prefer appendSerializedTextLeaves via serializeWireGroupItems for tab expansion.
         // Single-leaf path (no U+0009, or field instruction): one w:t / w:instrText.
@@ -1004,11 +1034,6 @@ export function serializeRunLevelItem(item: ParagraphItem, isFieldInstruction: b
         return wmlElement('sym', {
             attributes: [wmlAttr('font', item.font), wmlAttr('char', item.char)]
         });
-    }
-    // Field begin / FieldMark separator|end: emit w:fldChar as run child.
-    if (typeof item === 'object' && item !== null && 'toOpenXml' in item &&
-        ('fieldType' in item || 'fieldMarkType' in item)) {
-        return (item as { toOpenXml(): OpenXmlElement }).toOpenXml();
     }
     if (item instanceof FeatureRunParagraphItem) {
         return serializeFeatureRunLeaf({
@@ -1101,7 +1126,7 @@ function buildFieldInstructionMap(items: ReadonlyArray<ParagraphItem>): Map<Para
 
         // Check if this is a Field (has fieldType property)
         // FormFields are excluded since they don't have instruction text regions
-        if (typeof item === 'object' && item !== null && 'fieldType' in item && !((item as any) instanceof FormField)) {
+        if (typeof item === 'object' && item !== null && 'fieldType' in item && !('formFieldType' in item)) {
             fieldStack.push({ phase: 'instruction' });
             continue;
         }
@@ -1163,14 +1188,21 @@ export function serializeParagraphItems(items: ReadonlyArray<ParagraphItem>): Op
             continue;
         }
 
+        // Modeled inline items stored directly (inline content controls) serialize themselves.
+        if (isDirectInlineFeatureItem(item)) {
+            out.push(item.toOpenXml());
+            i += 1;
+            continue;
+        }
+
         // Check if item implements FeatureInline interface directly
         if (typeof (item as any).toOpenXml === 'function' && !(item instanceof Math)) {
-            const featureItem = item as any;
+            const featureItem: any = item as any;
             // Verify it looks like a bookmark marker
             if ((item as any).type === 'bookmarkStart' || (item as any).type === 'bookmarkEnd') {
                 // Skip BookmarkEnd with positioning flags (serialize elsewhere, not inside paragraph)
-                if ((item as any).type === 'bookmarkEnd' && 
-                    ((item as any).isAfterParagraphMark === true || 
+                if ((item as any).type === 'bookmarkEnd' &&
+                    ((item as any).isAfterParagraphMark === true ||
                      (item as any).isAfterTableMark === true ||
                      (item as any).isAfterCellMark === true ||
                      (item as any).isAfterRowMark === true)) {
@@ -1182,7 +1214,7 @@ export function serializeParagraphItems(items: ReadonlyArray<ParagraphItem>): Op
                 continue;
             }
         }
-        
+
         if (item instanceof Math) {
             out.push(item.toOpenXml());
             i += 1;
@@ -1252,6 +1284,7 @@ export type CarriageReturnItem = CarriageReturn;
  * @deprecated Prefer {@link Symbol}.
  * @private
  */
+// eslint-disable-next-line @typescript-eslint/ban-types -- project Symbol class, not the global primitive wrapper
 export type SymbolItem = Symbol;
 /**
  * @deprecated Prefer {@link ParagraphItemOwner}.
@@ -1266,46 +1299,8 @@ export type Owner = ParagraphItemOwner;
  *
  * @private
  */
-export type ConcreteParagraphItem =
-    | TextRange
-    | Tab
-    | CarriageReturn
-    | Symbol
-    | Break
-    | FeatureRunParagraphItem
-    | FeatureInlineParagraphItem
-    | Math
-    | OpaqueRunItem
-    | OpaqueParagraphItem
-    | Field
-    | FieldMark
-    | BookmarkStart
-    | BookmarkEnd;
-/**
- * @deprecated Prefer {@link ConcreteParagraphItem}.
- * @private
- */
-export type RunLeaf = ConcreteParagraphItem;
-/**
- * @deprecated Prefer {@link ConcreteParagraphItem}.
- * @private
- */
-export type InlineContent = ConcreteParagraphItem;
-/**
- * @deprecated Prefer {@link TextRange}.
- * @private
- */
-export const Run: typeof TextRange = TextRange;
-/**
- * @deprecated Prefer {@link ParagraphItemOwner}.
- * @private
- */
-export type RunOwner = ParagraphItemOwner;
-/**
- * @deprecated Prefer {@link serializeTextRange}.
- * @private
- */
-export const serializeRun: (textRange: TextRange) => OpenXmlElement = serializeTextRange;
+
+
 /**
  * Public break view (no extras / wireGroup).
  *

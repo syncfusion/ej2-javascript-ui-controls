@@ -452,6 +452,14 @@ export class PropertiesParts implements FeaturePackageLevelPart {
         this.customPartName = customPart === undefined ? CUSTOM_PROPERTIES_PART_NAME : customPart.name;
         this.customRelationshipId = customPart === undefined ? undefined : customPart.id;
     }
+    /**
+     * Extended (`docProps/app.xml`) properties.
+     *
+     * @private
+     */
+    get extended(): ExtendedProperties {
+        return this.extValue;
+    }
     /** Core Dublin Core properties. */
     get core(): CoreProperties {
         return this.coreValue;

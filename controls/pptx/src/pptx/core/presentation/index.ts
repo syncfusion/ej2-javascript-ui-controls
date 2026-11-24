@@ -9,5 +9,7 @@ export { LayoutSlide, LayoutSlideOptions } from '../slideimplementation/layoutsl
 export { MasterSlide, MasterSlideOptions } from '../slideimplementation/masterslide';
 export { HyperlinkView, Slide } from '../slideimplementation/slide';
 export { PresentationSection } from './presentation-section';
+export { Section } from './section';
+export { SectionCollection } from './section-collection';
 export { BackgroundFill, DirectSlideBackground, PictureBackgroundFill, ResolvedSlideBackground } from './background';
 export { DRAWINGML_CHART_URI, DRAWINGML_DIAGRAM_URI, DRAWINGML_TABLE_URI, P14_NS, PRESENTATION_OLE_URI, ShapeType } from './shapetype';

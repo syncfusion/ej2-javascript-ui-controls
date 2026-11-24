@@ -61,7 +61,7 @@ function qualify(formula: string): string {
 }
 
 /**
- * New charts follow the DocIO layout: no `c:style` (Word then uses its classic look with
+ * New charts follow the Word layout: no `c:style` (Word then uses its classic look with
  * dark series and gridlines instead of the themed one) and an explicit `c:date1904`.
  *
  * @param {string} xml - The xml.
@@ -152,7 +152,7 @@ function enrichCaches(xml: string, chart: Chart): string {
 
 /**
  * A newly created chart with no explicit title shows its series name when it has
- * exactly one series (Word / DocIO behaviour). An empty title is otherwise hidden.
+ * exactly one series (Word behaviour). An empty title is otherwise hidden.
  *
  * @param {Chart} chart - The chart.
  * @returns {void} Nothing is returned.

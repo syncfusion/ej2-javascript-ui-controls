@@ -1,9 +1,9 @@
 /**
  * Canonical Word create-path styles when no `styles.xml` part exists.
  *
- * `docDefaults` remain the shipped structural default (TASK-8035/8038/8039).
+ * `docDefaults` remain the shipped structural default.
  * Mandatory + create-path styles are deep-cloned from the built-in catalog
- * (`docs/specs/styles-builtin-definitions-catalog.md` §4) via the generic
+ * (the format specification §4) via the generic
  * resolver so dependencies land before dependents and the catalog is never
  * mutated.
  *
@@ -21,9 +21,9 @@ import { OpenXmlElement } from '../../core/xml/model';
  * Build the structural `w:docDefaults` element matching the Word minimum.
  *
  * CT_DocDefaults sequence: `rPrDefault?`, `pPrDefault?`.
- * Run defaults beyond size (TASK-8039) from Word sample evidence.
- * `sz` / `szCs` use `ST_HpsMeasure` half-points (`24` = 12 pt) — TASK-8035.
- * Paragraph spacing under `pPrDefault` — TASK-8038.
+ * Run defaults beyond size from Word sample evidence.
+ * `sz` / `szCs` use `ST_HpsMeasure` half-points (`24` = 12 pt).
+ * Paragraph spacing under `pPrDefault`.
  *
  * @returns {DocDefaults} The result.
  * @private
@@ -57,7 +57,7 @@ export function buildDefaultDocDefaults(): DocDefaults {
     return new DocDefaults(rPrDefault, pPrDefault);
 }
 // ---------------------------------------------------------------------------
-// Create-path seed set (spec §1.2 + TASK-8027 extras)
+// Create-path seed set (spec §1.2 + extras)
 // ---------------------------------------------------------------------------
 /**
  * Styles seeded on `WordDocument.create()` / missing `styles.xml` (spec §4).
@@ -119,7 +119,7 @@ class SeedStyleCollection implements StyleLookupSurface {
 /**
  * Arguments for constructing a `StylesPart` with the canonical Word create-path
  * defaults. Returned by {@link buildDefaultStylesArgs} to avoid a circular
- * module dependency (`index.ts` ↔ `default-styles.ts`).
+ * module dependency (the owning module ↔ the owning module).
  *
  * @private
  */

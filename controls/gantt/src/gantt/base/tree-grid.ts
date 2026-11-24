@@ -158,6 +158,15 @@ export class GanttTreeGrid {
         if (this.parent.enableVirtualization) {
             this.parent.treeGrid.grid.enableSeamlessScrolling = false;
         }
+        if ((this.parent as any).enableDomVirtualization) {
+            const domVirtSettings: any = (this.parent as any).domVirtualizationSettings || {};
+            // T-10: TreeGrid.Inject(TreeGridDomVirtualization) moved to DomVirtualization.addEventListener().
+            // It only runs when DomVirtualization is explicitly Gantt.Inject()-ed.
+            (this.parent.treeGrid as any).enableDomVirtualization = true;
+            (this.parent.treeGrid as any).domVirtualizationSettings = {
+                rowBuffer: domVirtSettings.rowBuffer != null ? domVirtSettings.rowBuffer : 20
+            };
+        }
     }
 
     private getContentDiv(): HTMLElement {
@@ -200,6 +209,10 @@ export class GanttTreeGrid {
         }
         if (scrollWidth === 0 && isMobile) {
             headerDiv.style.cssText += 'width: calc(100% + 17px);';
+        }
+        if ((this.parent as any).enableDomVirtualization) {
+            const vScrollbar: HTMLElement = this.treeGridElement.querySelector('.e-virtual-vertical-scrollbar') as HTMLElement;
+            if (vScrollbar) { vScrollbar.style.display = 'none'; }
         }
     }
     private bindEvents(): void {
@@ -264,6 +277,10 @@ export class GanttTreeGrid {
         this.parent.isVirtualScroll = false;
     }
     private dataBound(args: object): void {
+        if (this.parent.ganttChartModule.scrollObject.isDomVirtualScrolling) {
+            this.parent.ganttChartModule.scrollObject.isDomVirtualScrolling = false;
+            return;
+        }
         if (this.parent.isReact) {
             this.parent['clearTemplate'](['TaskbarTemplate', 'ParentTaskbarTemplate', 'MilestoneTemplate', 'BaselineTemplate', 'TaskLabelTemplate', 'RightLabelTemplate', 'LeftLabelTemplate']);
         }
@@ -370,7 +387,8 @@ export class GanttTreeGrid {
                 collapsedArgs = this.createExpandCollapseArgs(args, null);
                 this.parent.ganttChartModule.collapsedGanttRow(collapsedArgs);
             }
-            if (!this.parent.ganttChartModule.isCollapseAll && collapsedArgs['gridRow'] && !this.parent.allowTaskbarOverlap) {
+            if (!this.parent.ganttChartModule.isCollapseAll && collapsedArgs['gridRow'] && !this.parent.allowTaskbarOverlap
+                && !(this.parent as any).enableDomVirtualization) {
                 collapsedArgs['gridRow'].style.height = collapsedArgs['chartRow'].style.height;
                 this.parent.contentHeight = this.parent.enableRtl ? this.parent['element'].getElementsByClassName('e-content')[2].children[0]['offsetHeight'] :
                     this.parent['element'].getElementsByClassName('e-content')[0].children[0]['offsetHeight'];
@@ -378,6 +396,22 @@ export class GanttTreeGrid {
             }
         }
         this.parent.expandedRecords = this.parent.getExpandedRecords(this.parent.currentViewData);
+        if ((this.parent as any).enableDomVirtualization && this.parent.chartRowsModule) {
+            (this.parent as any).currentViewData = this.parent.expandedRecords;
+            this.parent.updateContentHeight();
+            // T-7: clamp virtual scrollbar to valid range after collapse so next render
+            // does not start from an invalid row index.
+            const scrollObj: any = this.parent.ganttChartModule && this.parent.ganttChartModule.scrollObject;
+            const vScrollbar: HTMLElement = scrollObj && scrollObj.virtualScrollbar;
+            if (vScrollbar) {
+                const totalRows: number = this.parent.expandedRecords.length;
+                const rowH: number = (this.parent.rowHeight as number) || 36;
+                const maxTop: number = Math.max(0, totalRows * rowH - vScrollbar.clientHeight);
+                if (vScrollbar.scrollTop > maxTop) { vScrollbar.scrollTop = maxTop; }
+            }
+            (this.parent.chartRowsModule as any).clearDomVirtPool();
+            this.parent.chartRowsModule.refreshGanttRows();
+        }
         if  (this.parent.showOverAllocation) {
             this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);
         }
@@ -406,7 +440,8 @@ export class GanttTreeGrid {
                 expandedArgs = this.createExpandCollapseArgs(args, null);
                 this.parent.ganttChartModule.expandedGanttRow(expandedArgs);
             }
-            if (!this.parent.ganttChartModule.isExpandAll && args['row'] && !this.parent.allowTaskbarOverlap) {
+            if (!this.parent.ganttChartModule.isExpandAll && args['row'] && !this.parent.allowTaskbarOverlap
+                && !(this.parent as any).enableDomVirtualization) {
                 args['row'].style.height = this.parent.rowHeight + 'px';
                 this.parent.contentHeight = this.parent.enableRtl ? this.parent['element'].getElementsByClassName('e-content')[2].children[0]['offsetHeight'] :
                     this.parent['element'].getElementsByClassName('e-content')[0].children[0]['offsetHeight'];
@@ -414,6 +449,21 @@ export class GanttTreeGrid {
             }
         }
         this.parent.expandedRecords = this.parent.getExpandedRecords(this.parent.currentViewData);
+        if ((this.parent as any).enableDomVirtualization && this.parent.chartRowsModule) {
+            (this.parent as any).currentViewData = this.parent.expandedRecords;
+            this.parent.updateContentHeight();
+            // T-7: clamp virtual scrollbar to valid range after expand.
+            const scrollObj2: any = this.parent.ganttChartModule && this.parent.ganttChartModule.scrollObject;
+            const vScrollbar2: HTMLElement = scrollObj2 && scrollObj2.virtualScrollbar;
+            if (vScrollbar2) {
+                const totalRows2: number = this.parent.expandedRecords.length;
+                const rowH2: number = (this.parent.rowHeight as number) || 36;
+                const maxTop2: number = Math.max(0, totalRows2 * rowH2 - vScrollbar2.clientHeight);
+                if (vScrollbar2.scrollTop > maxTop2) { vScrollbar2.scrollTop = maxTop2; }
+            }
+            (this.parent.chartRowsModule as any).clearDomVirtPool();
+            this.parent.chartRowsModule.refreshGanttRows();
+        }
         if  (this.parent.showOverAllocation) {
             this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);
         }
@@ -426,6 +476,15 @@ export class GanttTreeGrid {
         this.parent.isCollapseAll = false;
         this.parent.trigger('expanded', args);
         this.parent['isExpandPerformed'] = true;
+    }
+    private restoreDomVirtualSelection(): void {
+        if (!(this.parent as any).enableDomVirtualization || !this.parent.selectionModule) {
+            return;
+        }
+        const selectedRowIndexes: number[] = this.parent.selectionModule.getSelectedRowIndexes();
+        for (let i: number = 0; i < selectedRowIndexes.length; i++) {
+            this.parent.selectionModule.maintainSelectedRecords(selectedRowIndexes[i as number]);
+        }
     }
     private actionBegin(args: FilterEventArgs | SortEventArgs): void {
         if (args.type === 'save' && args['columnName'] === this.parent.taskFields.dependency &&
@@ -1684,7 +1743,7 @@ export class GanttTreeGrid {
     private updateScrollTop(args: object): void {
         const newScrollTop: number = getValue('top', args);
         this.treeGridElement.querySelector('.e-content').scrollTop = newScrollTop;
-        this.previousScroll.top = this.treeGridElement.querySelector('.e-content').scrollTop;
+        this.previousScroll.top = newScrollTop;
         if (this.parent.contextMenuModule && this.parent.contextMenuModule.isOpen) {
             this.parent.contextMenuModule.contextMenu.close();
         }

@@ -1,7 +1,6 @@
 import { DetachedObjectError } from '../../core/errors/docx-error';
 import { ParagraphItem, ParagraphItemOwner } from './paragraph-item';
 import {
-    ConcreteParagraphItem,
     FeatureInlineParagraphItem,
     FeatureRunParagraphItem,
     WireRunGroup
@@ -51,21 +50,21 @@ function getFeatureIdForLeaf(leaf: FeatureRunLeaf): FeatureId {
  * exposes a numeric {@link EntityType} discriminant (e.g. Picture).
  * Storage and serialize stay on the wrapper.
  *
- * @param {ConcreteParagraphItem} item - The item.
- * @returns {ConcreteParagraphItem} The result.
+ * @param {ParagraphItem} item - The item.
+ * @returns {ParagraphItem} The result.
  * @private
  */
-function projectPublicItem(item: ConcreteParagraphItem): ConcreteParagraphItem {
+function projectPublicItem(item: ParagraphItem): ParagraphItem {
     if (item instanceof FeatureRunParagraphItem) {
         const value: { type?: unknown; entityType?: unknown; } = item.value as { type?: unknown; entityType?: unknown };
         if (value != null && (typeof value.type === 'number' || typeof value.entityType === 'number')) {
-            return value as ConcreteParagraphItem;
+            return value as ParagraphItem;
         }
     }
     if (item instanceof FeatureInlineParagraphItem) {
         const value: { type?: unknown; entityType?: unknown; } = item.value as { type?: unknown; entityType?: unknown };
         if (value != null && (typeof value.type === 'number' || typeof value.entityType === 'number')) {
-            return value as ConcreteParagraphItem;
+            return value as ParagraphItem;
         }
     }
     return item;
@@ -74,14 +73,14 @@ function projectPublicItem(item: ConcreteParagraphItem): ConcreteParagraphItem {
 /**
  * Resolve a public leaf back to the stored wrapper (identity if unprojected).
  *
- * @param {ReadonlyArray<ConcreteParagraphItem>} items - The items.
- * @param {ConcreteParagraphItem | ParagraphItem} item - The item.
+ * @param {ReadonlyArray<ParagraphItem>} items - The items.
+ * @param {ParagraphItem | ParagraphItem} item - The item.
  * @returns {number} The result.
  * @private
  */
 function resolveStoredItem(
-    items: ReadonlyArray<ConcreteParagraphItem>,
-    item: ConcreteParagraphItem | ParagraphItem
+    items: ReadonlyArray<ParagraphItem>,
+    item: ParagraphItem | ParagraphItem
 ): number {
     for (const [i, raw] of items.entries()) {
         if (raw === item || projectPublicItem(raw) === item) {
@@ -114,13 +113,13 @@ export interface ParagraphItemCollectionHost extends ParagraphItemOwner {
  *
  * @public
  */
-export class ParagraphItemCollection implements Iterable<ConcreteParagraphItem> {
+export class ParagraphItemCollection implements Iterable<ParagraphItem> {
     // Numeric index signature for TypeScript consumers (runtime via defineProperty).
     // Non-optional per R3.1 — `items[index]` must not force `!` in consumer code.
-    readonly [index: number]: ConcreteParagraphItem;
+    readonly [index: number]: ParagraphItem;
 
     private readonly host: ParagraphItemCollectionHost;
-    private readonly items: ConcreteParagraphItem[];
+    private readonly items: ParagraphItem[];
     private cachedCount: number;
 
     /**
@@ -135,7 +134,8 @@ export class ParagraphItemCollection implements Iterable<ConcreteParagraphItem> 
     }
 
     /**
-     * Number of paragraph items in document order.
+     * Gets the number of paragraph items in document order.
+     *
      * @public
      */
     get count(): number {
@@ -143,7 +143,8 @@ export class ParagraphItemCollection implements Iterable<ConcreteParagraphItem> 
     }
 
     /**
-     * Alias of {@link count} for array-like consumers (`items.length`).
+     * Gets the number of items in the collection. This is an alias of {@link count}.
+     *
      * @public
      */
     get length(): number {
@@ -153,55 +154,55 @@ export class ParagraphItemCollection implements Iterable<ConcreteParagraphItem> 
     /**
      * Append `item` at the end. Transfers ownership to this paragraph.
      *
-     * Accepts both {@link ConcreteParagraphItem} and {@link FeatureRunLeaf} types.
+     * Accepts both {@link ParagraphItem} and {@link FeatureRunLeaf} types.
      * Feature items (such as {@link Picture}) are automatically wrapped as
      * {@link FeatureRunParagraphItem} for storage in the collection.
      *
-     * @param {ConcreteParagraphItem | FeatureRunLeaf} item - The item.
+     * @param {ParagraphItem | FeatureRunLeaf} item - The item.
      * @returns {void} Nothing is returned.
      * @throws DetachedObjectError if the paragraph is detached, or `item` is
      * already attached elsewhere.
      * @public
      */
-    add(item: ConcreteParagraphItem | FeatureRunLeaf): void {
+    add(item: ParagraphItem | FeatureRunLeaf): void {
         this.insert(this.items.length, item);
     }
 
     /**
      * Insert `item` at `index` (`0…count` inclusive).
      *
-     * Accepts both {@link ConcreteParagraphItem} and {@link FeatureRunLeaf} types.
+     * Accepts both {@link ParagraphItem} and {@link FeatureRunLeaf} types.
      * Feature items are automatically wrapped as {@link FeatureRunParagraphItem}.
      *
      * @param {number} index - The index.
-     * @param {ConcreteParagraphItem | FeatureRunLeaf} item - The item.
+     * @param {ParagraphItem | FeatureRunLeaf} item - The item.
      * @returns {void} Nothing is returned.
      * @throws RangeError if `index` is out of range.
      * @throws DetachedObjectError if the paragraph is detached or `item` is owned.
      * @public
      */
-    insert(index: number, item: ConcreteParagraphItem | FeatureRunLeaf): void {
+    insert(index: number, item: ParagraphItem | FeatureRunLeaf): void {
         this.host.assertMutable();
         if (index < 0 || index > this.items.length) {
             throw new RangeError(`Paragraph item index ${String(index)} is out of range`);
         }
 
         // Check if item is a FeatureRunLeaf that needs wrapping
-        // FeatureRunLeaf has toOpenXml() but is not a ConcreteParagraphItem
-        let wrappedItem: ConcreteParagraphItem;
+        // FeatureRunLeaf has toOpenXml() but is not a ParagraphItem
+        let wrappedItem: ParagraphItem;
         if (item instanceof FeatureRunParagraphItem || item instanceof FeatureInlineParagraphItem) {
             // Already wrapped, use as-is
             wrappedItem = item;
         } else if (item instanceof ParagraphItem) {
             // Already a ParagraphItem, use as-is
-            wrappedItem = item as ConcreteParagraphItem;
+            wrappedItem = item as ParagraphItem;
         } else if (typeof (item as { toOpenXml?: unknown }).toOpenXml === 'function') {
             // This is a FeatureRunLeaf - wrap it
             const featureId: FeatureId = getFeatureIdForLeaf(item as FeatureRunLeaf);
             wrappedItem = new FeatureRunParagraphItem(featureId, item as FeatureRunLeaf, new WireRunGroup());
         } else {
-            // Fallback - treat as ConcreteParagraphItem
-            wrappedItem = item as ConcreteParagraphItem;
+            // Fallback - treat as ParagraphItem
+            wrappedItem = item as unknown as ParagraphItem;
         }
 
         this.assertNotOwned(wrappedItem);
@@ -213,19 +214,19 @@ export class ParagraphItemCollection implements Iterable<ConcreteParagraphItem> 
     /**
      * Remove `item` by identity and detach it.
      *
-     * @param {ConcreteParagraphItem} item - The item.
+     * @param {ParagraphItem} item - The item.
      * @returns {void} Nothing is returned.
      * @throws DetachedObjectError if `item` is not in this collection.
      * @public
      */
-    remove(item: ConcreteParagraphItem): void {
+    remove(item: ParagraphItem): void {
         this.host.assertMutable();
         const at: number = resolveStoredItem(this.items, item);
         if (at === -1) {
             throw new DetachedObjectError('This paragraph item is no longer in its paragraph');
         }
         // eslint-disable-next-line security/detect-object-injection -- integer index bounded by the collection length (loop counter or range-checked argument); not a user-controlled property name
-        const raw: ConcreteParagraphItem = this.items[at]!;
+        const raw: ParagraphItem = this.items[at]!;
         this.items.splice(at, 1);
         raw.detach();
         this.rebuildIndexProperties();
@@ -234,8 +235,8 @@ export class ParagraphItemCollection implements Iterable<ConcreteParagraphItem> 
     /**
      * Remove the item at `index` (`0…count-1`) and detach it.
      *
-     * @param {number} index - The index.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {number} index - Specifies the index.
      * @throws RangeError if `index` is out of range.
      * @public
      */
@@ -245,7 +246,7 @@ export class ParagraphItemCollection implements Iterable<ConcreteParagraphItem> 
             throw new RangeError(`Paragraph item index ${String(index)} is out of range`);
         }
         // eslint-disable-next-line security/detect-object-injection -- integer index bounded by the collection length (loop counter or range-checked argument); not a user-controlled property name
-        const item: ConcreteParagraphItem = this.items[index]!;
+        const item: ParagraphItem = this.items[index]!;
         this.items.splice(index, 1);
         item.detach();
         this.rebuildIndexProperties();
@@ -254,7 +255,7 @@ export class ParagraphItemCollection implements Iterable<ConcreteParagraphItem> 
     /**
      * Remove and detach every item.
      *
-     * @returns {void} Nothing is returned.
+     * @returns {void}
      * @public
      */
     clear(): void {
@@ -278,11 +279,11 @@ export class ParagraphItemCollection implements Iterable<ConcreteParagraphItem> 
     /**
      * Index of `item` by reference, or `-1`.
      *
-     * @param {ConcreteParagraphItem} item - The item.
+     * @param {ParagraphItem} item - The item.
      * @returns {number} The result.
      * @public
      */
-    indexOf(item: ConcreteParagraphItem): number {
+    indexOf(item: ParagraphItem): number {
         return resolveStoredItem(this.items, item);
     }
 
@@ -305,11 +306,11 @@ export class ParagraphItemCollection implements Iterable<ConcreteParagraphItem> 
     /**
      * Ordered public items (projects feature wrappers to leaf entities).
      *
-     * @returns {ConcreteParagraphItem[]} The result.
+     * @returns {ParagraphItem[]} The result.
      * @public
      */
-    toArray(): ConcreteParagraphItem[] {
-        const out: ConcreteParagraphItem[] = [];
+    toArray(): ParagraphItem[] {
+        const out: ParagraphItem[] = [];
         for (const item of this.items) {
             out.push(projectPublicItem(item));
         }
@@ -317,23 +318,23 @@ export class ParagraphItemCollection implements Iterable<ConcreteParagraphItem> 
     }
 
     /**
-     * @returns {ConcreteParagraphItem[]} The result.
+     * @returns {ParagraphItem[]} The result.
      *  Ordered storage snapshot for serialize (wrappers retained).
      *
      * @private
      */
-    snapshot(): ConcreteParagraphItem[] {
+    snapshot(): ParagraphItem[] {
         return this.items.slice();
     }
 
     /**
      * Invoke `fn` for each item in document order.
      *
-     * @param {Function} fn - The fn.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {Function} fn - Specifies the fn.
      * @public
      */
-    forEach(fn: (item: ConcreteParagraphItem, index: number) => void): void {
+    forEach(fn: (item: ParagraphItem, index: number) => void): void {
         for (const [i, item] of this.items.entries()) {
             fn(projectPublicItem(item), i);
         }
@@ -342,11 +343,11 @@ export class ParagraphItemCollection implements Iterable<ConcreteParagraphItem> 
     /**
      * True when at least one item satisfies `predicate`.
      *
-     * @param {Function} predicate - The predicate.
-     * @returns {boolean} The result.
+     * @returns {boolean} - Returns the result.
+     * @param {Function} predicate - Specifies the predicate.
      * @public
      */
-    some(predicate: (item: ConcreteParagraphItem, index: number) => boolean): boolean {
+    some(predicate: (item: ParagraphItem, index: number) => boolean): boolean {
         for (const [i, item] of this.items.entries()) {
             if (predicate(projectPublicItem(item), i)) {
                 return true;
@@ -358,11 +359,11 @@ export class ParagraphItemCollection implements Iterable<ConcreteParagraphItem> 
     /**
      * True when every item satisfies `predicate` (empty collection is true).
      *
-     * @param {Function} predicate - The predicate.
-     * @returns {boolean} The result.
+     * @returns {boolean} - Returns the result.
+     * @param {Function} predicate - Specifies the predicate.
      * @public
      */
-    every(predicate: (item: ConcreteParagraphItem, index: number) => boolean): boolean {
+    every(predicate: (item: ParagraphItem, index: number) => boolean): boolean {
         for (const [i, item] of this.items.entries()) {
             if (!predicate(projectPublicItem(item), i)) {
                 return false;
@@ -375,13 +376,13 @@ export class ParagraphItemCollection implements Iterable<ConcreteParagraphItem> 
      * Items that satisfy `predicate`.
      *
      * @param {Function} predicate - The predicate.
-     * @returns {ConcreteParagraphItem[]} The result.
+     * @returns {ParagraphItem[]} The result.
      * @public
      */
-    filter(predicate: (item: ConcreteParagraphItem, index: number) => boolean): ConcreteParagraphItem[] {
-        const out: ConcreteParagraphItem[] = [];
+    filter(predicate: (item: ParagraphItem, index: number) => boolean): ParagraphItem[] {
+        const out: ParagraphItem[] = [];
         for (const [i, itemItem] of this.items.entries()) {
-            const item: ConcreteParagraphItem = projectPublicItem(itemItem);
+            const item: ParagraphItem = projectPublicItem(itemItem);
             if (predicate(item, i)) {
                 out.push(item);
             }
@@ -393,12 +394,12 @@ export class ParagraphItemCollection implements Iterable<ConcreteParagraphItem> 
      * First item that satisfies `predicate`, or `undefined`.
      *
      * @param {Function} predicate - The predicate.
-     * @returns {ConcreteParagraphItem | undefined} The result.
+     * @returns {ParagraphItem | undefined} The result.
      * @public
      */
-    find(predicate: (item: ConcreteParagraphItem, index: number) => boolean): ConcreteParagraphItem | undefined {
+    find(predicate: (item: ParagraphItem, index: number) => boolean): ParagraphItem | undefined {
         for (const [i, itemItem] of this.items.entries()) {
-            const item: ConcreteParagraphItem = projectPublicItem(itemItem);
+            const item: ParagraphItem = projectPublicItem(itemItem);
             if (predicate(item, i)) {
                 return item;
             }
@@ -409,11 +410,11 @@ export class ParagraphItemCollection implements Iterable<ConcreteParagraphItem> 
     /**
      * Index of the first item that satisfies `predicate`, or `-1`.
      *
-     * @param {Function} predicate - The predicate.
-     * @returns {number} The result.
+     * @returns {number} - Returns the number.
+     * @param {Function} predicate - Specifies the predicate.
      * @public
      */
-    findIndex(predicate: (item: ConcreteParagraphItem, index: number) => boolean): number {
+    findIndex(predicate: (item: ParagraphItem, index: number) => boolean): number {
         for (const [i, item] of this.items.entries()) {
             if (predicate(projectPublicItem(item), i)) {
                 return i;
@@ -425,11 +426,11 @@ export class ParagraphItemCollection implements Iterable<ConcreteParagraphItem> 
     /**
      * Map items with `fn`.
      *
-     * @param {Function} fn - The fn.
-     * @returns {U[]} The result.
+     * @returns {U[]} - Returns the U[].
+     * @param {Function} fn - Specifies the fn.
      * @public
      */
-    map<U>(fn: (item: ConcreteParagraphItem, index: number) => U): U[] {
+    map<U>(fn: (item: ParagraphItem, index: number) => U): U[] {
         const out: U[] = [];
         for (const [i, itemItem9] of this.items.entries()) {
             out.push(fn(projectPublicItem(itemItem9!), i));
@@ -438,21 +439,21 @@ export class ParagraphItemCollection implements Iterable<ConcreteParagraphItem> 
     }
 
     /**
-     * Iterate items in document order.
+     * Returns an iterator over the paragraph items in document order.
      *
-     * @returns {Iterator<ConcreteParagraphItem>} The result.
+     * @returns {Iterator<ParagraphItem>} The result.
      * @public
      */
-    [Symbol.iterator](): Iterator<ConcreteParagraphItem> {
-        const items: ConcreteParagraphItem[] = this.items.slice();
+    [Symbol.iterator](): Iterator<ParagraphItem> {
+        const items: ParagraphItem[] = this.items.slice();
         let i: number = 0;
         return {
-            next(): IteratorResult<ConcreteParagraphItem> {
+            next(): IteratorResult<ParagraphItem> {
                 if (i >= items.length) {
-                    return { done: true, value: undefined as unknown as ConcreteParagraphItem };
+                    return { done: true, value: undefined as unknown as ParagraphItem };
                 }
                 // eslint-disable-next-line security/detect-object-injection -- integer index bounded by the collection length (loop counter or range-checked argument); not a user-controlled property name
-                const value: ConcreteParagraphItem = projectPublicItem(items[i]!);
+                const value: ParagraphItem = projectPublicItem(items[i]!);
                 i += 1;
                 return { done: false, value: value };
             }
@@ -460,14 +461,14 @@ export class ParagraphItemCollection implements Iterable<ConcreteParagraphItem> 
     }
 
     /**
-     * @param {ReadonlyArray<ConcreteParagraphItem>} items - The items.
+     * @param {ReadonlyArray<ParagraphItem>} items - The items.
      * @returns {void} Nothing is returned.
      *  Replace contents during parse/hydrate without authoring mutate.
      * Detaches prior items, attaches incoming items to this host.
      *
      * @private
      */
-    hydrate(items: ReadonlyArray<ConcreteParagraphItem>): void {
+    hydrate(items: ReadonlyArray<ParagraphItem>): void {
         this.detachAll();
         this.items.length = 0;
         for (const item of items) {
@@ -478,13 +479,13 @@ export class ParagraphItemCollection implements Iterable<ConcreteParagraphItem> 
     }
 
     /**
-     * @param {ConcreteParagraphItem} item - The item.
+     * @param {ParagraphItem} item - The item.
      * @returns {void} Nothing is returned.
      *  Append during parse without assertMutable (owner may still be wiring).
      *
      * @private
      */
-    addFromParse(item: ConcreteParagraphItem): void {
+    addFromParse(item: ParagraphItem): void {
         this.items.push(item);
         item.attach(this.host);
         this.rebuildIndexProperties();
@@ -514,7 +515,7 @@ export class ParagraphItemCollection implements Iterable<ConcreteParagraphItem> 
         }
     }
 
-    private assertNotOwned(item: ConcreteParagraphItem): void {
+    private assertNotOwned(item: ParagraphItem): void {
         if (item.owner !== undefined) {
             if (item.owner === this.host && this.containsIdentity(item)) {
                 throw new DetachedObjectError('Paragraph item is already in this paragraph');
@@ -531,7 +532,7 @@ export class ParagraphItemCollection implements Iterable<ConcreteParagraphItem> 
             const key: string = String(i);
             if (i < nextLen) {
                 // eslint-disable-next-line security/detect-object-injection -- integer index bounded by the collection length (loop counter or range-checked argument); not a user-controlled property name
-                const value: ConcreteParagraphItem = projectPublicItem(this.items[i]!);
+                const value: ParagraphItem = projectPublicItem(this.items[i]!);
                 Object.defineProperty(this, key, {
                     value: value,
                     writable: false,

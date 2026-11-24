@@ -15,7 +15,7 @@ import { MaskedTextBox, MaskChangeEventArgs, NumericTextBox, ChangeEventArgs as 
 import { setStyleAndAttributes } from '@syncfusion/ej2-grids';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { IFilter, IFieldOptions, IFormatSettings, IField } from '../../base/engine';
-import { Operators, FilterType, Sorting } from '../../base/types';
+import { Operators, FilterType, Sorting, TopBottomMode } from '../../base/types';
 import { ChangedEventArgs, DateTimePicker } from '@syncfusion/ej2-calendars';
 import { ItemModel, DropDownButton, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { OlapEngine, IOlapField } from '../../base/olap/engine';
@@ -765,12 +765,19 @@ export class FilterDialog {
                 dataSource.push({ value: operator, text: this.parent.localeObj.getConstant(operator) });
             }
         }
+        // When the same field is added multiple times to the values axis, key the
+        // measure option by instance id so the filter targets the selected
+        // instance; the engine resolves instance ids first.
+        const hasDuplicateValues: boolean = this.parent.dataSourceSettings.values.filter((value: IFieldOptions) =>
+            value.name === measures[0 as number].name).length > 1;
+        const getMeasureKey: (value: IFieldOptions) => string = (value: IFieldOptions): string => hasDuplicateValues ?
+            (value.instanceId || value.name) : value.name;
         let len: number = measures.length;
         while (len--) {
-            valueOptions.unshift({ value: measures[len as number].name, text: (measures[len as number].caption ?
+            valueOptions.unshift({ value: getMeasureKey(measures[len as number]), text: (measures[len as number].caption ?
                 measures[len as number].caption : measures[len as number].name) });
             selectedValueIndex = filterObject && filterObject.type === 'Value' &&
-                filterObject.measure === measures[len as number].name &&
+                filterObject.measure === getMeasureKey(measures[len as number]) &&
                 filterObject.condition === selectedOption ? len : selectedValueIndex;
         }
         if (this.parent.dataType === 'olap') {
@@ -808,6 +815,7 @@ export class FilterDialog {
                 }
             }
         }
+        const isTopBottom: boolean = type === 'value' && topBottomOperators.indexOf(selectedOption) >= 0;
         const mainDiv: HTMLElement = createElement('div', {
             className: cls.FILTER_DIV_CONTENT_CLASS + ' e-' + ((['date', 'number']).indexOf(type) >= 0 ? 'label' : type) + '-filter' + (this.parent.isDataOverflow ? ' ' + cls.PIVOT_FILTER_MEMBER_LIMIT : ''),
             id: this.parent.parentID + '_' + type + '_filter_div_content',
@@ -816,11 +824,13 @@ export class FilterDialog {
                 'data-selectedField': (this.parent.dataType === 'olap' &&
                     levelOptions.length > 0 ? levelOptions[selectedLevelIndex as number].value.toString() : ''),
                 'data-measure': (this.parent.dataSourceSettings.values.length > 0 ?
-                    this.parent.dataSourceSettings.values[selectedValueIndex as number].name : ''),
+                    getMeasureKey(this.parent.dataSourceSettings.values[selectedValueIndex as number]) : ''),
                 'data-value1': (filterObject && selectedOption === filterObject.condition ?
                     filterObject.value1 ? filterObject.value1.toString() : '' : ''),
                 'data-value2': (filterObject && selectedOption === filterObject.condition ?
-                    filterObject.value2 ? filterObject.value2.toString() : '' : '')
+                    filterObject.value2 ? filterObject.value2.toString() : '' : ''),
+                'data-mode': (type === 'value' && filterObject && selectedOption === filterObject.condition &&
+                    topBottomOperators.indexOf(selectedOption) >= 0 && filterObject.mode) ? filterObject.mode : 'Items'
             }
         });
         const textContentdiv: HTMLElement = createElement('div', {
@@ -842,10 +852,14 @@ export class FilterDialog {
             className: 'e-measure-option-container' + ' ' + (((['label', 'date', 'number']).indexOf(type) >= 0) ? cls.ICON_DISABLE : '')
         });
         const optionWrapperDiv2: HTMLElement = createElement('div', { className: 'e-condition-option-container' });
+        const optionWrapperDiv3: HTMLElement = createElement('div', {
+            className: 'e-mode-option-container' + ' ' + (!isTopBottom ? cls.ICON_DISABLE : '')
+        });
         const filterWrapperDiv2: HTMLElement = createElement('div', { className: cls.FILTER_OPTION_WRAPPER_2_CLASS });
         const levelDropOption: HTMLElement = createElement('div', { id: this.parent.parentID + '_' + type + '_level_option_container' });
         const dropOptionDiv1: HTMLElement = createElement('div', { id: this.parent.parentID + '_' + type + '_measure_option_container' });
         const dropOptionDiv2: HTMLElement = createElement('div', { id: this.parent.parentID + '_' + type + '_contition_option_container' });
+        const dropOptionDiv3: HTMLElement = createElement('div', { id: this.parent.parentID + '_' + type + '_mode_option_container' });
         const inputDiv1: HTMLElement = createElement('div', { className: cls.FILTER_INPUT_DIV_1_CLASS });
         const inputDiv2: HTMLElement = createElement('div', {
             className: cls.FILTER_INPUT_DIV_2_CLASS + ' ' +
@@ -864,15 +878,20 @@ export class FilterDialog {
         optionWrapperDiv1.appendChild(dropOptionDiv1);
         optionWrapperDiv1.appendChild(separatordiv);
         optionWrapperDiv2.appendChild(dropOptionDiv2);
+        const conditionSeparatorDiv: HTMLElement = separatordiv.cloneNode(true) as HTMLElement;
+        conditionSeparatorDiv.style.display = isTopBottom ? '' : 'none';
+        optionWrapperDiv2.appendChild(conditionSeparatorDiv);
+        optionWrapperDiv3.appendChild(dropOptionDiv3);
         filterWrapperDiv1.appendChild(levelWrapperDiv);
         filterWrapperDiv1.appendChild(optionWrapperDiv1);
         filterWrapperDiv1.appendChild(optionWrapperDiv2);
+        filterWrapperDiv1.appendChild(optionWrapperDiv3);
         filterWrapperDiv2.appendChild(inputDiv1);
         filterWrapperDiv2.appendChild(betweenTextContentdiv);
         filterWrapperDiv2.appendChild(inputDiv2);
         this.createElements(
-            filterObject, betweenOperators, topBottomOperators, dropOptionDiv1, dropOptionDiv2, inputField1, inputField2, valueOptions,
-            dataSource, selectedValueIndex, selectedOption, type, levelDropOption, levelOptions, selectedLevelIndex);
+            filterObject, betweenOperators, topBottomOperators, dropOptionDiv1, dropOptionDiv2, dropOptionDiv3, inputField1, inputField2,
+            valueOptions, dataSource, selectedValueIndex, selectedOption, type, levelDropOption, levelOptions, selectedLevelIndex);
         mainDiv.appendChild(textContentdiv);
         mainDiv.appendChild(filterWrapperDiv1);
         mainDiv.appendChild(filterWrapperDiv2);
@@ -880,7 +899,8 @@ export class FilterDialog {
     }
     private createElements(
         filterObj: IFilter, operators: Operators[], topBottomOps: string[], optionDiv1: HTMLElement,
-        optionDiv2: HTMLElement, inputDiv1: HTMLInputElement, inputDiv2: HTMLInputElement, vDataSource: { [key: string]: Object }[],
+        optionDiv2: HTMLElement, optionDiv3: HTMLElement, inputDiv1: HTMLInputElement, inputDiv2: HTMLInputElement,
+        vDataSource: { [key: string]: Object }[],
         oDataSource: { [key: string]: Object }[], valueIndex: number, option: string, type: string, levelDropOption: HTMLElement,
         lDataSource: { [key: string]: Object }[], levelIndex: number): void {
         const popupInstance: FilterDialog = this as FilterDialog;
@@ -981,6 +1001,7 @@ export class FilterDialog {
                         }
                     }
                     if (type === 'value') {
+                        updateModeDropDown(element, args.value as string);
                         if (topBottomOps.indexOf(args.value as string) >= 0) {
                             const firstInputObj: NumericTextBox = getInstance(
                                 <HTMLElement>inputDiv1 as HTMLInputElement,
@@ -1012,6 +1033,61 @@ export class FilterDialog {
         optionWrapper.isStringTemplate = true;
         optionWrapper.isAngular = this.parent.control.isModalDialog;
         optionWrapper.appendTo(optionDiv2);
+        // Mode drop-down (Items, Percent, Sum) - enabled only for the Top and Bottom operators (FR-015).
+        // The mode chosen earlier is remembered while the dialog is open, even when the operator
+        // changes to a non-Top/Bottom operator and the drop-down shows Items disabled (BR-19).
+        const initialMode: TopBottomMode = (type === 'value' && filterObj && topBottomOps.indexOf(filterObj.condition as string) >= 0 &&
+            filterObj.mode) ? filterObj.mode : 'Items';
+        const rememberedMode: { value: TopBottomMode } = { value: initialMode };
+        const modeDataSource: { [key: string]: Object }[] = [];
+        for (const modeOption of (['Items', 'Percent', 'Sum'] as TopBottomMode[])) {
+            modeDataSource.push({ value: modeOption, text: this.parent.localeObj.getConstant(modeOption) });
+        }
+        const updateModeDropDown: Function = (element: Element, operator: string): void => {
+            const isTopBottom: boolean = topBottomOps.indexOf(operator) >= 0;
+            const separator: HTMLElement = element.querySelector(
+                '.e-condition-option-container .' + cls.SEPARATOR_DIV_CLASS) as HTMLElement;
+            if (separator) {
+                separator.style.display = isTopBottom ? '' : 'none';
+            }
+            const modeWrapper: HTMLElement = element.querySelector('.' + cls.FILTER_MODE_CLASS) ?
+                element.querySelector('.' + cls.FILTER_MODE_CLASS).parentElement : null;
+            if (modeWrapper) {
+                if (isTopBottom) {
+                    removeClass([modeWrapper], cls.ICON_DISABLE);
+                    optionWrapper2.value = rememberedMode.value;
+                    optionWrapper2.enabled = true;
+                } else {
+                    addClass([modeWrapper], cls.ICON_DISABLE);
+                    optionWrapper2.value = 'Items';
+                    optionWrapper2.enabled = false;
+                }
+            }
+        };
+        const optionWrapper2: DropDownList = new DropDownList({
+            dataSource: modeDataSource, enableRtl: this.parent.enableRtl,
+            fields: { text: 'text', value: 'value' }, placeholder: 'Items',
+            value: (topBottomOps.indexOf(option) >= 0 ? initialMode : 'Items'),
+            enabled: (topBottomOps.indexOf(option) >= 0), cssClass: cls.FILTER_MODE_CLASS,
+            change: (args: ChangeEventArgs) => {
+                const element: Element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
+                if (!isNullOrUndefined(element)) {
+                    rememberedMode.value = args.value as TopBottomMode;
+                    if (topBottomOps.indexOf(element.getAttribute('data-operator') as string) >= 0) {
+                        setStyleAndAttributes(element, { 'data-mode': rememberedMode.value });
+                        popupInstance.validateTopBottomOKButton(inputDiv1, element.getAttribute('data-operator'), topBottomOps);
+                    }
+                }
+            }
+        });
+        optionWrapper2.isStringTemplate = true;
+        optionWrapper2.isAngular = this.parent.control.isModalDialog;
+        optionWrapper2.appendTo(optionDiv3);
+        const modeInputElement: HTMLInputElement = optionDiv3.querySelector('input') as HTMLInputElement;
+        if (modeInputElement) {
+            modeInputElement.setAttribute('aria-label', this.parent.localeObj.getConstant('topBottomMode'));
+            modeInputElement.setAttribute('title', this.parent.localeObj.getConstant('topBottomMode'));
+        }
         if (type === 'date') {
             const inputObj1: DateTimePicker = new DateTimePicker({
                 placeholder: this.parent.localeObj.getConstant('chooseDate'),
@@ -1078,11 +1154,7 @@ export class FilterDialog {
                             'data-value2': value2
                         });
                         if (topBottomOps.indexOf(currentOperator as string) >= 0) {
-                            if (actualValue <= 0) {
-                                okButton.setAttribute('disabled', 'disabled');
-                            } else {
-                                okButton.removeAttribute('disabled');
-                            }
+                            popupInstance.validateTopBottomOKButton(inputDiv1, currentOperator, topBottomOps);
                         }
                     } else {
                         return;
@@ -1283,9 +1355,28 @@ export class FilterDialog {
     private validateTopBottomOKButton(inputDiv: HTMLElement, operator: string, topBottomOps: string[]): void {
         if (topBottomOps.indexOf(operator as string) >= 0) {
             const inputObj: NumericTextBox = getInstance(inputDiv as HTMLInputElement, NumericTextBox) as NumericTextBox;
+            const filterDialog: Element = this.dialogPopUp.element;
+            const element: Element = filterDialog.querySelector('.e-selected-tab');
+            const mode: string = element ? (element.getAttribute('data-mode') || 'Items') : 'Items';
+            const okButton: Element = filterDialog.querySelector('.' + cls.OK_BUTTON_CLASS);
             if (inputObj) {
                 const value: number = inputObj.value !== null && inputObj.value !== undefined ? inputObj.value : 0;
-                this.setOKButtonState(value > 0);
+                let isValid: boolean = true;
+                if (mode === 'Percent') {
+                    // Percent range is validated on OK through the common error dialog.
+                    isValid = true;
+                } else if (mode === 'Sum') {
+                    isValid = !isNaN(value) && value > 0;
+                } else {
+                    isValid = value > 0;
+                }
+                if (okButton) {
+                    if (!isValid) {
+                        okButton.setAttribute('disabled', 'disabled');
+                    } else {
+                        okButton.removeAttribute('disabled');
+                    }
+                }
             }
         }
     }

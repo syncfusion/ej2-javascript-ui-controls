@@ -96,144 +96,141 @@ export interface DrawingExtent {
  */
 export interface ShapeOptions {
     /**
-     * DrawingML preset geometry (`a:prstGeom/@prst`, `ST_ShapeType`).
-     * Must be a schema token; invalid values throw `content/invalid-shape`.
+     * Gets the preset geometry.
      */
     readonly presetGeometry: string;
-    /** Display width (`wp:extent/@cx`). */
+    /**
+     * Gets the width of the shape, in points.
+     */
     readonly width: number;
-    /** Display height (`wp:extent/@cy`). */
+    /**
+     * Gets the height of the shape, in points.
+     */
     readonly height: number;
     /**
-     * Non-visual drawing name (`wp:docPr/@name`).
+     * Gets the name of the shape.
+     *
      * @defaultValue `'Shape'`
      */
     readonly name?: string;
-    /** Caption / accessibility title (`wp:docPr/@title`). */
+    /**
+     * Gets the title of the shape.
+     */
     readonly title?: string;
-    /** Alternative text (`wp:docPr/@descr`). */
+    /**
+     * Gets the alternative text description of the shape.
+     */
     readonly description?: string;
     /**
-     * Host placement. Default `'anchor'` (GO Q2).
+     * Gets the host placement.
+     *
      * @defaultValue `'anchor'`
      */
     readonly placement?: 'inline' | 'anchor';
     /**
-     * Clockwise rotation in degrees (`a:xfrm/@rot`). Wire = degrees × 60000.
+     * Gets the rotation angle of the shape, in degrees.
+     *
      * @defaultValue `0`
      */
     readonly rotation?: number;
     /**
-     * Aspect-ratio lock (`a:graphicFrameLocks/@noChangeAspect`).
-     * Author default `true`; missing locks on load read as `false` (images parity).
-     * Flag only — width/height setters do **not** auto-recompute the sibling dimension.
+     * Gets a value indicating whether the lock aspect ratio option is enabled.
+     *
      * @defaultValue `true`
      */
     readonly lockAspectRatio?: boolean;
-    /** Horizontal flip (`a:xfrm/@flipH`). @defaultValue `false` */
+    /**
+     * Gets a value indicating whether the flip horizontal option is enabled.
+     */
     readonly flipHorizontal?: boolean;
-    /** Vertical flip (`a:xfrm/@flipV`). @defaultValue `false` */
+    /**
+     * Gets a value indicating whether the flip vertical option is enabled.
+     */
     readonly flipVertical?: boolean;
     /**
-     * Text wrapping style. `'inline'` forces `wp:inline`; any other value promotes
-     * to `wp:anchor` with the matching `wp:wrap*` child.
-     * Prefer this over {@link placement} when both are set.
+     * Gets the text wrapping style.
+     *
      * @defaultValue inferred from {@link placement} (`inline` or `none`)
      */
     readonly wrappingStyle?: TextWrappingStyleType;
     /**
-     * Distance from text above the shape (`wp:* @distT`).
-     * Anchor author default `0`.
+     * Gets the distance top.
      */
     readonly distanceTop?: number;
     /**
-     * Distance from text below the shape (`wp:* @distB`).
-     * Anchor author default `0`.
+     * Gets the distance bottom.
      */
     readonly distanceBottom?: number;
     /**
-     * Distance from text to the left of the shape (`wp:* @distL`).
-     * Anchor author default `emuToPoint(114300)`.
+     * Gets the distance left.
      */
     readonly distanceLeft?: number;
     /**
-     * Distance from text to the right of the shape (`wp:* @distR`).
-     * Anchor author default `emuToPoint(114300)`.
+     * Gets the distance right.
      */
     readonly distanceRight?: number;
     /**
-     * Whether the shape is behind document text (`wp:anchor/@behindDoc`).
-     * Meaningful on anchor hosts only. @defaultValue `false`
+     * Gets a value indicating whether the behind document option is enabled.
      */
     readonly behindDocument?: boolean;
     /**
-     * Horizontal origin (`wp:positionH/@relativeFrom`, `ST_RelFromH`).
-     * Meaningful on anchor hosts; ignored for `"inline"` placement.
+     * Gets the horizontal origin.
+     *
      * @defaultValue `'column'` when absent on a new anchor
      */
     readonly horizontalOrigin?: HorizontalOriginType;
     /**
-     * Vertical origin (`wp:positionV/@relativeFrom`, `ST_RelFromV`).
-     * Meaningful on anchor hosts; ignored for `"inline"` placement.
+     * Gets the vertical origin.
+     *
      * @defaultValue `'paragraph'` when absent on a new anchor
      */
     readonly verticalOrigin?: VerticalOriginType;
     /**
-     * Horizontal offset (`wp:positionH/wp:posOffset`). Negative values are
-     * schema-legal (`ST_PositionOffset` is `xsd:int`).
-     * Mutually exclusive with {@link horizontalAlignment} — the later assignment wins.
+     * Gets the horizontal position.
      */
     readonly horizontalPosition?: number;
     /**
-     * Vertical offset (`wp:positionV/wp:posOffset`). Negative values are
-     * schema-legal (`ST_PositionOffset` is `xsd:int`).
-     * Mutually exclusive with {@link verticalAlignment} — the later assignment wins.
+     * Gets the vertical position.
      */
     readonly verticalPosition?: number;
     /**
-     * Horizontal alignment (`wp:positionH/wp:align`, `ST_AlignH`).
-     * Mutually exclusive with {@link horizontalPosition}.
+     * Gets the horizontal alignment.
      */
     readonly horizontalAlignment?: HorizontalAlignmentType;
     /**
-     * Vertical alignment (`wp:positionV/wp:align`, `ST_AlignV`).
-     * Mutually exclusive with {@link verticalPosition}.
+     * Gets the vertical alignment.
      */
     readonly verticalAlignment?: VerticalAlignmentType;
     /**
-     * Lock anchor (`wp:anchor/@locked`): the anchor position must not be modified
-     * at runtime by an application editing the document — ECMA-376-1 §20.4.2.1
-     * `@locked` @defaultValue `false`
+     * Gets a value indicating whether the lock anchor option is enabled.
      */
     readonly lockAnchor?: boolean;
     /**
-     * Allow overlap (`wp:anchor/@allowOverlap`). @defaultValue `true`
+     * Gets a value indicating whether the allow overlap option is enabled.
      */
     readonly allowOverlap?: boolean;
     /**
-     * Layout in table cell (`wp:anchor/@layoutInCell`). @defaultValue `true`
+     * Gets a value indicating whether the layout in cell option is enabled.
      */
     readonly layoutInCell?: boolean;
     /**
-     * Fill MVP (`a:solidFill` / `a:noFill`). Only `solid` and `none` are authorable.
+     * Gets the fill of the shape.
+     *
      * @defaultValue omitted (Word theme / no explicit fill on wire)
      */
     readonly fill?: ShapeFill | undefined;
     /**
-     * Line MVP (`a:ln`). Only `solid` and `none` are authorable.
+     * Gets the outline of the shape.
+     *
      * @defaultValue omitted (theme / no explicit line on wire)
      */
     readonly line?: ShapeLine | undefined;
     /**
-     * Author a text box variant (`wps:txbx` + `w:txbxContent`). When true the
-     * shape hosts a block body — minimum one empty `w:p` (TASK-8049 GO Q6);
-     * `wps:bodyPr` is emitted (required on `wps:wsp`). Author richer content via
-     * {@link Shape.items} / {@link Shape.insertBodyItemAt} after creation.
+     * Gets a value indicating whether the text box option is enabled.
      */
     readonly textBox?: boolean;
     /**
-     *    * Modeled `wps:bodyPr` state for the authored text box (TASK-8049).
-     * Only valid when {@link textBox} is true.
+     * Gets the body property.
      */
     readonly bodyProperty?: ShapeBodyPrOptions | undefined;
 }
@@ -242,7 +239,7 @@ export interface ShapeOptions {
  *
  * Authors an empty wordprocessing group (`wpg:wgp` under dual AC
  * `Requires="wpg"`). Nested children are added via
- * {@link GroupShape.appendShape} on the returned group (TASK-8051).
+ * {@link GroupShape.appendShape} on the returned group.
  * No leaf geometry/fill/line/textBox fields — groups are hosts only.
  *
  *
@@ -255,6 +252,7 @@ export interface GroupOptions {
     readonly height: number;
     /**
      * Non-visual drawing name (`wp:docPr/@name`).
+     *
      * @defaultValue `'Group'`
      */
     readonly name?: string;
@@ -263,17 +261,20 @@ export interface GroupOptions {
     /** Alternative text (`wp:docPr/@descr`). */
     readonly description?: string;
     /**
-     * Host placement. Default `'anchor'` (GO Q2 / TASK-8051 parity with appendShape).
+     * Host placement. Default `'anchor'` (GO Q2 / parity with appendShape).
+     *
      * @defaultValue `'anchor'`
      */
     readonly placement?: 'inline' | 'anchor';
     /**
      * Clockwise rotation in degrees (`a:xfrm/@rot` on `wpg:grpSpPr`).
+     *
      * @defaultValue `0`
      */
     readonly rotation?: number;
     /**
      * Aspect-ratio lock (`a:graphicFrameLocks/@noChangeAspect`).
+     *
      * @defaultValue `true`
      */
     readonly lockAspectRatio?: boolean;
@@ -285,6 +286,7 @@ export interface GroupOptions {
      * Text wrapping style. `'inline'` forces `wp:inline`; any other value promotes
      * to `wp:anchor` with the matching `wp:wrap*` child.
      * Prefer this over {@link placement} when both are set.
+     *
      * @defaultValue inferred from {@link placement} (`inline` or `none`)
      */
     readonly wrappingStyle?: TextWrappingStyleType;
@@ -298,6 +300,7 @@ export interface GroupOptions {
     readonly distanceRight?: number;
     /**
      * Whether the group is behind document text (`wp:anchor/@behindDoc`).
+     *
      * @defaultValue `false`
      */
     readonly behindDocument?: boolean;
@@ -322,18 +325,26 @@ export interface GroupOptions {
 }
 /**
  * bodyPr author options for {@link ShapeOptions.bodyProperty}
- * (`wps:bodyPr` / `CT_TextBodyProperties` MVP — TASK-8049).
+ *.
  *
  * @public
  */
 export interface ShapeBodyPrOptions {
-    /** Text anchor (`@anchor`, `ST_TextAnchoringType`). */
+    /**
+     * Gets the vertical anchor.
+     */
     readonly verticalAnchor?: TextAnchoring | undefined;
-    /** Center anchoring (`@anchorCtr`). */
+    /**
+     * Gets a value indicating whether the anchor center option is enabled.
+     */
     readonly anchorCenter?: boolean | undefined;
-    /** Vertical text type (`@vert`, `ST_TextVerticalType`). */
+    /**
+     * Gets the text direction.
+     */
     readonly textDirection?: TextVerticalType | undefined;
-    /** Text wrap inside shape (`@wrap`, `none|square only per schema). */
+    /**
+     * Gets the text wrap inside.
+     */
     readonly textWrapInside?: TextBodyWrap | undefined;
     /**
      * @private
@@ -347,8 +358,12 @@ export interface ShapeBodyPrOptions {
      * @private
      * WordArt source flag (`@fromWordArt`). */
     readonly fromWordArt?: boolean | undefined;
-    /** Text insets (`@lIns`/`@tIns`/`@rIns`/`@bIns`, EMU ≥ 0). */
+    /**
+     * Gets the insets between the shape boundary and its text.
+     */
     readonly insets?: BodyInsets | undefined;
-    /** Autofit choice (`a:noAutofit` | `a:normAutofit` | `a:spAutoFit`). */
+    /**
+     * Gets the auto fit.
+     */
     readonly autoFit?: TextAutoFit | undefined;
 }

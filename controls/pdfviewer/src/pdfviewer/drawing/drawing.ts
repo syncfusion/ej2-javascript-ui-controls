@@ -2964,6 +2964,9 @@ export class Drawing {
         for (let i: number = 0; i < objArray.length; i++) {
             const obj: any = (this.pdfViewer.nameTable as any)[objArray[parseInt(i.toString(), 10)]];
             if (obj.formFieldAnnotationType && this.pdfViewer.designerMode) {
+                if (this.pdfViewer.readOnlySettings.formFields) {
+                    continue;
+                }
                 selectorModel.formFields.push(obj);
                 this.initSelectorWrapper();
                 selectorModel.wrapper.children.push(obj.wrapper);
@@ -2980,7 +2983,9 @@ export class Drawing {
                         annotationSettings = this.pdfViewer.annotationModule.findAnnotationSettings(obj, true);
                         obj.annotationSettings = annotationSettings;
                     }
-                    let isLock: boolean = !obj.formFieldAnnotationType ? (annotationSettings ? annotationSettings.isLock : false) : false;
+                    let isLock: boolean = (this.pdfViewer.readOnlySettings.annotations &&
+                        !this.pdfViewer.viewerBase.checkSignatureFormField(obj.id)) ||
+                        (!obj.formFieldAnnotationType ? (annotationSettings ? annotationSettings.isLock : false) : false);
                     if (annotationSettings && annotationSettings.isLock && this.pdfViewer.annotationModule.checkAllowedInteractions('Select', obj)) {
                         isLock = false;
                     }
@@ -3016,6 +3021,15 @@ export class Drawing {
      * @returns {boolean} - boolean value
      */
     public dragSelectedObjects(tx: number, ty: number, pageIndex: number, currentSelector: any, helper: PdfAnnotationBaseModel): boolean {
+        if (this.pdfViewer.readOnlySettings.annotations && this.pdfViewer.selectedItems.annotations &&
+            this.pdfViewer.selectedItems.annotations.length > 0 &&
+            !this.pdfViewer.viewerBase.checkSignatureFormField(this.pdfViewer.selectedItems.annotations[0].id)) {
+            return false;
+        }
+        if (this.pdfViewer.readOnlySettings.formFields && this.pdfViewer.selectedItems.formFields &&
+            this.pdfViewer.selectedItems.formFields.length > 0) {
+            return false;
+        }
         const obj: SelectorModel | PdfAnnotationBaseModel = this.pdfViewer.selectedItems;
         this.drag(obj, tx, ty, currentSelector, helper);
         return true;
@@ -4564,7 +4578,9 @@ export class Drawing {
         if (!isNullOrUndefined(this.pdfViewer.annotationModule)) {
             annotationSettings = this.pdfViewer.annotationModule.findAnnotationSettings(this.pdfViewer.selectedItems.annotations[0]);
         }
-        if (((this.pdfViewer.formDesignerModule && !this.pdfViewer.formDesigner.isPropertyDialogOpen) ||
+        const annotationCopyBlocked: boolean = this.pdfViewer.readOnlySettings.annotations &&
+            this.pdfViewer.selectedItems.annotations.length !== 0;
+        if (!annotationCopyBlocked && ((this.pdfViewer.formDesignerModule && !this.pdfViewer.formDesigner.isPropertyDialogOpen) ||
             this.pdfViewer.annotationModule) && (this.pdfViewer.designerMode || this.pdfViewer.enableAnnotation) &&
             (this.pdfViewer.selectedItems.formFields.length !== 0 || (this.pdfViewer.selectedItems.annotations.length !== 0 &&
                 !isNullOrUndefined(annotationSettings) && !annotationSettings.isLock))) {

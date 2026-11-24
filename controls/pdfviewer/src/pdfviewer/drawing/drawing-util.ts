@@ -34,10 +34,15 @@ export function setElementStype(obj: PdfAnnotationBaseModel | PdfFormFieldBaseMo
                 element.style.strokeWidth = 0;
             }
         } else {
+            const isCalloutLineElement: boolean =
+                (obj as PdfAnnotationBaseModel).shapeAnnotationType === 'FreeText' &&
+                !!(obj as PdfAnnotationBaseModel).calloutLines &&
+                (obj as PdfAnnotationBaseModel).calloutLines.length > 0 && element.id &&
+                element.id.indexOf('_path') !== -1;
             let fillColor: string = ((obj as PdfAnnotationBaseModel).fillColor === '#ffffff00' ? 'transparent' : (obj as PdfAnnotationBaseModel).fillColor);
             const isSrcTarDec: boolean = (obj as PdfAnnotationBaseModel).measureType !== 'Perimeter' ? true : element.id &&
             (element.id.toLowerCase().includes('srcdec') || element.id.toLowerCase().includes('tardec')) ? true : false;
-            element.style.fill = fillColor && isSrcTarDec ? fillColor : 'transparent';
+            element.style.fill = (fillColor && isSrcTarDec && !isCalloutLineElement) ? fillColor : 'transparent';
             if ((obj as PdfAnnotationBaseModel).shapeAnnotationType === 'Redaction') {
                 fillColor = updateColorWithOpacity((obj as PdfAnnotationBaseModel).markerFillColor as string,
                                                    (obj as PdfAnnotationBaseModel).markerOpacity as number);

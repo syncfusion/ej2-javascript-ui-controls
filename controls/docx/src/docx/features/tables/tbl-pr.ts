@@ -12,7 +12,7 @@ import { OpenXmlElement } from '../../core/xml/index';
 import { OpenXmlAttribute } from '../../core/xml/model';
 export { pointToTwips, twipsToPoint };
 // ---------------------------------------------------------------------------
-// Public shared types (TASK-8004)
+// Public shared types
 // ---------------------------------------------------------------------------
 /**
  * Table / cell preferred width (`CT_TblWidth`).
@@ -32,7 +32,7 @@ export interface TableWidth {
     readonly value: number;
 }
 /**
- * One border edge of a table or table cell (`CT_Border` subset).
+ * One border edge of a table or table cell.
  *
  * A border is described by its line style, color, thickness, and the gap to
  * the cell contents. Omitting a field lets Word apply its own default for
@@ -47,13 +47,21 @@ export interface TableBorder {
      * @private
      * Border line token as stored in `@w:val` (e.g. `'single'`). */
     readonly style?: string;
-    /** Border line color. Hex RGB (e.g. `'FF0000'`) or `'auto'`. */
+    /**
+     * Gets the border line color.
+     */
     readonly color?: string;
-    /** Line thickness in eighths of a point (`8` = 1 pt). */
+    /**
+     * Gets the width of the border line, in points.
+     */
     readonly size?: number;
-    /** Gap between the line and the cell contents, in points. */
+    /**
+     * Gets the gap between the line and the cell contents, in points.
+     */
     readonly space?: number;
-    /** Shadow flag from `w:shadow` on `CT_Border`. */
+    /**
+     * Gets a value indicating whether the shadow option is enabled.
+     */
     readonly shadow?: boolean;
 }
 /**
@@ -68,17 +76,29 @@ export interface TableBorder {
  * override them with {@link TableCell.borders}.
  */
 export interface TableBorders {
-    /** Top edge of the table. */
+    /**
+     * Gets the top edge of the table.
+     */
     readonly top?: TableBorder;
-    /** Left edge of the table. */
+    /**
+     * Gets the left edge of the table.
+     */
     readonly left?: TableBorder;
-    /** Bottom edge of the table. */
+    /**
+     * Gets the bottom edge of the table.
+     */
     readonly bottom?: TableBorder;
-    /** Right edge of the table. */
+    /**
+     * Gets the right edge of the table.
+     */
     readonly right?: TableBorder;
-    /** Line between adjacent rows. */
+    /**
+     * Gets the line between adjacent rows.
+     */
     readonly insideH?: TableBorder;
-    /** Line between adjacent columns. */
+    /**
+     * Gets the line between adjacent columns.
+     */
     readonly insideV?: TableBorder;
 }
 /**
@@ -91,6 +111,7 @@ export interface TableBorders {
 export interface TableCellBorders extends TableBorders {
     /**
      * Diagonal from the top-left to the bottom-right corner (`w:tl2br`).
+     *
      * @private
      * Diagonal edge kept for round-trip; not part of the end-user
      * cell-border surface.
@@ -98,6 +119,7 @@ export interface TableCellBorders extends TableBorders {
     readonly tl2br?: TableBorder;
     /**
      * Diagonal from the top-right to the bottom-left corner (`w:tr2bl`).
+     *
      * @private
      * Diagonal edge kept for round-trip; not part of the end-user
      * cell-border surface.
@@ -109,13 +131,21 @@ export interface TableCellBorders extends TableBorders {
  * `undefined` per side uses Word's default.
  */
 export interface TableCellMargins {
-    /** Top padding in points (`w:top` DXA on the wire). */
+    /**
+     * Gets the top cell margin, in points.
+     */
     readonly top?: number;
-    /** Right padding in points (`w:right` DXA on the wire). */
+    /**
+     * Gets the right cell margin, in points.
+     */
     readonly right?: number;
-    /** Bottom padding in points (`w:bottom` DXA on the wire). */
+    /**
+     * Gets the bottom cell margin, in points.
+     */
     readonly bottom?: number;
-    /** Left padding in points (`w:left` DXA on the wire). */
+    /**
+     * Gets the left cell margin, in points.
+     */
     readonly left?: number;
 }
 /**
@@ -146,42 +176,50 @@ export interface TableLook {
     readonly noVBand?: boolean;
 }
 /**
- * How Word interprets a table row's height (`ST_HeightRule`).
+ * How Word interprets a table row's height.
  *
  * - `auto`: the row grows and shrinks with its content.
  * - `atLeast`: the height is a minimum; content can still push it taller.
  * - `exact`: the height is fixed; overflow is clipped.
  */
 export enum TableRowHeightRule {
+    /** Specifies the auto rule. */
     Auto = 'auto',
+    /** Specifies the at least rule. */
     AtLeast = 'atLeast',
+    /** Specifies the exact rule. */
     Exact = 'exact'
 }
 /**
- * Height setting for a table row (`w:trHeight`).
+ * Height setting for a table row.
  *
- * `value` is the measured height in **points** (`@w:val` twips on the wire);
+ * `value` is the measured height in **points**;
  * `rule` (see {@link TableRowHeightRule}) decides whether it is a minimum, a
  * fixed value, or ignored.
  */
 export interface TableRowHeight {
-    /** Row height in points (`@w:val` twips at serialize). */
+    /**
+     * Gets the row height, in points.
+     */
     readonly value: number;
+    /**
+     * Gets the rule that specifies how the height of the row is applied.
+     */
     readonly rule: TableRowHeightRule;
 }
 /**
- * Horizontal alignment of a table or table row on the page
- * (`w:jc` / `ST_JcTable` public subset).
+ * Specifies the horizontal alignment of a table on the page.
  *
- * - {@link TableAlignment.Left}: hug the left margin (Word default; wire `left`).
- * - {@link TableAlignment.Center}: center between the margins (wire `center`).
- * - {@link TableAlignment.Right}: hug the right margin (wire `right`).
+ * Left aligns the table to the left margin, Center centers it between the margins, and Right aligns it to the right margin.
  *
  * @public
  */
 export enum TableAlignment {
+    /** Specifies the left alignment. */
     Left = 'left',
+    /** Specifies the center alignment. */
     Center = 'center',
+    /** Specifies the right alignment. */
     Right = 'right'
 }
 /**
@@ -872,7 +910,7 @@ export interface NormalizedCnfStyle {
     readonly lastRowLastColumn: boolean;
 }
 /**
- * DocIO / transitional ST_Cnf character positions (1-based LTR) → CT_Cnf fields.
+ * Transitional ST_Cnf character positions (1-based LTR) → CT_Cnf fields.
  * Corner bit order (positions 9–12): firstRowLastColumn, firstRowFirstColumn,
  * lastRowLastColumn, lastRowFirstColumn. Named XML attrs still emit NW→SE order.
  */
@@ -1003,7 +1041,7 @@ export function normalizedCnfStyleHasTrue(state: NormalizedCnfStyle): boolean {
     return false;
 }
 /**
- * Alias of {@link normalizedCnfStyleHasTrue} (DocIO placement helper name).
+ * Alias of {@link normalizedCnfStyleHasTrue} (Word placement helper name).
  *
  * @param {NormalizedCnfStyle} state - The state.
  * @returns {boolean} The result.

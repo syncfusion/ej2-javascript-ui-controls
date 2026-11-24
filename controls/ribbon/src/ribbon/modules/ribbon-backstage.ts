@@ -2,7 +2,7 @@ import { remove, append, Component, EventHandler, KeyboardEventArgs } from '@syn
 import { Menu, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { BackStageMenu, BackStageMenuModel, BackstageItemClickArgs, BackstageItemModel } from '../models/index';
 import { commonProperties, getIndex, Ribbon, ribbonTooltipData } from '../base/index';
-import { getTemplateFunction, isTooltipPresent } from '../base/utils';
+import { getTemplateFunction, isTooltipPresent, observeElementSize, publishPositiveWidth, SizeObserver  } from '../base/utils';
 import * as constants from '../base/constant';
 import { Button } from '@syncfusion/ej2-buttons';
 import { Popup } from '@syncfusion/ej2-popups';
@@ -28,6 +28,7 @@ export class RibbonBackstage extends Component<HTMLElement> {
     private itemsWrapperEle: HTMLElement;
     private menuIndex: number;
     private isCloseBtn: boolean;
+    private sizeObserver: SizeObserver;
 
     constructor(parent: Ribbon) {
         super();
@@ -69,6 +70,7 @@ export class RibbonBackstage extends Component<HTMLElement> {
     }
 
     protected destroy(): void {
+        EventHandler.remove(document, 'click', this.onClickEvent);
         if (this.backstageButton) {
             this.destroyDDB();
         }
@@ -97,7 +99,7 @@ export class RibbonBackstage extends Component<HTMLElement> {
             enableRtl: this.parent.enableRtl,
             cssClass: constants.RIBBON_BACKSTAGE,
             created: () => {
-                tabEle.style.setProperty(constants.RIBBON_FILE_MENU_WIDTH, this.backstageButtonEle.offsetWidth + 'px');
+                this.refreshWidth();
             }
         }, this.backstageButtonEle);
         this.createBackStagePopup(backStageOptions);
@@ -142,6 +144,19 @@ export class RibbonBackstage extends Component<HTMLElement> {
         this.addBackStageMenuTooltip(backStageOptions);
         this.addBackStageMenuKeyTip(backStageOptions);
         EventHandler.add(document, 'click', this.onClickEvent, this);
+        this.sizeObserver = observeElementSize(this.backstageButtonEle, () => { this.refreshWidth(); });
+    }
+
+    /**
+     * Re-measures the backstage button and publishes it as `--fileMenuWidth` when it has a real size.
+     *
+     * @returns {void}
+     * @hidden
+     */
+    public refreshWidth(): void {
+        if (this.backstageButtonEle && this.parent && this.parent.tabObj) {
+            publishPositiveWidth(this.parent.tabObj.element, constants.RIBBON_FILE_MENU_WIDTH, this.backstageButtonEle.offsetWidth);
+        }
     }
 
     private onClickEvent(e: MouseEvent): void {
@@ -451,7 +466,7 @@ export class RibbonBackstage extends Component<HTMLElement> {
                     this.backstageButton.setProperties({
                         content: backStageOptions.text
                     });
-                    this.parent.tabObj.element.style.setProperty(constants.RIBBON_FILE_MENU_WIDTH, this.backstageButtonEle.offsetWidth + 'px');
+                    this.refreshWidth();
                 }
                 if (this.popupEle) {
                     this.popupEle.setProperties({
@@ -513,6 +528,10 @@ export class RibbonBackstage extends Component<HTMLElement> {
     }
 
     private destroyDDB(): void {
+        if (this.sizeObserver) {
+            this.sizeObserver.disconnect();
+            this.sizeObserver = null;
+        }
         this.removeBackstageMenuTooltip();
         this.removeBackstageMenuKeyTip();
         const tabEle: HTMLElement = this.parent.tabObj.element;

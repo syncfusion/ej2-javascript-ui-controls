@@ -1,5 +1,5 @@
 /* eslint-disable security/detect-object-injection, security/detect-unsafe-regex, valid-jsdoc */
-import { _HTMLElement, _HTMLImageElement } from '../html-parser/dom-node.js';
+import { _HTMLElement, _HTMLImageElement } from '../html-parser/dom-node';
 export class _ImageMapper {
     private static resolvedImages: Record<string, Uint8Array> | undefined;
     /**
@@ -23,7 +23,7 @@ export class _ImageMapper {
         return _ImageMapper.resolvedImages;
     }
     /**
-     * Map an HTML image element to a DocIO Picture.
+     * Map an HTML image element to a document Picture.
      *
      * Handles:
      * - Image source extraction (src attribute)
@@ -499,7 +499,7 @@ export class _ImageMapper {
         return Object.keys(customData).length > 0 ? customData : undefined;
     }
     /**
-     * Map HTML align attribute to DocIO text wrapping style.
+     * Map HTML align attribute to document text wrapping style.
      *
      * @param {any} align - The align value
      * @private
@@ -517,7 +517,7 @@ export class _ImageMapper {
         }
     }
     /**
-     * Map HTML align attribute to DocIO vertical alignment.
+     * Map HTML align attribute to document vertical alignment.
      *
      * @param {any} align - The align value
      * @private

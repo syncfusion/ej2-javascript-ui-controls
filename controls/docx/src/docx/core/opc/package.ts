@@ -20,7 +20,7 @@ export interface PartRelationshipSet {
 }
 /**
  * In-memory OPC package (ZIP + content types + relationships + part payloads).
- * Not the public WordDocument API (TASK-1010).
+ * Not the public WordDocument API.
  */
 export interface OpcPackage {
     readonly contentTypes: ContentTypes;
@@ -47,7 +47,7 @@ function findPartRels(sets: ReadonlyArray<PartRelationshipSet>, source: PartName
     );
 }
 /**
- * Stub Transitional main document payload. Not a WML parser (TASK-1005 out of scope).
+ * Stub Transitional main document payload. Not a WML parser (out of scope).
  *
  * @returns {string} The result.
  * @private

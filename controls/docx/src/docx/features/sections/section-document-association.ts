@@ -5,7 +5,7 @@ import { WordDocument } from '../document/document';
  * Soft association — does not imply package ownership of the properties object alone.
  *
  * Keyed by object identity with a structural type so this module does not import
- * `page-setup.ts` (avoids a circular dependency under TS 3.3).
+ * the owning module (avoids a circular dependency under TS 3.3).
  */
 const pageSetupOwnerDocuments: WeakMap<object, WordDocument> = new WeakMap<object, WordDocument>();
 

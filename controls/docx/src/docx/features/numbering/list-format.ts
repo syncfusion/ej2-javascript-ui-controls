@@ -48,7 +48,7 @@ export function resetStylesLookupFactoryForTests(): void {
 }
 
 /**
- * Live paragraph list formatting (`w:pPr/w:numPr` + document numbering catalog).
+ * Live paragraph list formatting.
  *
  * Obtained via {@link Paragraph.listFormat}. The same logical instance is returned
  * for repeated access on the same paragraph; mutations update the paragraph and
@@ -68,12 +68,16 @@ export class ListFormat {
         this.paragraph = paragraph;
     }
 
-    /** Owning paragraph. */
+    /**
+     * Gets the owning paragraph.
+     */
     get ownerParagraph(): Paragraph {
         return this.paragraph;
     }
 
-    /** Numbering instance id (`w:num/@w:numId`), when the paragraph is in a list. */
+    /**
+     * Gets or sets the numbering instance id, when the paragraph is in a list.
+     */
     get listId(): number | undefined {
         return this.paragraph.numId;
     }
@@ -84,8 +88,8 @@ export class ListFormat {
      *
      * Does not fabricate a default definition for unknown ids.
      *
-     * @param {number | undefined} value - The value.
-     * @returns {void} Nothing is returned.
+     * @param {number | undefined} value - Specifies the value.
+     * @returns {void} Nothing.
      */
     set listId(value: number | undefined) {
         if (value === undefined) {
@@ -116,7 +120,9 @@ export class ListFormat {
         }
     }
 
-    /** Zero-based indent level (`w:ilvl`), when present. */
+    /**
+     * Gets or sets the zero-based indent level, when present.
+     */
     get listLevelNumber(): number | undefined {
         return this.paragraph.listLevel;
     }
@@ -134,14 +140,15 @@ export class ListFormat {
         this.paragraph.listLevel = value;
     }
 
-    /** Whether the paragraph is assigned to a numbering instance. */
+    /**
+     * Gets a value indicating whether the paragraph is assigned to a numbering instance.
+     */
     get isList(): boolean {
         return this.paragraph.numId !== undefined;
     }
 
     /**
-     * Broad list category from the resolved active level's `numFmt`.
-     * {@link ListType.Bulleted} when `numFmt` is `bullet`; otherwise {@link ListType.Numbered}.
+     * Gets the list type.
      */
     get listType(): ListType | undefined {
         const numberFormat: string = this.numberFormat;
@@ -154,24 +161,32 @@ export class ListFormat {
         return ListType.Numbered;
     }
 
-    /** Number format token at the active level (`w:numFmt/@w:val`). */
+    /**
+     * Gets the number format token at the active level.
+     */
     get numberFormat(): string | undefined {
         const level: NumberingLevel = this.resolvedListLevel;
         return level === undefined ? undefined : level.numFmt;
     }
 
-    /** Level text pattern (`w:lvlText/@w:val`) at the active level. */
+    /**
+     * Gets the level text pattern at the active level.
+     */
     get levelText(): string | undefined {
         const level: NumberingLevel = this.resolvedListLevel;
         return level === undefined ? undefined : level.lvlText;
     }
 
-    /** Named list style applied via {@link applyStyle}, when set. */
+    /**
+     * Gets the list style name.
+     */
     get listStyleName(): string | undefined {
         return this.listStyleNameValue;
     }
 
-    /** Start value at the active level (override or abstract level). */
+    /**
+     * Gets or sets the start value at the active level (override or abstract level).
+     */
     get startAt(): number | undefined {
         const listId: number = this.paragraph.numId;
         if (listId === undefined) {
@@ -200,8 +215,8 @@ export class ListFormat {
      * Set a start override for the active level on the concrete numbering instance.
      * Does not mutate the shared abstract definition.
      *
-     * @param {number | undefined} value - The value.
-     * @returns {void} Nothing is returned.
+     * @param {number | undefined} value - Specifies the value.
+     * @returns {void} Nothing.
      */
     set startAt(value: number | undefined) {
         if (value === undefined) {
@@ -235,19 +250,25 @@ export class ListFormat {
         return resolved === undefined ? undefined : resolved.abstractNumId;
     }
 
-    /** Abstract multi-level type token, when available. */
+    /**
+     * Gets the abstract multi-level type token, when available.
+     */
     get multiLevelType(): MultiLevelType | undefined {
         const abs: AbstractNumbering = this.resolvedAbstractList;
         return abs === undefined ? undefined : abs.multiLevelType;
     }
 
-    /** Abstract definition name, when present. */
+    /**
+     * Gets the abstract definition name, when present.
+     */
     get name(): string | undefined {
         const abs: AbstractNumbering = this.resolvedAbstractList;
         return abs === undefined ? undefined : abs.name;
     }
 
-    /** Resolved numbering instance (`w:num`), when available. */
+    /**
+     * Gets the resolved numbering instance, when available.
+     */
     get resolvedList(): NumberingInstance | undefined {
         const listId: number = this.paragraph.numId;
         if (listId === undefined) {
@@ -260,7 +281,9 @@ export class ListFormat {
         }
     }
 
-    /** Resolved abstract numbering definition, when available. */
+    /**
+     * Gets the resolved abstract numbering definition, when available.
+     */
     get resolvedAbstractList(): AbstractNumbering | undefined {
         const instance: NumberingInstance = this.resolvedList;
         if (instance === undefined) {
@@ -273,7 +296,9 @@ export class ListFormat {
         }
     }
 
-    /** Resolved active list level definition, when available. */
+    /**
+     * Gets the resolved active list level definition, when available.
+     */
     get resolvedListLevel(): NumberingLevel | undefined {
         const listId: number = this.paragraph.numId;
         if (listId === undefined) {
@@ -290,7 +315,7 @@ export class ListFormat {
     /**
      * Apply the default nine-level bullet list and set level `0`.
      *
-     * @returns {void} Nothing is returned.
+     * @returns {void}
      */
     applyDefBulletStyle(): void {
         const numbering: NumberingPart = this.catalog();
@@ -303,7 +328,7 @@ export class ListFormat {
     /**
      * Apply the default nine-level numbered (decimal hybrid) list and set level `0`.
      *
-     * @returns {void} Nothing is returned.
+     * @returns {void}
      */
     applyDefNumberedStyle(): void {
         const numbering: NumberingPart = this.catalog();
@@ -314,14 +339,10 @@ export class ListFormat {
     }
 
     /**
-     * Apply a named numbering style from the document styles part.
+     * Applies a named list style to the paragraph.
      *
-     * Resolves `type="numbering"` styles by style id or display name, then binds a
-     * numbering instance linked through `w:styleLink` / abstract name, or creates
-     * a new instance from a matching abstract definition.
-     *
-     * @param {string} styleName - Non-empty style id or display name.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {string} styleName - Specifies the style name.
      * @throws InvalidArgumentError when `styleName` is empty.
      * @throws DocxError when the style is missing or not a numbering style.
      */
@@ -371,7 +392,7 @@ export class ListFormat {
      * Continue the nearest preceding list in document order.
      * Reuses that paragraph's numbering instance; keeps this paragraph's level when set.
      *
-     * @returns {void} Nothing is returned.
+     * @returns {void}
      * @throws DocxError when no preceding list paragraph exists in the document.
      */
     continueListNumbering(): void {
@@ -411,8 +432,8 @@ export class ListFormat {
     /**
      * Restart numbering as a new list instance that reuses the current abstract definition.
      *
-     * @param {number} startAt - Optional start value for the active level (`w:startOverride`).
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {number} startAt - Specifies the start at.
      */
     restartNumbering(startAt?: number): void {
         const listId: number = this.paragraph.numId;
@@ -447,7 +468,7 @@ export class ListFormat {
     /**
      * Increase the active list level by one (max 8). No-op when not in a list or already at 8.
      *
-     * @returns {void} Nothing is returned.
+     * @returns {void}
      */
     increaseIndentLevel(): void {
         if (this.paragraph.numId === undefined) {
@@ -464,7 +485,7 @@ export class ListFormat {
      * Decrease the active list level by one (min 0). No-op when not in a list or already at 0.
      * Does not remove list membership at level 0.
      *
-     * @returns {void} Nothing is returned.
+     * @returns {void}
      */
     decreaseIndentLevel(): void {
         if (this.paragraph.numId === undefined) {
@@ -478,9 +499,9 @@ export class ListFormat {
     }
 
     /**
-     * Remove list membership (`w:numPr` / numId and ilvl) without deleting catalog definitions.
+     * Remove list membership without deleting catalog definitions.
      *
-     * @returns {void} Nothing is returned.
+     * @returns {void}
      */
     removeList(): void {
         this.paragraph.numId = undefined;
@@ -518,8 +539,8 @@ export class ListFormat {
     /**
      * When abstract is already resolved, ensure `ilvl` exists; pending lists skip (nine levels on materialize).
      *
-     * @param {number} level - The level.
-     * @returns {void} Nothing is returned.
+     * @param {number} level - Specifies the level.
+     * @returns {void} Nothing.
      */
     private assertLevelExistsOnAbstract(level: number): void {
         const listId: number = this.paragraph.numId;
@@ -558,7 +579,7 @@ export class ListFormat {
     /**
      *  Map pending decimal ids to decimal ensure format; default bullet.
      *
-     * @returns {string | string} The result.
+     * @returns {Object} Returns the result.
      */
     private inferEnsureFormat(): 'bullet' | 'decimal' {
         const listId: number = this.paragraph.numId;

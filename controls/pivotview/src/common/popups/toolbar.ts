@@ -1,6 +1,7 @@
 import { Toolbar as tool, ClickEventArgs, MenuItemModel, Menu } from '@syncfusion/ej2-navigations';
-import { ItemModel, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { remove, createElement, formatUnit, getInstance, addClass, removeClass, select, SanitizeHtmlHelper, setValue, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { ItemModel, BeforeOpenCloseMenuEventArgs, MenuEventArgs, KeyDownEventArgs as ToolbarKeyDownEventArgs } from '@syncfusion/ej2-navigations';
+import { remove, createElement, formatUnit, getInstance, addClass, removeClass, select, SanitizeHtmlHelper, setValue,
+    isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import * as events from '../../common/base/constant';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { SaveReportArgs, FetchReportArgs, LoadReportArgs, RemoveReportArgs, RenameReportArgs, ToolbarArgs, PivotActionInfo } from '../base/interface';
@@ -15,6 +16,7 @@ import { ChartSettingsModel } from '../../pivotview/model/chartsettings-model';
 import { GridSettings } from '../../pivotview/model/gridsettings';
 import { AccumulationChart, Chart } from '@syncfusion/ej2-charts';
 import { PivotUtil } from '../../base/util';
+import { FlatTotalsPosition, GridLayout } from '../base/enum';
 
 /**
  * Module for Toolbar
@@ -38,6 +40,8 @@ export class Toolbar {
     private showLableState: boolean;
     private chartLableState: boolean;
     private isChartTypeDialogApplied: boolean = false;
+    private flatLayoutMenu: Menu;
+    private flatToolbarSignature: string;
 
     constructor(parent: PivotView) {
         this.parent = parent;
@@ -56,8 +60,14 @@ export class Toolbar {
     }
 
     private createToolbar(): void {
-        this.parent.isModified = false;
-        this.renderDialog();
+        const flat: boolean = this.parent.gridSettings.layout === 'Flat';
+        const signature: string = flat ? JSON.stringify([this.parent.toolbar, this.parent.locale, this.parent.enableRtl,
+            this.parent.cssClass, this.parent.width, this.parent.showFieldList,
+            this.parent.flatSettings.allowAdvancedFiltering]) : undefined;
+        if (flat && signature === this.flatToolbarSignature && this.toolbar && !this.toolbar.isDestroyed) {
+            return;
+        }
+        if (!flat) { this.parent.isModified = false; this.renderDialog(); }
         if (this.toolbar && !this.toolbar.isDestroyed) {
             this.destroyToolbarComponents();
             this.toolbar.destroy();
@@ -66,6 +76,7 @@ export class Toolbar {
         if (select('#' + this.parent.element.id + 'pivot-toolbar', document) !== null) {
             remove(select('#' + this.parent.element.id + 'pivot-toolbar', document));
         }
+        this.flatToolbarSignature = signature;
         const element: HTMLElement = createElement( 'div', {
             id: this.parent.element.id + 'pivot-toolbar',
             className: cls.GRID_TOOLBAR
@@ -92,9 +103,12 @@ export class Toolbar {
             locale: this.parent.locale,
             enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             items: this.getItems(),
-            allowKeyboard: false,
+            allowKeyboard: flat,
+            keyDown: (args: ToolbarKeyDownEventArgs) => {
+                if (flat && closest(args.originalEvent.target as Element, '.e-menu-wrapper')) { args.cancel = true; }
+            },
             cssClass: this.parent.cssClass,
-            width: this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber()
+            width: flat ? this.parent.width : this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber()
         });
         this.toolbar.isStringTemplate = true;
         const viewStr: string = 'viewContainerRef';
@@ -111,6 +125,7 @@ export class Toolbar {
         } else {
             this.toolbar.appendTo(element);
         }
+        if (flat) { return; }
         const toolbarWidth: number = this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber();
         this.toolbar.width = toolbarWidth;
         const gridPanelWidth: string | number = toolbarWidth - 2;
@@ -131,6 +146,44 @@ export class Toolbar {
         return reports;
     }
 
+    /**
+     * Releases the shared toolbar controls before a layout or component revision.
+     *
+     * @returns {void}
+     * @hidden
+     */
+    public resetFlatToolbar(): void {
+        this.flatToolbarSignature = undefined;
+        this.destroyToolbarComponents();
+        if (this.toolbar && !this.toolbar.isDestroyed) {
+            const element: HTMLElement = this.toolbar.element;
+            this.toolbar.destroy();
+            if (element.parentElement) { remove(element); }
+        }
+        this.toolbar = undefined;
+    }
+
+    private changeLayout(value: GridLayout): void {
+        const control: Menu = this.flatLayoutMenu;
+        Promise.resolve().then(() => {
+            if (this.parent.isDestroyed || !control || this.flatLayoutMenu !== control || control.isDestroyed ||
+                this.parent.gridSettings.layout === value) { return; }
+            this.parent.gridSettings.layout = value; this.parent.dataBind();
+        });
+    }
+
+    private updateLayoutSelection(args: BeforeOpenCloseMenuEventArgs): void {
+        ['Compact', 'Tabular', 'Flat'].forEach((value: GridLayout) => {
+            const item: HTMLElement = args.element.querySelector('#' + this.parent.element.id + '_layout_' + value) as HTMLElement;
+            if (item) {
+                const selected: boolean = this.parent.gridSettings.layout === value;
+                const icon: HTMLElement = item.querySelector('.' + cls.PIVOT_SELECT_ICON) as HTMLElement;
+                if (icon) { icon.classList.toggle(cls.PIVOT_DISABLE_ICON, !selected); }
+                item.setAttribute('aria-current', selected ? 'true' : 'false');
+            }
+        });
+    }
+
     private fetchReportsArgs(): FetchReportArgs | Deferred {
         const callbackPromise: Deferred = new Deferred();
         const reports: FetchReportArgs = { reportName: [] };
@@ -145,7 +198,13 @@ export class Toolbar {
             (v: ToolbarItems, i: number, a: ToolbarItems[]) => a.indexOf(v) === i);
         const items: ItemModel[] = [];
         for (const item of toolbar) {
+            const flat: boolean = this.parent.gridSettings.layout === 'Flat';
+            if (flat && ['Layout', 'GrandTotal', 'FieldList'].indexOf(item) === -1) { continue; }
             switch (item) {
+            case 'Layout':
+                items.push({ template: this.parent.createElement('ul', { id: this.parent.element.id + '_flat_layout',
+                    attrs: { 'aria-label': this.parent.localeObj.getConstant('flatLayoutMenu') } }) });
+                break;
             case 'New':
                 items.push({
                     prefixIcon: cls.GRID_NEW + ' ' + cls.ICON, tooltipText: this.parent.localeObj.getConstant('new'),
@@ -247,9 +306,12 @@ export class Toolbar {
                 });
                 break;
             case 'FieldList':
+                if (flat && (!this.parent.showFieldList || !this.parent.fieldListModule)) { break; }
                 items.push({
-                    prefixIcon: cls.TOOLBAR_FIELDLIST + ' ' + cls.ICON, tooltipText: this.parent.localeObj.getConstant('fieldList'),
-                    click: this.actionClick.bind(this), align: 'Right', id: this.parent.element.id + 'fieldlist'
+                    prefixIcon: cls.TOOLBAR_FIELDLIST + ' ' + cls.ICON,
+                    tooltipText: this.parent.localeObj.getConstant(flat ? 'flatFields' : 'fieldList'),
+                    click: flat ? () => this.parent.flatLayoutModule.openFields() : this.actionClick.bind(this),
+                    align: 'Right', id: this.parent.element.id + 'fieldlist'
                 });
                 if (this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)) {
                     (this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).style.display = 'none';
@@ -914,6 +976,35 @@ export class Toolbar {
         }
     }
     private create(): void {
+        const layout: HTMLElement = this.parent.element.querySelector('#' + this.parent.element.id + '_flat_layout') as HTMLElement;
+        if (layout) {
+            const values: GridLayout[] = ['Compact', 'Tabular', 'Flat'];
+            const rootId: string = this.parent.element.id + '_layout_menu';
+            this.flatLayoutMenu = new Menu({
+                items: [{ id: rootId, iconCss: cls.TOOLBAR_LAYOUT + ' ' + cls.ICON,
+                    items: values.map((value: GridLayout) => ({
+                        id: this.parent.element.id + '_layout_' + value,
+                        text: this.parent.localeObj.getConstant('flatLayout' + value),
+                        iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
+                    })) }],
+                showItemOnClick: true, locale: this.parent.locale, enableRtl: this.parent.enableRtl,
+                enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
+                cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
+                beforeOpen: this.updateLayoutSelection.bind(this),
+                beforeItemRender: (args: MenuEventArgs) => {
+                    if (args.item.id === rootId) {
+                        args.element.setAttribute('aria-label', this.parent.localeObj.getConstant('flatLayoutMenu'));
+                        args.element.title = this.parent.localeObj.getConstant('flatLayoutMenu');
+                    }
+                },
+                select: this.menuItemClick.bind(this),
+                onClose: () => this.focusToolBar()
+            });
+            this.flatLayoutMenu.createElement = this.parent.createElement;
+            this.flatLayoutMenu.isStringTemplate = true;
+            this.flatLayoutMenu.isAngular = this.parent.isModalDialog;
+            this.flatLayoutMenu.appendTo(layout);
+        }
         if (select('#' + this.parent.element.id + 'chart_menu', this.parent.element)) {
             this.createChartMenu();
         }
@@ -1079,8 +1170,13 @@ export class Toolbar {
                     }
                 ]
             }];
+            if (this.parent.gridSettings.layout === 'Flat') {
+                menu[0].items = (menu[0].items as MenuItemModel[]).filter((item: MenuItemModel) =>
+                    [this.parent.element.id + 'grandtotalrow', this.parent.element.id + 'grandtotalcolumn'].indexOf(item.id) === -1);
+            }
             const grandTotalMenu: Menu = new Menu({
                 items: menu, enableRtl: this.parent.enableRtl,
+                showItemOnClick: this.parent.gridSettings.layout === 'Flat',
                 locale: this.parent.locale,  enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                 select: this.menuItemClick.bind(this), beforeOpen: this.updateGrandtotalSelection.bind(this),
@@ -1119,6 +1215,7 @@ export class Toolbar {
             formattingMenu.isAngular = this.parent.isModalDialog;
             formattingMenu.appendTo(formattingMenuElement);
         }
+        if (this.parent.gridSettings.layout === 'Flat') { this.updateItemElements(); return; }
         const saveArgs: SaveReportArgs = {
             report: this.parent.getPersistData(),
             reportName: this.parent.localeObj.getConstant('defaultReport')
@@ -1294,6 +1391,17 @@ export class Toolbar {
         }
     }
     private updateGrandtotalSelection(args: BeforeOpenCloseMenuEventArgs): void {
+        if (this.parent.gridSettings.layout === 'Flat') {
+            const position: FlatTotalsPosition = this.parent.flatSettings.totalsPosition;
+            const selected: string = args.parentItem.id === this.parent.element.id + 'grandtotalpositions' ?
+                position === 'Top' ? 'top-position' : 'bottom-position' :
+                position === 'None' ? 'notgrandtotal' : 'grandtotal';
+            ['grandtotal', 'notgrandtotal', 'top-position', 'bottom-position'].forEach((id: string) => {
+                const icon: HTMLElement = select('#' + this.parent.element.id + id + ' .' + cls.PIVOT_SELECT_ICON, args.element);
+                if (icon) { icon.classList.toggle(cls.PIVOT_DISABLE_ICON, id !== selected); }
+            });
+            return;
+        }
         if (!(args.parentItem.id === this.parent.element.id + 'grandtotalpositions')) {
             if (!select('#' + this.parent.element.id + 'grandtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.contains(cls.PIVOT_DISABLE_ICON)) {
                 select('#' + this.parent.element.id + 'grandtotal' + ' .' + cls.PIVOT_SELECT_ICON, args.element).classList.add(cls.PIVOT_DISABLE_ICON);
@@ -1349,6 +1457,31 @@ export class Toolbar {
         }
     }
     private menuItemClick(args: ClickEventArgs): void {
+        const layout: GridLayout = (['Compact', 'Tabular', 'Flat'] as GridLayout[]).filter((value: GridLayout) =>
+            args.item.id === this.parent.element.id + '_layout_' + value)[0];
+        if (layout) { this.changeLayout(layout); return; }
+        if (this.parent.gridSettings.layout === 'Flat') {
+            const id: string = args.item.id.slice(this.parent.element.id.length);
+            let position: FlatTotalsPosition;
+            switch (id) {
+            case 'grandtotal':
+                position = this.parent.flatSettings.totalsPosition === 'None' ? 'Bottom' : this.parent.flatSettings.totalsPosition;
+                break;
+            case 'notgrandtotal':
+                position = 'None';
+                break;
+            case 'top-position':
+                position = 'Top';
+                break;
+            case 'bottom-position':
+                position = 'Bottom';
+                break;
+            }
+            if (position && position !== this.parent.flatSettings.totalsPosition) {
+                this.parent.setProperties({ flatSettings: { totalsPosition: position } }, false); this.parent.dataBind();
+            }
+            return;
+        }
         let exportArgs: BeforeExportEventArgs = {};
         let type: string;
         const itemType: string = (!isNullOrUndefined(args.item) && !isNullOrUndefined(args.item.id)) ?
@@ -1993,6 +2126,8 @@ export class Toolbar {
      * @hidden
      */
     public destroy(): void {
+        this.flatToolbarSignature = undefined;
+        if (this.flatLayoutMenu) { this.flatLayoutMenu.destroy(); this.flatLayoutMenu = undefined; }
         this.removeEventListener();
         let element: HTMLElement = select('#' + this.parent.element.id + '_ConfirmDialog', document);
         let confirmPopUp: Dialog = element ? getInstance(element, Dialog) as Dialog : null;
@@ -2039,6 +2174,7 @@ export class Toolbar {
      * @returns {void}
      */
     private destroyToolbarComponents(): void {
+        if (this.flatLayoutMenu) { this.flatLayoutMenu.destroy(); this.flatLayoutMenu = undefined; }
         const menuSelectors: string[] = [
             '#' + this.parent.element.id + 'chart_menu',
             '#' + this.parent.element.id + 'export_menu',

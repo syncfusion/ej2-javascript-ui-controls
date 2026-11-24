@@ -224,6 +224,18 @@ export class WCharacterFormat {
     public set hidden(value: boolean) {
         this.setPropertyValue('hidden', value);
     }
+    /**
+     * @private
+     */
+    public get specVanish(): boolean {
+        return this.getPropertyValue('specVanish') as boolean;
+    }
+    /**
+     * @private
+     */
+    public set specVanish(value: boolean) {
+        this.setPropertyValue('specVanish', value);
+    }
     public get fontFamilyFarEast(): string {
         return this.getPropertyValue('fontFamilyFarEast') as string;
     }
@@ -458,6 +470,7 @@ export class WCharacterFormat {
         this.addUniqueCharacterFormat('characterSpacing', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('scaling', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('hidden', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('specVanish', property, propValue, uniqueCharFormatTemp);
         this.uniqueCharacterFormat = WCharacterFormat.uniqueCharacterFormats.addUniqueFormat(uniqueCharFormatTemp, WCharacterFormat.uniqueFormatType);
     }
 
@@ -544,6 +557,7 @@ export class WCharacterFormat {
             value = false;
             break;
         case 'hidden':
+        case 'specVanish':
             value = false;
             break;
         case 'fontFamilyFarEast':
@@ -588,6 +602,7 @@ export class WCharacterFormat {
             && this.scaling === format.scaling
             && this.fontFamilyNonFarEast === format.fontFamilyNonFarEast
             && this.hidden === format.hidden
+            && this.specVanish === format.specVanish
             && this.ligature === format.ligature);
     }
     public isSameFormat(format: WCharacterFormat): boolean {

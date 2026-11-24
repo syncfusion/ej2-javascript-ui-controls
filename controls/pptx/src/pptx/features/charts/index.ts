@@ -13,7 +13,7 @@
  * **TASK-1068** adds public {@link Charts} on `slide.charts` (`length` +
  * {@link Charts.at}) and the {@link Chart} handle (shape + safe read props).
  *
- * **TASK-1069** adds {@link addChart} / {@link removeChart} on `Slide`, the
+ * **TASK-1069** adds {@link addChart} / {@link removeChart} behind `slide.shapes.addChart` / `slide.shapes.remove`, the
  * finite classic type catalog, and minimal embedded XLSX + `c:externalData`
  * via ej2-xlsx `exportChartPart`. ChartEx authoring and dual-write remain out
  * of scope. Nested embeddings stay classified only on the read bridge path.
@@ -29,7 +29,7 @@
  * Dual-write keeps formula strings + sheet cells; presentation-chart
  * `numCache`/`strCache` are filled from those cells on create/flush.
  *
- * `charts`, `addChart`, and `removeChart` are declared directly on the core
+ * `charts` is declared directly on the core; `addChart` / `remove` are reached through `slide.shapes` on the core
  * {@link Slide} class (API-RULES R6.2). Detect + security remain import-safe
  * when xlsx is missing; authoring and `slide.charts` materialization require
  * {@link loadXlsxRoot} (warm cache for sync collection).
@@ -53,6 +53,7 @@ import { isNestedPackageSecurityError, openNestedXlsxPackage, openNestedXlsxPack
 import { buildChartPackageGraph, ChartPackageGraph, ChartPackagePart, ChartPackageRelationship } from './package-graph';
 import { chartHasColorStyle, chartHasEmbeddedPackage, chartHasRelatedKind, chartHasStyle, chartHasUnknownRelatedParts, chartHasUserShapes, chartPartName, listChartRelatedParts } from './read-model';
 import { removeChart } from './remove-chart';
+import { asChartHandle, upgradeChartShapes } from './as-chart-handle';
 import { asChart, chartDataSourceKind, enumerateDocumentCharts, getChartPackageGraph, listChartChildRelationships, resolveChart, ChartInstance, ChartRelatedKind, ChartRelatedPart } from './resolve-chart';
 import { getXlsxChartHostApi, ChartDataSource, ChartFrameFillFormat, ChartFrameFormat, ChartFrameLineFormat, ChartPartExport, ChartAxisFormat, ChartLegendFormat, ChartSeriesDataLabels, ChartTitleAreaFormat, HostChart, HostChartRelationship, HostWorkbook, HostWorksheet, HostWorksheetCell, ParsedChartSpace, SerializeChartSpaceEntry, XlsxChartHostApi } from './xlsx-chart-api';
 import { assertApprovedXlsxImportSpecifier, clearCachedXlsxRoot, EJ2_XLSX_ROOT_EXPORT_VERIFICATION, getCachedXlsxRoot, getXlsxRootRequired, loadXlsxRoot, tryLoadXlsxRoot, Ej2XlsxRootModule, XlsxRootLoadResult } from './xlsx-surface';
@@ -106,6 +107,7 @@ export function enableCharts(): void {
 export {
     addChart,
     asChart,
+    asChartHandle,
     assertApprovedXlsxImportSpecifier,
     buildChartPackageGraph,
     Chart,
@@ -153,7 +155,6 @@ export {
     partNameOptions,
     PPT_CHART_PART_PREFIX,
     PPT_EMBEDDING_PART_PREFIX,
-    removeChart,
     resolveChart,
     tryLoadXlsxRoot
 };
@@ -211,6 +212,11 @@ export {
     XlsxChartHostApi,
     XlsxRootLoadResult
 };
+
+export { OfficeChartType } from './office-chart-type';
+
+export { ChartCategoryAxis, ChartData, ChartDataRange, ChartRange, ChartRangeLike, ChartSeries, ChartSeriesApi,
+    ChartSeriesCollection } from './chart-data-api';
 
 export { ChartGradientSource, ChartGradientHostKind } from './chart-gradient-sources';
 

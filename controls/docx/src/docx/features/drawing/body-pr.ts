@@ -1,5 +1,5 @@
 /**
- * `wps:bodyPr` text-body properties codec (TASK-8049).
+ * `wps:bodyPr` text-body properties codec.
  *
  * Schema cites (transitional `dml-main.xsd` + `dml-wordprocessingDrawing.xsd`):
  * - `CT_TextBodyProperties` attributes: `rot`, `spcFirstLastPara`,
@@ -228,10 +228,10 @@ export function findBodyPrChild(root: OpenXmlElement, namespaceUri: string, loca
  * Deep first-match walker under `root` (including `root` itself).
  * Local so residual dual-AC hosts can be searched without circular imports.
  *
- * @param {OpenXmlElement} root - The root.
- * @param {string} namespaceUri - The namespace uri.
- * @param {string} localName - The local name.
- * @returns {OpenXmlElement | undefined} The result.
+ * @param {OpenXmlElement} root - Specifies the root.
+ * @param {string} namespaceUri - Specifies the namespace uri.
+ * @param {string} localName - Specifies the local name.
+ * @returns {OpenXmlElement | undefined} Returns the result.
  */
 function findDeepElement(root: OpenXmlElement, namespaceUri: string, localName: string): OpenXmlElement | undefined {
     if (isElement(root, namespaceUri, localName)) {
@@ -253,8 +253,8 @@ function attrValue(el: OpenXmlElement, localName: string): string | undefined {
  * Parse OOXML boolean attribute wire (`"1"`/`"true"`/`"0"`/`"false"`).
  * Returns `undefined` when absent or unrecognized.
  *
- * @param {string | undefined} raw - The raw.
- * @returns {boolean | undefined} The result.
+ * @param {string | undefined} raw - Specifies the raw.
+ * @returns {boolean | undefined} Returns the result.
  */
 function parseXmlBoolean(raw: string | undefined): boolean | undefined {
     if (raw === undefined) {
@@ -273,8 +273,8 @@ function parseXmlBoolean(raw: string | undefined): boolean | undefined {
  * Accepts non-negative integers only (insets are physical margins ≥ 0).
  * Uses `emuToPoint()` so 0 is legal (unlike `lengthToEmus`, which requires > 0).
  *
- * @param {string | undefined} raw - The raw.
- * @returns {number | undefined} The result.
+ * @param {string | undefined} raw - Specifies the raw.
+ * @returns {number | undefined} Returns the result.
  */
 function parseInsetEmu(raw: string | undefined): number | undefined {
     if (raw === undefined || !/^-?\d+$/.test(raw)) {
@@ -291,8 +291,8 @@ function parseInsetEmu(raw: string | undefined): number | undefined {
  * Accepts either plain decimal (`100000`) or percent-string (`100%`).
  * fontScale schema range is 1000…100000 when decimal.
  *
- * @param {string | undefined} raw - The raw.
- * @returns {number | undefined} The result.
+ * @param {string | undefined} raw - Specifies the raw.
+ * @returns {number | undefined} Returns the result.
  */
 function parsePercentAttr(raw: string | undefined): number | undefined {
     if (raw === undefined) {
@@ -549,8 +549,8 @@ function buildAutoFitChild(autoFit: TextAutoFit): OpenXmlElement {
  * Convert inset points to a non-negative wire EMU integer string.
  * 0 is legal for insets; uses pointToCoordinateEmus (allows 0).
  *
- * @param {number} value - The value.
- * @returns {string} The result.
+ * @param {number} value - Specifies the value.
+ * @returns {string} Returns the result.
  */
 function insetToEmuString(value: number): string {
     const emu: Emus = pointToCoordinateEmus(value);
@@ -739,26 +739,40 @@ export function hasModeledBodyPrFields(state: {
 export type BodyInsetEmus = Emus;
 
 /**
- * Public text direction inside a shape text frame (`wps:bodyPr/@vert`).
+ * Public text direction inside a shape text frame.
+ *
  * @public
  */
 export enum TextDirection {
+    /** Specifies the horizontal direction. */
     Horizontal = 'horz',
+    /** Specifies the vertical direction. */
     Vertical = 'vert',
+    /** Specifies the vertical270 direction. */
     Vertical270 = 'vert270',
+    /** Specifies the word art vertical direction. */
     WordArtVertical = 'wordArtVert',
+    /** Specifies the east asian vertical direction. */
     EastAsianVertical = 'eaVert',
+    /** Specifies the mongolian vertical direction. */
     MongolianVertical = 'mongolianVert',
+    /** Specifies the word art vertical rtl direction. */
     WordArtVerticalRtl = 'wordArtVertRtl'
 }
 /**
- * Public vertical alignment of text inside a shape text frame (`wps:bodyPr/@anchor`).
+ * Public vertical alignment of text inside a shape text frame.
+ *
  * @public
  */
 export enum TextVerticalAlignment {
+    /** Specifies the top alignment. */
     Top = 't',
+    /** Specifies the center alignment. */
     Center = 'ctr',
+    /** Specifies the bottom alignment. */
     Bottom = 'b',
+    /** Specifies the justified alignment. */
     Justified = 'just',
+    /** Specifies the distributed alignment. */
     Distributed = 'dist'
 }

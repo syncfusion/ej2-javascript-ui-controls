@@ -1,3 +1,4 @@
+import { PdfLayerRadioGroup, PdfLayerRadioGroupCollection } from './layers/layer-radio-group';
 import { _PdfContentStream, _PdfStream } from './base-stream';
 import { _PdfCrossReference } from './pdf-cross-reference';
 import { _Linearization } from './pdf-parser';
@@ -202,6 +203,7 @@ export class PdfDocument {
      */
     _isSplitDocument: boolean = false;
     private _layers: PdfLayerCollection;
+    _layerRadioGroupsInstance: PdfLayerRadioGroupCollection;
     /**
      * Optional content configuration dictionary references.
      *
@@ -841,6 +843,128 @@ export class PdfDocument {
             this._layers = new PdfLayerCollection(this);
         }
         return this._layers;
+    }
+    /**
+     * Gets the collection of radio button layer groups (`/OCProperties/D/RBGroups`).
+     *
+     * @returns {PdfLayerRadioGroupCollection} The radio group collection.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Create a radio group from two layers
+     * let radioGroup: PdfLayerRadioGroup = new PdfLayerRadioGroup();
+     * radioGroup.add(document.layers.add('Layer1'));
+     * radioGroup.add(document.layers.add('Layer2'));
+     * // Register the radio group with the document
+     * document.layerRadioGroups.add(radioGroup);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get layerRadioGroups(): PdfLayerRadioGroupCollection {
+        if (!this._layerRadioGroupsInstance) {
+            this._layerRadioGroupsInstance = new PdfLayerRadioGroupCollection(this);
+            this._loadRadioGroups();
+        }
+        return this._layerRadioGroupsInstance;
+    }
+    /**
+     * Parses `/RBGroups` into radio group objects.
+     *
+     * @private
+     * @returns {void} nothing.
+     */
+    _loadRadioGroups(): void {
+        const defaultView: _PdfDictionary = this._getDefaultView();
+        const collection: PdfLayerRadioGroupCollection = this._layerRadioGroupsInstance;
+        if (!defaultView || !defaultView.has('RBGroups')) {
+            return;
+        }
+        const rbGroups: any = defaultView.get('RBGroups'); // eslint-disable-line
+        if (!Array.isArray(rbGroups)) {
+            return;
+        }
+        const map: Map<_PdfReference, PdfLayer> = this.layers._layerDictionary;
+        const claimed: PdfLayer[] = [];
+        for (let i: number = 0; i < rbGroups.length; i++) {
+            let inner: any = rbGroups[<number>i]; // eslint-disable-line
+            if (inner instanceof _PdfReference) {
+                inner = this._crossReference._fetch(inner);
+            }
+            if (!Array.isArray(inner)) {
+                continue;
+            }
+            const group: PdfLayerRadioGroup = new PdfLayerRadioGroup();
+            for (let j: number = 0; j < inner.length; j++) {
+                const layer: PdfLayer = inner[<number>j] instanceof _PdfReference ? map.get(inner[<number>j]) : undefined;
+                if (layer && group._layers.indexOf(layer) === -1 && claimed.indexOf(layer) === -1) {
+                    group._layers.push(layer);
+                    claimed.push(layer);
+                    if (!layer._radioGroups) {
+                        layer._radioGroups = [];
+                    }
+                    layer._radioGroups.push(group);
+                }
+            }
+            if (group._layers.length > 0) {
+                group._document = this;
+                collection._groups.push(group);
+            }
+        }
+    }
+    /**
+     * Gets the default optional content configuration dictionary.
+     *
+     * @private
+     * @returns {_PdfDictionary} Default view or undefined.
+     */
+    _getDefaultView(): _PdfDictionary {
+        const catalog: _PdfDictionary = this._catalog._catalogDictionary;
+        if (catalog.has('OCProperties')) {
+            const ocProperties: _PdfDictionary = catalog.get('OCProperties') as _PdfDictionary;
+            if (ocProperties instanceof _PdfDictionary) {
+                const defaultView: _PdfDictionary = ocProperties.get('D') as _PdfDictionary;
+                if (defaultView instanceof _PdfDictionary) {
+                    return defaultView;
+                }
+            }
+        }
+        return undefined;
+    }
+    /**
+     * Writes the radio groups to `/D/RBGroups`.
+     *
+     * @private
+     * @returns {void} nothing.
+     */
+    _syncRBGroupsDictionary(): void {
+        const defaultView: _PdfDictionary = this._getDefaultView();
+        if (!defaultView || !this._layerRadioGroupsInstance) {
+            return;
+        }
+        const output: _PdfReference[][] = [];
+        this._layerRadioGroupsInstance._groups.forEach((group: PdfLayerRadioGroup) => {
+            const refs: _PdfReference[] = [];
+            group._layers.forEach((layer: PdfLayer) => {
+                if (layer._referenceHolder && refs.indexOf(layer._referenceHolder) === -1) {
+                    refs.push(layer._referenceHolder);
+                }
+            });
+            if (refs.length > 0) {
+                output.push(refs);
+            }
+        });
+        if (output.length > 0) {
+            defaultView.update('RBGroups', output);
+        } else if (defaultView.has('RBGroups')) {
+            delete defaultView._map['RBGroups'];
+        }
+        defaultView._updated = true;
+        this._catalog._catalogDictionary._updated = true;
+        this._crossReference._allowCatalog = true;
     }
     /**
      * Gets the template configuration for document-level headers and footers.
@@ -2903,6 +3027,9 @@ export class PdfDocument {
         this._renderDocumentTemplates(undefined);
         this._doPostProcessOnFormFields(isFlatten);
         this._doPostProcessOnAnnotations(isFlatten);
+        if (isFlatten && this._catalog._catalogDictionary.has('OCProperties')) {
+            this.layers._flattenAll();
+        }
         this._addXmpMetadata();
         this._renderDocumentTemplates(PdfTemplateLayerMode.foreground);
         if (this._attachments) {

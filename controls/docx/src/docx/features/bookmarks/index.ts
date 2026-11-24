@@ -5,8 +5,7 @@ import { FeatureInline } from '../document/feature-inline';
 import { ParagraphItem, ParagraphItemOwner } from '../document/paragraph-item';
 import { Paragraph } from '../document/paragraph';
 import {
-    FeatureInlineParagraphItem,
-    InlineContent, ConcreteParagraphItem
+    FeatureInlineParagraphItem, TextRange
 } from '../document/text-range';
 import { isWml, wmlAttr, wmlElement } from '../document/wml';
 import {
@@ -87,7 +86,7 @@ function isValidBookmarkName(name: string): boolean {
     if (name.length === 0) {
         return false;
     }
-    // Reject whitespace-only names (DocIO / Word authoring parity).
+    // Reject whitespace-only names (Word authoring parity).
     for (let i: number = 0; i < name.length; i += 1) {
         const c: number = name.charCodeAt(i);
         if (c !== 0x20 && c !== 0x09 && c !== 0x0a && c !== 0x0d) {
@@ -106,9 +105,9 @@ function assertValidBookmarkName(name: string): void {
 /**
  * Normalize a bookmark name for case-insensitive comparison.
  * Converts to lowercase for matching purposes.
- * 
- * @param name - The name to normalize
- * @returns Normalized name (lowercase)
+ *
+ * @param {string} name - The name to normalize
+ * @returns {string} Normalized name (lowercase)
  * @private
  */
 function normalizeBookmarkName(name: string): string {
@@ -122,18 +121,15 @@ function assertNonNegativeInteger(value: number, label: string): void {
 }
 
 /**
- * Represents the start of a bookmark (`w:bookmarkStart`) in a WordprocessingML document.
+ * Represents the start of a bookmark in a document.
  *
- * A bookmark start must be paired with a corresponding {@link BookmarkEnd} that shares
- * the same internal bookmark identifier. This element can be inserted directly into
- * {@link Paragraph.items} and is serialized as a WordprocessingML `w:bookmarkStart` element.
+ * A bookmark start must be paired with a corresponding {@link BookmarkEnd}. It can be inserted directly into {@link Paragraph.items}.
  *
  * @example
  * ```ts
  * const bookmark = new BookmarkStart('CustomerDetails');
  * paragraph.items.add(bookmark);
  * ```
- *
  * @public
  */
 export class BookmarkStart extends ParagraphItem {
@@ -145,15 +141,17 @@ export class BookmarkStart extends ParagraphItem {
 
     /**
      * Discriminant for paragraph items collection type checking.
+     *
      * @private
      */
+    // eslint-disable-next-line @typescript-eslint/prefer-as-const -- `as const` needs TypeScript 3.4+, newer than this project's compiler
     readonly type: 'bookmarkStart' = 'bookmarkStart';
 
     /**
      * Create a bookmark start marker with a name.
-     * 
+     *
      * Public API: allocates pending negative ID that will be materialized at save time.
-     * 
+     *
      * @param name - Bookmark name (`w:name`); must be non-empty, not whitespace-only
      * @throws {@link DocxError} with code `content/invalid-bookmark` if name is invalid
      * @public
@@ -163,16 +161,43 @@ export class BookmarkStart extends ParagraphItem {
      * @private
      */
     constructor(
+        /**
+         * Gets or sets the name.
+         */
         name: string,
         bookmarkId: number,
+        /**
+         * Gets or sets the first column.
+         */
         firstColumn: number,
+        /**
+         * Gets or sets the last column.
+         */
         lastColumn: number,
         residualAttributes: OpenXmlAttribute[]
     );
+    /**
+     * Initializes a new instance of the BookmarkStart class.
+     *
+     * @param {string} name - Specifies the name.
+     * @param {number} bookmarkId - Specifies the bookmark id.
+     * @param {number} firstColumn - Specifies the first column.
+     * @param {number} lastColumn - Specifies the last column.
+     * @param {OpenXmlAttribute[]} residualAttributes - Specifies the residual attributes.
+     */
     constructor(
+        /**
+         * Gets or sets the name.
+         */
         name: string,
         bookmarkId?: number,
+        /**
+         * Gets or sets the first column.
+         */
         firstColumn?: number,
+        /**
+         * Gets or sets the last column.
+         */
         lastColumn?: number,
         residualAttributes?: OpenXmlAttribute[]
     ) {
@@ -191,15 +216,18 @@ export class BookmarkStart extends ParagraphItem {
 
     /**
      * Create a bookmark start marker from parsed OOXML.
-     * 
-     * @param bookmarkId - Parsed w:id value (non-negative)
-     * @param name - Parsed w:name value
-     * @param options - Optional parsed attributes
-     * @returns Parsed BookmarkStart
+     *
+     * @param {number} bookmarkId - Parsed w:id value (non-negative)
+     * @param {string} name - Parsed w:name value
+     * @param {Object} options - Optional parsed attributes
+     * @returns {BookmarkStart} Parsed BookmarkStart
      * @private
      */
     static createFromOpenXml(
         bookmarkId: number,
+        /**
+         * Gets or sets the name.
+         */
         name: string,
         options?: {
             readonly firstColumn?: number;
@@ -230,16 +258,16 @@ export class BookmarkStart extends ParagraphItem {
     }
 
     /**
-     * Bookmark name (`w:name`). Read-only; set at construction.
+     * Gets the bookmark name. Read-only; set at construction.
      *
-     * @returns The bookmark name.
+     * @returns {string} The bookmark name.
      */
     get name(): string {
         return this.nameValue;
     }
 
     /**
-     * Zero-based first table column of the bookmark (`w:colFirst`).
+     * Gets or sets the zero-based first table column of the bookmark.
      *
      * `-1` means the attribute is absent. Assigning `-1` or `undefined` clears it.
      *
@@ -259,7 +287,7 @@ export class BookmarkStart extends ParagraphItem {
     }
 
     /**
-     * Zero-based last table column of the bookmark (`w:colLast`).
+     * Gets or sets the zero-based last table column of the bookmark.
      *
      * `-1` means the attribute is absent. Assigning `-1` or `undefined` clears it.
      *
@@ -333,18 +361,13 @@ export class BookmarkStart extends ParagraphItem {
 /**
  * Represents the end of a bookmark in a document.
  *
- * A bookmark end closes a bookmark range opened by a corresponding
- * {@link BookmarkStart}. This element can be inserted directly into
- * {@link Paragraph.items} and is serialized as a `w:bookmarkEnd`
- * element in WordprocessingML.
- *
+ * A bookmark end closes the bookmark range opened by the corresponding {@link BookmarkStart}. It can be inserted directly into {@link Paragraph.items}.
  *
  * @example
  * ```ts
  * const bookmarkEnd = new BookmarkEnd('CustomerDetails');
  * paragraph.items.add(bookmarkEnd);
  * ```
- *
  * @public
  */
 export class BookmarkEnd extends ParagraphItem {
@@ -357,18 +380,20 @@ export class BookmarkEnd extends ParagraphItem {
 
     /**
      * Discriminant for paragraph items collection type checking.
+     *
      * @private
      */
+    // eslint-disable-next-line @typescript-eslint/prefer-as-const -- `as const` needs TypeScript 3.4+, newer than this project's compiler
     readonly type: 'bookmarkEnd' = 'bookmarkEnd';
 
     /**
      * Create a bookmark end marker with a name.
-     * 
+     *
      * Public API: allocates pending negative ID that will be materialized at save time.
-     * 
+     *
      * @param name - Bookmark name; empty string is accepted, but non-empty values
      *               must be non-whitespace-only. Read-only; set at construction.
-     * @throws {@link DocxError} with code `content/invalid-bookmark` if name is 
+     * @throws {@link DocxError} with code `content/invalid-bookmark` if name is
      *         non-empty but invalid (whitespace-only)
      * @public
      */
@@ -377,6 +402,12 @@ export class BookmarkEnd extends ParagraphItem {
      * @private
      */
     constructor(name: string, bookmarkId: number);
+    /**
+     * Initializes a new instance of the BookmarkEnd class.
+     *
+     * @param {string} name - Specifies the name.
+     * @param {number} bookmarkId - Specifies the bookmark id.
+     */
     constructor(name: string, bookmarkId?: number) {
         super();
         if (name.length > 0) {
@@ -388,16 +419,19 @@ export class BookmarkEnd extends ParagraphItem {
 
     /**
      * Create a bookmark end marker from parsed OOXML.
-     * 
+     *
      * Internal factory: used by the deserialization layer.
-     * 
-     * @param bookmarkId - Parsed w:id value (non-negative)
-     * @param name - Optional parsed name (empty string if omitted)
-     * @returns Parsed BookmarkEnd
+     *
+     * @param {number} bookmarkId - Parsed w:id value (non-negative)
+     * @param {string} name - Optional parsed name (empty string if omitted)
+     * @returns {BookmarkEnd} Parsed BookmarkEnd
      * @private
      */
     static createFromOpenXml(
         bookmarkId: number,
+        /**
+         * Gets or sets the name.
+         */
         name?: string
     ): BookmarkEnd {
         return new BookmarkEnd(name !== undefined ? name : '', bookmarkId);
@@ -414,12 +448,12 @@ export class BookmarkEnd extends ParagraphItem {
     }
 
     /**
-     * Bookmark name, read-only; set at construction.
+     * Gets the bookmark name, read-only; set at construction.
      *
-     * Empty string is allowed on the end marker (schema has no `w:name` 
+     * Empty string is allowed on the end marker (schema has no `w:name`
      * on `bookmarkEnd`). Pairing always uses internal id, never this name.
      *
-     * @returns The bookmark name (possibly empty).
+     * @returns {string} The bookmark name (possibly empty).
      */
     get name(): string {
         return this.nameValue;
@@ -584,26 +618,25 @@ export class Bookmark {
         this.endMarkerValue = end;
     }
     /**
-     * Bookmark name (`w:name` on the start marker). Read-only on the pair view.
+     * Gets the bookmark name. Read-only on the pair view.
      */
     get name(): string {
         return this.startMarkerValue.name;
     }
     /**
-     * Start marker for this bookmark.
+     * Gets the start marker for this bookmark.
      */
     get bookmarkStart(): BookmarkStart {
         return this.startMarkerValue;
     }
     /**
-     * End marker for this bookmark, or undefined for start-only bookmarks.
+     * Gets the end marker for this bookmark, or undefined for start-only bookmarks.
      */
     get bookmarkEnd(): BookmarkEnd | undefined {
         return this.endMarkerValue;
     }
     /**
-     * Zero-based first table column (`w:colFirst` on the start marker).
-     * Returns -1 when absent, not undefined.
+     * Gets or sets the zero-based first table column. Returns -1 when absent, not undefined.
      */
     get firstColumn(): number {
         return this.startMarkerValue.firstColumn;
@@ -612,8 +645,7 @@ export class Bookmark {
         this.startMarkerValue.firstColumn = value;
     }
     /**
-     * Zero-based last table column (`w:colLast` on the start marker).
-     * Returns -1 when absent, not undefined.
+     * Gets or sets the zero-based last table column. Returns -1 when absent, not undefined.
      */
     get lastColumn(): number {
         return this.startMarkerValue.lastColumn;
@@ -729,18 +761,18 @@ export function tryParseBookmarkEnd(element: OpenXmlElement): BookmarkEnd | unde
 function collectBookmarkMarkersInDocumentOrder(document: WordDocument): BookmarkMarker[] {
     const markers: BookmarkMarker[] = [];
     visitParagraphsInDocumentOrder(document, (paragraph: Paragraph) => {
-        const content: ConcreteParagraphItem[] = paragraph.items.toArray();
+        const content: ParagraphItem[] = paragraph.items.toArray();
         for (const item of content) {
             if (item === undefined) {
                 continue;
             }
-            
+
             // Handle direct bookmark items (new approach)
             if (item instanceof BookmarkStart || item instanceof BookmarkEnd) {
                 markers.push(item);
                 continue;
             }
-            
+
             // Handle wrapped feature inline items (legacy, for backward compatibility)
             if (item instanceof FeatureInlineParagraphItem) {
                 if (item.value instanceof BookmarkStart || item.value instanceof BookmarkEnd) {
@@ -779,7 +811,7 @@ function allocatePendingBookmarkId(document: WordDocument): number {
 function materializeBookmarkIds(document: WordDocument): void {
     // Get all paired bookmarks in document order
     const bookmarks: ReadonlyArray<Bookmark> = bookmarksInDocument(document);
-    
+
     // Determine the next available ID after existing parsed bookmarks
     let nextId: number = 0;
     collectBookmarkIds(document, (bookmarkId: number) => {
@@ -787,7 +819,7 @@ function materializeBookmarkIds(document: WordDocument): void {
             nextId = bookmarkId + 1;
         }
     });
-    
+
     // Assign the same ID to each bookmark pair
     for (const bookmark of bookmarks) {
         // Only materialize pending bookmarks (ID < 0)
@@ -800,7 +832,7 @@ function materializeBookmarkIds(document: WordDocument): void {
             nextId += 1;
         }
     }
-    
+
     // Handle orphan bookmarks (unpaired starts/ends that weren't in pairs list)
     const pairedStarts: Set<BookmarkStart> = new Set<BookmarkStart>();
     const pairedEnds: Set<BookmarkEnd> = new Set<BookmarkEnd>();
@@ -810,7 +842,7 @@ function materializeBookmarkIds(document: WordDocument): void {
             pairedEnds.add(bookmark.bookmarkEnd);
         }
     }
-    
+
     // Assign IDs to any orphan markers
     visitParagraphsInDocumentOrder(document, (paragraph: Paragraph) => {
         for (const item of paragraph.items) {
@@ -823,7 +855,7 @@ function materializeBookmarkIds(document: WordDocument): void {
                 item.setBookmarkId(nextId);
                 nextId += 1;
             }
-            
+
             // Handle wrapped feature inline items (legacy)
             if (!(item instanceof FeatureInlineParagraphItem)) {
                 continue;
@@ -853,7 +885,7 @@ const bookmarkByStart: WeakMap<BookmarkStart, Bookmark> = new WeakMap<BookmarkSt
  * For each start:
  * - If both start and end have non-negative IDs (from parsed DOCX), pair by ID
  * - If markers have pending negative IDs, pair by normalized name in document order
- * 
+ *
  * Pairing strategy:
  * - For each start, find the first subsequent unpaired end with matching ID or normalized name
  * - Duplicate starts before an end: first start pairs; later starts remain unpaired
@@ -883,7 +915,7 @@ function pairBookmarks(markers: ReadonlyArray<BookmarkMarker>): Bookmark[] {
                 continue;
             }
             // Match by ID if both are materialized (>= 0), otherwise by normalized name
-            const pairsByIdMatch: boolean = start.bookmarkId >= 0 && 
+            const pairsByIdMatch: boolean = start.bookmarkId >= 0 &&
                                              candidate.bookmarkId >= 0 &&
                                              candidate.bookmarkId === start.bookmarkId;
             const pairsByNameMatch: boolean = normalizeBookmarkName(candidate.name) === startNormalized;
@@ -990,18 +1022,18 @@ function locateBookmarkMarker(
         if (found !== undefined) {
             return;
         }
-        const content: ConcreteParagraphItem[] = paragraph.items.toArray();
+        const content: ParagraphItem[] = paragraph.items.toArray();
         for (const [i, item] of content.entries()) {
             if (item === undefined) {
                 continue;
             }
-            
+
             // Check for direct bookmark item
             if (item === marker) {
                 found = { paragraph: paragraph, index: i };
                 return;
             }
-            
+
             // Check for wrapped feature inline item
             if (
                 item instanceof FeatureInlineParagraphItem &&
@@ -1019,12 +1051,15 @@ function locateBookmarkMarker(
  * Remove a bookmark marker from its paragraph.
  * Handles both direct ParagraphItem and wrapped FeatureInline cases.
  *
+ * @param {Paragraph} paragraph - The paragraph.
+ * @param {BookmarkStart | BookmarkEnd} marker - The marker.
+ * @returns {void}
  * @private
  */
 function removeBookmarkMarker(paragraph: Paragraph, marker: BookmarkStart | BookmarkEnd): void {
     // First try to find and remove as a direct item
     try {
-        const index = paragraph.items.indexOf(marker);
+        const index: number = paragraph.items.indexOf(marker);
         if (index >= 0) {
             paragraph.items.removeAt(index);
             return;
@@ -1032,7 +1067,7 @@ function removeBookmarkMarker(paragraph: Paragraph, marker: BookmarkStart | Book
     } catch (e) {
         // indexOf might fail, continue to next approach
     }
-    
+
     // Try to remove as wrapped feature inline (legacy path)
     try {
         paragraph.removeFeatureInline(marker as any);
@@ -1119,8 +1154,8 @@ export class BookmarkCollection implements Iterable<Bookmark> {
     /**
      * Bookmark at zero-based `index`, or `undefined` when out of range.
      *
-     * @param {number} index - The index.
-     * @returns {Bookmark | undefined} The result.
+     * @param {number} index - Specifies the index.
+     * @returns {Bookmark | undefined} Returns the result.
      * @public
      */
     itemAt(index: number): Bookmark | undefined {
@@ -1129,10 +1164,53 @@ export class BookmarkCollection implements Iterable<Bookmark> {
         return items[index];
     }
     /**
+     * Plain text between a bookmark's start and end markers (paragraphs joined by a line feed),
+     * or `undefined` when no bookmark has that name.
+     *
+     * @param {string} name - The bookmark name (case-sensitive).
+     * @returns {string | undefined} The text.
+     * @private
+     */
+    getContent(name: string): string | undefined {
+        const bookmark: Bookmark | undefined = this.findByName(name);
+        if (bookmark === undefined) {
+            return undefined;
+        }
+        let inside: boolean = false;
+        let done: boolean = false;
+        let started: boolean = false;
+        let text: string = '';
+        visitParagraphsInDocumentOrder(this.document, (paragraph: Paragraph) => {
+            if (done) {
+                return;
+            }
+            if (inside && started) {
+                text += '\n';
+            }
+            for (const item of paragraph.items.toArray()) {
+                if (done) {
+                    break;
+                }
+                // Markers are direct paragraph items after load, or wrapped inlines when authored.
+                const marker: unknown = item instanceof FeatureInlineParagraphItem ? item.value : item;
+                if (marker === bookmark.startMarker) {
+                    inside = true;
+                } else if (marker === bookmark.endMarker) {
+                    done = true;
+                }
+                else if (inside && item instanceof TextRange) {
+                    text += item.text;
+                    started = true;
+                }
+            }
+        });
+        return text;
+    }
+    /**
      * First bookmark whose name matches exactly (case-sensitive).
      *
-     * @param {string} name - The name.
-     * @returns {Bookmark | undefined} The result.
+     * @param {string} name - Specifies the name.
+     * @returns {Bookmark | undefined} Returns the result.
      * @public
      */
     findByName(name: string): Bookmark | undefined {
@@ -1141,8 +1219,8 @@ export class BookmarkCollection implements Iterable<Bookmark> {
     /**
      * Remove markers for `bookmark`; content between markers is preserved.
      *
-     * @param {Bookmark} bookmark - The bookmark.
-     * @returns {void} Nothing is returned.
+     * @param {Bookmark} bookmark - Specifies the bookmark.
+     * @returns {void} Nothing.
      * @throws DocxError `content/unknown-bookmark` when markers are detached.
      * @public
      */
@@ -1153,8 +1231,8 @@ export class BookmarkCollection implements Iterable<Bookmark> {
     /**
      * Remove the bookmark at zero-based `index`.
      *
-     * @param {number} index - The index.
-     * @returns {void} Nothing is returned.
+     * @param {number} index - Specifies the index.
+     * @returns {void} Nothing.
      * @throws RangeError when `index` is out of range.
      * @public
      */
@@ -1170,7 +1248,7 @@ export class BookmarkCollection implements Iterable<Bookmark> {
     /**
      * Remove every paired bookmark’s markers; content is preserved.
      *
-     * @returns {void} Nothing is returned.
+     * @returns {void} Nothing.
      * @public
      */
     clear(): void {
@@ -1302,12 +1380,12 @@ export function registerBookmarksFeature(): void {
 /**
  * Whether paragraph inline content is a modeled bookmark start from this module.
  *
- * @param {InlineContent} inline - The inline.
+ * @param {ParagraphItem} inline - The inline.
  * @returns {Object} The result.
  * @private
  */
 export function isBookmarkStartInline(
-    inline: InlineContent
+    inline: ParagraphItem
 ): inline is FeatureInlineParagraphItem & { value: BookmarkStart } {
     return (
         inline instanceof FeatureInlineParagraphItem &&
@@ -1319,12 +1397,12 @@ export function isBookmarkStartInline(
 /**
  * Whether paragraph inline content is a modeled bookmark end from this module.
  *
- * @param {InlineContent} inline - The inline.
+ * @param {ParagraphItem} inline - The inline.
  * @returns {Object} The result.
  * @private
  */
 export function isBookmarkEndInline(
-    inline: InlineContent
+    inline: ParagraphItem
 ): inline is FeatureInlineParagraphItem & { value: BookmarkEnd } {
     return (
         inline instanceof FeatureInlineParagraphItem &&

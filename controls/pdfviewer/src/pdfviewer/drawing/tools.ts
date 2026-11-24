@@ -2581,6 +2581,9 @@ export class NodeDrawingTool extends ToolBase {
      * @returns {void}
      */
     public mouseDown(args: MouseEventArgs): void {
+        if (this.commandHandler.readOnlySettings.formFields && this.sourceObject && this.sourceObject.formFieldAnnotationType) {
+            return;
+        }
         if (!isNaN(this.pdfViewerBase.activeElements.activePageID) && (event.target as HTMLElement).className !== 'e-pv-page-container') {
             super.mouseDown(args);
             this.inAction = true;

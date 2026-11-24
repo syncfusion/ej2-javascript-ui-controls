@@ -1,15 +1,16 @@
 /**
- * Semantic paragraph alignment mapped from `ST_Jc`.
- *
- * New writes use `start`/`center`/`end`/`justify`. Loaded `left` reads as `Start`
- * and `both` reads as `Justify` without rewriting the stored value on a no-op save.
+ * Specifies the horizontal alignment of a paragraph.
  *
  * @public
  */
 export enum ParagraphAlignment {
+    /** Specifies the left alignment. */
     Left = 'start',
+    /** Specifies the center alignment. */
     Center = 'center',
+    /** Specifies the right alignment. */
     Right = 'end',
+    /** Specifies the justify alignment. */
     Justify = 'justify'
 }
 /**

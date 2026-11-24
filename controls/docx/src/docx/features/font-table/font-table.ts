@@ -157,7 +157,7 @@ export class FontTablePart implements FeaturePackagePart {
      * Case-insensitive name lookup. Does not create entries.
      *
      * Prefer {@link WordDocument.fontSubstitutionTable} `.get(name)` for substitution
-     * workflows (TASK-8067). This helper remains a thin catalog alias to
+     * workflows. This helper remains a thin catalog alias to
      * {@link FontTableFont.alternateName}.
      *
      * @param {string} name - The name.
@@ -313,7 +313,7 @@ export function registerFontTableFeature(): void {
 /**
  * Font table catalog for a document (`fontTable.xml` / `CT_FontsList`).
  *
- * **Public dual export (TASK-8067):** Prefer {@link WordDocument.fontSubstitutionTable}
+ * **Public dual export:** Prefer {@link WordDocument.fontSubstitutionTable}
  * for alternate-name dictionary workflows (`get`/`set`/`delete`/`clear`/iteration).
  * Use `fontTableFor` only for the full catalog — panose, family, pitch, charset,
  * signature, embed relationship metadata, residual unknown markup, and

@@ -18,8 +18,13 @@ function bindRequires(choice: OpenXmlElement, scope: ReadonlyMap<string, string>
         }
     }
 }
+/**
+ * * `Lax`
+ */
 export enum MarkupConformance {
+    /** Specifies the lax conformance. */
     Lax = 'lax',
+    /** Specifies the strict conformance. */
     Strict = 'strict'
 }
 export interface InspectMarkupCompatibilityOptions {

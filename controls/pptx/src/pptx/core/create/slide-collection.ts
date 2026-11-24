@@ -31,6 +31,13 @@ export type SlideCollection = ReadonlyArray<Slide> & {
      */
     add(options?: AddSlideOptions): Slide;
     /**
+     * Appends a copy of a detached slide, such as one returned by {@link Section.clone}.
+     *
+     * @param slide - Slide copy that is not already in this presentation.
+     * @returns The imported {@link Slide}.
+     */
+    add(slide: Slide): Slide;
+    /**
      * Removes a slide by instance from the presentation and tears down its
      * package part, the presentation→slide relationship, and its
      * `[Content_Types].xml` override.
@@ -111,12 +118,17 @@ export type SlideCollection = ReadonlyArray<Slide> & {
  * @param {*} removeAtImpl - Implements remove-by-index teardown (bounds validation
  * @returns {SlideCollection} The result.
  */
-export function bindSlideCollection(getSlides: () => ReadonlyArray<Slide>, addImpl: (options?: AddSlideOptions) => Slide,
+export function bindSlideCollection(getSlides: () => ReadonlyArray<Slide>, addImpl: (options?: AddSlideOptions | Slide) => Slide,
                                     removeImpl: (slide: Slide) => void, removeAtImpl: (index: number) => void): SlideCollection {
-    const add: (options?: AddSlideOptions) => Slide = (options?: AddSlideOptions): Slide => addImpl(options);
+    const add: (options?: AddSlideOptions | Slide) => Slide = (options?: AddSlideOptions | Slide): Slide => addImpl(options);
     const remove: (slide: Slide) => void = (slide: Slide): void => removeImpl(slide);
     const removeAt: (index: number) => void = (index: number): void => removeAtImpl(index);
-    return new Proxy({} as SlideCollection, {
+    // Target must be an array so [[IsArray]] holds and `length` can be reported.
+    // Vitest / chai deep-equal walks getOwnPropertyDescriptor('length'); a non-array
+    // target cannot host a non-configurable length, and a configurable length that
+    // disagrees with the target's own length also violates the proxy invariant.
+    const target: Slide[] = [];
+    return new Proxy(target as unknown as SlideCollection, {
         /**
          *
          * @param {SlideCollection} _target - The _target value.
@@ -168,6 +180,7 @@ export function bindSlideCollection(getSlides: () => ReadonlyArray<Slide>, addIm
          * @returns {*} The result.
          */
         ownKeys() : Array<string | symbol> {
+            target.length = getSlides().length;
             const keys: Array<string | symbol> = Reflect.ownKeys(getSlides()).filter(
                 (key: string | number | symbol): key is string | symbol => typeof key !== 'number'
             );
@@ -190,6 +203,11 @@ export function bindSlideCollection(getSlides: () => ReadonlyArray<Slide>, addIm
          * @returns {TypedPropertyDescriptor<any>} The result.
          */
         getOwnPropertyDescriptor(_target: SlideCollection, prop: string | symbol): PropertyDescriptor | undefined {
+            if (prop === 'length') {
+                const length: number = getSlides().length;
+                target.length = length;
+                return { value: length, writable: true, enumerable: false, configurable: false };
+            }
             if (prop === 'add') {
                 return {
                     configurable: true,

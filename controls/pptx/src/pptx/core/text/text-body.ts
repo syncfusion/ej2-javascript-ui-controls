@@ -63,6 +63,15 @@ export class TextBody {
         return this.txBody;
     }
     /**
+     * Mutation hook forwarded to paragraphs and text parts, if any.
+     *
+     * @internal
+     * @returns {(() => void) | undefined} The result.
+     */
+    getOnMutate(): (() => void) | undefined {
+        return this.onMutate;
+    }
+    /**
      * Direct, unresolved `a:bodyPr` layout values.
      *
      * @remarks Insets and column spacing are converted from EMU to points. The

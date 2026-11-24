@@ -10,8 +10,8 @@ import { Emus, pointToEmus, pointToCoordinateEmus, emuToPoint } from '../documen
 import { Body } from '../document/body';
 import { BodyItem } from '../document/body-item';
 import { bodyItemToBlock, projectBlockToBodyItem } from '../document/body-item-adapters';
-import { BlockContent, Paragraph, ParagraphOwner } from '../document/paragraph';
-import { FeatureRunParagraphItem, ConcreteParagraphItem } from '../document/text-range';
+import { BlockContent, Paragraph } from '../document/paragraph';
+import { FeatureRunParagraphItem, ParagraphItem } from '../document/text-range';
 import { isWml, wmlElement } from '../document/wml';
 import { DetachedObjectError, DocxError } from '../../core/errors/docx-error';
 import { MARKUP_COMPATIBILITY_NAMESPACE } from '../../core/mc/index';
@@ -19,7 +19,7 @@ import { OpenXmlChild, OpenXmlElement } from '../../core/xml/index';
 import { assertEnumMember, HORIZONTAL_ALIGNMENT_SET, HORIZONTAL_ORIGIN_SET, TEXT_WRAPPING_STYLE_SET, TEXT_WRAPPING_TYPE_SET, TextWrappingStyle, TextWrappingType, VERTICAL_ALIGNMENT_SET, VERTICAL_ORIGIN_SET, HorizontalAlignment as HorizontalAlignmentType, HorizontalOrigin as HorizontalOriginType, TextWrappingStyle as TextWrappingStyleType, TextWrappingType as TextWrappingTypeType, VerticalAlignment as VerticalAlignmentType, VerticalOrigin as VerticalOriginType } from '../images/layout-types';
 import { Table as TableFeature } from '../tables/index';
 import { isTableBlock, isTableBodyItem } from '../tables/index';
-import { ContentControl } from '../content-controls/index';
+import { BlockContentControl } from '../content-controls/index';
 import { isBlockContentControl } from '../content-controls/index';
 import { FeatureBlock } from '../document/feature-block';
 function bindFeatureBlockToDocument(value: FeatureBlock, document: WordDocument | undefined): void {
@@ -35,6 +35,7 @@ function bindFeatureBlockToDocument(value: FeatureBlock, document: WordDocument 
     bindDocument.call(value, document);
 }
 import { A_NS, attributeValue, buildNestedWpsShape, encodeAuthoredDrawingShape, encodeAuthoredGroup, findFirstElement, isNestedDrawingResidual, preferredDrawingElement, patchResidualCNvPr, patchResidualDocPr, patchResidualLayout, readCNvPrIdentity, readDocPrIdentity, readDrawingLayout, readDrawingPositionState, readDrawingWrapState, VML_NS, WPC_NS, WPG_NS, WP_NS, WPS_NS, parseTxbxContentBlocks, serializeTxbxContentBlocks, DrawingHostPlacement, EncodeGroupInput, DrawingDocPrIdentity, DrawingLayoutState, DrawingWrapState, DrawingPositionState } from './host-codec';
+import { BodyBlockParseContext } from '../../core/registry/block-handlers';
 import { readShapePropertiesState, LineCap, LineEndSize, LineEndType, LineDashing, ShapeFill, ShapeLine, ShapePropertiesState } from './sp-pr';
 import { buildBodyPrElement, findTxbxContentElement, findTxbxElement, readBodyPropertiesState, BodyInsets, BodyPropertiesState, TextAnchoring, TextAutoFit, TextBodyWrap, TextHorzOverflow, TextVerticalType, TextVertOverflow } from './body-pr';
 import { AutoShapeType, isPresetAutoShapeType, isStShapeType } from './shape-types';
@@ -56,6 +57,7 @@ export type DirtyMode = 'clean' | 'identity' | 'layout' | 'structure';
 /**
  * Shape `w:txbxContent` story as a document {@link Body}.
  * Syncs the live block store back onto the parent shape on mutate.
+ *
  * @private
  */
 class ShapeTextBoxBody extends Body {
@@ -92,6 +94,7 @@ class ShapeTextBoxBody extends Body {
 }
 /**
  * Cached `wps:spPr` MVP state read from residual (lazy).
+ *
  * @private
  */
 export interface ShapePropertiesStateCached {
@@ -101,61 +104,161 @@ export interface ShapePropertiesStateCached {
     readonly line: ShapeLine | undefined;
     readonly hasThemeStyle: boolean;
 }
+/**
+ * Specifies the initialization options used to create a drawing shape from an existing DrawingML drawing,
+ * including its encoding, placement, geometry, text wrapping, position, fill, and outline.
+ *
+ * @public
+ */
 export interface DrawingShapeInit {
+    /**
+     * Gets the encoding (inline or anchored) of the drawing that hosts the shape.
+     */
     readonly encoding: DrawingEncoding;
+    /**
+     * Gets the preserved OpenXML element that holds the shape markup, which is not modeled by the library.
+     */
     readonly residual: OpenXmlElement;
+    /**
+     * Gets the dirty state of the shape, which decides whether the markup is written back unchanged or re-serialized.
+     */
     readonly dirty: DirtyMode;
+    /**
+     * Gets the non-visual drawing name of the shape (`wp:docPr/@name`).
+     */
     readonly name?: string | undefined;
+    /**
+     * Gets the title of the shape (`wp:docPr/@title`).
+     */
     readonly title?: string | undefined;
+    /**
+     * Gets the alternative text description of the shape (`wp:docPr/@descr`).
+     */
     readonly description?: string | undefined;
+    /**
+     * Gets the drawing object identifier of the shape (`wp:docPr/@id`).
+     */
     readonly docPrId?: number | undefined;
+    /**
+     * Gets the placement of the shape, either inline with the text or anchored.
+     */
     readonly placement?: DrawingHostPlacement | undefined;
-    /** Display width in points. */
+    /**
+     * Gets the display width in points.
+     */
     readonly width?: number | undefined;
-    /** Display height in points. */
+    /**
+     * Gets the display height in points.
+     */
     readonly height?: number | undefined;
+    /**
+     * Gets the name of the preset geometry of the shape (`a:prstGeom/@prst`).
+     */
     readonly presetGeometry?: string | undefined;
+    /**
+     * Gets the rotation angle of the shape, in degrees.
+     */
     readonly rotation?: number | undefined;
+    /**
+     * Gets a value indicating whether the aspect ratio of the shape is locked when it is resized.
+     */
     readonly lockAspectRatio?: boolean | undefined;
+    /**
+     * Gets a value indicating whether the shape is flipped horizontally.
+     */
     readonly flipHorizontal?: boolean | undefined;
+    /**
+     * Gets a value indicating whether the shape is flipped vertically.
+     */
     readonly flipVertical?: boolean | undefined;
+    /**
+     * Gets the text wrapping style of the shape.
+     */
     readonly wrapping?: TextWrappingStyleType | undefined;
-    /** Wrap side (`wp:wrap*@wrapText`) for square/tight/through. */
+    /**
+     * Gets the wrap type.
+     */
     readonly wrapType?: TextWrappingTypeType | undefined;
-    /** Top text distance in points. */
+    /**
+     * Gets the top text distance in points.
+     */
     readonly distanceTop?: number | undefined;
-    /** Bottom text distance in points. */
+    /**
+     * Gets the bottom text distance in points.
+     */
     readonly distanceBottom?: number | undefined;
-    /** Left text distance in points. */
+    /**
+     * Gets the left text distance in points.
+     */
     readonly distanceLeft?: number | undefined;
-    /** Right text distance in points. */
+    /**
+     * Gets the right text distance in points.
+     */
     readonly distanceRight?: number | undefined;
+    /**
+     * Gets a value indicating whether the shape is placed behind the document text.
+     */
     readonly behindDocument?: boolean | undefined;
+    /**
+     * Gets the horizontal origin that the shape position is relative to.
+     */
     readonly horizontalOrigin?: HorizontalOriginType | undefined;
+    /**
+     * Gets the vertical origin that the shape position is relative to.
+     */
     readonly verticalOrigin?: VerticalOriginType | undefined;
-    /** Horizontal offset in points. */
+    /**
+     * Gets the horizontal offset in points.
+     */
     readonly horizontalPosition?: number | undefined;
-    /** Vertical offset in points. */
+    /**
+     * Gets the vertical offset in points.
+     */
     readonly verticalPosition?: number | undefined;
+    /**
+     * Gets the horizontal alignment of the shape relative to the horizontal origin.
+     */
     readonly horizontalAlignment?: HorizontalAlignmentType | undefined;
+    /**
+     * Gets the vertical alignment of the shape relative to the vertical origin.
+     */
     readonly verticalAlignment?: VerticalAlignmentType | undefined;
+    /**
+     * Gets a value indicating whether the anchor of the shape is locked to its paragraph.
+     */
     readonly lockAnchor?: boolean | undefined;
+    /**
+     * Gets a value indicating whether the shape is allowed to overlap other shapes.
+     */
     readonly allowOverlap?: boolean | undefined;
+    /**
+     * Gets a value indicating whether the shape is laid out inside the table cell that contains its anchor.
+     */
     readonly layoutInCell?: boolean | undefined;
+    /**
+     * Gets the fill of the shape.
+     */
     readonly fill?: ShapeFill | undefined;
+    /**
+     * Gets the outline of the shape.
+     */
     readonly line?: ShapeLine | undefined;
-    /** Serialized `w:txbxContent` children for authored text box variants (TASK-8049). */
+    /**
+     * Gets the txbx content.
+     */
     readonly txbxContent?: ReadonlyArray<OpenXmlElement> | undefined;
-    /** Modeled `wps:bodyPr` element for authored text box variants (TASK-8049). */
+    /**
+     * Gets the body pr element.
+     */
     readonly bodyPrElement?: OpenXmlElement | undefined;
     /**
-     * Nested group/canvas children (TASK-8051). When defined, the shape is a
-     * modeled group host even if the array is empty.
+     * Gets the nested group/canvas children. When defined, the shape is a modeled group host even if the array is empty.
      */
     readonly children?: ReadonlyArray<DrawingShape> | undefined;
 }
 /**
  * Cached `wps:txbx` body state (lazy).
+ *
  * @private
  */
 export interface TextBoxStateCached {
@@ -171,27 +274,7 @@ export interface TextBoxStateCached {
     /** Residual `w:txbxContent` element (may be absent in odd fixtures). */
     readonly residualTxbxContent: OpenXmlElement | undefined;
 }
-export class TextBoxParagraphOwner implements ParagraphOwner {
-    private readonly shape: DrawingShape;
-    constructor(shape: DrawingShape) {
-        this.shape = shape;
-    }
-    assertAttachedParagraph(target: Paragraph): void {
-        if (!blockListOwnsParagraph(this.shape.internalBlocks(), target)) {
-            throw new DetachedObjectError('Paragraph is not in this text box');
-        }
-    }
-    /**
-     * @returns {WordDocument} The result.
-     * @private
-     */
-    owningDocument(): WordDocument {
-        // Text box paragraphs live inside the run leaf; the owning document is the
-        // document that owns the anchoring paragraph. Resolve lazily through the
-        // shape's anchor paragraph when bound; otherwise detached.
-        return this.shape.internalOwningDocument();
-    }
-}
+
 /**
  *  Deep membership check: direct or nested (table cell / SDT) paragraph.
  *
@@ -222,9 +305,9 @@ export function blockListOwnsParagraph(blocks: ReadonlyArray<BlockContent>, targ
 /**
  *  Membership over projected public body items (nested SDT children).
  *
- * @param {ReadonlyArray<BodyItem>} items - The items.
- * @param {Paragraph} target - The target.
- * @returns {boolean} The result.
+ * @param {ReadonlyArray<BodyItem>} items - Specifies the items.
+ * @param {Paragraph} target - Specifies the target.
+ * @returns {boolean} Returns the result.
  */
 function bodyItemsOwnParagraph(items: ReadonlyArray<BodyItem>, target: Paragraph): boolean {
     for (const item of items) {
@@ -236,7 +319,7 @@ function bodyItemsOwnParagraph(items: ReadonlyArray<BodyItem>, target: Paragraph
                 return true;
             }
         }
-        if (item instanceof ContentControl) {
+        if (item instanceof BlockContentControl) {
             const nested: ReadonlyArray<BodyItem> = item.blockContentControl;
             if (nested !== undefined && bodyItemsOwnParagraph(nested, target)) {
                 return true;
@@ -285,7 +368,7 @@ export function tableOwnsParagraph(table: TableFeature, target: Paragraph): bool
  * AlternateContent (Choice wps + Fallback VML stub) â€” GO Policy B.
  * Text box leaves expose `wps:bodyPr` typed state and the `w:txbxContent`
  * block body (paragraphs / tables / nested tables / block SDTs â€” GO Q6);
- * non-textBox shapes throw on body APIs (TASK-8049).
+ * non-textBox shapes throw on body APIs.
  *
  * @private
  */
@@ -336,21 +419,20 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
     private lockAnchorValue: boolean | undefined;
     private allowOverlapValue: boolean | undefined;
     private layoutInCellValue: boolean | undefined;
-    /** Geometry/fill/line state (TASK-8048). Defined after first read/mtate. */
+    /** Geometry/fill/line state. Defined after first read/mtate. */
     private spPrState: ShapePropertiesStateCached | undefined;
     private fillValue: ShapeFill | undefined;
     private fillModeled: boolean;
     private lineValue: ShapeLine | undefined;
     private lineModeled: boolean;
-    /** Text box body state (TASK-8049). Lazy; defined after first body access. */
+    /** Text box body state. Lazy; defined after first body access. */
     private txbxState: TextBoxStateCached | undefined;
     private txbxBlocksValue: BlockContent[] | undefined;
     private txbxBodyModeled: boolean;
     private bodyPrValue: BodyPropertiesState | undefined;
     private bodyPrModeled: boolean;
-    private textBoxOwner: TextBoxParagraphOwner | undefined;
     /**
-     * Nested DrawingML children under a group/canvas host (TASK-8051).
+     * Nested DrawingML children under a group/canvas host.
      * Populated when {@link childrenModeled} is true (authored or materialised).
      */
     protected childrenValue: DrawingShape[];
@@ -358,7 +440,7 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
     protected childrenModeled: boolean;
     /** Lazy residual parse cache when children are not yet modeled. */
     protected childrenCache: DrawingShape[] | undefined;
-    /** Parent group/canvas when this leaf is a nested child (TASK-8051). */
+    /** Parent group/canvas when this leaf is a nested child. */
     /**
      * Parent group when nested; package-visible for GroupShape reparenting.
      *
@@ -520,7 +602,7 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
      * for VML. Modeled empty groups (`childrenModeled`) read as `'group'` before
      * residual URI detection. Nested residual leaves (`wps:wsp` / `wpg:grpSp`)
      * are classified from their own element when no `w:drawing` host is present
-     * (TASK-8051). Authored structure + presetGeometry still short-circuits to
+     * Authored structure + presetGeometry still short-circuits to
      * `'shape'` / `'textBox'` after group/canvas checks so residual groups are
      * never misread as shapes.
      *
@@ -570,7 +652,7 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
         return detectDmlVariant(drawing);
     }
     /**
-     * Nested DrawingML children under a group or canvas host (TASK-8051).
+     * Nested DrawingML children under a group or canvas host.
      *
      * Leaf shapes, VML, and unknown variants return `[]`. Residual group/canvas
      * hosts lazy-parse `wps:wsp` / `wpg:grpSp` under `wpg:wgp` or `wpc:wpc`.
@@ -595,7 +677,8 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
         return nested;
     }
     /**
-     * Non-visual drawing name from `wp:docPr @name` / nested `cNvPr @name`.
+     * Gets or sets the non-visual drawing name of the shape (`wp:docPr @name` or nested `cNvPr @name`).
+     *
      * @public
      */
     get name(): string | undefined {
@@ -609,7 +692,8 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
         this.markIdentityDirty();
     }
     /**
-     * Title from `wp:docPr @title` / nested `cNvPr @title`.
+     * Gets or sets the title of the shape (`wp:docPr @title` or nested `cNvPr @title`).
+     *
      * @public
      */
     get title(): string | undefined {
@@ -623,7 +707,8 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
         this.markIdentityDirty();
     }
     /**
-     * Alternative text from `wp:docPr @descr` / nested `cNvPr @descr`.
+     * Gets or sets the alternative text of the shape (`wp:docPr @descr` or nested `cNvPr @descr`).
+     *
      * @public
      */
     get alternativeText(): string | undefined {
@@ -638,6 +723,7 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
     }
     /**
      * Stable fill format facade (Shape.md).
+     *
      * @public
      */
     get fillFormat(): FillFormat {
@@ -648,6 +734,7 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
     }
     /**
      * Stable line format facade (Shape.md).
+     *
      * @public
      */
     get lineFormat(): LineFormat {
@@ -658,6 +745,7 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
     }
     /**
      * Stable wrap format facade (Shape.md).
+     *
      * @public
      */
     get wrapFormat(): WrapFormat {
@@ -668,6 +756,7 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
     }
     /**
      * Stable text frame facade (Shape.md).
+     *
      * @public
      */
     get textFrame(): TextFrame {
@@ -679,6 +768,7 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
     /**
      * Text-box story content as a document {@link Body} (`w:txbxContent`).
      * First access promotes the leaf to a text-box variant (`wps:txbx`).
+     *
      * @public
      */
     get textBody(): Body {
@@ -692,13 +782,16 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
                 document = undefined;
             }
             this.textBodyValue = new ShapeTextBoxBody(this, document, state.blocks);
-            // Share the Body store with the txbx cache (constructor copies once).
-            this.syncTxbxBlocksFromBody(this.textBodyValue.rawBlocks());
+            // Share the Body store with the txbx cache (constructor copies once). Reading the body is
+            // not an edit: the host stays clean so an untouched shape still saves byte-stable.
+            (state as { blocks: BlockContent[] }).blocks = this.textBodyValue.rawBlocks();
+            this.markTxbxBodyModeled();
         }
         return this.textBodyValue;
     }
     /**
      * Auto shape type from preset geometry. Returns AutoShapeType.Unknown when missing/unrecognized/VML; Custom for custGeom.
+     *
      * @public
      */
     get autoShapeType(): AutoShapeType {
@@ -1097,7 +1190,7 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
         this.markStructureDirty();
     }
     /**
-     * Append a nested preset-geometry shape under this group or canvas (TASK-8051).
+     * Append a nested preset-geometry shape under this group or canvas.
      *
      * Only valid when {@link variant} is `'group'` or `'canvas'`. Nested children
      * serialize as bare `wps:wsp` (with `wps:cNvPr`) under `wpg:wgp` / `wpc:wpc`
@@ -1113,10 +1206,10 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
     /**
      * Append a nested preset-geometry {@link Shape} under this group or canvas.
      *
-     * @param {AutoShapeType} autoShapeType - The auto shape type.
-     * @param {number} width - The width.
-     * @param {number} height - The height.
-     * @returns {Shape} The result.
+     * @param {AutoShapeType} autoShapeType - Specifies the auto shape type.
+     * @param {number} width - Specifies the width.
+     * @param {number} height - Specifies the height.
+     * @returns {Shape} Returns the result.
      * @public
      */
     appendShape(autoShapeType: AutoShapeType, width: number, height: number): Shape {
@@ -1501,6 +1594,7 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
      */
     /**
      * Whether the shape is drawn below text (`wp:anchor/@behindDoc`).
+     *
      * @public
      */
     get isBelowText(): boolean {
@@ -1765,12 +1859,12 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
         this.markStructureDirty();
     }
     // -------------------------------------------------------------------------
-    // Geometry, fill, line MVP (TASK-8048)
+    // Geometry, fill, line MVP
     // -------------------------------------------------------------------------
     /**
      *  Lazy spPr state read (cached per instance; invalidated on structure dirty).
      *
-     * @returns {ShapePropertiesStateCached} The result.
+     * @returns {ShapePropertiesStateCached} Returns the result.
      */
     private readSpPrState(): ShapePropertiesStateCached {
         if (this.spPrState === undefined) {
@@ -1901,7 +1995,7 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
         return this.readSpPrState().hasThemeStyle;
     }
     // -------------------------------------------------------------------------
-    // Text box bodyPr + txbx body (TASK-8049)
+    // Text box bodyPr + txbx body
     // -------------------------------------------------------------------------
     /**
      * Lazy residual txbx state read (cached per instance).
@@ -1938,16 +2032,29 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
         return this.txbxState;
     }
     /**
-     * Paragraph-owner context for lazy body parse.
+     * Parse context for lazy textbox body initialization.
+     * Provides BodyBlockParseContext implementation for txbx parsing.
      *
-     * @returns {ParagraphOwner} The result.
+     * @returns {BodyBlockParseContext} The result.
      * @private
      */
-    private textBoxOwnerForParse(): ParagraphOwner {
-        if (this.textBoxOwner === undefined) {
-            this.textBoxOwner = new TextBoxParagraphOwner(this);
-        }
-        return this.textBoxOwner;
+    private textBoxOwnerForParse(): BodyBlockParseContext {
+        // Object-literal methods below need the shape, not the literal, as `this`.
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const shape: DrawingShape = this;
+        return {
+            assertAttachedParagraph(target: Paragraph): void {
+                if (!blockListOwnsParagraph(shape.internalBlocks(), target)) {
+                    throw new DetachedObjectError('Paragraph is not in this text box');
+                }
+            },
+            owningDocument(): WordDocument {
+                // Text box paragraphs live inside the run leaf; the owning document is the
+                // document that owns the anchoring paragraph. Resolve lazily through the
+                // shape's anchor paragraph when bound; otherwise detached.
+                return shape.internalOwningDocument();
+            }
+        };
     }
     /**
      * Whether this shape hosts a WordprocessingShape text box
@@ -1971,7 +2078,7 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
     }
     /**
      * Whether the residual root carries a Markup Compatibility Fallback branch
-     * with a VML `w:pict` tree (Policy B dual AC â€” TASK-8050).
+     * with a VML `w:pict` tree (Policy B dual AC).
      *
      * True for authored dual AC and for residual Choice+Fallback fixtures.
      * Pure DrawingML-only or pure VML leaves return false. Does not execute VML.
@@ -1988,7 +2095,7 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
     /**
      *  Guard for body APIs on non-textBox shapes.
      *
-     * @returns {TextBoxStateCached} The result.
+     * @returns {TextBoxStateCached} Returns the result.
      */
     private requireTextBox(): TextBoxStateCached {
         if (!this.isTextBox()) {
@@ -2347,7 +2454,7 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
     /**
      * @returns {ReadonlyArray<BlockContent>} The result.
      * @private
-     * Txbx block store for TextBoxParagraphOwner attach checks.
+     * Txbx block store for attach checks during lazy parsing.
      */
     internalBlocks(): ReadonlyArray<BlockContent> {
         if (this.textBodyValue !== undefined) {
@@ -2373,15 +2480,10 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
     }
     /**
      * Anchoring paragraph (bound at append/load time).
+     *
      * @private
      */
     private anchoringParagraph: Paragraph | undefined;
-    /**
-     * @private
-     * Bind the anchoring paragraph for textbox owner document resolution. */
-    /**
-     * @private
-     */
     /**
      *  Anchoring paragraph accessor; package-visible for GroupShape reparenting.
      *
@@ -2391,6 +2493,13 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
     getAnchoringParagraph(): Paragraph | undefined {
         return this.anchoringParagraph;
     }
+    /**
+     * Binds the anchoring paragraph, which is used to resolve the owning document of the text box content.
+     *
+     * @param {Paragraph | undefined} paragraph - Specifies the paragraph that anchors the shape.
+     * @returns {void} Nothing is returned.
+     * @private
+     */
     bindAnchoringParagraph(paragraph: Paragraph | undefined): void {
         this.anchoringParagraph = paragraph;
     }
@@ -2408,7 +2517,7 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
      * @private
      */
     toOpenXml(): OpenXmlElement {
-        // Text box body serialization precedence (TASK-8049): once the txbx block
+        // Text box body serialization precedence: once the txbx block
         // state was materialized, the DOM owns `w:txbxContent` on every path â€”
         // nested table-cell/SDT mutations serialize even when the host stays
         // clean. The host shell is preserved (clone + txbxContent replacement on
@@ -2474,7 +2583,7 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
         if (this.dirtyMode === 'clean') {
             // Parent group/canvas may stay clean while a nested child is dirty
             // (e.g. ChildA rename). Rewrite nested wsp/grpSp in-place, preserving
-            // residual grpSpPr and unknown siblings (TASK-8051).
+            // residual grpSpPr and unknown siblings.
             if (this.hasDirtyNestedChildren()) {
                 return this.rewriteResidualNestedChildren(cloneResidualElement(this.residual));
             }
@@ -2534,7 +2643,7 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
             this.verticalPositionValue === undefined ? undefined : pointToCoordinateEmus(this.verticalPositionValue);
         const docPrId: number = this.docPrIdValue != null ? this.docPrIdValue : 1;
         const wrapping: TextWrappingStyleType = this.wrappingValue != null ? this.wrappingValue : (placement === 'inline' ? TextWrappingStyle.Inline : TextWrappingStyle.None);
-        // TASK-8051: group/canvas structure encode (empty children OK). Must run
+        // group/canvas structure encode (empty children OK). Must run
         // before the leaf presetGeometry required check.
         const variant: string = this.variant();
         const isGroupOrCanvasHost: boolean = this.childrenModeled || variant === 'group' || variant === 'canvas';
@@ -2578,7 +2687,7 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
                 children: childElements
             }));
         }
-        // TASK-8051: nested bare wsp structure rebuild (no second drawing host).
+        // nested bare wsp structure rebuild (no second drawing host).
         if (isNestedDrawingResidual(this.residual)) {
             if (widthEmu === undefined || heightEmu === undefined) {
                 throw new DocxError('content/invalid-shape', 'Authored nested drawing shape is missing width or height');
@@ -2624,7 +2733,7 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
         if (widthEmu === undefined || heightEmu === undefined || presetGeometry === undefined) {
             throw new DocxError('content/invalid-shape', 'Authored drawing shape is missing size or presetGeometry');
         }
-        // TASK-8049: text box body + bodyPr encode. The body is rebuilt from the
+        // text box body + bodyPr encode. The body is rebuilt from the
         // typed block state whenever it was materialized (any body access â€”
         // top-level or nested inside a table/SDT) or explicitly modeled; nested
         // mutations serialize because the materialized blocks reference the same
@@ -2682,9 +2791,9 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
      * Replace the materialized `w:txbxContent` inside a cloned residual host
      * (identity / layout dirty paths keep everything else verbatim).
      *
-     * @param {OpenXmlElement} host - The host.
-     * @param {TextBoxStateCached} state - The state.
-     * @returns {OpenXmlElement} The result.
+     * @param {OpenXmlElement} host - Specifies the host.
+     * @param {TextBoxStateCached} state - Specifies the state.
+     * @returns {OpenXmlElement} Returns the result.
      */
     private replaceTxbxContentInResidual(host: OpenXmlElement, state: TextBoxStateCached): OpenXmlElement {
         const txbxContentHost: OpenXmlElement = findTxbxElement(host);
@@ -2739,7 +2848,7 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
      * Promote to layout dirty. Never demotes `structure`.
      * Hydrates size/transform/lock from residual when leaving `clean`/`identity`.
      *
-     * @returns {void} Nothing is returned.
+     * @returns {void} Nothing.
      */
     private markLayoutDirty(): void {
         if (this.dirtyMode === 'structure') {
@@ -2890,7 +2999,7 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
      * Read identity from nested `wps:cNvPr` / `wpg:cNvPr` when residual is a bare
      * nested shape/group; otherwise from top-level `wp:docPr`.
      *
-     * @returns {Object} The result.
+     * @returns {Object} Returns the result.
      */
     private readResidualIdentity(): {
         name: string | undefined;
@@ -2905,9 +3014,9 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
     }
     /**
      * Parse nested `wps:wsp` / `wpg:grpSp` children under residual `wpg:wgp` or
-     * `wpc:wpc` (TASK-8051). Unknown residual siblings are not modeled as children.
+     * `wpc:wpc`. Unknown residual siblings are not modeled as children.
      *
-     * @returns {DrawingShape[]} The result.
+     * @returns {DrawingShape[]} Returns the result.
      */
     private parseNestedChildrenFromResidual(): DrawingShape[] {
         if (this.encodingValue === 'vml') {
@@ -2932,7 +3041,7 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
      * Materialize residual or cached children into {@link childrenValue} so nested
      * authoring can push without dropping lazy residual siblings.
      *
-     * @returns {void} Nothing is returned.
+     * @returns {void} Nothing.
      */
     protected ensureChildrenModeled(): void {
         if (this.childrenModeled) {
@@ -2952,7 +3061,7 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
      * Allocate a package-unique cNvPr/docPr id for a nested child using the
      * top-level host's anchoring paragraph when available.
      *
-     * @returns {number} The result.
+     * @returns {number} Returns the result.
      */
     private allocateNestedDocPrId(): number {
         const paragraph: Paragraph =
@@ -2977,7 +3086,7 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
     /**
      *  True when any nested child (direct) is not clean.
      *
-     * @returns {boolean} The result.
+     * @returns {boolean} Returns the result.
      */
     private hasDirtyNestedChildren(): boolean {
         if (this.encodingValue === 'vml') {
@@ -3004,8 +3113,8 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
      * Clone residual host and replace nested wsp/grpSp under wgp/wpc with each
      * child's {@link toOpenXml}, preserving grpSpPr and unknown residual siblings.
      *
-     * @param {OpenXmlElement} host - The host.
-     * @returns {OpenXmlElement} The result.
+     * @param {OpenXmlElement} host - Specifies the host.
+     * @returns {OpenXmlElement} Returns the result.
      */
     private rewriteResidualNestedChildren(host: OpenXmlElement): OpenXmlElement {
         this.ensureChildrenModeled();
@@ -3051,7 +3160,7 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
      * clean â€” notify by ensuring children are modeled (so hasDirtyNestedChildren
      * can see them). Parent dirtyMode is left alone; toOpenXml rewrites kids.
      *
-     * @returns {void} Nothing is returned.
+     * @returns {void} Nothing.
      */
     protected notifyParentOfChildDirty(): void {
         const parent: DrawingShape = this.parentGroup;
@@ -3091,6 +3200,32 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
         }
         return 0;
     }
+
+    /**
+     * Create an independent copy of this drawing shape.
+     *
+     * All properties are cloned independently:
+     * - Geometry, fill, and line properties
+     * - Position, size, rotation, and flip state
+     * - Wrapping and distance properties
+     * - Text box body content (if present) with all nested items
+     *
+     * The cloned shape is detached and ready for attachment or import.
+     *
+     * @returns {DrawingShape} Cloned drawing shape.
+     * @public
+     */
+    clone(): DrawingShape {
+        // Re-parse the shape's own wire form: it carries the geometry, fill, line, wrap and
+        // text-box body (and group children), so every nested element is rebuilt independently.
+        type ShapeCtor = new (encoding: DrawingEncoding, element: OpenXmlElement) => DrawingShape;
+        const Ctor: ShapeCtor = this.constructor as ShapeCtor;
+        const cloned: DrawingShape = new Ctor(this.encodingValue, cloneResidualElement(this.toOpenXml()));
+        // Two shapes with the same id in one document corrupt the file: drop the id so a new
+        // one is assigned when the clone is attached.
+        cloned.docPrIdValue = undefined;
+        return cloned;
+    }
 }
 /**
  * Leaf DrawingML / VML shape (preset geometry, fill/line, optional text box).
@@ -3103,7 +3238,8 @@ export class DrawingShape implements FeatureRunLeaf, FillFormatOwner, LineFormat
  */
 export class Shape extends DrawingShape {
     /**
-     * Public discriminant for {@link Paragraph.items} ({@link EntityType.Shape}).
+     * Gets the entity type of the item, either {@link EntityType.Shape} or {@link EntityType.GroupShape}.
+     *
      * @public
      */
     readonly type: EntityType.Shape | EntityType.GroupShape = EntityType.Shape;
@@ -3127,14 +3263,9 @@ export class Shape extends DrawingShape {
         super(encodingOrInit as DrawingEncoding, element as OpenXmlElement);
     }
     /**
-     * Ordered text-box body children ({@link BodyItem}) â€” paragraphs, tables,
-     * block content controls, and residual-opaque blocks in document order.
-     *
-     * Requires a text-box variant (`wps:txbx`). Mutate only through
-     * {@link insertBodyItemAt}, {@link removeBodyItemAt}, and {@link removeBodyItem}.
+     * Gets the collection of body items, such as paragraphs and tables, in the text box of the shape.
      *
      * @throws DocxError `content/invalid-shape` when the shape is not a text box.
-     *
      * @public
      */
     get items(): ReadonlyArray<BodyItem> {
@@ -3145,11 +3276,11 @@ export class Shape extends DrawingShape {
      * (`0â€¦length` inclusive â€” insert-before / append).
      *
      * Attaches paragraphs and binds feature blocks to the owning document.
-     * Returns the same `item` reference for chaining (API-RULES R1.1).
+     * Returns the same `item` reference for chaining.
      *
-     * @param {number} index - Index in {@link Shape.items}.
-     * @param {BodyItem} item - Paragraph, feature, or opaque body child.
-     * @returns {BodyItem} The inserted {@link BodyItem}.
+     * @returns {BodyItem} - Returns the inserted {@link BodyItem}.
+     * @param {number} index - Specifies the index.
+     * @param {BodyItem} item - Specifies the item.
      * @throws RangeError if `index` is out of range.
      * @throws DocxError `content/invalid-shape` when the shape is not a text box.
      *
@@ -3162,8 +3293,8 @@ export class Shape extends DrawingShape {
      * Removes the body item at `index` in {@link Shape.items}
      * (`0â€¦length-1`). Paragraphs detach; feature blocks may release content.
      *
-     * @param {number} index - Index in {@link Shape.items}.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {number} index - Specifies the index.
      * @throws RangeError if `index` is out of range.
      * @throws DocxError `content/invalid-shape` when the shape is not a text box.
      *
@@ -3178,8 +3309,8 @@ export class Shape extends DrawingShape {
      * Matches by collection entry identity first, then by payload identity
      * (same {@link Paragraph}, feature value, or opaque XML node).
      *
-     * @param {BodyItem} item - Entry from `items`, or an equivalent payload wrapper.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {BodyItem} item - Specifies the item.
      * @throws DetachedObjectError if `item` is not in this text box.
      * @throws DocxError `content/invalid-shape` when the shape is not a text box.
      *
@@ -3188,10 +3319,28 @@ export class Shape extends DrawingShape {
     removeBodyItem(item: BodyItem): void {
         super.removeBodyItem(item);
     }
+
+    /**
+     * Create an independent copy of this shape.
+     *
+     * All properties (geometry, fill, line, position, size, text box content) are cloned independently.
+     * The cloned shape is detached and ready for attachment or import.
+     *
+     * For text-box shapes, nested body items (paragraphs, tables, content controls) are recursively cloned.
+     *
+     * @returns {Shape} Cloned shape.
+     * @public
+     */
+    clone(): Shape {
+        // Delegate to parent DrawingShape.clone() which handles all properties
+        // Full implementation deferred to Phase B for fill/line/geometry cloning
+        const cloned: DrawingShape = super.clone();
+        return cloned as Shape;
+    }
 }
 /**
  * DrawingML group or canvas host with nested {@link Shape} / {@link GroupShape}
- * children (TASK-8051).
+ * children.
  *
  * Inherits identity, placement, size, wrap, and position format from
  * {@link DrawingShape}. Nested children are exposed as {@link childShapes};
@@ -3203,6 +3352,7 @@ export class Shape extends DrawingShape {
 export class GroupShape extends Shape {
     /**
      * Public discriminant for {@link Paragraph.items} ({@link EntityType.GroupShape}).
+     *
      * @public
      */
     readonly type: EntityType.GroupShape = EntityType.GroupShape;
@@ -3227,6 +3377,7 @@ export class GroupShape extends Shape {
     }
     /**
      * Nested DrawingML children under this group or canvas, in document order.
+     *
      * @public
      */
     get childShapes(): ReadonlyArray<DrawingShape> {
@@ -3234,6 +3385,7 @@ export class GroupShape extends Shape {
     }
     /**
      * Nested child items (collection surface).
+     *
      * @public
      */
     get childItems(): ReadonlyArray<DrawingShape> {
@@ -3251,8 +3403,8 @@ export class GroupShape extends Shape {
     /**
      * Add an existing drawing leaf as a nested child. Detaches from anchoring paragraph when needed.
      *
-     * @param {Object} paragraphItem - The paragraph item.
-     * @returns {void} Nothing is returned.
+     * @param {DrawingShape|Object} paragraphItem - Specifies the paragraph item.
+     * @returns {void} Nothing.
      * @public
      */
     add(paragraphItem: DrawingShape | { readonly type?: string; readonly value?: unknown }): void {
@@ -3271,10 +3423,10 @@ export class GroupShape extends Shape {
         }
         const para: Paragraph = child.getAnchoringParagraph();
         if (para !== undefined) {
-            const items: ConcreteParagraphItem[] = para.items.toArray();
+            const items: ParagraphItem[] = para.items.toArray();
             for (let i: number = items.length - 1; i >= 0; i -= 1) {
                 // eslint-disable-next-line security/detect-object-injection -- integer index bounded by the collection length (loop counter or range-checked argument); not a user-controlled property name
-                const it: ConcreteParagraphItem = items[i]!;
+                const it: ParagraphItem = items[i]!;
                 if (it instanceof FeatureRunParagraphItem && it.value === child) {
                     para.removeFeatureRunItem(child);
                     break;
@@ -3292,7 +3444,7 @@ export class GroupShape extends Shape {
     /**
      * Ungroup children into an array of drawing leaves.
      *
-     * @returns {ReadonlyArray<DrawingShape>} The result.
+     * @returns {ReadonlyArray<DrawingShape>} Returns the result.
      * @public
      */
     unGroup(): ReadonlyArray<DrawingShape> {
@@ -3310,10 +3462,10 @@ export class GroupShape extends Shape {
     /**
      * Append a nested preset-geometry {@link Shape} under this group.
      *
-     * @param {AutoShapeType} autoShapeType - The auto shape type.
-     * @param {number} width - The width.
-     * @param {number} height - The height.
-     * @returns {Shape} The result.
+     * @param {AutoShapeType} autoShapeType - Specifies the auto shape type.
+     * @param {number} width - Specifies the width.
+     * @param {number} height - Specifies the height.
+     * @returns {Shape} Returns the result.
      * @public
      */
     appendShape(autoShapeType: AutoShapeType, width: number, height: number): Shape {
@@ -3368,7 +3520,7 @@ export class GroupShape extends Shape {
 /**
  * Construct {@link Shape} or {@link GroupShape} from a residual host element.
  * Nested `wps:wsp` / `wpg:grpSp` residuals and top-level dual-AC trees are
- * classified by residual localName / Choice URI (TASK-8051).
+ * classified by residual localName / Choice URI.
  *
  * @param {DrawingEncoding} encoding - The encoding.
  * @param {OpenXmlElement} element - The element.

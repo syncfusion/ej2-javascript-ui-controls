@@ -23,6 +23,8 @@ export interface PresenterViewHost {
     getNotes(index: number): string;
     /** Formatted notes for a slide when loaded (colour, bullets, numbering); falls back to {@link getNotes}. */
     getNotesSnapshot?(index: number): NotesSnapshot | undefined;
+    /** Whether the end-of-slide-show screen is currently showing (past the last slide). */
+    isEndScreen?(): boolean;
     /** Closes presenter view (back to the full-screen show). */
     close(): void;
     /** Presentation title shown in the header (falls back to "Presentation"). */
@@ -184,7 +186,16 @@ export class PresenterView {
         }
         this.disposeMounts();
         if (this.currentBox) {
-            this.currentMount = this.renderer.mount(index, this.currentBox);
+            const ended: boolean = !!(this.host.isEndScreen && this.host.isEndScreen());
+            this.currentBox.classList.toggle('ej2-pptx-presenter__current--end', ended);
+            if (ended) {
+                this.currentBox.innerHTML = '<div class="ej2-pptx-presenter__end" data-action="close">' +
+                    this.html('SlideShowEnd') + '</div>';
+            } else {
+                const stale: Element | null = this.currentBox.querySelector('.ej2-pptx-presenter__end');
+                if (stale) { stale.remove(); }
+                this.currentMount = this.renderer.mount(index, this.currentBox);
+            }
         }
         if (this.nextBox) {
             this.nextBox.classList.toggle('ej2-pptx-presenter__next--end', index + 1 >= count);

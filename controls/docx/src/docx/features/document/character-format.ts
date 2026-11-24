@@ -4,7 +4,7 @@
  * Sole public surface for run properties. Owned by {@link Run}; never null once
  * accessed via {@link Run.characterFormat}.
  *
- * Citation: ECMA-376-1 §17.3.2; TASK-9019 / docs/specs/run-character-format.md Rev 2.
+ * Citation: ECMA-376-1 §17.3.2; the format specification Rev 2.
  *
  * @public
  */
@@ -48,13 +48,15 @@ export { SubSuperScript } from './sub-super-script';
 // ---------------------------------------------------------------------------
 
 /**
- * Emphasis mark (`ST_Em`). §17.18.24
+ * Emphasis mark.
+ *
  * @public
  */
 export type EmphasisMarkValue = 'none' | 'dot' | 'comma' | 'circle' | 'underDot';
 
 /**
- * Animated text effect (`ST_TextEffect`). §17.18.91
+ * Animated text effect.
+ *
  * @public
  */
 export type TextEffectValue =
@@ -103,6 +105,7 @@ export interface RunLanguage {
 
 /**
  * Batch-assign delta for {@link CharacterFormat.assign}.
+ *
  * @public
  */
 export interface CharacterFormatDelta {
@@ -148,6 +151,7 @@ export interface CharacterFormatDelta {
 
 /**
  * Host that owns a {@link CharacterFormat} and receives mutation notifications.
+ *
  * @private
  */
 export interface CharacterFormatHost {
@@ -155,6 +159,7 @@ export interface CharacterFormatHost {
     /**
      * Optional effective resolver (Paragraph host). Style-hosted CF must omit this
      * so public getters stay direct/authored-only for style-chain walks.
+     *
      * @private
      */
     resolveEffectiveCharacterValue?(key: string): unknown;
@@ -1245,7 +1250,7 @@ const CHARACTER_FORMAT_DEFAULTS: {
 };
 
 /**
- * Character formatting model for a run (`w:rPr`).
+ * Character formatting model for a run.
  *
  * @public
  */
@@ -1321,7 +1326,11 @@ export class CharacterFormat {
 
     // ---- Group A ----
 
-    /** Direct `w:b` (`CT_OnOff`). `undefined` means absent. */
+    /**
+     * Gets or sets a value indicating whether the text is bold.
+     *
+     * If undefined, the value is inherited from the style.
+     */
     get bold(): boolean | undefined {
         if (this.boldValue !== undefined) {
             return this.boldValue;
@@ -1333,7 +1342,11 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Direct `w:i` (`CT_OnOff`). `undefined` means absent. */
+    /**
+     * Gets or sets a value indicating whether the text is italic.
+     *
+     * If undefined, the value is inherited from the style.
+     */
     get italic(): boolean | undefined {
         if (this.italicValue !== undefined) {
             return this.italicValue;
@@ -1345,7 +1358,11 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Direct `w:strike` (`CT_OnOff`). Setter clears `doubleStrikethrough` when set true. */
+    /**
+     * Gets or sets a value indicating whether the text has a single strikethrough.
+     *
+     * Setting this to true clears the double strikethrough setting.
+     */
     get strikethrough(): boolean | undefined {
         if (this.strikeValue !== undefined) {
             return this.strikeValue;
@@ -1360,7 +1377,11 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Direct `w:dstrike`. Setter clears `strikethrough` when set true. */
+    /**
+     * Gets or sets a value indicating whether the text has a double strikethrough.
+     *
+     * Setting this to true clears the single strikethrough setting.
+     */
     get doubleStrikethrough(): boolean | undefined {
         if (this.doubleStrikeValue !== undefined) {
             return this.doubleStrikeValue;
@@ -1375,7 +1396,11 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Direct `w:caps`. Setter clears `smallCaps` when set true (not on hydrate). */
+    /**
+     * Gets or sets a value indicating whether the text is displayed in all capital letters.
+     *
+     * Setting this to true clears the small caps setting.
+     */
     get allCaps(): boolean | undefined {
         if (this.allCapsValue !== undefined) {
             return this.allCapsValue;
@@ -1390,7 +1415,11 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Direct `w:smallCaps`. Setter clears `allCaps` when set true (not on hydrate). */
+    /**
+     * Gets or sets a value indicating whether the text is displayed in small capital letters.
+     *
+     * Setting this to true clears the all caps setting.
+     */
     get smallCaps(): boolean | undefined {
         if (this.smallCapsValue !== undefined) {
             return this.smallCapsValue;
@@ -1406,8 +1435,9 @@ export class CharacterFormat {
     }
 
     /**
-     * Hidden text. Maps to `w:vanish` (Spec §4.1 #7).
-     * `undefined` means absent.
+     * Gets or sets a value indicating whether the text is hidden.
+     *
+     * If undefined, the value is inherited from the style.
      */
     get hidden(): boolean | undefined {
         if (this.vanishValue !== undefined) {
@@ -1441,7 +1471,9 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Direct `w:imprint` (engrave). Member of legacy effect group. */
+    /**
+     * Gets or sets a value indicating whether the text appears engraved.
+     */
     get engrave(): boolean | undefined {
         if (this.imprintValue !== undefined) {
             return this.imprintValue;
@@ -1458,7 +1490,9 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Direct `w:outline`. */
+    /**
+     * Gets or sets a value indicating whether the text is displayed with an outline effect.
+     */
     get outline(): boolean | undefined {
         if (this.outlineValue !== undefined) {
             return this.outlineValue;
@@ -1475,7 +1509,9 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Direct `w:shadow`. */
+    /**
+     * Gets or sets a value indicating whether the text has a shadow effect.
+     */
     get shadow(): boolean | undefined {
         if (this.shadowValue !== undefined) {
             return this.shadowValue;
@@ -1524,7 +1560,9 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Font size in points (`w:sz` half-points). Range (0, 1638]. */
+    /**
+     * Gets or sets the font size in points. Range (0, 1638].
+     */
     get fontSize(): number {
         if (this.fontSizeValue !== undefined) {
             return halfPointsToPoint(this.fontSizeValue as number);
@@ -1543,8 +1581,7 @@ export class CharacterFormat {
     }
 
     /**
-     * Font name (`w:rFonts` ascii + hAnsi).
-     * Setter also writes eastAsia/cs only when those slots are already set.
+     * Gets or sets the font name. Setter also writes eastAsia/cs only when those slots are already set.
      */
     get fontName(): string {
         if (this.fontsValue !== undefined) {
@@ -1655,7 +1692,9 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Complex-script font (`w:rFonts/@w:cs`). */
+    /**
+     * Gets or sets the complex-script font.
+     */
     get fontNameBidi(): string {
         if (this.fontsValue !== undefined) {
             if (this.fontsValue.cs !== undefined) {
@@ -1671,7 +1710,9 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Underline style (`w:u/@w:val`). */
+    /**
+     * Gets or sets the underline style.
+     */
     get underlineStyle(): UnderlineStyle {
         if (this.underlineStyleValue !== undefined) {
             return underlineStyleFromWire(this.underlineStyleValue);
@@ -1689,7 +1730,9 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Underline color (`w:u/@w:color`). */
+    /**
+     * Gets or sets the underline color.
+     */
     get underlineColor(): Color {
         if (this.underlineColorValue !== undefined) {
             const mapped: Color = wireColorToEnum(this.underlineColorValue);
@@ -1706,7 +1749,9 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Text color (`w:color/@w:val`). Setting clears theme color. */
+    /**
+     * Gets or sets the text color. Setting clears theme color.
+     */
     get textColor(): Color {
         if (this.textColorValue !== undefined) {
             const mapped: Color = wireColorToEnum(this.textColorValue);
@@ -1724,7 +1769,9 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Highlight color (`w:highlight`). */
+    /**
+     * Gets or sets the highlight color.
+     */
     get highlightColor(): Color {
         if (this.highlightValue !== undefined) {
             return highlightWireToColor(this.highlightValue);
@@ -1746,7 +1793,7 @@ export class CharacterFormat {
     }
 
     /**
-     * Text background (`w:shd/@w:fill`). Authoring writes `val="clear"` + fill.
+     * Gets or sets the text background.
      */
     get textBackgroundColor(): Color {
         if (this.shadingValue !== undefined && this.shadingValue.fill !== undefined) {
@@ -1770,7 +1817,9 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Sub/superscript (`w:vertAlign`). */
+    /**
+     * Gets or sets the sub/superscript.
+     */
     get subSuperScript(): SubSuperScript {
         if (this.vertAlignValue !== undefined) {
             return subSuperScriptFromWire(this.vertAlignValue);
@@ -1787,7 +1836,9 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Character spacing in points (`w:spacing` twips). Range ±1584. */
+    /**
+     * Gets or sets the character spacing in points. Range ±1584.
+     */
     get characterSpacing(): number {
         if (this.characterSpacingValue !== undefined) {
             return twipsToPoint(this.characterSpacingValue);
@@ -1805,7 +1856,9 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Raised/lowered position in points (`w:position` half-points). Range ±1584. */
+    /**
+     * Gets or sets the raised/lowered position in points. Range ±1584.
+     */
     get position(): number {
         if (this.positionValue !== undefined) {
             return halfPointsToPoint(this.positionValue);
@@ -1851,7 +1904,9 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Character scale percentage (`w:w`). Integer 1–600. */
+    /**
+     * Gets or sets the character scale percentage. Integer 1–600.
+     */
     get scaling(): number {
         if (this.characterScaleValue !== undefined) {
             return this.characterScaleValue;
@@ -1866,7 +1921,9 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Character border (`w:bdr`). */
+    /**
+     * Gets or sets the character border.
+     */
     get border(): RunBorderEdge | undefined {
         if (this.borderValue !== undefined) {
             return this.borderValue;
@@ -1879,7 +1936,8 @@ export class CharacterFormat {
     }
 
     /**
-     * Latin locale id (`w:lang/@w:val` as {@link LocaleIDs}).
+     * Gets or sets the latin locale id.
+     *
      * @public
      */
     get localeId(): LocaleIDs {
@@ -1895,7 +1953,8 @@ export class CharacterFormat {
     }
 
     /**
-     * Bidirectional locale id (`w:lang/@w:bidi` as {@link LocaleIDs}).
+     * Gets or sets the bidirectional locale id.
+     *
      * @public
      */
     get localeIdBidi(): LocaleIDs {
@@ -1927,7 +1986,9 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Character style id (`w:rStyle/@w:val`). */
+    /**
+     * Gets or sets the character style id.
+     */
     get characterStyle(): string | undefined {
         return this.styleIdValue;
     }
@@ -1938,7 +1999,9 @@ export class CharacterFormat {
 
     // ---- Group B ----
 
-    /** Bidirectional (`w:rtl`). */
+    /**
+     * Gets or sets the bidirectional.
+     */
     get bidi(): boolean | undefined {
         if (this.bidiValue !== undefined) {
             return this.bidiValue;
@@ -1950,7 +2013,9 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Complex script (`w:cs`). */
+    /**
+     * Gets or sets the complex script.
+     */
     get complexScript(): boolean | undefined {
         if (this.complexScriptValue !== undefined) {
             return this.complexScriptValue;
@@ -1962,7 +2027,9 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Bold complex script (`w:bCs`). */
+    /**
+     * Gets or sets the bold complex script.
+     */
     get boldBidi(): boolean | undefined {
         if (this.boldBidiValue !== undefined) {
             return this.boldBidiValue;
@@ -1974,7 +2041,9 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Italic complex script (`w:iCs`). */
+    /**
+     * Gets or sets the italic complex script.
+     */
     get italicBidi(): boolean | undefined {
         if (this.italicBidiValue !== undefined) {
             return this.italicBidiValue;
@@ -1986,7 +2055,9 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Complex-script font size in points (`w:szCs`). Range (0, 1638]. */
+    /**
+     * Gets or sets the complex-script font size in points. Range (0, 1638].
+     */
     get fontSizeBidi(): number {
         if (this.fontSizeBidiValue !== undefined) {
             return halfPointsToPoint(this.fontSizeBidiValue as number);
@@ -2004,7 +2075,9 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Emphasis mark (`w:em`). */
+    /**
+     * Gets or sets the emphasis mark.
+     */
     get emphasisMark(): EmphasisMarkValue {
         if (this.emphasisValue !== undefined) {
             return this.emphasisValue;
@@ -2016,7 +2089,9 @@ export class CharacterFormat {
         this.mutate();
     }
 
-    /** Animated text effect (`w:effect`). */
+    /**
+     * Gets or sets the animated text effect.
+     */
     get textEffect(): TextEffectValue {
         if (this.textEffectValue !== undefined) {
             return this.textEffectValue;
@@ -2195,7 +2270,7 @@ export class CharacterFormat {
     /**
      * Clear all typed formatting. Does not clear `rPrExtra`.
      *
-     * @returns {void} Nothing is returned.
+     * @returns {void}
      * @public
      */
     clear(): void {
@@ -2355,5 +2430,28 @@ export class CharacterFormat {
      */
     fontsRecord(): CharacterFontsRecord | undefined {
         return this.fontsValue;
+    }
+
+    /**
+     * Create an independent copy of this character formatting.
+     * All properties are copied; no state is shared with the source.
+     *
+     * The cloned format is detached and has no host until hydrated or
+     * attached to another character-format owner.
+     *
+     * @returns {CharacterFormat} Cloned character format.
+     * @public
+     */
+    clone(): CharacterFormat {
+        const cloned: CharacterFormat = new CharacterFormat(undefined);
+        const snap: CharacterFormatSnapshot = this.snapshot();
+        // Records are mutated in place by the setters, so they must not be shared.
+        cloned.hydrate({
+            ...snap,
+            shadingValue: snap.shadingValue === undefined ? undefined : { ...snap.shadingValue },
+            fontsValue: snap.fontsValue === undefined ? undefined : { ...snap.fontsValue },
+            rPrExtra: snap.rPrExtra.slice()
+        });
+        return cloned;
     }
 }

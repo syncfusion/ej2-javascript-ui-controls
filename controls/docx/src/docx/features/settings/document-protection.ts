@@ -11,6 +11,7 @@ import { WML_TRANSITIONAL_NAMESPACE, NamespaceDeclaration, OpenXmlAttribute, Ope
 import { wmlAttr, wmlElement } from '../document/wml';
 /**
  * `ST_DocProtect` (Transitional `wml.xsd`). *
+ *
  * @private
  */
 export type DocumentProtectionEdit = 'none' | 'readOnly' | 'comments' | 'trackedChanges' | 'forms';

@@ -9,6 +9,7 @@
  * @packageDocumentation
  */
 export { TextFindMatch } from './text-find-match';
+export { TextSelection } from './text-selection';
 export { AnchoredMatch, HaystackRun, ParagraphHaystack, RawMatch } from './types';
 export { buildHaystack, buildHaystackFromRunTexts } from './haystack';
 export { isWholeWord, isWordChar, codePointAtIndex } from './whole-word';

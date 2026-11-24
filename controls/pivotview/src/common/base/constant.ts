@@ -184,6 +184,11 @@ export const actionBegin: string = 'actionBegin';
 export const actionComplete: string = 'actionComplete';
 /** @hidden */
 export const actionFailure: string = 'actionFailure';
+/** Name of the `actionFailure` action raised when a date-typed value field is
+ * configured with an unsupported summary type (PIVOT-MINMAX-008).
+ * @hidden
+ */
+export const dateAggregateNotSupported: string = 'dateAggregateNotSupported';
 
 /**
  * Specifies pivot internal events
@@ -298,6 +303,10 @@ export const numberFormattingMenu: string = 'Number Formatting menu';
 export const conditionalFormattingMenu: string = 'Conditional Formatting menu';
 /** @hidden */
 export const reportChange: string = 'Report change';
+/** @hidden */
+export const folderPathError: string = 'Folder path error';
+/** @hidden */
+export const adjacentDifferenceError: string = 'Adjacent difference error';
 /** @hidden */
 export const sortFieldTree: string = 'Sort field tree';
 /** @hidden */
@@ -476,3 +485,23 @@ export const getWebMcpTools: string = 'getWebMcpTools';
 export const registerWebMcpTools: string = 'registerWebMcpTools';
 /** @hidden */
 export const executeWebMcpTool: string = 'executeWebMcpTool';
+/** Raw-layout action lifecycle names. @hidden */
+export const layoutChange: string = 'Layout change';
+/** @hidden */
+export const layoutChanged: string = 'Layout changed';
+/** @hidden */
+export const flatFieldsChange: string = 'Flat fields change';
+/** @hidden */
+export const flatFieldsChanged: string = 'Flat fields changed';
+/** @hidden */
+export const flatFiltering: string = 'Flat filtering';
+/** @hidden */
+export const flatFiltered: string = 'Flat filtered';
+/** @hidden */
+export const flatSorting: string = 'Flat sorting';
+/** @hidden */
+export const flatSorted: string = 'Flat sorted';
+/** @hidden */
+export const flatTotalsChange: string = 'Flat totals change';
+/** @hidden */
+export const flatTotalsChanged: string = 'Flat totals changed';

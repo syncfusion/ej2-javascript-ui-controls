@@ -19,7 +19,6 @@ export interface LoadUiHost {
     readonly locale: string;
     cancelLoad(): void;
     retryLoad(): Promise<void>;
-    openFromFile(file: File): Promise<void>;
 }
 
 /**
@@ -34,9 +33,7 @@ export class LoadUi {
     private errorPanel: HTMLElement | null = null;
     private progress: HTMLProgressElement | null = null;
     private status: HTMLElement | null = null;
-    private errorCode: HTMLElement | null = null;
     private errorMessage: HTMLElement | null = null;
-    private fileInput: HTMLInputElement | null = null;
     private l10n: L10n;
     private lastAnnouncement: string = '';
 
@@ -78,8 +75,6 @@ export class LoadUi {
         const title: HTMLElement = document.createElement('h2');
         title.setAttribute('data-load-error-title', '');
         title.textContent = this.text('LoadErrorTitle');
-        const code: HTMLElement = document.createElement('p');
-        code.setAttribute('data-load-error-code', '');
         const message: HTMLElement = document.createElement('p');
         message.setAttribute('data-load-error-message', '');
         const actions: HTMLElement = document.createElement('div');
@@ -88,31 +83,18 @@ export class LoadUi {
             this.button('retry', this.text('Retry'), (): void => {
                 void this.host.retryLoad().catch((): void => undefined);
             }),
-            this.button('open-another', this.text('OpenAnother'), (): void => {
-                void ((this.fileInput) !== undefined && (this.fileInput) !== null ? (this.fileInput).click() : undefined);
-            })
+            this.button('dismiss', this.text('Cancel'), (): void => this.hide())
         );
-        error.append(title, code, message, actions);
+        error.append(title, message, actions);
 
-        const input: HTMLInputElement = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.pptx,.pptm,application/vnd.openxmlformats-officedocument.presentationml.presentation';
-        input.hidden = true;
-        // Host CSS such as Bootstrap 3 (`input[type=file] { display: block }`) overrides [hidden].
-        input.style.display = 'none';
-        input.tabIndex = -1;
-        input.addEventListener('change', this.onFileChange);
-
-        root.append(loading, error, input);
+        root.append(loading, error);
         container.appendChild(root);
         this.root = root;
         this.loadingPanel = loading;
         this.errorPanel = error;
         this.progress = progress;
         this.status = status;
-        this.errorCode = code;
         this.errorMessage = message;
-        this.fileInput = input;
     }
 
     public showLoading(progress?: PresentationLoadProgress): void {
@@ -137,12 +119,11 @@ export class LoadUi {
     }
 
     public showError(error: PresentationLoadError): void {
-        if (!this.loadingPanel || !this.errorPanel || !this.errorCode || !this.errorMessage) {
+        if (!this.loadingPanel || !this.errorPanel || !this.errorMessage) {
             return;
         }
         this.loadingPanel.hidden = true;
         this.errorPanel.hidden = false;
-        this.errorCode.textContent = this.format('LoadErrorCode', error.code);
         this.errorMessage.textContent = this.text(error.messageKey);
     }
 
@@ -157,20 +138,9 @@ export class LoadUi {
     }
 
     public destroy(): void {
-        void ((this.fileInput) !== undefined && (this.fileInput) !== null ? (this.fileInput).removeEventListener('change', this.onFileChange) : undefined);
         void ((this.root) !== undefined && (this.root) !== null ? (this.root).remove() : undefined);
         this.root = null;
     }
-
-    private readonly onFileChange = (): void => {
-        const file: File | undefined = optionalProperty(optionalProperty(this.fileInput, 'files'), 0);
-        if (file) {
-            void this.host.openFromFile(file).catch((): void => undefined);
-        }
-        if (this.fileInput) {
-            this.fileInput.value = '';
-        }
-    };
 
     private button(action: string, label: string, clicked: () => void): HTMLButtonElement {
         const button: HTMLButtonElement = document.createElement('button');
@@ -189,13 +159,4 @@ export class LoadUi {
     private format(key: string, value: string): string {
         return this.text(key).replace('{0}', value);
     }
-}
-
-/** Reads a property only when its owner is present.
- * @param {*} value - Potentially absent owner.
- * @param {*} key - Property key.
- * @returns {*} Property value or undefined.
- */
-function optionalProperty<T, K extends keyof T>(value: T | null | undefined, key: K): T[K] | undefined {
-    return value !== undefined && value !== null ? value[key] : undefined;
 }

@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 35.2.13 (2026-11-24)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I889929` - Resolved an issue where paragraph alignment was not preserved when importing Word documents.
+- `#I882117` - Fixed an issue where the table layout differed between Document Editor and Microsoft Word.
+- `#I885120` - Fixed an issue where a numbered list following a table incorrectly continued numbering from a multilevel list inside the table.
+- `#I888451` - Resolved an issue where DOCX export updated fractional values for Open XML integer attributes.
+- `#I888603` - Fixed an exception that occurred when deleting page content using backward selection and the Backspace key.
+- `#I886837` - Resolved an issue where Document Editor applied inconsistent formatting when text was inserted inside a formatted queued text range during collaborative editing.
+- `#I888209` - Fixed an issue where Document Editor collaborative editing dropped overlapping insertion revisions during server-side document saving.
+- `#I888207` - Resolved an issue where collaborative editing server-side replay inserted text at incorrect positions and incorrectly merged tracked revisions while replaying actions.
+- `#I888208` - Fixed an issue where server-side collaborative editing lost tracked insertion revisions on paragraph marks when the Enter key was pressed consecutively.
+- `#I890428` - Resolved an issue where imported documents contained large empty gaps.
+- `#I890940` - Fixed an exception that occurred when inserting a field after pasting SFDT content into a header.
+- `#I888473` - Resolved an issue where valid words were incorrectly marked as spelling errors when affix rules replaced the complete root word.
+- `#I883720` - Fixed an issue where the table resized improperly when dragging the right border of the last table column in Document Editor.
+
 ## 35.2.12 (2026-11-18)
 
 ### DocumentEditor

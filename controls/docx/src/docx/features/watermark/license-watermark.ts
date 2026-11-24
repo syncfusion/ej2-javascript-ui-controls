@@ -2,7 +2,7 @@
  * Trial-license shape applied on save when `validateLicense` fails.
  *
  * Same gate as `document.save` (`if (!validateLicense(...))`).
- * Kept out of `index.ts` so document serialization can call it without a
+ * Kept out of the owning module so document serialization can call it without a
  * value-import cycle through the watermark barrel.
  *
  * @private

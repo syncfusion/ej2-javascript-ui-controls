@@ -3,9 +3,10 @@
  *
  * @remarks
  * Locked API (human 2026-10-14): `slide.removeNotesSlide(): void` — **no
- * parameters**. The slide supplies package access internally via
- * `Slide.getPresentation()` (feature-module bridge; core stays free of notes
- * authoring imports). Absent notes is a no-op, never a throw.
+ * parameters**. API-RULES R6.2: `Slide.removeNotesSlide()` is a thin core wrapper over
+ * {@link removeNotesSlide} — same structure as `Slide.addNotesSlide` /
+ * `ShapeCollection.addChart` / `ShapeCollection.addTable`.
+ * Absent notes is a no-op, never a throw.
  *
  * Algorithm (spec 043 / TASK-1108):
  * 1. No Internal notesSlide relationship on the slide → return (no throw).
@@ -34,8 +35,6 @@ import { PackageRelationship } from '../../core/package/relationships';
 import { arrayAt, stringIncludes } from '../../core/util/es5-compat';
 import { Slide } from '../../core/slideimplementation/slide';
 import { NOTES_SLIDE_REL_TYPE } from './constants';
-import { getNotes } from './get-notes';
-const REMOVE_NOTES_SLIDE_PROP: string = 'removeNotesSlide';
 /**
  * Removes the notesSlide relationship from `slide` and the notesSlide part
  * when no other relationship still targets it.
@@ -135,40 +134,3 @@ function isNotesPartStillTargeted(document: Presentation, access: PackagePartAcc
     return false;
 }
 
-/**
- * Whether `source` is a slide part (`/ppt/slides/slideN.xml`).
- *
- * @param {string} source - The source value.
- * @returns {boolean} The result.
- */
-function isSlidePartName(source: string): boolean {
-    return stringIncludes(source, '/ppt/slides/');
-}
-/**
- * Attaches the public `slide.removeNotesSlide()` method onto {@link Slide}.
- *
- * @remarks API-RULES R6.2 (same prototype-assignment pattern as charts):
- * optional feature augments core after import. Core remains free of notes
- * authoring imports; only `@syncfusion/ej2-pptx/notes` patches Slide.
- *
- * @internal
- * @returns {void} Nothing.
- */
-export function attachRemoveNotesToSlide(): void {
-    if (!Object.prototype.hasOwnProperty.call(Slide.prototype, REMOVE_NOTES_SLIDE_PROP)) {
-        Object.defineProperty(Slide.prototype, REMOVE_NOTES_SLIDE_PROP, {
-            configurable: true,
-            enumerable: false,
-            writable: false,
-            /**
-             *
-             * @param {Slide} this - The this value.
-             * @returns {void} Nothing.
-             */
-            value(this: Slide): void {
-                removeNotesSlide(this);
-            }
-        });
-    }
-}
-attachRemoveNotesToSlide();

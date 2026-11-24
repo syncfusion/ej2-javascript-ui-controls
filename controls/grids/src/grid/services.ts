@@ -8,3 +8,4 @@ export * from './services/group-model-generator';
 export * from './services/value-formatter';
 export * from './services/virtual-row-model-generator';
 export * from './services/intersection-observer';
+export * from './services/highlight-service';

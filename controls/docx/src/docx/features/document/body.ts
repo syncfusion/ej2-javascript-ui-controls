@@ -1,25 +1,28 @@
 import { BodyItemCollection, BodyItemCollectionHost } from './body-item-collection';
-import { BlockContent, Paragraph, ParagraphOwner } from './paragraph';
+import { BodyItem, isBodyItemInstance } from './body-item';
+import { bodyItemToBlock } from './body-item-adapters';
+import { BlockContent, Paragraph } from './paragraph';
 import { ParagraphCollection } from './typed-body-collections';
+import { BodyBlockParseContext } from '../../core/registry/block-handlers';
 import { DetachedObjectError } from '../../core/errors/docx-error';
 import { WordDocument } from './document';
 import { Section } from './section';
 import { FormFieldsCollection } from '../fields/paragraph-field';
 
 /**
- * Section body (`w:body` story content for one section).
+ * Section body.
  *
  * Collection owner only: mutate through {@link Body.items}
  * ({@link BodyItemCollection}). The internal ordered store holds
  * {@link BlockContent} wrappers for parse/serialize; the public collection
  * projects {@link BodyItem} instances.
  *
- * Temporary bridges until TASK-8076: {@link Body.paragraphs},
+ * Temporary bridges until the section model replaces it: {@link Body.paragraphs},
  * {@link Body.appendParagraph}. Prefer {@link Body.items} for insert/remove.
  *
  * @public
  */
-export class Body implements BodyItemCollectionHost, ParagraphOwner {
+export class Body implements BodyItemCollectionHost, BodyBlockParseContext {
     private itemList: BlockContent[];
     private readonly itemsInstance: BodyItemCollection;
     private readonly paragraphsInstance: ParagraphCollection;
@@ -35,6 +38,9 @@ export class Body implements BodyItemCollectionHost, ParagraphOwner {
      */
     constructor(
         document: WordDocument | undefined,
+        /**
+         * Gets or sets the items.
+         */
         items: ReadonlyArray<BlockContent> = [],
         section?: Section
     ) {
@@ -47,34 +53,67 @@ export class Body implements BodyItemCollectionHost, ParagraphOwner {
             () => new Paragraph(undefined)
         );
         // Constructor path bypasses BodyItemCollection.insert, so attach
-        // paragraphs here (table cells, section load helpers, etc.).
-        for (const block of this.itemList) {
+        // items here (table cells, section load helpers, etc.).
+        this.adoptBlocks(this.itemList);
+    }
+
+    /**
+     * Attach every public item in `blocks` (paragraphs, tables, block content
+     * controls) to this body, moving it from a previous body when needed.
+     *
+     * @param {ReadonlyArray<BlockContent>} blocks - The blocks now owned by this body.
+     * @returns {void} Nothing is returned.
+     * @private
+     */
+    private adoptBlocks(blocks: ReadonlyArray<BlockContent>): void {
+        for (const block of blocks) {
             if (block.type === 'paragraph') {
                 block.paragraph.attach(this);
+            }
+            const item: unknown = block.type === 'paragraph' ? block.paragraph : block.type === 'feature' ? block.value : undefined;
+            if (isBodyItemInstance(item) && item.ownerTextBody !== this) {
+                if (item.ownerTextBody !== undefined) {
+                    item.detachFromBody(item.ownerTextBody);
+                }
+                item.attachToBody(this);
             }
         }
     }
 
     /**
-     * Managed mutable collection of public body items (paragraphs, tables,
-     * block content controls). Same instance on every access.
+     * Creates a detached copy of this body. Every item is cloned through its own
+     * `clone()` and owned by the returned body.
+     *
+     * @returns {Body} The cloned body.
+     * @public
+     */
+    clone(): Body {
+        const blocks: BlockContent[] = [];
+        for (const item of this.itemsInstance) {
+            const clonedItem: BodyItem = item.clone();
+            blocks.push(bodyItemToBlock(clonedItem));
+        }
+        return new Body(undefined, blocks);
+    }
+
+    /**
+     * Gets the managed mutable collection of public body items (paragraphs, tables, block content controls). Same instance on every access.
      */
     get items(): BodyItemCollection {
         return this.itemsInstance;
     }
 
     /**
-     * Paragraphs in this body (filtered view over {@link Body.items}).
+     * Gets the paragraphs.
      *
-     * Temporary bridge until TASK-8076 — prefer {@link Section.paragraphs}
-     * when using the sections spine.
+     * Temporary bridge until the section model replaces it — prefer {@link Section.paragraphs} when using the sections spine.
      */
     get paragraphs(): ParagraphCollection {
         return this.paragraphsInstance;
     }
 
     /**
-     * Form fields in this body.
+     * Gets the form fields in this body.
      *
      * @public
      */
@@ -189,13 +228,16 @@ export class Body implements BodyItemCollectionHost, ParagraphOwner {
                     block.paragraph.detach();
                 }
             }
-        }
-        this.itemList = items.slice();
-        for (const block of this.itemList) {
-            if (block.type === 'paragraph') {
-                block.paragraph.attach(this);
+            const leaving: unknown = block.type === 'paragraph' ? block.paragraph : block.type === 'feature' ? block.value : undefined;
+            if (isBodyItemInstance(leaving) && leaving.ownerTextBody === this
+                && !items.some((next: BlockContent) => next === block
+                    || (next.type === 'paragraph' && next.paragraph === leaving)
+                    || (next.type === 'feature' && (next.value as unknown) === leaving))) {
+                leaving.detachFromBody(this);
             }
         }
+        this.itemList = items.slice();
+        this.adoptBlocks(this.itemList);
         this.itemsInstance.syncFromHost();
         this.syncTypedViews();
     }
@@ -246,12 +288,10 @@ export class Body implements BodyItemCollectionHost, ParagraphOwner {
     }
 
     /**
-     * Appends an empty `w:p` after existing body children (before preserved `sectPr`).
+     * Appends an empty paragraph to the end of the body.
      *
-     * Temporary bridge until TASK-8076.
-     *
-     * @param {Object} options - Optional paragraph style id and/or initial text.
-     * @returns {Paragraph} The appended {@link Paragraph}.
+     * @returns {Paragraph} - Returns the appended {@link Paragraph}.
+     * @param {Object} options - Specifies the options.
      */
     appendParagraph(options?: {
         readonly style?: string;

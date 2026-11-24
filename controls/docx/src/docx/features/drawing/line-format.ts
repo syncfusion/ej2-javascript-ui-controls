@@ -1,5 +1,6 @@
 /**
  * Public LineFormat owned by Shape (Shape.md §7).
+ *
  * @packageDocumentation
  */
 import { Emus } from '../document/length';
@@ -24,16 +25,32 @@ import {
     transparencyToAlpha
 } from './sp-pr';
 
-/** Default line enabled for newly authored shapes. @public */
+/**
+ * Default line enabled for newly authored shapes.
+ *
+ * @public
+ */
 export const DEFAULT_SHAPE_LINE_ENABLED: boolean = true;
 
-/** Default solid line color for newly authored shapes. @public */
+/**
+ * Default solid line color for newly authored shapes.
+ *
+ * @public
+ */
 export const DEFAULT_SHAPE_LINE_COLOR: Color = Color.Black;
 
-/** Default line width in EMU (1 pt). @public */
+/**
+ * Default line width in EMU (1 pt).
+ *
+ * @public
+ */
 export const DEFAULT_SHAPE_LINE_WIDTH_EMU: number = 12700;
 
-/** Default line dash for newly authored shapes. @public */
+/**
+ * Default line dash for newly authored shapes.
+ *
+ * @public
+ */
 export const DEFAULT_SHAPE_LINE_DASH: LineDashing = LineDashing.Solid;
 
 /**
@@ -62,6 +79,7 @@ export function defaultAuthoredShapeLine(): ShapeLine {
 
 /**
  * Owner hooks for {@link LineFormat}.
+ *
  * @private
  */
 export interface LineFormatOwner {
@@ -117,7 +135,8 @@ function ensureSolid(state: ShapeLine | undefined): ShapeLine {
 }
 
 /**
- * Shape line formatting surface (`a:ln`).
+ * Shape line formatting surface.
+ *
  * @public
  */
 export class LineFormat {
@@ -133,7 +152,8 @@ export class LineFormat {
     }
 
     /**
-     * Whether an explicit line is present. `false` maps to `a:ln/a:noFill`.
+     * Gets or sets a value indicating whether the shape has a line.
+     *
      * @public
      */
     get line(): boolean {
@@ -156,7 +176,8 @@ export class LineFormat {
     }
 
     /**
-     * Solid line color. Unresolved theme returns {@link Color.Transparent}.
+     * Gets or sets the solid line color.
+     *
      * @public
      */
     get color(): Color {
@@ -184,7 +205,11 @@ export class LineFormat {
         this.owner.writeShapeLineState({ ...base, kind: ShapeLineKind.Solid, srgbColor: hex, residual: false });
     }
 
-    /** @public */
+    /**
+     * Gets or sets the dash style.
+     *
+     * @public
+     */
     get dashStyle(): LineDashing {
         const state: ShapeLine = this.owner.readShapeLineState();
         if (state === undefined || state.dash === undefined) {
@@ -204,7 +229,11 @@ export class LineFormat {
         this.owner.writeShapeLineState({ ...base, kind: ShapeLineKind.Solid, dash: value, residual: false });
     }
 
-    /** @public */
+    /**
+     * Gets or sets the cap style.
+     *
+     * @public
+     */
     get capStyle(): LineCap {
         const state: ShapeLine = this.owner.readShapeLineState();
         if (state === undefined || state.cap === undefined) {
@@ -222,7 +251,8 @@ export class LineFormat {
     }
 
     /**
-     * Compound line style. Currently only {@link LineStyle.Single} is modeled.
+     * Gets or sets the compound line style.
+     *
      * @public
      */
     get style(): LineStyle {
@@ -237,7 +267,8 @@ export class LineFormat {
     }
 
     /**
-     * Line weight in points (`a:ln/@w` EMU at the codec boundary).
+     * Gets or sets the line weight in points.
+     *
      * @public
      */
     get weight(): number | undefined {
@@ -274,7 +305,8 @@ export class LineFormat {
     }
 
     /**
-     * Transparency percent 0–100 (0 = opaque).
+     * Gets or sets the transparency percent 0–100 (0 = opaque).
+     *
      * @public
      */
     get transparency(): number {
@@ -304,7 +336,11 @@ export class LineFormat {
         });
     }
 
-    /** @public */
+    /**
+     * Gets or sets the begin arrowhead style.
+     *
+     * @public
+     */
     get beginArrowheadStyle(): ArrowheadStyle {
         const state: ShapeLine = this.owner.readShapeLineState();
         const t: string = state !== undefined ? state.beginArrowType : undefined;
@@ -324,7 +360,11 @@ export class LineFormat {
         });
     }
 
-    /** @public */
+    /**
+     * Gets or sets the end arrowhead style.
+     *
+     * @public
+     */
     get endArrowheadStyle(): ArrowheadStyle {
         const state: ShapeLine = this.owner.readShapeLineState();
         const t: string = state !== undefined ? state.endArrowType : undefined;
@@ -344,7 +384,11 @@ export class LineFormat {
         });
     }
 
-    /** @public */
+    /**
+     * Gets or sets the begin arrowhead size.
+     *
+     * @public
+     */
     get beginArrowheadSize(): ArrowheadSize | undefined {
         const state: ShapeLine = this.owner.readShapeLineState();
         return state !== undefined ? (state.beginArrowSize as ArrowheadSize | undefined) : undefined;
@@ -363,7 +407,11 @@ export class LineFormat {
         });
     }
 
-    /** @public */
+    /**
+     * Gets or sets the end arrowhead size.
+     *
+     * @public
+     */
     get endArrowheadSize(): ArrowheadSize | undefined {
         const state: ShapeLine = this.owner.readShapeLineState();
         return state !== undefined ? (state.endArrowSize as ArrowheadSize | undefined) : undefined;

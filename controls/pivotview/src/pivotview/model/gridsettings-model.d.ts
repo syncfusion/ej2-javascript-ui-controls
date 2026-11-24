@@ -160,10 +160,11 @@ export interface GridSettingsModel {
     columnWidth?: number;
 
     /**
-     * Specifies the layout options for displaying the pivot table in either a compact or tabular format.
+     * Specifies the layout used to display pivot results or individual relational records.
      * The available options are:
      * * `Compact`: Displays the pivot table in a compact format, merging row headers into a single column.
      * * `Tabular`: Displays the pivot table in a traditional format with separate columns for row headers, creating a more detailed table format.
+     * * `Flat`: Displays individual relational records without pivot aggregation. Requires the FlatLayout module and a local relational data source.
      *
      * @default Compact
      */

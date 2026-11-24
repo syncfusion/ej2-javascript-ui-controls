@@ -1,4 +1,4 @@
-import { Property, Complex, Collection, ChildProperty, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';import { IDataSet, IDataOptions, IFieldOptions, IFilter, ISort, ICalculatedFieldSettings } from '../base/engine';import { IDrillOptions, IValueSortSettings, IFormatSettings, IConditionalFormatSettings, IGroupSettings } from '../base/engine';import { SummaryTypes, Sorting, FilterType, Operators, Condition, DateGroup, GroupType, ProviderType, RenderMode } from '../base/types';import { DataSourceType } from '../base/types';import { IStyle, ICustomGroups, IAuthenticationInfo } from '../base/engine';import { DataManager } from '@syncfusion/ej2-data';import { GrandTotalsPosition, SubTotalsPosition } from '../common/base/enum';
+import { Property, Complex, Collection, ChildProperty, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';import { IDataSet, IDataOptions, IFieldOptions, IFilter, ISort, ICalculatedFieldSettings } from '../base/engine';import { IDrillOptions, IValueSortSettings, IFormatSettings, IConditionalFormatSettings, IGroupSettings } from '../base/engine';import { SummaryTypes, Sorting, FilterType, Operators, Condition, DateGroup, GroupType, ProviderType, RenderMode, TopBottomMode } from '../base/types';import { DataSourceType } from '../base/types';import { IStyle, ICustomGroups, IAuthenticationInfo } from '../base/engine';import { DataManager } from '@syncfusion/ej2-data';import { GrandTotalsPosition, SubTotalsPosition } from '../common/base/enum';
 
 /**
  * Interface for a class FieldOptions
@@ -14,6 +14,9 @@ export interface FieldOptionsModel {
      * Allows you to set caption to the specific field. It will be used to display instead of its name in pivot table component's UI.
      */
     caption?: string;
+
+    /**
+    instanceId?: string;
 
     /**
      * Allows to display the values in the pivot table with appropriate aggregations such as sum, product, count, average, etc… The available types are,
@@ -69,9 +72,20 @@ export interface FieldOptionsModel {
     /**
      * Allows you to set the selective item of a specific field, which used to display the values with either DifferenceFrom or PercentageOfDifferenceFrom aggregate types.
      * The selective item should be set the from field specified in the baseField property.
+     * Set it to `(previous)` or `(next)` to compare each member with its neighbour on the baseField axis.
+     * A member literally named `(previous)` or `(next)` is shadowed by the token.
      * > It is applicable only for relational data source.
      */
     baseItem?: string;
+
+    /**
+     * Allows the `(previous)` or `(next)` neighbour of the baseItem to belong to another parent member.
+     * By default, the neighbour must share the same parent.
+     * > It is applicable only for relational data source.
+     *
+     * @default false
+     */
+    allowCrossGroupCalculation?: boolean;
 
     /**
      * Allows to show or hide sub-totals to a specific field in row/column axis of the pivot table.
@@ -162,6 +176,9 @@ export interface FieldOptionsModel {
     /**
      * Allows you to create group folder for fields in pivot field list.
      * Allows user to set the group (i.e., folder) name for selected fields that used to be displayed in the field list tree.
+     * The name can be a `/` delimited folder path (for example, `Sales/Regional`) to nest folders to any depth.
+     * A single trailing `/` is ignored; an empty name elsewhere is invalid and the field is shown at the root.
+     * Nested folders are shown when at least one field's path contains `/`; names are case-sensitive and must not contain `/`.
      * > It is applicable only for relational data source.
      */
     groupName?: string;
@@ -249,6 +266,18 @@ export interface FilterModel {
      * > This option will be used by default when the operator **Between** and **NotBetween** is chosen to apply. Also, it is applicable only for label and value filtering.
      */
     value2?: string | Date;
+
+    /**
+     * Allows you to specify how the value entered in `value1` is used to select the members for the Top and Bottom value filter conditions. They are:
+     * * Items - Displays the specified number of top or bottom members.
+     * * Percent - Displays the specified percentage (an integer from 1 to 100) of the top or bottom members.
+     * * Sum - Displays the top or bottom members whose cumulative aggregated value reaches or exceeds the specified value.
+     * > This option is applicable only for the **Top** and **Bottom** conditions of the value filter. It has no effect for any other condition.
+     * It is a public API option intended for the end user through the `filterSettings` configuration.
+     *
+     * @default Items
+     */
+    mode?: TopBottomMode;
 
     /**
      * Allows to set value field for evaluation using conditions and operands for filtering.
@@ -572,7 +601,7 @@ export interface ValueSortSettingsModel {
     /**
      * It allows to set the delimiter, which is used a separator to split the given header text.
      *
-     * @default '.'
+     * @default '##'
      */
     headerDelimiter?: string;
 
@@ -715,6 +744,26 @@ export interface DataSourceSettingsModel {
      * ```
      */
     url?: string;
+
+    /**
+     * Allows you to set the character, or character sequence, that separates the fields of CSV data loaded from `url`.
+     * This is a public, user-facing option of the CSV data source. Common values are "," for comma, ";" for semicolon, "|" for pipe, and "\t" for tab.
+     * Quoted fields may contain the configured delimiter. For example, `West;"Bike; Deluxe";12.50` is parsed as
+     * three values when the delimiter is ";".
+     * > It is applicable only when the data source `type` is `CSV`.
+     *
+     * @default ,
+     */
+    delimiter?: string;
+
+    /**
+     * Allows line breaks inside double-quoted CSV fields to stay part of the value instead of starting a new record.
+     * This is a public, user-facing option of the CSV data source.
+     * > It is applicable only when the data source `type` is `CSV`.
+     *
+     * @default false
+     */
+    enableQuotedLineBreaks?: boolean;
 
     /**
      * Allows you to set the specific culture code as number type to render pivot table with desired localization.

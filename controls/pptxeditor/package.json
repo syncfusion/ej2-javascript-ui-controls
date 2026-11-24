@@ -58,22 +58,6 @@
 		"JavaScript",
 		"TypeScript"
 	],
-	"devDependencies": {
-		"@syncfusion/ej2-staging": "^1.0.15",
-		"@types/chai": "^3.4.28",
-		"@types/jasmine": "2.8.9",
-		"@types/jasmine-ajax": "^3.1.27",
-		"@types/requirejs": "^2.1.26",
-		"esbuild": "^0.20.2",
-		"markdown-spellcheck": "^1.3.1",
-		"typescript": "2.3.4",
-		"typescript-modern": "npm:typescript@5.4.5",
-		"es6-promise": "^3.2.1",
-		"gulp": "^3.9.1",
-		"gulp-sass": "^3.1.0",
-		"gulp-typescript": "^3.1.6",
-		"requirejs": "^2.3.3"
-	},
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/syncfusion/ej2-javascript-ui-controls.git"

@@ -1,5 +1,5 @@
 /**
- * Table / row / cell format facades and positioning (DocIO-aligned).
+ * Table / row / cell format facades and positioning.
  *
  * @public
  */
@@ -70,35 +70,44 @@ import { OpenXmlElement } from '../../core/xml/index';
 import { Color, colorToHexWire, normalizeColorHex } from '../document/color';
 
 /**
- * Horizontal merge / vertical merge token (`ST_Merge` mapping).
+ * Horizontal merge / vertical merge token.
  *
  * @public
  */
 export enum CellMerge {
+    /** Specifies the none merge. */
     None = 'none',
+    /** Specifies the start merge. */
     Start = 'start',
+    /** Specifies the continue merge. */
     Continue = 'continue'
 }
 
 /**
- * Horizontal origin for floating table position (`w:tblpPr/@w:horzAnchor`).
+ * Horizontal origin for floating table position.
  *
  * @public
  */
 export enum TableHorizontalOrigin {
+    /** Specifies the margin origin. */
     Margin = 'margin',
+    /** Specifies the page origin. */
     Page = 'page',
+    /** Specifies the column origin. */
     Column = 'column'
 }
 
 /**
- * Vertical origin for floating table position (`w:tblpPr/@w:vertAnchor`).
+ * Vertical origin for floating table position.
  *
  * @public
  */
 export enum TableVerticalOrigin {
+    /** Specifies the margin origin. */
     Margin = 'margin',
+    /** Specifies the page origin. */
     Page = 'page',
+    /** Specifies the paragraph origin. */
     Paragraph = 'paragraph'
 }
 
@@ -109,7 +118,7 @@ export interface TableFormatHost {
     readTblPr(): OpenXmlElement;
     writeTblPr(next: OpenXmlElement): void;
     /**
-     * DocIO paints `tableFormat.backColor` onto each cell's `w:tcPr/w:shd`
+     * The library paints `tableFormat.backColor` onto each cell's `w:tcPr/w:shd`
      * so Word shows the fill even when table-level shading alone is insufficient.
      * Optional so style-only hosts need not implement cell walks.
      */
@@ -167,9 +176,9 @@ function shadingFillToWire(value: string | Color): string | undefined {
 /**
  * Build a `w:shd` bag from a fill wire value.
  * When a fill is authored, default `pattern` to `clear` and `color` to `auto`
- * (DocIO / Word direct-format shape) unless previous shading already set them.
+ * unless previous shading already set them.
  * Never invents `fill: 'auto'` unless the caller passed that wire value.
- * Clearing fill drops a DocIO-default-only remainder (`clear`/`auto`) so bare
+ * Clearing fill drops a default-only remainder (`clear`/`auto`) so bare
  * `w:shd` without a real fill is not left behind.
  *
  * @param {string | undefined} fill - The fill.
@@ -184,7 +193,7 @@ function shdFromFill(fill: string | undefined, prev: TableShading | undefined): 
         }
         const patternLeft: string = prev.pattern;
         const colorLeft: string = prev.color;
-        // clear + auto (or absent) is only the DocIO default envelope for a real fill.
+        // clear + auto (or absent) is only the Word default envelope for a real fill.
         const onlyDocIoDefaults: boolean =
             (patternLeft === undefined || patternLeft === 'clear') &&
             (colorLeft === undefined || colorLeft === 'auto');
@@ -199,7 +208,7 @@ function shdFromFill(fill: string | undefined, prev: TableShading | undefined): 
             ...(patternLeft !== undefined ? { pattern: patternLeft } : {})
         };
     }
-    // DocIO cell/table backColor: val="clear" color="auto" fill="<hex|auto>"
+    // Word cell/table backColor: val="clear" color="auto" fill="<hex|auto>"
     const pattern: string =
         prev !== undefined && prev.pattern !== undefined && prev.pattern.length > 0
             ? prev.pattern
@@ -449,18 +458,30 @@ export class TableFormat {
         this.positioningInstance = new TablePositioning(host);
     }
 
+    /**
+     * Gets the borders of the table.
+     */
     get borders(): Borders {
         return this.bordersInstance;
     }
 
+    /**
+     * Gets the default cell paddings of the table.
+     */
     get paddings(): Paddings {
         return this.paddingsInstance;
     }
 
+    /**
+     * Gets the positioning of the floating table.
+     */
     get positioning(): TablePositioning {
         return this.positioningInstance;
     }
 
+    /**
+     * Gets or sets the horizontal alignment of the table on the page.
+     */
     get horizontalAlignment(): TableAlignment {
         const value: TableAlignment = readTableAlignment(this.host.readTblPr());
         return value !== undefined ? value : TableAlignment.Left;
@@ -472,6 +493,9 @@ export class TableFormat {
         this.host.writeTblPr(writeTableAlignment(this.host.readTblPr(), value));
     }
 
+    /**
+     * Gets or sets the spacing, in points, between the cells of the table.
+     */
     get cellSpacing(): number {
         const value: number = readTableCellSpacing(this.host.readTblPr());
         return value !== undefined ? value : 0;
@@ -484,15 +508,9 @@ export class TableFormat {
     }
 
     /**
-     * Table background fill (`w:tblPr/w:shd/@w:fill`).
+     * Gets or sets the background color of the table as a hexadecimal RGB string, 'auto', or a {@link Color} value.
      *
-     * - **Get (runtime)**: OOXML wire string — hex `RRGGBB`, `'auto'`, or `undefined` when unset.
-     * - **Set**: hex string / `'auto'` (optional leading `#`), a {@link Color} enum value, or
-     *   `undefined` to clear the authored fill. {@link Color.Transparent} clears fill
-     *   (does not invent `w:fill="auto"`).
-     *
-     * TypeScript 3.3 requires identical get/set types, so the declared type is
-     * `string | Color | undefined`; the getter always returns a string when set.
+     * Set to undefined to clear the background.
      */
     get backColor(): string | Color | undefined {
         return shdFill(readTableShading(this.host.readTblPr()));
@@ -501,7 +519,7 @@ export class TableFormat {
         const prev: TableShading = readTableShading(this.host.readTblPr());
         const wire: string = value === undefined ? undefined : shadingFillToWire(value);
         this.host.writeTblPr(writeTableShading(this.host.readTblPr(), shdFromFill(wire, prev)));
-        // DocIO writes the same fill onto each cell so tcPr/shd carries the color.
+        // Word writes the same fill onto each cell so tcPr/shd carries the color.
         const apply: (fill: string) => void = this.host.applyTableBackColorToCells;
         if (apply !== undefined) {
             apply.call(this.host, wire);
@@ -509,8 +527,7 @@ export class TableFormat {
     }
 
     /**
-     * When `true`, text may wrap around a floating table (`w:tblpPr` present).
-     * When `false`, the table is inline (no `w:tblpPr`).
+     * Gets or sets a value indicating whether the wrap around option is enabled.
      */
     get wrapAround(): boolean {
         return readTablePositioning(this.host.readTblPr()) !== undefined;
@@ -527,7 +544,7 @@ export class TableFormat {
     }
 
     /**
-     * Inverse of fixed layout: `true` when layout is autoFit (default).
+     * Gets or sets a value indicating whether the auto resized option is enabled.
      */
     get isAutoResized(): boolean {
         return readTableLayout(this.host.readTblPr()) !== 'fixed';
@@ -576,8 +593,7 @@ export class RowFormat {
     }
 
     /**
-     * When `true`, the row may break across pages (Word default).
-     * Maps inversely to `w:cantSplit`.
+     * Gets or sets a value indicating whether the row can break across pages. The default value is true.
      */
     get isBreakAcrossPages(): boolean {
         const cant: boolean = readRowCantSplit(this.host.readTrPr());
@@ -589,12 +605,9 @@ export class RowFormat {
     }
 
     /**
-     * Row background fill (`w:trPr/w:shd/@w:fill`).
+     * Gets or sets the background color of the row as a hexadecimal RGB string, 'auto', or a {@link Color} value.
      *
-     * - **Get (runtime)**: OOXML wire string — hex `RRGGBB`, `'auto'`, or `undefined` when unset.
-     * - **Set**: hex string / `'auto'` (optional leading `#`), a {@link Color} enum value, or
-     *   `undefined` to clear the authored fill. {@link Color.Transparent} clears fill
-     *   (does not invent `w:fill="auto"`).
+     * Set to undefined to clear the background.
      */
     get backColor(): string | Color | undefined {
         return shdFill(readRowShading(this.host.readTrPr()));
@@ -641,12 +654,9 @@ export class CellFormat {
     }
 
     /**
-     * Cell background fill (`w:tcPr/w:shd/@w:fill`).
+     * Gets or sets the background color of the cell as a hexadecimal RGB string, 'auto', or a {@link Color} value.
      *
-     * - **Get (runtime)**: OOXML wire string — hex `RRGGBB`, `'auto'`, or `undefined` when unset.
-     * - **Set**: hex string / `'auto'` (optional leading `#`), a {@link Color} enum value, or
-     *   `undefined` to clear the authored fill. {@link Color.Transparent} clears fill
-     *   (does not invent `w:fill="auto"`).
+     * Set to undefined to clear the background.
      */
     get backColor(): string | Color | undefined {
         return shdFill(readCellShading(this.host.readTcPr()));
@@ -657,14 +667,23 @@ export class CellFormat {
         this.host.writeTcPr(writeCellShading(this.host.readTcPr(), shdFromFill(wire, prev)));
     }
 
+    /**
+     * Gets the borders of the table cell.
+     */
     get borders(): Borders {
         return this.bordersInstance;
     }
 
+    /**
+     * Gets the paddings (cell margins) of the table cell.
+     */
     get paddings(): Paddings {
         return this.paddingsInstance;
     }
 
+    /**
+     * Gets or sets the vertical alignment of the cell content.
+     */
     get verticalAlignment(): TableCellVerticalAlignment {
         const value: TableCellVerticalAlignment = readCellVerticalAlignment(this.host.readTcPr());
         return value !== undefined ? value : TableCellVerticalAlignment.Top;
@@ -676,6 +695,9 @@ export class CellFormat {
         this.host.writeTcPr(writeCellVerticalAlignment(this.host.readTcPr(), value));
     }
 
+    /**
+     * Gets or sets the text direction of the cell content.
+     */
     get textDirection(): TableCellTextDirection {
         const value: TableCellTextDirection = readCellTextDirection(this.host.readTcPr());
         return value !== undefined ? value : 'lr';
@@ -695,7 +717,7 @@ export class CellFormat {
     }
 
     /**
-     * When `true`, cell text wraps (default). Maps inversely to `w:noWrap`.
+     * Gets or sets a value indicating whether the text in the cell wraps. The default value is true.
      */
     get wrapText(): boolean {
         const noWrap: boolean = readCellNoWrap(this.host.readTcPr());
@@ -705,6 +727,9 @@ export class CellFormat {
         this.host.writeTcPr(writeCellNoWrap(this.host.readTcPr(), value ? undefined : true));
     }
 
+    /**
+     * Gets or sets a value indicating whether the cell content is fitted to the cell width.
+     */
     get fitText(): boolean {
         const v: boolean = readCellFitText(this.host.readTcPr());
         return v === true;
@@ -713,6 +738,9 @@ export class CellFormat {
         this.host.writeTcPr(writeCellFitText(this.host.readTcPr(), value ? true : undefined));
     }
 
+    /**
+     * Gets or sets the number of grid columns spanned by the cell. The default value is 1.
+     */
     get columnSpan(): number {
         const span: number = readGridSpan(this.host.readTcPr());
         return span !== undefined && span > 0 ? span : 1;
@@ -721,6 +749,9 @@ export class CellFormat {
         this.host.writeTcPr(writeGridSpan(this.host.readTcPr(), value));
     }
 
+    /**
+     * Gets or sets the horizontal merge state of the cell.
+     */
     get horizontalMerge(): CellMerge {
         return wireMergeToCellMerge(readHorizontalMerge(this.host.readTcPr()));
     }
@@ -728,6 +759,9 @@ export class CellFormat {
         this.host.writeTcPr(writeHorizontalMerge(this.host.readTcPr(), cellMergeToWire(value)));
     }
 
+    /**
+     * Gets or sets the vertical merge state of the cell.
+     */
     get verticalMerge(): CellMerge {
         return wireMergeToCellMerge(readVerticalMerge(this.host.readTcPr()));
     }
@@ -735,6 +769,9 @@ export class CellFormat {
         this.host.writeTcPr(writeVerticalMerge(this.host.readTcPr(), cellMergeToWire(value)));
     }
 
+    /**
+     * Gets a value indicating whether the cell uses the same paddings as the table.
+     */
     get samePaddingsAsTable(): boolean {
         return readIsSamePaddingsAsTable(this.host.readTcPr());
     }

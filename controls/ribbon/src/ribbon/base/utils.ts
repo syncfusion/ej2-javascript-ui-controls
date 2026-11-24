@@ -347,3 +347,51 @@ export function setCustomAttributes(element: HTMLElement, attributes: { [key: st
         }
     }
 }
+
+/**
+ * Minimal contract of the browser `ResizeObserver`, which is not part of the ES5 lib typings.
+ *
+ * @hidden
+ */
+export interface SizeObserver {
+    observe(target: Element): void;
+    disconnect(): void;
+}
+
+/**
+ * Sets a CSS custom property to the given width in pixels, but only when the width is greater
+ * than zero, so that a measurement taken while the element is not laid out never replaces a valid value.
+ *
+ * @param {HTMLElement} target - The element on which the custom property is set.
+ * @param {string} property - The CSS custom property name.
+ * @param {number} width - The measured width in pixels.
+ * @returns {void}
+ * @hidden
+ */
+export function publishPositiveWidth(target: HTMLElement, property: string, width: number): void {
+    if (!target || width <= 0) {
+        return;
+    }
+    if (target.style.getPropertyValue(property) !== width + 'px') {
+        target.style.setProperty(property, width + 'px');
+    }
+}
+
+/**
+ * Calls the callback whenever the element size changes. Returns null where `ResizeObserver` is unavailable.
+ *
+ * @param {HTMLElement} element - The element to observe.
+ * @param {Function} callback - Called on every size change.
+ * @returns {SizeObserver} - The observer, or null when it is not supported.
+ * @hidden
+ */
+export function observeElementSize(element: HTMLElement, callback: () => void): SizeObserver {
+    const observerCtor: new (cb: () => void) => SizeObserver =
+        (window as unknown as { ResizeObserver: new (cb: () => void) => SizeObserver }).ResizeObserver;
+    if (typeof observerCtor === 'undefined' || !element) {
+        return null;
+    }
+    const observer: SizeObserver = new observerCtor(callback);
+    observer.observe(element);
+    return observer;
+}

@@ -185,7 +185,8 @@ export class _HTMLBodyElement extends _HTMLElement {
     /**
      * Add a stylesheet from a <style> element.
      *
-     * @param cssText - The CSS text content
+     * @param {string} cssText - The CSS text content
+     * @returns {void}
      * @private
      */
     addStyleSheet(cssText: string): void {
@@ -195,7 +196,7 @@ export class _HTMLBodyElement extends _HTMLElement {
     /**
      * Get all stylesheets.
      *
-     * @returns Array of CSS text strings
+     * @returns {string[]} Array of CSS text strings
      * @private
      */
     getStyleSheets(): string[] {
@@ -204,7 +205,7 @@ export class _HTMLBodyElement extends _HTMLElement {
 }
 
 /**
-
+ * @private
  */
 export class _HTMLParagraphElement extends _HTMLElement {
     constructor() {
@@ -213,7 +214,7 @@ export class _HTMLParagraphElement extends _HTMLElement {
 }
 
 /**
-
+ * @private
  */
 export class _HTMLTableElement extends _HTMLElement {
     constructor() {
@@ -222,7 +223,7 @@ export class _HTMLTableElement extends _HTMLElement {
 }
 
 /**
-
+ * @private
  */
 export class _HTMLTableRowElement extends _HTMLElement {
     constructor() {
@@ -231,7 +232,7 @@ export class _HTMLTableRowElement extends _HTMLElement {
 }
 
 /**
-
+ * @private
  */
 export class _HTMLTableCellElement extends _HTMLElement {
     constructor(tagName: string) {
@@ -240,7 +241,7 @@ export class _HTMLTableCellElement extends _HTMLElement {
 }
 
 /**
-
+ * @private
  */
 export class _HTMLUnorderedListElement extends _HTMLElement {
     constructor() {
@@ -249,7 +250,7 @@ export class _HTMLUnorderedListElement extends _HTMLElement {
 }
 
 /**
-
+ * @private
  */
 export class _HTMLOrderedListElement extends _HTMLElement {
     constructor() {
@@ -258,7 +259,7 @@ export class _HTMLOrderedListElement extends _HTMLElement {
 }
 
 /**
-
+ * @private
  */
 export class _HTMLListItemElement extends _HTMLElement {
     constructor() {
@@ -267,7 +268,7 @@ export class _HTMLListItemElement extends _HTMLElement {
 }
 
 /**
-
+ * @private
  */
 export class _HTMLImageElement extends _HTMLElement {
     // Basic image properties
@@ -448,7 +449,7 @@ export class _HTMLImageElement extends _HTMLElement {
 }
 
 /**
-
+ * @private
  */
 export class _HTMLBrElement extends _HTMLElement {
     constructor() {
@@ -472,7 +473,7 @@ export class _HTMLBrElement extends _HTMLElement {
 }
 
 /**
-
+ * @private
  */
 export class _HTMLHrElement extends _HTMLElement {
     constructor() {
@@ -496,7 +497,7 @@ export class _HTMLHrElement extends _HTMLElement {
 }
 
 /**
-
+ * @private
  */
 export class _HTMLWbrElement extends _HTMLElement {
     constructor() {
@@ -519,7 +520,7 @@ export class _HTMLWbrElement extends _HTMLElement {
 }
 
 /**
-
+ * @private
  */
 export class _HTMLHeadingElement extends _HTMLElement {
     /**
@@ -726,7 +727,6 @@ export class _HTMLTextNode extends _HTMLElement {
      * Get text content of this node.
      *
      * @returns {string} The text content
-
      * @private
      */
     get textContent(): string {
@@ -738,7 +738,6 @@ export class _HTMLTextNode extends _HTMLElement {
      * Get the HTML representation of this text node.
      *
      * @returns {string} The escaped text content
-
      * @private
      */
     get outerHTML(): string {

@@ -22,7 +22,7 @@ export {
     PictureResolvedRelationshipSnapshot, PictureResolvedSnapshot, PictureStretchSnapshot,
     PictureTileAlignment, PictureTileFlip, PictureTileSnapshot
 } from './worker/picture-render-snapshot';
-export { BackgroundFill, DirectSlideBackground, HyperlinkView, LayoutSlide, MasterSlide, PictureBackgroundFill, PresentationSection,
+export { BackgroundFill, DirectSlideBackground, HyperlinkView, LayoutSlide, MasterSlide, PictureBackgroundFill, PresentationSection, Section, SectionCollection,
     ResolvedSlideBackground, Slide, OFFICE_REL_ATTR_NS, PML_NS, ShapeType, ST_SLIDE_ID_MAX_EXCLUSIVE,
     ST_SLIDE_ID_MIN } from './core/presentation/index';
 export { AutoShapeType, DML_NS, DEFAULT_AUTO_SHAPE_BOUNDS, DEFAULT_TEXT_BOX_BOUNDS, DEFAULT_TEXT_BOX_NAME,
@@ -45,7 +45,7 @@ export { COLOR_MAP_KEYS, COLOR_SCHEME_SLOTS, ColorMapping, ColorScheme, SCHEME_C
     ThemeLineStyle, ThemeSupplementalFont, ThemeTypeface } from './core/theme/index';
 export { TextBody, TextRange, TextRangeAnchor, Paragraph, TextPart, Font, TextUnderlineType, TextStrikeType,
     TextCapsType, isTextUnderlineType,
-    isTextStrikeType, isTextCapsType, HorizontalAlignmentType, isHorizontalAlignmentType, TextSpacingType, isTextSpacingType, TextFindMatch,
+    isTextStrikeType, isTextCapsType, HorizontalAlignmentType, isHorizontalAlignmentType, TextSpacingType, isTextSpacingType, TextFindMatch, TextSelection,
     TextUnderlineTypeValue, TextStrikeTypeValue, TextCapsTypeValue, HorizontalAlignmentTypeValue, TextSpacingTypeValue, TextSpacingValue,
     TextAutoFit, TextBodyProperties, TextTabStop, TextVerticalAnchor, TextVerticalType, TextWrapping,
     ParagraphCollection, TextPartCollection, ListFormat, ListType, NumberedListStyle, ListTypeValue,
@@ -178,6 +178,7 @@ export {
     CHARTS_FEATURE_ID,
     ChartsError,
     CLASSIC_CHART_TYPE_KEYS,
+    OfficeChartType,
     clearCachedXlsxRoot,
     DEFAULT_FROM_EXCEL_RANGE,
     DEFAULT_CHART_BOUNDS,
@@ -202,7 +203,6 @@ export {
     partNameOptions,
     PPT_CHART_PART_PREFIX,
     PPT_EMBEDDING_PART_PREFIX,
-    removeChart,
     resolveChart,
     tryLoadXlsxRoot
 } from './features/charts/index';
@@ -222,6 +222,14 @@ export {
     ChartRelatedKind,
     ChartRelatedPart,
     ChartAxisFormat,
+    ChartCategoryAxis,
+    ChartData,
+    ChartDataRange,
+    ChartRange,
+    ChartRangeLike,
+    ChartSeries,
+    ChartSeriesApi,
+    ChartSeriesCollection,
     ChartLegendFormat,
     ChartSeriesDataLabels,
     ChartSeriesView,
@@ -304,12 +312,15 @@ export {
 } from './features/ole/index';
 export {
     addTable,
-    removeTable,
     asTable,
     BuiltInTableStyle,
     DRAWINGML_TABLE_URI,
     Table,
     TableCell,
+    TableRow,
+    TableRows,
+    TableColumn,
+    TableColumns,
     TablesError,
     TABLES_FEATURE_ID,
     DEFAULT_TABLE_BOUNDS,

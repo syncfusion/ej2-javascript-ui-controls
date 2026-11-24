@@ -5,17 +5,15 @@ import { FeatureMultiPackagePart } from '../document/feature-multi-package-part'
 import { Paragraph } from '../document/paragraph';
 import {
     FeatureInlineParagraphItem,
-    InlineContent,
     ParagraphItem,
-    Run,
-    serializeRun,
-    TextRange
+    TextRange,
+    serializeTextRange
 } from '../document/text-range';
 import { elementChildren, isWml, wmlAttr, wmlElement, WML } from '../document/wml';
 import { allocateRelationshipId, relationshipsWith, TargetMode, OpcRelationship, RelationshipId, Relationships } from '../../core/opc/relationships';
 import { relationshipsForPart, withPartRelationships, OpcPackage } from '../../core/opc/package';
 import { partName, PartName } from '../../core/opc/part-name';
-import { featureId, isFeatureRegistered, registerFeature, registerFeatureInlineHandler, registerFeatureMaterializeHandler, registerFeatureMultiPartHandler, visitParagraphsInDocumentOrder } from '../../core/registry/index';
+import { featureId, isFeatureRegistered, registerFeature, registerFeatureInlineHandler, registerFeatureMaterializeHandler, registerFeatureMultiPartHandler, usedMainDocumentRelationshipIds, visitParagraphsInDocumentOrder } from '../../core/registry/index';
 import { FeatureMultiPartLoadContext } from '../../core/registry/multi-part-handlers';
 import { OpenXmlAttribute, OpenXmlElement } from '../../core/xml/index';
 import { FeatureId } from '../../core/registry/feature-registry';
@@ -39,9 +37,13 @@ const R_NS: string = 'http://schemas.openxmlformats.org/officeDocument/2006/rela
  * @public
  */
 export interface ExternalHyperlinkOptions {
-    /** Optional screen tip shown when the user hovers the link. */
+    /**
+     * Gets the tooltip text displayed when the pointer rests on the hyperlink.
+     */
     readonly tooltip?: string | undefined;
-    /** Optional bookmark or fragment name within the target resource. */
+    /**
+     * Gets the anchor (bookmark name or location) within the hyperlink target.
+     */
     readonly anchor?: string | undefined;
 }
 type HyperlinkInlineItem = {
@@ -119,21 +121,9 @@ function parseOnOffAttribute(raw: string | undefined): boolean | undefined {
     return true;
 }
 /**
- * External or anchor hyperlink (`w:hyperlink`, ECMA-376-1 §17.16.22 `CT_Hyperlink`).
+ * Represents a hyperlink in a paragraph.
  *
- * Nested display content is exposed as {@link Hyperlink.runs}. Non-run children are
- * preserved opaquely in document order and re-emitted on save.
- *
- * The resolved external URL is **not** a parameterless instance property: package
- * relationships live on the document catalog. Use {@link hyperlinkTarget} with the
- * owning {@link WordDocument} (MVP “url” / resolved external target).
- *
- * @remarks
- * - `relationshipId` maps `r:id` when present; new external links receive an id at
- *   materialize/save time.
- * - `anchor`, `tooltip`, `docLocation`, `tgtFrame`, and `history` map the corresponding
- *   `w:hyperlink` attributes when present in the package.
- * - Field-based `HYPERLINK` instructions are out of scope (separate fields module).
+ * The display content is available through {@link Hyperlink.runs}. Use {@link hyperlinkTarget} with the owning {@link WordDocument} to resolve the external URL.
  *
  * @public
  */
@@ -142,13 +132,13 @@ export class Hyperlink implements FeatureInline {
     private readonly items: HyperlinkInlineItem[];
     private relationshipIdValue: string | undefined;
     /**
-     * Optional bookmark or fragment name the link jumps to within the target.
+     * Gets the anchor (bookmark name or location) within the hyperlink target.
      *
      * @public
      */
     readonly anchor: string | undefined;
     /**
-     * Optional screen tip shown when the user hovers the link.
+     * Gets the tooltip text displayed when the pointer rests on the hyperlink.
      *
      * @public
      */
@@ -196,6 +186,28 @@ export class Hyperlink implements FeatureInline {
         this.history = history;
     }
     /**
+     * Creates a detached copy with its own runs. The copy keeps the same relationship id until
+     * it is remapped into another document.
+     *
+     * @returns {Hyperlink} The copy.
+     * @private
+     */
+    clone(): Hyperlink {
+        const owner: HyperlinkRunOwner = new HyperlinkRunOwner();
+        const runs: TextRange[] = [];
+        const items: HyperlinkInlineItem[] = this.items.map((item: HyperlinkInlineItem): HyperlinkInlineItem => {
+            if (item.type === 'textRange') {
+                const run: TextRange = item.run.clone();
+                runs.push(run);
+                return { type: 'textRange', run };
+            }
+            return item;
+        });
+        owner.hydrateRuns(runs);
+        return new Hyperlink(
+            owner, items, this.relationshipIdValue, this.anchor, this.tooltip, this.docLocation, this.tgtFrame, this.history);
+    }
+    /**
      * @private
      * External relationship id (`r:id`) when present. */
     get relationshipId(): string | undefined {
@@ -210,7 +222,7 @@ export class Hyperlink implements FeatureInline {
         this.relationshipIdValue = relationshipId;
     }
     /**
-     * Visible text runs inside the hyperlink, in document order.
+     * Gets the visible text runs inside the hyperlink, in document order.
      *
      * @public
      */
@@ -258,14 +270,13 @@ export class Hyperlink implements FeatureInline {
         const children: OpenXmlElement[] = [];
         for (const item of this.items) {
             if (item.type === 'textRange') {
-                children.push(serializeRun(item.run));
+                children.push(serializeTextRange(item.run));
             }
             else {
                 children.push(item.xml);
             }
         }
-        const namespaceDeclarations: { prefix: string; namespaceUri: string; }[] = this.relationshipIdValue !== undefined ? [{ prefix: 'r', namespaceUri: R_NS }] : [];
-        return wmlElement('hyperlink', { attributes, namespaceDeclarations, children });
+        return wmlElement('hyperlink', { attributes, children });
     }
 }
 /**
@@ -365,6 +376,15 @@ export class HyperlinksCatalog implements FeatureMultiPackagePart {
     targetForRelationship(relationshipId: string): string | undefined {
         let ts332: any;
         return ((ts332 = this.byRelationshipId.get(relationshipId)), ts332 == null ? undefined : ts332.target);
+    }
+    /**
+     * @param {string} relationshipId - The relationship id.
+     * @returns {string | undefined} The relationship type, when known.
+     * @private
+     */
+    relationshipTypeFor(relationshipId: string): string | undefined {
+        const entry: HyperlinkRelationshipEntry | undefined = this.byRelationshipId.get(relationshipId);
+        return entry === undefined ? undefined : entry.relationshipType;
     }
     /**
      * @param {Hyperlink} hyperlink - The hyperlink.
@@ -598,6 +618,46 @@ export function hyperlinksInParagraph(paragraph: Paragraph): ReadonlyArray<Hyper
         }
     }
     return found;
+}
+/**
+ * Re-points hyperlinks of paragraphs imported from `source` at new relationships in `destination`,
+ * so their `r:id` never refers to an unrelated destination relationship.
+ *
+ * @param {WordDocument} source - The document the paragraphs came from.
+ * @param {WordDocument} destination - The document that now holds the paragraphs.
+ * @param {ReadonlyArray<Paragraph>} paragraphs - The imported paragraphs.
+ * @returns {void} Nothing is returned.
+ * @private
+ */
+export function remapImportedHyperlinks(source: WordDocument, destination: WordDocument, paragraphs: ReadonlyArray<Paragraph>): void {
+    if (!isFeatureRegistered(HYPERLINKS)) {
+        return;
+    }
+    const sourceCatalog: HyperlinksCatalog = hyperlinksFor(source);
+    const destCatalog: HyperlinksCatalog = hyperlinksFor(destination);
+    const mapped: Map<string, string> = new Map<string, string>();
+    for (const paragraph of paragraphs) {
+        for (const hyperlink of hyperlinksInParagraph(paragraph)) {
+            const oldId: string | undefined = hyperlink.relationshipId;
+            if (oldId === undefined) {
+                continue;
+            }
+            let newId: string | undefined = mapped.get(oldId);
+            if (newId === undefined) {
+                const target: string | undefined = sourceCatalog.targetForRelationship(oldId);
+                if (target === undefined) {
+                    continue;
+                }
+                const used: Set<string> = usedMainDocumentRelationshipIds(destination);
+                for (const id of destCatalog.relationshipIds()) {
+                    used.add(id);
+                }
+                newId = destCatalog.allocateExternalTarget(target, used, sourceCatalog.relationshipTypeFor(oldId));
+                mapped.set(oldId, newId);
+            }
+            hyperlink.resolveRelationshipId(newId);
+        }
+    }
 }
 /**
  * Resolved external URL (MVP “url”) for a hyperlink, when present.

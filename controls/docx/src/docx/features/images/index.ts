@@ -57,6 +57,7 @@ const PNG_CONTENT_TYPE: string = 'image/png';
  */
 const JPEG_CONTENT_TYPE: string = 'image/jpeg';
 /** Supported image content types for create/replace.
+ *
  * @public
  */
 type ImageType = typeof PNG_CONTENT_TYPE | typeof JPEG_CONTENT_TYPE;
@@ -64,80 +65,92 @@ type ImageType = typeof PNG_CONTENT_TYPE | typeof JPEG_CONTENT_TYPE;
 const DEFAULT_IMAGE_WIDTH_PT: number = 100;
 const DEFAULT_IMAGE_HEIGHT_PT: number = 100;
 
-/** Options for {@link Paragraph.appendImage}. */
+/**
+ * Options for {@link Paragraph.appendImage}.
+ */
 export interface ImageOptions {
     /**
-     * Display width in points. When omitted, derived from intrinsic pixels
-     * (96 DPI â†’ points), aspect ratio from height, or {@link DEFAULT_IMAGE_WIDTH_PT}.
+     * Gets the display width in points.
      */
     readonly width?: number;
     /**
-     * Display height in points. When omitted, derived from intrinsic pixels,
-     * aspect ratio from width, or {@link DEFAULT_IMAGE_HEIGHT_PT}.
+     * Gets the display height in points.
      */
     readonly height?: number;
-    /** Media type of `bytes`. Sniffed from PNG/JPEG magic bytes when omitted. */
+    /**
+     * Gets the image type.
+     */
     readonly imageType?: ImageType;
     /**
-     * Non-visual picture name (`wp:docPr/@name` and `pic:cNvPr/@name`).
+     * Gets the name of the image.
+     *
      * @defaultValue `'Picture'`
      */
     readonly name?: string;
     /**
-     * Accessibility / caption title (`wp:docPr/@title`).
-     * Distinct from {@link description} (`@descr`).
+     * Gets the title of the image.
      */
     readonly title?: string;
-    /** Alternative text description (`wp:docPr/@descr`). */
+    /**
+     * Gets the alternative text description of the image.
+     */
     readonly description?: string;
     /**
-     * Whether aspect ratio is locked (`a:graphicFrameLocks/@noChangeAspect`).
+     * Gets a value indicating whether the lock aspect ratio option is enabled.
+     *
      * @defaultValue `true`
      */
     readonly lockAspectRatio?: boolean;
-    /** Clockwise rotation in degrees (`a:xfrm/@rot`, ST_Angle Ã— 60000). */
+    /**
+     * Gets the rotation angle of the image, in degrees.
+     */
     readonly rotation?: number;
-    /** Horizontal flip (`a:xfrm/@flipH`). */
+    /**
+     * Gets a value indicating whether the flip horizontal option is enabled.
+     */
     readonly flipHorizontal?: boolean;
-    /** Vertical flip (`a:xfrm/@flipV`). */
+    /**
+     * Gets a value indicating whether the flip vertical option is enabled.
+     */
     readonly flipVertical?: boolean;
     /**
-     * Host placement. Prefer {@link textWrappingStyle}; non-inline wrapping promotes to
-     * `wp:anchor` automatically.
+     * Gets the host placement.
      */
     readonly placement?: PicturePlacementType;
     /**
-     * Text wrapping. `'inline'` uses `wp:inline`; any other value promotes to
-     * `wp:anchor` with the matching `wp:wrap*` child.
+     * Gets the text wrapping.
+     *
      * @defaultValue `'inline'`
      */
     readonly textWrappingStyle?: TextWrappingStyleType;
     /**
+     * Gets the wrapping.
+     *
      * @deprecated Use {@link textWrappingStyle} instead.
      */
     readonly wrapping?: TextWrappingStyleType;
-    /** `wp:positionH/@relativeFrom` (`ST_RelFromH`). Meaningful on anchored hosts. */
+    /**
+     * Gets the horizontal origin.
+     */
     readonly horizontalOrigin?: HorizontalOriginType;
-    /** `wp:positionV/@relativeFrom` (`ST_RelFromV`). Meaningful on anchored hosts. */
+    /**
+     * Gets the vertical origin.
+     */
     readonly verticalOrigin?: VerticalOriginType;
     /**
-     * Absolute offset on the horizontal axis (`wp:positionH/wp:posOffset`).
-     * Mutually exclusive with {@link horizontalAlignment}.
+     * Gets the horizontal position.
      */
     readonly horizontalPosition?: number;
     /**
-     * Absolute offset on the vertical axis (`wp:positionV/wp:posOffset`).
-     * Mutually exclusive with {@link verticalAlignment}.
+     * Gets the vertical position.
      */
     readonly verticalPosition?: number;
     /**
-     * Alignment on the horizontal axis (`wp:positionH/wp:align`, `ST_AlignH`).
-     * Mutually exclusive with {@link horizontalPosition}.
+     * Gets the horizontal alignment.
      */
     readonly horizontalAlignment?: HorizontalAlignmentType;
     /**
-     * Alignment on the vertical axis (`wp:positionV/wp:align`, `ST_AlignV`).
-     * Mutually exclusive with {@link verticalPosition}.
+     * Gets the vertical alignment.
      */
     readonly verticalAlignment?: VerticalAlignmentType;
 }
@@ -234,8 +247,8 @@ interface ImageInit {
  * Build {@link ImageInit} without writing `undefined` into optional
  * fields (`exactOptionalPropertyTypes`).
  *
- * @param {Object} parts - The parts.
- * @returns {ImageInit} The result.
+ * @param {Object} parts - Specifies the parts.
+ * @returns {ImageInit} Returns the result.
  */
 function imageInit(parts: {
     readonly relationshipId: string;
@@ -320,19 +333,16 @@ function resolvePlacementAndWrapping(placement: PicturePlacementType | undefined
     return { placement: PicturePlacement.Inline, wrapping: TextWrappingStyle.Inline };
 }
 /**
- * DrawingML picture leaf in a paragraph (`w:r/w:drawing` with `wp:inline`
- * or `wp:anchor` + `pic:pic`).
+ * Represents a picture in a paragraph.
  *
- * Setting {@link Image.textWrappingStyle} to a non-inline value promotes the host
- * to `wp:anchor`. Setting wrapping back to `'inline'` collapses to `wp:inline`
- * and **drops** anchor position/wrap residual by design â€” see TSDoc on
- * {@link Image.textWrappingStyle}.
+ * Setting {@link Image.textWrappingStyle} to a value other than inline positions the picture relative to the text. Setting it back to inline discards the position and wrapping settings.
  *
  * @public
  */
 export class Picture implements FeatureRunLeaf {
     /**
-     * Public discriminant for {@link Paragraph.items} ({@link EntityType.Picture}).
+     * Gets the entity type of the item. Always {@link EntityType.Picture}.
+     *
      * @public
      */
     readonly type: EntityType.Picture = EntityType.Picture;
@@ -361,13 +371,11 @@ export class Picture implements FeatureRunLeaf {
     private layoutDirtyValue: boolean;
     private hyperlinkRelationshipIdValue: string | undefined;
     private hyperlinkTargetValue: string | undefined;
+    private cloneSourceBytes: Uint8Array | undefined;
     /**
-     * Create a picture bound to `document` for authoring.
+     * Initializes a new instance of the Picture class.
      *
-     * The instance is attached to the document host so {@link loadImage} and
-     * caption APIs resolve the images catalog. Append it with
-     * {@link Paragraph.appendImage} or by adding a feature-run item; call
-     * {@link loadImage} to supply media bytes before save.
+     * Call {@link loadImage} to supply the image bytes before the document is saved.
      *
      * @example
      * ```typescript
@@ -375,7 +383,7 @@ export class Picture implements FeatureRunLeaf {
      * picture.loadImage(imageBytes);
      * ```
      *
-     * @param document - Owning {@link WordDocument}
+     * @param {WordDocument} document - Specifies the owning {@link WordDocument}.
      * @public
      */
     constructor(document: WordDocument);
@@ -387,6 +395,13 @@ export class Picture implements FeatureRunLeaf {
      * @private
      */
     constructor(init: ImageInit);
+    /**
+     * Initializes a new instance of the Picture class.
+     *
+     * @param {WordDocument | string | ImageInit} documentOrRelationshipIdOrInit - Specifies the document or relationship id or init.
+     * @param {number} width - Specifies the width.
+     * @param {number} height - Specifies the height.
+     */
     constructor(documentOrRelationshipIdOrInit: WordDocument | string | ImageInit, width?: number, height?: number) {
         if (documentOrRelationshipIdOrInit instanceof WordDocument) {
             this.relationshipIdValue = '';
@@ -481,7 +496,9 @@ export class Picture implements FeatureRunLeaf {
             hyperlinkRelationshipId: state.hyperlinkRelationshipId
         }));
     }
-    /** Display width in points (`wp:extent/@cx` EMU at host boundary). */
+    /**
+     * Gets or sets the display width in points.
+     */
     get width(): number {
         return this.widthValue;
     }
@@ -489,7 +506,9 @@ export class Picture implements FeatureRunLeaf {
         this.widthValue = value;
         this.layoutDirtyValue = true;
     }
-    /** Display height in points (`wp:extent/@cy` EMU at host boundary). */
+    /**
+     * Gets or sets the display height in points.
+     */
     get height(): number {
         return this.heightValue;
     }
@@ -526,7 +545,8 @@ export class Picture implements FeatureRunLeaf {
         return this.relationshipIdValue;
     }
     /**
-     * Non-visual picture name (`wp:docPr/@name`, `pic:cNvPr/@name`).
+     * Gets or sets the non-visual picture name.
+     *
      * @defaultValue `'Picture'` on authoring.
      */
     get name(): string {
@@ -537,8 +557,7 @@ export class Picture implements FeatureRunLeaf {
         this.layoutDirtyValue = true;
     }
     /**
-     * Caption / accessibility title (`wp:docPr/@title`).
-     * Not the same as {@link description} (`@descr`).
+     * Gets or sets the caption / accessibility title.
      */
     get title(): string | undefined {
         return this.titleValue;
@@ -547,7 +566,9 @@ export class Picture implements FeatureRunLeaf {
         this.titleValue = value;
         this.layoutDirtyValue = true;
     }
-    /** Alternative text (`wp:docPr/@descr`). */
+    /**
+     * Gets or sets the alternative text.
+     */
     get description(): string | undefined {
         return this.descriptionValue;
     }
@@ -556,8 +577,7 @@ export class Picture implements FeatureRunLeaf {
         this.layoutDirtyValue = true;
     }
     /**
-     * Aspect-ratio lock (`a:graphicFrameLocks/@noChangeAspect`).
-     * Authoring default is `true`; missing locks on load read as `false`.
+     * Gets or sets the aspect-ratio lock.
      */
     get lockAspectRatio(): boolean {
         return this.lockAspectRatioValue;
@@ -567,8 +587,7 @@ export class Picture implements FeatureRunLeaf {
         this.layoutDirtyValue = true;
     }
     /**
-     * Clockwise rotation in degrees (`a:xfrm/@rot`).
-     * Wire uses ST_Angle = degrees Ã— 60000.
+     * Gets or sets the clockwise rotation of the picture, in degrees.
      */
     get rotation(): number {
         return this.rotationValue;
@@ -580,7 +599,9 @@ export class Picture implements FeatureRunLeaf {
         this.rotationValue = value;
         this.layoutDirtyValue = true;
     }
-    /** Horizontal flip (`a:xfrm/@flipH`). */
+    /**
+     * Gets or sets the horizontal flip.
+     */
     get flipHorizontal(): boolean {
         return this.flipHorizontalValue;
     }
@@ -588,7 +609,9 @@ export class Picture implements FeatureRunLeaf {
         this.flipHorizontalValue = value;
         this.layoutDirtyValue = true;
     }
-    /** Vertical flip (`a:xfrm/@flipV`). */
+    /**
+     * Gets or sets the vertical flip.
+     */
     get flipVertical(): boolean {
         return this.flipVerticalValue;
     }
@@ -597,8 +620,7 @@ export class Picture implements FeatureRunLeaf {
         this.layoutDirtyValue = true;
     }
     /**
-     * Host placement (`wp:inline` vs `wp:anchor`).
-     * Prefer mutating {@link textWrappingStyle}; non-inline wrapping forces anchored.
+     * Gets or sets the host placement.
      */
     get placement(): PicturePlacementType {
         return this.placementValue;
@@ -615,13 +637,9 @@ export class Picture implements FeatureRunLeaf {
         this.layoutDirtyValue = true;
     }
     /**
-     * Text wrapping style.
+     * Gets or sets how text wraps around the picture.
      *
-     * - `'inline'` serializes as `wp:inline`. Collapsing an anchored picture to
-     *   inline **drops** position and wrap residual by design.
-     * - Other values promote to `wp:anchor` with the matching wrap element.
-     *   Tight/through without a residual wrapPolygon fall back to `wrapNone`
-     *   (library does not invent polygons).
+     * Setting the value back to inline discards the position and wrapping settings of the picture.
      *
      * @throws RangeError when `value` is not a known {@link TextWrappingStyle}.
      */
@@ -640,20 +658,24 @@ export class Picture implements FeatureRunLeaf {
         this.layoutDirtyValue = true;
     }
     /**
+     * Gets or sets how text wraps around the picture.
+     *
      * @deprecated Use {@link textWrappingStyle} instead.
      */
     get wrapping(): TextWrappingStyleType {
         return this.textWrappingStyle;
     }
     /**
-     * @param {TextWrappingStyleType} value - The value.
-     * @returns {void} Nothing is returned.
+     * @param {TextWrappingStyleType} value - Specifies the value.
+     * @returns {void} Nothing.
      * @deprecated Use {@link textWrappingStyle} instead.
      */
     set wrapping(value: TextWrappingStyleType) {
         this.textWrappingStyle = value;
     }
-    /** Horizontal origin (`wp:positionH/@relativeFrom`). */
+    /**
+     * Gets or sets the horizontal origin.
+     */
     get horizontalOrigin(): HorizontalOriginType | undefined {
         return this.horizontalOriginValue;
     }
@@ -664,7 +686,9 @@ export class Picture implements FeatureRunLeaf {
         this.horizontalOriginValue = value;
         this.layoutDirtyValue = true;
     }
-    /** Vertical origin (`wp:positionV/@relativeFrom`). */
+    /**
+     * Gets or sets the vertical origin.
+     */
     get verticalOrigin(): VerticalOriginType | undefined {
         return this.verticalOriginValue;
     }
@@ -676,8 +700,7 @@ export class Picture implements FeatureRunLeaf {
         this.layoutDirtyValue = true;
     }
     /**
-     * Horizontal offset (`wp:positionH/wp:posOffset`).
-     * Setting this clears {@link horizontalAlignment} (align XOR posOffset).
+     * Gets or sets the horizontal offset.
      */
     get horizontalPosition(): number | undefined {
         return this.horizontalPositionValue;
@@ -690,8 +713,7 @@ export class Picture implements FeatureRunLeaf {
         this.layoutDirtyValue = true;
     }
     /**
-     * Vertical offset (`wp:positionV/wp:posOffset`).
-     * Setting this clears {@link verticalAlignment} (align XOR posOffset).
+     * Gets or sets the vertical offset.
      */
     get verticalPosition(): number | undefined {
         return this.verticalPositionValue;
@@ -704,8 +726,7 @@ export class Picture implements FeatureRunLeaf {
         this.layoutDirtyValue = true;
     }
     /**
-     * Horizontal alignment (`wp:positionH/wp:align`).
-     * Setting this clears {@link horizontalPosition} (align XOR posOffset).
+     * Gets or sets the horizontal alignment.
      *
      * @throws RangeError when `value` is not a known {@link HorizontalAlignment}.
      */
@@ -721,8 +742,7 @@ export class Picture implements FeatureRunLeaf {
         this.layoutDirtyValue = true;
     }
     /**
-     * Vertical alignment (`wp:positionV/wp:align`).
-     * Setting this clears {@link verticalPosition} (align XOR posOffset).
+     * Gets or sets the vertical alignment.
      *
      * @throws RangeError when `value` is not a known {@link VerticalAlignment}.
      */
@@ -817,17 +837,17 @@ export class Picture implements FeatureRunLeaf {
      *
      * Creates a separate caption paragraph (built-in `Caption` style, centered,
      * spacing 30/240 twips) containing a `SEQ <captionName> \* <switch>` complex
-     * field (ECMA-376-1 Â§17.16.5.56), inserted immediately before
+     * field, inserted immediately before
      * ({@link CaptionPosition.Above}) or after ({@link CaptionPosition.Below})
      * the paragraph containing this picture. The picture and its paragraph are not
      * moved or modified. The initial field result is the next number in the
      * caption-name sequence; Microsoft Word remains authoritative on refresh.
      *
-     * @param {string} captionName - The caption name.
-     * @param {CaptionNumberingFormat} numberingFormat - The numbering format.
-     * @param {CaptionPosition} position - The position.
-     * @returns {Paragraph} The new caption {@link Paragraph}; append additional caption text
+     * @returns {Paragraph} - Returns the new caption {@link Paragraph}; append additional caption text.
      * or adjust its formatting on the returned object.
+     * @param {string} captionName - Specifies the caption name.
+     * @param {CaptionNumberingFormat} numberingFormat - Specifies the numbering format.
+     * @param {CaptionPosition} position - Specifies the position.
      * @throws DocxError `content/invalid-caption-name` when the name is empty or
      * whitespace-only.
      * @throws DocxError `content/invalid-caption-format` /
@@ -857,8 +877,8 @@ export class Picture implements FeatureRunLeaf {
      * replacement. Parent references, collection indexes, and existing object
      * references remain unchanged. Only the underlying image data is replaced.
      *
-     * @param {Uint8Array} imageBytes - Image data as `Uint8Array` (PNG or JPEG)
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {Uint8Array} imageBytes - Specifies the image bytes.
      * @example
      * ```typescript
      * // Load image into a newly created picture
@@ -947,6 +967,81 @@ export class Picture implements FeatureRunLeaf {
             hyperlinkRelationshipId: this.hyperlinkRelationshipIdValue
         };
         return encodePictureHost(input);
+    }
+
+    /**
+     * Create an independent copy of this picture.
+     * All properties are cloned; image data is referenced (shared relationship ID).
+     *
+     * Note: The cloned picture is detached from any document. The image relationship
+     * will be resolved during import or attachment to a target document.
+     *
+     * @returns {Picture} Cloned picture.
+     * @public
+     */
+    clone(): Picture {
+        const init: ImageInit = {
+            relationshipId: this.relationshipIdValue,
+            width: this.widthValue,
+            height: this.heightValue,
+            name: this.nameValue,
+            title: this.titleValue,
+            description: this.descriptionValue,
+            lockAspectRatio: this.lockAspectRatioValue,
+            rotation: this.rotationValue,
+            flipHorizontal: this.flipHorizontalValue,
+            flipVertical: this.flipVerticalValue,
+            placement: this.placementValue,
+            wrapping: this.wrappingValue,
+            horizontalOrigin: this.horizontalOriginValue,
+            verticalOrigin: this.verticalOriginValue,
+            horizontalPosition: this.horizontalPositionValue,
+            verticalPosition: this.verticalPositionValue,
+            horizontalAlignment: this.horizontalAlignmentValue,
+            verticalAlignment: this.verticalAlignmentValue,
+            docPrId: this.docPrIdValue,
+            preservedHost: this.preservedHostValue,
+            layoutDirty: this.layoutDirtyValue,
+            hyperlinkRelationshipId: this.hyperlinkRelationshipIdValue,
+            hyperlinkTarget: this.hyperlinkTargetValue
+        };
+        const copy: Picture = new Picture(init);
+        const host: WordDocument | undefined = hostDocumentOf(this);
+        if (host !== undefined) {
+            copy.cloneSourceBytes = inlinePictureBytes(host, this);
+        }
+        return copy;
+    }
+    /**
+     * Registers explicit image `bytes` with `document` for this picture (header/footer imports,
+     * where the source media lives under the part's own relationships).
+     *
+     * @param {WordDocument} document - The document that now owns this picture.
+     * @param {Uint8Array} bytes - The image bytes.
+     * @returns {void} Nothing is returned.
+     * @private
+     */
+    adoptBytes(document: WordDocument, bytes: Uint8Array): void {
+        this.cloneSourceBytes = bytes;
+        this.adoptCloneBytes(document);
+    }
+    /**
+     * Re-registers the image bytes captured by {@link clone} with `document`, giving this picture
+     * its own media part there. Used when content is imported into another document.
+     *
+     * @param {WordDocument} document - The document that now owns this picture.
+     * @returns {void} Nothing is returned.
+     * @private
+     */
+    adoptCloneBytes(document: WordDocument): void {
+        const bytes: Uint8Array | undefined = this.cloneSourceBytes;
+        if (bytes === undefined) {
+            return;
+        }
+        this.cloneSourceBytes = undefined;
+        this.relationshipIdValue = '';
+        bindCaptionHostDocument(this, document);
+        this.loadImage(bytes);
     }
 }
 /**
@@ -1062,8 +1157,8 @@ export class ImagesCatalog implements FeatureMultiPackagePart {
     /**
      *  Image bytes for a loaded relationship id.
      *
-     * @param {string} relationshipId - The relationship id.
-     * @returns {Uint8Array | undefined} The result.
+     * @param {string} relationshipId - Specifies the relationship id.
+     * @returns {Uint8Array | undefined} Returns the result.
      */
     bytesForRelationship(relationshipId: string): Uint8Array | undefined {
         let ts330: any;
@@ -1161,8 +1256,8 @@ export class ImagesCatalog implements FeatureMultiPackagePart {
     /**
      *  Resolve pending pictures that live in header/footer parts (relationships are part-scoped).
      *
-     * @param {WordDocument} document - The document.
-     * @returns {void} Nothing is returned.
+     * @param {WordDocument} document - Specifies the document.
+     * @returns {void} Nothing.
      */
     private materializeHeaderFooterPending(document: WordDocument): void {
         const catalog: { partBlocks?: () => ReadonlyArray<{ partName: PartName; blocks: ReadonlyArray<BlockContent>; }>; } = document.featurePart(featureId('headers-footers')) as {
@@ -1344,8 +1439,8 @@ function allocateImagePartName(contentType: ImageType, used: ReadonlySet<string>
  * Keep non-PNG/JPEG types (e.g. GIF) so {@link ImagesCatalog.replaceBytes} can
  * find the relationship when replacing an existing picture.
  *
- * @param {PackagePart} part - The part.
- * @returns {string} The result.
+ * @param {PackagePart} part - Specifies the part.
+ * @returns {string} Returns the result.
  */
 function contentTypeForPart(part: PackagePart): string {
     if (part.contentType === PNG_CONTENT_TYPE || part.contentType === JPEG_CONTENT_TYPE) {
@@ -1569,8 +1664,8 @@ function collectPicturesFromParagraphItems(
 /**
  *  Nested run-level items under an inline content control (public or wrapper).
  *
- * @param {ParagraphItem} item - The item.
- * @returns {ReadonlyArray<ParagraphItem> | undefined} The result.
+ * @param {ParagraphItem} item - Specifies the item.
+ * @returns {ReadonlyArray<ParagraphItem> | undefined} Returns the result.
  */
 function nestedParagraphItemsOf(item: ParagraphItem): ReadonlyArray<ParagraphItem> | undefined {
     if (item instanceof FeatureInlineParagraphItem) {

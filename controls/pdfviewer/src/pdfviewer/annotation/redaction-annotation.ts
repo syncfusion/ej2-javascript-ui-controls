@@ -1405,6 +1405,9 @@ export class Redaction {
      * @returns {void}
      */
     public deleteTextRedactAnnotation(): void {
+        if (this.pdfViewer.readOnlySettings.annotations) {
+            return;
+        }
         if (this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.redactionToolbarModule) {
             this.pdfViewer.toolbarModule.redactionToolbarModule.clear();
         }

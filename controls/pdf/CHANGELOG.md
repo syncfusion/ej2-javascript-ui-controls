@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 35.2.13 (2026-11-24)
+
+### PDF
+
+#### Features
+
+- Enhanced PDF layer management with named groups and radio groups.
+- Added support for OpenType Font parsing in PDF documents.
+
+#### Bug Fixes
+
+- Resolved an issue where the fill color of circle annotations was not preserved.
+- Resolved an issue where polygon annotations were not flattened properly in a specific PDF document.
+- Resolved an issue where a script error occurred when accessing the font properties of a text box field.
+- Resolved an issue where arrowheads were rendered incorrectly in line annotations with large dashed border patterns.
+
 ## 35.2.12 (2026-11-18)
 
 ### PDF

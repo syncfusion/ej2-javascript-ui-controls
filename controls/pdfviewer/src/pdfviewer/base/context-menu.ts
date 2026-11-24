@@ -218,6 +218,29 @@ export class ContextMenu implements IContextMenu {
         this.pdfViewerBase.getElement('_context_menu_separator').classList.remove('e-menu-hide');
         this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.remove('e-menu-hide');
         this.contextMenuObj.enableItems([this.defaultCutId, this.defaultCopyId, this.defaultPasteId, this.defaultDeleteId], true, true);
+        const isSignFormFieldValue: boolean = this.pdfViewer.selectedItems.annotations.length !== 0 &&
+            this.pdfViewerBase.checkSignatureFormField(this.pdfViewer.selectedItems.annotations[0].id);
+        const isFormFieldSelected: boolean = this.pdfViewer.selectedItems.formFields.length !== 0;
+        if (this.pdfViewer.readOnlySettings.annotations && !isSignFormFieldValue && !isFormFieldSelected &&
+            (this.pdfViewer.selectedItems.annotations.length !== 0 ||
+            (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.textMarkupAnnotationModule &&
+                this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation))) {
+            args.cancel = true;
+            return;
+        }
+        if (this.pdfViewer.readOnlySettings.formFields && this.pdfViewer.selectedItems.formFields.length !== 0) {
+            this.contextMenuObj.hideItems([this.defaultCutId, this.defaultDeleteId, this.defaultPropertiesId], true);
+            this.contextMenuObj.enableItems([this.defaultCutId, this.defaultDeleteId, this.defaultPasteId], false, true);
+        }
+        if (this.pdfViewer.readOnlySettings.comments && !this.pdfViewer.readOnlySettings.annotations) {
+            this.contextMenuObj.hideItems([this.defaultCommentId], true);
+        }
+        if (this.pdfViewer.readOnlySettings.annotations && !isSignFormFieldValue && !isFormFieldSelected) {
+            this.contextMenuObj.hideItems([this.defaultCutId, this.defaultDeleteId, this.defaultCommentId,
+                this.defaultPropertiesId, this.defaultHighlightId, this.defaultUnderlineId, this.defaultStrikethroughId,
+                this.defaultSquigglyId, this.redactTextId, this.applyRedactionsId], true);
+            this.contextMenuObj.enableItems([this.defaultCutId, this.defaultDeleteId, this.defaultPasteId], false, true);
+        }
         // Select and Edit are link-annotation-only actions. Hide them by default; the
         // link-annotation branch in the cascade below will re-show them when the
         // right-click actually landed on a link <a> element.
@@ -559,7 +582,7 @@ export class ContextMenu implements IContextMenu {
     }
 
     private onOpeningForShape(isProp: boolean, isSignature?: boolean): void {
-        if (this.pdfViewer.annotation && this.pdfViewer.annotation.isShapeCopied) {
+        if (this.pdfViewer.annotation && this.pdfViewer.annotation.isShapeCopied && !this.pdfViewer.readOnlySettings.annotations) {
             this.contextMenuObj.enableItems([this.defaultPasteId], true, true);
         } else if (this.pdfViewer.formDesigner && this.pdfViewer.formDesigner.isShapeCopied) {
             this.contextMenuObj.enableItems([this.defaultPasteId], true, true);

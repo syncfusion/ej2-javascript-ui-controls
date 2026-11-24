@@ -10,7 +10,7 @@ import { findChild } from '../../core/shapes/dom-utils';
 import { PackagePart } from '../../core/package/package-model';
 import { PackagePartAccess } from '../../core/package/package-part-access';
 import { getCachedXlsxRoot, Ej2XlsxRootModule } from './xlsx-surface';
-import { getXlsxChartHostApi } from './xlsx-chart-api';
+import { getXlsxChartHostApi, HostChartView3D } from './xlsx-chart-api';
 import { notifySourceSlideDirty, markChartGradientPaintOverride } from './chart-data-edit';
 import { readChartGradientSources, ChartGradientSource } from './chart-gradient-sources';
 import { OoxmlElement, parseXml, serializeXml } from '../../core/xml/dom';
@@ -24,6 +24,13 @@ import { OoxmlElement, parseXml, serializeXml } from '../../core/xml/dom';
  * nested package limits, rebuild a session host chart (ej2-xlsx does not
  * round-trip worksheet charts after `Workbook.save`), update formulas / cells,
  * then flush chart part XML + embedding bytes via `PackagePartAccess.setPart`.
+ *
+ * **Shape cast (tables/images parity):** `Chart` extends {@link Shape} and
+ * {@link Slide.shapes} materializes chart graphic frames as `Chart`, so
+ * `slide.shapes[n] as Chart` / `instanceof Chart` work after
+ * `await ensureFeature(CHARTS_FEATURE_ID)`. The frame identity is copied by
+ * {@link Chart.adoptChartFrame} (no XML write); the underlying walk element is
+ * the `p:graphicFrame`.
  *
  * TASK-1072: title / chart area / plot area **properties** (no `setTitle`
  * `applyTitle` public verbs). Writes dual-flush via the same session path.
@@ -69,6 +76,10 @@ import {
     writeValuesAlongFormula
 } from './chart-data-edit';
 import { ChartsError } from './errors';
+import { DEFAULT_CHART_CACHE_SHEET_NAME } from './chart-part-caches';
+import { attachCategoryLabels, ChartCategoryAxis, ChartData, ChartDataHost, ChartDataRange, ChartRange, chartTypeAccess, ChartSeriesApi,
+    ChartSeriesCollection } from './chart-data-api';
+import { OfficeChartType } from './office-chart-type';
 import { chartHasColorStyle, chartHasEmbeddedPackage, chartHasStyle, chartHasUnknownRelatedParts, chartHasUserShapes,
     chartPartName } from './read-model';
 import { ChartInstance } from './resolve-chart';
@@ -76,6 +87,8 @@ import { ChartAxisFormat, ChartDataSource, ChartFrameFillFormat, ChartFrameForma
     ChartLegendFormat, ChartSeriesDataLabels, ChartTitleAreaFormat, ParsedChartSpace,
     HostChartSeries } from './xlsx-chart-api';
 export { AddChartSeriesOptions, ChartSeriesView } from './chart-data-edit';
+export { ChartCategoryAxis, ChartData, ChartDataRange, ChartRange, ChartRangeLike, ChartSeries, ChartSeriesApi,
+    ChartSeriesCollection } from './chart-data-api';
 export { ChartAxisFormat, ChartFrameFillFormat, ChartFrameFormat, ChartFrameLineFormat, ChartLegendFormat,
     ChartSeriesDataLabels, ChartTitleAreaFormat } from './xlsx-chart-api';
 /**
@@ -83,9 +96,9 @@ export { ChartAxisFormat, ChartFrameFillFormat, ChartFrameFormat, ChartFrameLine
  *
  * @public
  */
-export class Chart {
+export class Chart extends Shape {
     /** @internal */
-    private readonly _shape: Shape;
+    private _shape: Shape;
     /** @internal */
     private readonly instance: ChartInstance;
     /**
@@ -107,9 +120,25 @@ export class Chart {
      * @param {Presentation} document - Owning presentation (package access for later tasks).
      */
     constructor(shape: Shape, instance: ChartInstance, document: Presentation) {
+        super(shape.getElement(), shape.elementKind, shape.id, shape.name, shape.getSecurityLimits(), shape.getPartName(),
+              undefined, 0, shape.notifyAdapterMutation === undefined ? undefined : (): void => { shape.notifyAdapterMutation(); },
+              shape.getHostRoot(), shape.getGroupAncestors());
         this._shape = shape;
         this.instance = instance;
         this.document = document;
+    }
+    /**
+     * Copies graphic-frame walk identity onto a `Chart` built from a shape
+     * cast (tables/images parity). No XML write. After adoption the chart is
+     * the walked `p:graphicFrame` shape (`instanceof Chart` stays `true`).
+     *
+     * @internal
+     * @param {Shape} source - Walk probe shape to adopt identity from.
+     * @returns {void} Nothing.
+     */
+    adoptChartFrame(source: Shape): void {
+        this.adopt(source);
+        this._shape = source;
     }
     /**
      * Attaches the chart-local cell grid created by `addChart` so the first edit
@@ -396,11 +425,11 @@ export class Chart {
      * (auto when `undefined`).
      * @returns {ChartAxisFormat} The result.
      */
-    get primaryCategoryAxis(): ChartAxisFormat {
-        if (this.editSession !== undefined) {
-            return this.editSession.hostChart.primaryCategoryAxis;
-        }
-        return snapshotAxis(this.instance.parsed.categoryAxis, 'commitPrimaryCategoryAxis');
+    get primaryCategoryAxis(): ChartCategoryAxis {
+        const axis: ChartAxisFormat = this.editSession !== undefined
+            ? this.editSession.hostChart.primaryCategoryAxis
+            : snapshotAxis(this.instance.parsed.categoryAxis, 'commitPrimaryCategoryAxis');
+        return attachCategoryLabels(axis, this.dataHost());
     }
     /**
      * Primary value (Y) axis — engine `primaryValueAxis` → `c:valAx`.
@@ -486,26 +515,67 @@ export class Chart {
         return this.instance.parsed.dataSource;
     }
     /**
-     * Category/value data range formula when known (session host or parse).
+     * Active worksheet data range of the chart (1-based, inclusive).
      *
-     * @remarks Setter dual-writes host `dataRange` and flushes chart part + embedding. Requires an embedded package; external-only throws
-     * {@link Error}. Prefer {@link Chart.applyDataRange} when you need to await the flush.
-     * @returns {string | undefined} The result.
+     * @remarks Reads the range loaded from the file (`c:f` formulas) or last assigned; `undefined` when the chart has no
+     * simple rectangular range. Assign `chart.chartData.getRange(firstRow, firstColumn, lastRow, lastColumn)` to rebuild the
+     * series from that range; the assignment dual-writes the chart part and embedded workbook and the range survives save
+     * and reload. An invalid range (another worksheet, or not a {@link ChartDataRange}) throws {@link ChartsError}.
+     * For the A1 formula use `chart.dataRange.formula`. `chart.applyDataRange(formula)` still accepts a formula string.
+     * @public
+     * @returns {ChartDataRange | undefined} The active range.
      */
-    get dataRange(): string | undefined {
-        if (this.editSession !== undefined) {
-            return this.editSession.hostChart.dataRange;
+    get dataRange(): ChartDataRange | undefined {
+        const raw: string | undefined = this.editSession !== undefined
+            ? this.editSession.hostChart.dataRange
+            : this.instance.parsed.dataRange;
+        const sheet: string = this.editSession !== undefined ? this.editSession.sheet.name : DEFAULT_CHART_CACHE_SHEET_NAME;
+        if (typeof raw === 'string' && raw.length > 0) {
+            const explicit: ChartDataRange | undefined = ChartDataRange.fromDataRangeFormula(raw, sheet);
+            if (explicit !== undefined) {
+                return explicit;
+            }
         }
-        const dr: string = this.instance.parsed.dataRange;
-        return typeof dr === 'string' && dr.length > 0 ? dr : undefined;
+        return this.dataRangeFromSeries(sheet);
     }
     /**
+     * Bounding box of every series title, category and value reference (`c:f`), which is how a file records its range.
      *
-     * @param {string | undefined} value - The value value.
-     * @returns {void} Nothing.
+     * @internal
+     * @param {string} sheet - Sheet assumed for unqualified formulas.
+     * @returns {ChartDataRange | undefined} The range, or `undefined` when no series reference is a simple range.
      */
-    set dataRange(value: string | undefined) {
-        void this.applyDataRange(value);
+    private dataRangeFromSeries(sheet: string): ChartDataRange | undefined {
+        let box: { r0: number; c0: number; r1: number; c1: number; } | undefined;
+        let sheetName: string = sheet;
+        for (const view of this.seriesViews()) {
+            for (const f of [view.title, view.categoryLabels, view.values]) {
+                const r: ChartRange | undefined = typeof f === 'string' ? ChartRange.fromFormula(f, sheet) : undefined;
+                if (r === undefined) {
+                    continue;
+                }
+                sheetName = r.sheetName;
+                box = box === undefined
+                    ? { r0: r.startRow, c0: r.startColumn, r1: r.endRow, c1: r.endColumn }
+                    : { r0: Math.min(box.r0, r.startRow), c0: Math.min(box.c0, r.startColumn),
+                        r1: Math.max(box.r1, r.endRow), c1: Math.max(box.c1, r.endColumn) };
+            }
+        }
+        return box === undefined ? undefined : new ChartDataRange(box.r0, box.c0, box.r1, box.c1, sheetName);
+    }
+    set dataRange(value: ChartDataRange | undefined) {
+        if (value === undefined) {
+            this.applyDataRange(undefined);
+            return;
+        }
+        if (!(value instanceof ChartRange)) {
+            throw new ChartsError('chart.dataRange expects a range from chart.chartData.getRange(...)');
+        }
+        const session: ChartEditSession = this.ensureSession();
+        if (value.sheetName !== session.sheet.name) {
+            throw new ChartsError(`chart.dataRange must be on worksheet "${session.sheet.name}", got "${value.sheetName}"`);
+        }
+        this.applyDataRange(value.formula);
     }
     /**
      * Whether series are laid out in rows (host chart / engine).
@@ -536,7 +606,16 @@ export class Chart {
      * another dual-write flush).
      * @returns {*} The result.
      */
-    get series(): ReadonlyArray<ChartSeriesView> {
+    get series(): ReadonlyArray<ChartSeriesView> & ChartSeriesApi {
+        return this.seriesCollection().decorate(this.seriesViews());
+    }
+    /**
+     * Existing array view of series formulas (unchanged behaviour).
+     *
+     * @internal
+     * @returns {ReadonlyArray<ChartSeriesView>} The views.
+     */
+    private seriesViews(): ReadonlyArray<ChartSeriesView> {
         if (this.editSession !== undefined) {
             return this.editSession.hostChart.series.map((s: HostChartSeries) => ({
                 title: s.title,
@@ -561,6 +640,133 @@ export class Chart {
                 ...(bags.dataLabels !== undefined ? { dataLabels: bags.dataLabels } : {})
             };
         });
+    }
+    /**
+     * Convenience `ChartData`: `setValue` / `getValue` / `getRange` on the embedded worksheet (1-based indices).
+     *
+     * @returns {ChartData} The data surface.
+     */
+    get chartData(): ChartData {
+        if (this.chartDataApi === undefined) {
+            this.chartDataApi = new ChartData(this.dataHost());
+        }
+        return this.chartDataApi;
+    }
+    /**
+     * Convenience chart type. Getter maps the parsed engine type back to {@link OfficeChartType}; setter reuses the
+     * engine `type` property and dual-write flush.
+     *
+     * @returns {OfficeChartType | string} The public type key (engine token when it has no key).
+     */
+    get chartType(): OfficeChartType | string {
+        return chartTypeAccess.toKey(this.instance.parsed.type);
+    }
+    set chartType(value: OfficeChartType | string) {
+        const engine: string = chartTypeAccess.toEngine(value as OfficeChartType);
+        const session: ChartEditSession = this.ensureSession();
+        session.hostChart.type = engine;
+        if (/3D$/i.test(engine) && session.hostChart.view3D === undefined) {
+            // A 3-D plot without a camera is drawn flat by consumers; seed the PowerPoint defaults.
+            session.hostChart.view3D = { rotationX: 15, depthPercent: 100, perspective: 30 };
+        }
+        session.dirty = true;
+        flushDualWrite(this.document, this.instance, session);
+    }
+    /**
+     * Y rotation of a 3-D chart in degrees (`c:view3D/c:rotY`, 0 to 360).
+     *
+     * @remarks Reads `0` when the chart has no `c:view3D` / `c:rotY`. Assigning a value outside 0 to 360 or a non-integer
+     * throws {@link ChartsError}. The value is kept through save, reload and slide duplication.
+     * @public
+     * @returns {number} The rotation angle.
+     */
+    get rotation(): number {
+        const view: HostChartView3D | undefined = this.currentView3D();
+        return view !== undefined && view.rotationY !== undefined ? view.rotationY : 0;
+    }
+    set rotation(value: number) {
+        if (typeof value !== 'number' || !Number.isInteger(value) || value < 0 || value > 360) {
+            throw new ChartsError('chart.rotation must be an integer between 0 and 360');
+        }
+        this.writeView3D((view: HostChartView3D): void => { view.rotationY = value; });
+    }
+    /**
+     * Whether the 3-D chart height is scaled automatically (no `c:view3D/c:hPercent`).
+     *
+     * @remarks `true` when `c:hPercent` is absent, which is how PowerPoint stores "Autoscale". Setting `false` writes an
+     * explicit `hPercent` of 100 (or keeps an existing one); setting `true` removes it.
+     * @public
+     * @returns {boolean} `true` when automatic scaling is on.
+     */
+    get autoScaling(): boolean {
+        const view: HostChartView3D | undefined = this.currentView3D();
+        return view === undefined || view.heightPercent === undefined;
+    }
+    set autoScaling(value: boolean) {
+        if (typeof value !== 'boolean') {
+            throw new ChartsError('chart.autoScaling must be a boolean');
+        }
+        this.writeView3D((view: HostChartView3D): void => {
+            if (value) {
+                delete view.heightPercent;
+            } else if (view.heightPercent === undefined) {
+                view.heightPercent = 100;
+            }
+        });
+    }
+    /**
+     * Whether the 3-D chart axes are drawn at right angles (`c:view3D/c:rAngAx`).
+     *
+     * @remarks Reads `false` when the element is absent.
+     * @public
+     * @returns {boolean} `true` for right-angle axes.
+     */
+    get rightAngleAxes(): boolean {
+        const view: HostChartView3D | undefined = this.currentView3D();
+        return view !== undefined && view.rightAngleAxis === true;
+    }
+    set rightAngleAxes(value: boolean) {
+        if (typeof value !== 'boolean') {
+            throw new ChartsError('chart.rightAngleAxes must be a boolean');
+        }
+        this.writeView3D((view: HostChartView3D): void => { view.rightAngleAxis = value; });
+    }
+    /** @internal */
+    private currentView3D(): HostChartView3D | undefined {
+        return this.editSession !== undefined ? this.editSession.hostChart.view3D : this.instance.parsed.view3D;
+    }
+    /** @internal */
+    private writeView3D(change: (view: HostChartView3D) => void): void {
+        const session: ChartEditSession = this.ensureSession();
+        const view: HostChartView3D = { ...(session.hostChart.view3D || {}) };
+        change(view);
+        session.hostChart.view3D = view;
+        session.dirty = true;
+        flushDualWrite(this.document, this.instance, session);
+    }
+    /** @internal */
+    private chartDataApi: ChartData | undefined;
+    /** @internal */
+    private seriesApi: ChartSeriesCollection | undefined;
+    /** @internal */
+    private seriesCollection(): ChartSeriesCollection {
+        if (this.seriesApi === undefined) {
+            this.seriesApi = new ChartSeriesCollection(this.dataHost());
+        }
+        return this.seriesApi;
+    }
+    /** @internal */
+    private dataHost(): ChartDataHost {
+        return {
+            runInSession: <T>(mutate: (session: ChartEditSession) => T): T => {
+                const session: ChartEditSession = this.ensureSession();
+                const result: T = mutate(session);
+                session.dirty = true;
+                flushDualWrite(this.document, this.instance, session);
+                return result;
+            },
+            readSession: <T>(read: (session: ChartEditSession) => T): T => read(this.ensureSession())
+        };
     }
     /**
      * Underlying engine parse result (read-only view of current instance state).

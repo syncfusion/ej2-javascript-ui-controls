@@ -9,19 +9,19 @@ import { OpenXmlChild } from '../../core/xml/model';
  * Data type of a document property value.
  */
 export enum PropertyValueType {
-    /** Boolean value. */
+    /** Specifies a Boolean value. */
     Boolean,
-    /** Date value. */
+    /** Specifies a date and time value. */
     Date,
     /** Single precision floating point value. */
     Float,
     /** Double precision floating point value. */
     Double,
-    /** 32-bit integer value. */
+    /** Specifies a 32-bit integer value. */
     Int,
-    /** String value. */
+    /** Specifies a string value. */
     String,
-    /** Binary value. */
+    /** Specifies a binary (byte array) value. */
     ByteArray,
     /** Clipboard data value (read as opaque; not creatable). */
     ClipData,
@@ -35,7 +35,7 @@ export enum PropertyType {
     Summary,
     /** Document summary information (extended properties). */
     DocumentSummary,
-    /** User defined property. */
+    /** Specifies a user-defined (custom) document property. */
     Custom,
 }
 
@@ -45,36 +45,65 @@ export enum PropertyType {
  * to keep every member unique.
  */
 export enum BuiltInProperty {
+    /** Specifies the title property. */
     Title = 2,
+    /** Specifies the subject property. */
     Subject = 3,
+    /** Specifies the author property. */
     Author = 4,
+    /** Specifies the keywords property. */
     Keywords = 5,
+    /** Specifies the comments property. */
     Comments = 6,
+    /** Specifies the template property. */
     Template = 7,
+    /** Specifies the last author property. */
     LastAuthor = 8,
+    /** Specifies the revision number property. */
     RevisionNumber = 9,
+    /** Specifies the total editing time property. */
     TotalEditingTime = 10,
+    /** Specifies the last printed property. */
     LastPrinted = 11,
+    /** Specifies the create date property. */
     CreateDate = 12,
+    /** Specifies the last save date property. */
     LastSaveDate = 13,
+    /** Specifies the page count property. */
     PageCount = 14,
+    /** Specifies the word count property. */
     WordCount = 15,
+    /** Specifies the char count property. */
     CharCount = 16,
+    /** Specifies the thumbnail property. */
     Thumbnail = 17,
+    /** Specifies the application name property. */
     ApplicationName = 18,
+    /** Specifies the doc security property. */
     DocSecurity = 19,
+    /** Specifies the category property. */
     Category = 1002,
+    /** Specifies the byte count property. */
     ByteCount = 1004,
+    /** Specifies the line count property. */
     LineCount = 1005,
+    /** Specifies the paragraph count property. */
     ParagraphCount = 1006,
+    /** Specifies the slide count property. */
     SlideCount = 1007,
+    /** Specifies the note count property. */
     NoteCount = 1008,
+    /** Specifies the hidden count property. */
     HiddenCount = 1009,
+    /** Specifies the manager property. */
     Manager = 1014,
+    /** Specifies the company property. */
     Company = 1015,
 }
 
-/** Supported value of a document property. */
+/**
+ * Supported value of a document property.
+ */
 export type DocumentPropertyValue = string | number | boolean | Date | Uint8Array;
 
 const DEFAULT_DATE_MS: number = -62135596800000;
@@ -147,11 +176,15 @@ export class DocumentProperty {
         this.type = resolved;
         this.onChange = onChange;
     }
-    /** Property name. */
+    /**
+     * Gets the property name.
+     */
     get name(): string {
         return this.nameValue;
     }
-    /** Property value. Setting re-detects the type, keeping Float/Double for numbers. */
+    /**
+     * Gets or sets the property value. Setting re-detects the type, keeping Float/Double for numbers.
+     */
     get value(): DocumentPropertyValue {
         return this.val;
     }
@@ -165,14 +198,16 @@ export class DocumentProperty {
         this.type = next;
         this.changed();
     }
-    /** Data type of the current value. */
+    /**
+     * Gets the data type of the current value.
+     */
     get valueType(): PropertyValueType {
         return this.type;
     }
     /**
      *  Returns the value as boolean.
      *
-     * @returns {boolean} The result.
+     * @returns {boolean} - Returns the result.
      */
     toBool(): boolean {
         if (typeof this.val === 'boolean') {
@@ -189,7 +224,7 @@ export class DocumentProperty {
     /**
      *  Returns the value as Date.
      *
-     * @returns {Date} The result.
+     * @returns {Date} - Returns the value as Date.
      */
     toDateTime(): Date {
         if (this.val instanceof Date) {
@@ -206,7 +241,7 @@ export class DocumentProperty {
     /**
      *  Returns the value as a number (float).
      *
-     * @returns {number} The result.
+     * @returns {number} - Returns the value as a number (float).
      */
     toFloat(): number {
         return this.toNumber();
@@ -214,7 +249,7 @@ export class DocumentProperty {
     /**
      *  Returns the value as a number (double).
      *
-     * @returns {number} The result.
+     * @returns {number} - Returns the value as a number (double).
      */
     toDouble(): number {
         return this.toNumber();
@@ -222,7 +257,7 @@ export class DocumentProperty {
     /**
      *  Returns the value as an integer.
      *
-     * @returns {number} The result.
+     * @returns {number} - Returns the value as an integer.
      */
     toInt(): number {
         const n: number = this.toNumber();
@@ -231,7 +266,7 @@ export class DocumentProperty {
     /**
      *  Returns the value as a byte array.
      *
-     * @returns {Uint8Array} The result.
+     * @returns {Uint8Array} - Returns the value as a byte array.
      */
     toByteArray(): Uint8Array {
         if (this.val instanceof Uint8Array) {
@@ -242,7 +277,7 @@ export class DocumentProperty {
     /**
      *  Returns the value as text.
      *
-     * @returns {string} The result.
+     * @returns {string} - Returns the value as text.
      */
     toString(): string {
         if (this.val instanceof Date) {
@@ -256,7 +291,7 @@ export class DocumentProperty {
     /**
      *  Creates a detached copy of this property.
      *
-     * @returns {DocumentProperty} The result.
+     * @returns {DocumentProperty} - Returns the DocumentProperty.
      */
     clone(): DocumentProperty {
         const copy: DocumentProperty = new DocumentProperty(this.nameValue, cloneValue(this.val), this.type);
@@ -301,6 +336,7 @@ function formatDate(date: Date): string {
 
 /**
  * Key/value storage with stable key order and change notification.
+ *
  * @private
  */
 export class FieldMap {
@@ -441,80 +477,134 @@ export class BuiltinDocumentProperties {
         this.ext = ext === undefined ? new FieldMap() : ext;
         this.mem = mem === undefined ? new FieldMap() : mem;
     }
-    /** Title. */
+    /**
+     * Gets or sets the title.
+     */
     get title(): string { return this.getText(BuiltInProperty.Title); }
     set title(value: string) { this.setText(BuiltInProperty.Title, value); }
-    /** Subject. */
+    /**
+     * Gets or sets the subject.
+     */
     get subject(): string { return this.getText(BuiltInProperty.Subject); }
     set subject(value: string) { this.setText(BuiltInProperty.Subject, value); }
-    /** Author. */
+    /**
+     * Gets or sets the author.
+     */
     get author(): string { return this.getText(BuiltInProperty.Author); }
     set author(value: string) { this.setText(BuiltInProperty.Author, value); }
-    /** Keywords. */
+    /**
+     * Gets or sets the keywords.
+     */
     get keywords(): string { return this.getText(BuiltInProperty.Keywords); }
     set keywords(value: string) { this.setText(BuiltInProperty.Keywords, value); }
-    /** Comments. */
+    /**
+     * Gets or sets the comments.
+     */
     get comments(): string { return this.getText(BuiltInProperty.Comments); }
     set comments(value: string) { this.setText(BuiltInProperty.Comments, value); }
-    /** Template name. */
+    /**
+     * Gets or sets the template name.
+     */
     get template(): string { return this.getText(BuiltInProperty.Template); }
     set template(value: string) { this.setText(BuiltInProperty.Template, value); }
-    /** Last author. */
+    /**
+     * Gets or sets the last author.
+     */
     get lastAuthor(): string { return this.getText(BuiltInProperty.LastAuthor); }
     set lastAuthor(value: string) { this.setText(BuiltInProperty.LastAuthor, value); }
-    /** Revision number. */
+    /**
+     * Gets or sets the revision number.
+     */
     get revisionNumber(): string { return this.getText(BuiltInProperty.RevisionNumber); }
     set revisionNumber(value: string) { this.setText(BuiltInProperty.RevisionNumber, value); }
-    /** Application name. */
+    /**
+     * Gets or sets the application name.
+     */
     get applicationName(): string { return this.getText(BuiltInProperty.ApplicationName); }
     set applicationName(value: string) { this.setText(BuiltInProperty.ApplicationName, value); }
-    /** Thumbnail (kept in memory only; the OOXML thumbnail is a separate package part). */
+    /**
+     * Gets or sets the thumbnail image of the document. The thumbnail is held in memory only.
+     */
     get thumbnail(): string { return this.getText(BuiltInProperty.Thumbnail); }
     set thumbnail(value: string) { this.setText(BuiltInProperty.Thumbnail, value); }
-    /** Category. */
+    /**
+     * Gets or sets the category.
+     */
     get category(): string { return this.getText(BuiltInProperty.Category); }
     set category(value: string) { this.setText(BuiltInProperty.Category, value); }
-    /** Company. */
+    /**
+     * Gets or sets the company.
+     */
     get company(): string { return this.getText(BuiltInProperty.Company); }
     set company(value: string) { this.setText(BuiltInProperty.Company, value); }
-    /** Manager. */
+    /**
+     * Gets or sets the manager.
+     */
     get manager(): string { return this.getText(BuiltInProperty.Manager); }
     set manager(value: string) { this.setText(BuiltInProperty.Manager, value); }
-    /** Total editing time in minutes. */
+    /**
+     * Gets or sets the total editing time in minutes.
+     */
     get totalEditingTime(): number { return this.getInt(BuiltInProperty.TotalEditingTime); }
     set totalEditingTime(value: number) { this.setInt(BuiltInProperty.TotalEditingTime, value); }
-    /** Last printed date. */
+    /**
+     * Gets or sets the last printed date.
+     */
     get lastPrinted(): Date { return this.getDate(BuiltInProperty.LastPrinted); }
     set lastPrinted(value: Date) { this.setDate(BuiltInProperty.LastPrinted, value); }
-    /** Creation date. */
+    /**
+     * Gets or sets the creation date.
+     */
     get createDate(): Date { return this.getDate(BuiltInProperty.CreateDate); }
     set createDate(value: Date) { this.setDate(BuiltInProperty.CreateDate, value); }
-    /** Last save date. */
+    /**
+     * Gets or sets the last save date.
+     */
     get lastSaveDate(): Date { return this.getDate(BuiltInProperty.LastSaveDate); }
     set lastSaveDate(value: Date) { this.setDate(BuiltInProperty.LastSaveDate, value); }
-    /** Page count. */
+    /**
+     * Gets or sets the page count.
+     */
     get pageCount(): number { return this.getInt(BuiltInProperty.PageCount); }
     set pageCount(value: number) { this.setInt(BuiltInProperty.PageCount, value); }
-    /** Word count. */
+    /**
+     * Gets or sets the word count.
+     */
     get wordCount(): number { return this.getInt(BuiltInProperty.WordCount); }
     set wordCount(value: number) { this.setInt(BuiltInProperty.WordCount, value); }
-    /** Character count. */
+    /**
+     * Gets or sets the character count.
+     */
     get charCount(): number { return this.getInt(BuiltInProperty.CharCount); }
     set charCount(value: number) { this.setInt(BuiltInProperty.CharCount, value); }
-    /** Document security level. */
+    /**
+     * Gets or sets the document security level.
+     */
     get docSecurity(): number { return this.getInt(BuiltInProperty.DocSecurity); }
     set docSecurity(value: number) { this.setInt(BuiltInProperty.DocSecurity, value); }
-    /** Byte count (read-only; library managed, in memory only). */
+    /**
+     * Gets the byte count (read-only; library managed, in memory only).
+     */
     get bytesCount(): number { return this.getInt(BuiltInProperty.ByteCount); }
-    /** Line count (read-only; library managed). */
+    /**
+     * Gets the line count (read-only; library managed).
+     */
     get linesCount(): number { return this.getInt(BuiltInProperty.LineCount); }
-    /** Paragraph count (read-only; library managed). */
+    /**
+     * Gets the paragraph count (read-only; library managed).
+     */
     get paragraphCount(): number { return this.getInt(BuiltInProperty.ParagraphCount); }
-    /** Slide count (read-only). */
+    /**
+     * Gets the slide count.
+     */
     get slideCount(): number { return this.getInt(BuiltInProperty.SlideCount); }
-    /** Note count (read-only). */
+    /**
+     * Gets the note count.
+     */
     get noteCount(): number { return this.getInt(BuiltInProperty.NoteCount); }
-    /** Hidden slide count (read-only). */
+    /**
+     * Gets the hidden slide count.
+     */
     get hiddenCount(): number { return this.getInt(BuiltInProperty.HiddenCount); }
     /**
      * @param {BuiltInProperty} property - The property.
@@ -530,7 +620,7 @@ export class BuiltinDocumentProperties {
     /**
      *  Creates a detached copy of these properties.
      *
-     * @returns {BuiltinDocumentProperties} The result.
+     * @returns {BuiltinDocumentProperties} - Returns the BuiltinDocumentProperties.
      */
     clone(): BuiltinDocumentProperties {
         const copy: BuiltinDocumentProperties = new BuiltinDocumentProperties();
@@ -607,15 +697,17 @@ export class CustomDocumentProperties {
     private rootPrefix: string = '';
     private opaque: OpenXmlElement[] = [];
     private order: Array<DocumentProperty | OpenXmlElement> = [];
-    /** Number of custom properties. */
+    /**
+     * Gets the number of custom properties.
+     */
     get count(): number {
         return this.items.length;
     }
     /**
      *  Gets a property by name or index; `undefined` when absent.
      *
-     * @param {string | number} key - The key.
-     * @returns {DocumentProperty | undefined} The result.
+     * @returns {DocumentProperty | undefined} - Returns the property by name or index; `undefined` when absent.
+     * @param {string | number} key - Specifies the key.
      */
     get(key: string | number): DocumentProperty | undefined {
         if (typeof key === 'number') {
@@ -631,10 +723,10 @@ export class CustomDocumentProperties {
     /**
      * Adds a property, or updates the value of an existing property with the same name.
      *
-     * @param {string} name - The name.
-     * @param {DocumentPropertyValue} value - The value.
-     * @param {PropertyValueType} type - Optional explicit type (needed to create Float values).
-     * @returns {DocumentProperty} The result.
+     * @returns {DocumentProperty} - Returns the DocumentProperty.
+     * @param {string} name - Specifies the name.
+     * @param {DocumentPropertyValue} value - Specifies the value.
+     * @param {PropertyValueType} type - Specifies the type.
      */
     add(name: string, value: DocumentPropertyValue, type?: PropertyValueType): DocumentProperty {
         if (typeof name !== 'string' || name.length === 0) {
@@ -659,8 +751,8 @@ export class CustomDocumentProperties {
     /**
      *  Removes the property with the given name, if present.
      *
-     * @param {string} name - The name.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {string} name - Specifies the name.
      */
     remove(name: string): void {
         const existing: DocumentProperty = this.get(name);
@@ -674,7 +766,7 @@ export class CustomDocumentProperties {
     /**
      *  Creates a detached copy of the collection.
      *
-     * @returns {CustomDocumentProperties} The result.
+     * @returns {CustomDocumentProperties} - Returns the CustomDocumentProperties.
      */
     clone(): CustomDocumentProperties {
         const copy: CustomDocumentProperties = new CustomDocumentProperties();

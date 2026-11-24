@@ -1120,8 +1120,9 @@ export class OlapEngine {
         }
         if (subTotals.length > 0) {
             let j: number = subTotals.length - 1;
-            let subTotalLevel: number = (subTotals[j as number].valueSort.levelName as string).split('.').length;
-            const nextLevels: number = levelName.split('.').length;
+            const olapDelimiter: string = this.valueSortSettings.headerDelimiter;
+            let subTotalLevel: number = (subTotals[j as number].valueSort.levelName as string).split(olapDelimiter).length;
+            const nextLevels: number = levelName.split(olapDelimiter).length;
             while (subTotalLevel >= nextLevels) {
                 pivotValues[position as number] = [subTotals[j as number]];
                 valueContent[position - this.rowStartPos] = {} as IAxisSet[];
@@ -1130,7 +1131,7 @@ export class OlapEngine {
                 subTotals.splice(subTotals.length - 1, 1);
                 if (Object.keys(subTotals).length > 0) {
                     j--;
-                    subTotalLevel = (subTotals[j as number].valueSort.levelName as string).split('.').length;
+                    subTotalLevel = (subTotals[j as number].valueSort.levelName as string).split(olapDelimiter).length;
                 } else {
                     break;
                 }

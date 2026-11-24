@@ -1,17 +1,30 @@
 /**
  * Public FillFormat owned by Shape (Shape.md §6).
+ *
  * @packageDocumentation
  */
 import { Color, colorFromWire, colorToHexWire } from '../document/color';
 import { alphaToTransparency, ShapeFill, transparencyToAlpha } from './sp-pr';
 
-/** Default fill enabled for newly authored shapes. @public */
+/**
+ * Default fill enabled for newly authored shapes.
+ *
+ * @public
+ */
 export const DEFAULT_SHAPE_FILL_ENABLED: boolean = true;
 
-/** Default solid fill color for newly authored shapes. @public */
+/**
+ * Default solid fill color for newly authored shapes.
+ *
+ * @public
+ */
 export const DEFAULT_SHAPE_FILL_COLOR: Color = Color.White;
 
-/** Default fill transparency percent (0 = opaque). @public */
+/**
+ * Default fill transparency percent (0 = opaque).
+ *
+ * @public
+ */
 export const DEFAULT_SHAPE_FILL_TRANSPARENCY: number = 0;
 
 /**
@@ -29,6 +42,7 @@ export function defaultAuthoredShapeFill(): {
 
 /**
  * Owner hooks for {@link FillFormat} (avoids circular import on Shape).
+ *
  * @private
  */
 export interface FillFormatOwner {
@@ -43,7 +57,8 @@ export interface FillFormatOwner {
 }
 
 /**
- * Shape fill formatting surface (`a:noFill` / `a:solidFill`).
+ * Shape fill formatting surface.
+ *
  * @public
  */
 export class FillFormat {
@@ -59,8 +74,8 @@ export class FillFormat {
     }
 
     /**
-     * Whether an explicit fill is present (`true`) or `a:noFill` (`false`).
-     * Theme/unsupported residual fills report `true` without inventing a color.
+     * Gets or sets a value indicating whether the shape has a fill.
+     *
      * @public
      */
     get fill(): boolean {
@@ -88,7 +103,8 @@ export class FillFormat {
     }
 
     /**
-     * Solid fill color. Unresolved theme/pattern/gradient returns {@link Color.Transparent}.
+     * Gets or sets the solid fill color.
+     *
      * @public
      */
     get color(): Color {
@@ -122,7 +138,8 @@ export class FillFormat {
     }
 
     /**
-     * Transparency percent 0–100 (0 = opaque, 100 = fully transparent).
+     * Gets or sets the transparency percent 0–100 (0 = opaque, 100 = fully transparent).
+     *
      * @public
      */
     get transparency(): number {

@@ -3,9 +3,7 @@ import { DocxError } from '../../core/errors/docx-error';
 import { CaptionNumberingFormat, CaptionPosition } from './caption-enums';
 import { Picture } from './index';
 /**
- * Caption authoring entry installed by `./captions.js` when fields + styles are
- * available. Kept as a soft registry so the always-on images graph does not
- * static-import those optional modules into `dist/index.js`.
+ * Defines the function that adds a caption to a picture.
  */
 export type AddCaptionToPicture = (
     picture: Picture,

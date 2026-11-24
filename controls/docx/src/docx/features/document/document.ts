@@ -1,8 +1,8 @@
-import { DetachedObjectError, InvalidArgumentError, IoError } from '../../core/errors/docx-error';
+import { DetachedObjectError, InvalidArgumentError, IoError, PackageError, SecurityError } from '../../core/errors/docx-error';
 import { inspectMarkupCompatibility } from '../../core/mc/index';
 import { createTransitionalWordPackage, loadOpcPackage, officeDocumentPartName, partByName, saveOpcPackage, withReplacedPart, detectPackageFormat, fileFormatTypeFromFormat, isFileFormat, resolveFileFormat, withPackageFormat, OpcPackage, FileFormat, FileFormatType } from '../../core/opc/index';
 import { documentBody } from '../../core/preservation/index';
-import { parseXml, serializeXml, WML_TRANSITIONAL_NAMESPACE, OpenXmlElement } from '../../core/xml/index';
+import { parseXml, serializeXml, closePartNamespaces, WML_TRANSITIONAL_NAMESPACE, OpenXmlElement } from '../../core/xml/index';
 import { FeatureId } from '../../core/registry/feature-registry';
 import { materializeFeatureSideEffects } from '../../core/registry/materialize-handlers';
 import { applyFeatureParts, loadFeatureParts } from '../../core/registry/part-handlers';
@@ -18,6 +18,7 @@ import { ensureAlwaysOnBodyFeaturesRegistered } from './body-always-on';
 import { parseBodyBlocks, serializeBodyBlocks, stabilizeBodyLevelBookmarks } from './body-blocks';
 import { Body } from './body';
 import { LoadOptions } from './load-options';
+import { ImportOptions, isValidImportOptions, normalizeImportOptions, NormalizedImportOptions } from './import-options';
 import { BlockContent, Paragraph } from './paragraph';
 import { Section } from './section';
 import {
@@ -36,9 +37,15 @@ import { _HTMLParser } from '../html-parser/parser';
 import { _ImageMapper } from '../html-to-docio/image-mapper';
 import { detectFormat } from './format-detection';
 import { validateLicense } from '@syncfusion/ej2-base';
+import {
+    decryptPackage, encryptPackage, isEncryptedContainer, MAX_PASSWORD_LENGTH,
+    EncryptedPackageError, InvalidPasswordError, PackageLimitError, UnsupportedEncryptionError
+} from '@syncfusion/ej2-office-common';
+import { resolveResourceLimits } from '../../core/security/limits';
+
 /**
- * HTML → WordDocument conversion callback (sync). Registered by the html-to-docio
- * barrel at load time so `document.ts` has no static import of the mapper
+ * HTML → WordDocument conversion callback (sync). Registered by the HTML conversion
+ * barrel at load time so the owning module has no static import of the mapper
  * (which imports document types and would create a load-time cycle).
  *
  * @private
@@ -46,7 +53,7 @@ import { validateLicense } from '@syncfusion/ej2-base';
 export type HtmlConverter = (html: string, doc: WordDocument) => void;
 
 /**
- * HTML → WordDocument conversion callback (async). Registered by the html-to-docio
+ * HTML → WordDocument conversion callback (async). Registered by the HTML conversion
  * barrel for openAsync path. Handles image downloads inside the parser/mapper level.
  *
  * @private
@@ -55,7 +62,7 @@ export type HtmlAsyncConverter = (html: string, doc: WordDocument) => Promise<vo
 
 /**
  * Trial-license watermark callback. Registered by `watermark/license-register` so
- * `document.ts` has no static import of the watermark module (load-time cycle).
+ * the owning module has no static import of the watermark module (load-time cycle).
  *
  * @private
  */
@@ -72,6 +79,54 @@ let licenseWatermarkApplicator: LicenseWatermarkApplicator | undefined;
  */
 export function setLicenseWatermarkApplicator(applicator: LicenseWatermarkApplicator): void {
     licenseWatermarkApplicator = applicator;
+}
+
+/**
+ * Normalized request passed to the registered import handler.
+ *
+ * @private
+ */
+export interface ImportRequest {
+    readonly addMissingStyles: boolean;
+    readonly generateOnConflict: boolean;
+    readonly options: NormalizedImportOptions;
+    readonly join: boolean;
+}
+
+/**
+ * @private
+ */
+export type ImportContentHandler = (destination: WordDocument, source: WordDocument, request: ImportRequest) => void;
+
+let importContentHandler: ImportContentHandler | undefined;
+
+/**
+ * Registers the import implementation (kept out of this module to avoid load-time cycles with styles and numbering).
+ *
+ * @param {ImportContentHandler} handler - The handler.
+ * @returns {void} Nothing is returned.
+ * @private
+ */
+export function registerImportContentHandler(handler: ImportContentHandler): void {
+    importContentHandler = handler;
+}
+
+/**
+ * @private
+ */
+export type CloneDocumentHandler = (source: WordDocument) => WordDocument;
+
+let cloneDocumentHandler: CloneDocumentHandler | undefined;
+
+/**
+ * Registers the clone implementation (kept out of this module to avoid load-time cycles).
+ *
+ * @param {CloneDocumentHandler} handler - The handler.
+ * @returns {void} Nothing is returned.
+ * @private
+ */
+export function registerCloneDocumentHandler(handler: CloneDocumentHandler): void {
+    cloneDocumentHandler = handler;
 }
 
 let htmlConverterRegistered: HtmlConverter | undefined;
@@ -114,7 +169,7 @@ function htmlAsyncConverter(): HtmlAsyncConverter | undefined {
  * Core alt-chunk handlers + always-on body/run features (tables / content-controls /
  * images / drawing when bootstrapped from the main entry).
  *
- * @returns {void} Nothing is returned.
+ * @returns {void} Nothing.
  */
 function ensureBodyParseHandlers(): void {
     ensureCoreBlockHandlers();
@@ -135,34 +190,33 @@ const utf8Decoder: TextDecoder = new TextDecoder('utf-8');
  */
 export type FeaturePartState = FeaturePackagePart | FeatureMultiPackagePart | FeaturePackageLevelPart;
 /**
- * In-memory WordprocessingML document backed by an OPC package.
- *
- * Load via {@link WordDocument.open} / {@link WordDocument.openSync} from bytes or base64,
- * or {@link WordDocument.openAsync} from a browser `File` / `Blob`. There is no filesystem-path open.
- * Serialize with {@link WordDocument.save} / {@link WordDocument.saveSync} to bytes, a browser
- * download file name, or base64. There is no Node.js filesystem write.
- *
- * Main-story entry is {@link Document.sections} (each {@link Section.body}).
+ * Defines the options that control how a document is saved.
  *
  * @public
  */
 export interface SaveOptions {
-    /** `'base64'` returns a base64 string instead of bytes. */
+    /** Specifies that the document is returned as a base64 string instead of bytes when set to `'base64'`. */
     format?: 'base64';
     /**
-     * Output package format; defaults to `FileFormatType.Docx`.
-     * Accepts either a {@link FileFormatType} enum value or a lowercase wire string
-     * (`'docx'`, `'dotx'`, `'docm'`, `'dotm'`).
+     * Specifies the output file format. The default value is `FileFormatType.Docx`.
+     * Accepts a {@link FileFormatType} value or a string such as `'docx'`, `'dotx'`, `'docm'`, or `'dotm'`.
      */
     formatType?: FileFormatType | FileFormat;
 }
 
+/**
+ * Represents a Word document.
+ *
+ * Use {@link WordDocument.open}, {@link WordDocument.openSync}, or {@link WordDocument.openAsync} to load a document from bytes, a base64 string, or a browser `File` or `Blob`.
+ * Use {@link WordDocument.save} or {@link WordDocument.saveSync} to save the document as bytes, a base64 string, or a browser download.
+ * The content of the document is available through {@link Document.sections}.
+ */
 export class WordDocument {
     private pkg: OpcPackage;
     private inputFormatValue: FileFormat = 'docx';
     private rootExtra: Pick<OpenXmlElement, 'attributes' | 'namespaceDeclarations'>;
     private background: OpenXmlElement | undefined;
-    /** Ordered sections — sole main-story owners (TASK-8074). */
+    /** Ordered sections — sole main-story owners. */
     private readonly sectionsInstance: Sections;
     /**
      * Body-final `w:sectPr` as preserved OOXML when the sections feature has not
@@ -175,6 +229,127 @@ export class WordDocument {
      */
     private finalSectionModel: SectionPropertiesModel | undefined;
     private featureParts: Map<FeatureId, FeaturePartState>;
+    /**
+     * Private collection of all fields in the document.
+     * Maintained during load/save and field creation/deletion.
+     *
+     * @private
+     */
+    private readonly fieldCollectionValue: Array<any> = [];
+    /**
+     * Flag to prevent recursive updateDocumentFields() calls.
+     *
+     * @private
+     */
+    private isUpdatingFields: boolean = false;
+    /**
+     * Temporary sequence field result cache during field updates.
+     * Maps caption name to current sequence number (global state).
+     *
+     * @private
+     */
+    public sequenceFieldResults: Map<string, number> | undefined;
+    private seqHeadingResetLevels: Map<string, number> = new Map<string, number>();
+    private seqCollectingLevels: boolean = false;
+    /**
+     * Maps each SEQ field to its calculated sequence value.
+     * Used during pre-processing to store the value each field should display.
+     *
+     * @private
+     */
+    private sequenceFieldValues: WeakMap<any, number> | undefined;
+
+    /**
+     * Create an independent clone of this document.
+     *
+     * Performs deep cloning of all document content:
+     * - Main body (sections, paragraphs, tables, content controls, etc.)
+     * - Styles and numbering (paragraph and character styles, list definitions)
+     * - Images and linked resources (embedded media, hyperlinks)
+     * - Document properties (title, author, subject, etc.)
+     * - Headers and footers (all section-specific headers/footers)
+     *
+     * The cloned document is fully independent with no shared mutable state.
+     * All references, styles, and resources are remapped for the destination.
+     *
+     * @returns {WordDocument} A new, independent document with all content and resources.
+     * @throws {InvalidArgumentError} when the default package entry is not loaded, so cloning is unavailable.
+     * @public
+     */
+    clone(): WordDocument {
+        if (cloneDocumentHandler === undefined) {
+            throw new InvalidArgumentError('clone requires the default package entry to be loaded');
+        }
+        const copy: WordDocument = cloneDocumentHandler(this);
+        copy.inputFormatValue = this.inputFormatValue;
+        if (this.background !== undefined) {
+            copy.background = JSON.parse(JSON.stringify(this.background)) as OpenXmlElement;
+        }
+        return copy;
+    }
+
+    /**
+     * Imports the content of another document after the existing content of this document.
+     *
+     * The source is not changed. Imported content is a copy. A failed import is not rolled back.
+     *
+     * @param {WordDocument} source - The document to import from.
+     * @param {boolean} importStyles - `true` (default) merges styles and resolves same-name
+     * conflicts with a generated style name; `false` imports no style definitions.
+     * @param {boolean} mergeLastAndFirstSections - When `true`, the first source section is joined to the
+     * destination's last section.
+     * @returns {void} Nothing is returned.
+     * @throws {InvalidArgumentError} when an argument is invalid. The destination is not changed.
+     * @public
+     */
+    importContent(source: WordDocument, importStyles?: boolean, mergeLastAndFirstSections?: boolean): void;
+    /**
+     * Imports the content of another document after the existing content of this document,
+     * using {@link ImportOptions} flags to select the style mode and list handling.
+     *
+     * The source is not changed. Imported content is a copy. A failed import is not rolled back.
+     *
+     * @param {WordDocument} source - The document to import from.
+     * @param {ImportOptions} importOptions - Style mode and list flags; no document-level style merge is performed.
+     * @param {boolean} mergeLastAndFirstSections - When `true`, the first source section is joined to the
+     * destination's last section. Has no effect with {@link ImportOptions.KeepTextOnly}.
+     * @returns {void} Nothing is returned.
+     * @throws {InvalidArgumentError} when an argument is invalid. The destination is not changed.
+     * @public
+     */
+    importContent(source: WordDocument, importOptions: ImportOptions, mergeLastAndFirstSections?: boolean): void;
+    importContent(source: WordDocument, second?: boolean | ImportOptions, join?: boolean): void {
+        if (!(source instanceof WordDocument)) {
+            throw new InvalidArgumentError('source must be a WordDocument');
+        }
+        if (join !== undefined && typeof join !== 'boolean') {
+            throw new InvalidArgumentError('mergeLastAndFirstSections must be a boolean');
+        }
+        let request: ImportRequest;
+        if (second === undefined || typeof second === 'boolean') {
+            const styles: boolean = second !== false;
+            request = {
+                addMissingStyles: styles,
+                generateOnConflict: styles,
+                options: normalizeImportOptions(ImportOptions.UseDestinationStyles),
+                join: join === true
+            };
+        } else if (isValidImportOptions(second)) {
+            request = {
+                addMissingStyles: true,
+                generateOnConflict: false,
+                options: normalizeImportOptions(second),
+                join: join === true
+            };
+        } else {
+            throw new InvalidArgumentError('importStyles must be a boolean or a valid ImportOptions value');
+        }
+        if (importContentHandler === undefined) {
+            throw new InvalidArgumentError('importContent requires the default package entry to be loaded');
+        }
+        importContentHandler(this, source, request);
+    }
+
     private constructor(pkg: OpcPackage, rootExtra: Pick<OpenXmlElement, 'attributes' | 'namespaceDeclarations'>, background: OpenXmlElement | undefined, items: BlockContent[], sectPr: OpenXmlElement | undefined, featureParts: Map<FeatureId, FeaturePartState>) {
         this.pkg = pkg;
         this.rootExtra = rootExtra;
@@ -199,12 +374,12 @@ export class WordDocument {
         section.syncCollections();
     }
     /**
-     * Minimal Transitional package with one empty paragraph (`w:p` in `w:body`).
+     * Minimal Transitional package with one empty paragraph.
      *
      * Builds the in-memory document and package scaffold directly — does not
      * serialize then re-parse as the sole create path.
      *
-     * @returns {WordDocument} The result.
+     * @returns {WordDocument} - Returns the WordDocument.
      */
     static create(): WordDocument {
         ensureBodyParseHandlers();
@@ -261,7 +436,7 @@ export class WordDocument {
         }
         // Stabilize body-level bookmarks by moving them into their target paragraphs
         const stabilizedBlocks: BlockContent[] = stabilizeBodyLevelBookmarks(blocks);
-        
+
         const document: WordDocument = new WordDocument(pkg, {
             attributes: root.attributes,
             namespaceDeclarations: root.namespaceDeclarations.length > 0
@@ -270,8 +445,8 @@ export class WordDocument {
         }, background, [], undefined, featureParts);
         document.inputFormatValue = detectPackageFormat(pkg, name);
         document.hydratePartitionedSections(stabilizedBlocks, sectPr);
-        // Feature post-load hooks (comments main-story elevation TASK-8055 / D14).
-        // Duck-typed so `document.ts` does not value-import `features/comments` (that
+        // Feature post-load hooks (comments main-story elevation / D14).
+        // Duck-typed so the owning module does not value-import `features/comments` (that
         // cycle left `Paragraph` undefined when comments attached prototype methods).
         for (const featurePart of featureParts.values()) {
             const part: AfterMainDocumentLoadPart = featurePart as AfterMainDocumentLoadPart;
@@ -279,6 +454,8 @@ export class WordDocument {
                 part.afterMainDocumentLoad(document);
             }
         }
+        // Register all fields in the document (after fields are reconstructed during parsing)
+        document.registerAllFieldsInDocument();
         return document;
     }
     /**
@@ -286,7 +463,7 @@ export class WordDocument {
      * @param {SectionPropertiesModel | OpenXmlElement | undefined} trailingSectPr - The trailing sect pr.
      * @returns {void} Nothing is returned.
      * @private
-     * Partition body blocks into logical sections and attach them (TASK-8075).
+     * Partition body blocks into logical sections and attach them.
      * Non-final section properties stay dual-held internally on the closing
      * paragraph and {@link Section.pageSetup} for flatten/serialize; final
      * properties dual-hold body-final model / last pageSetup.
@@ -374,7 +551,7 @@ export class WordDocument {
      * @returns {void} Nothing is returned.
      * @private
      * Rebuild {@link Document.sections} from current body blocks + dual-hold
-     * paragraph/body section properties (TASK-8075/8076 authoring path).
+     * paragraph/body section properties.
      *
      * Call after `setParagraphSectionBreak` so non-final pageSetup lives on its
      * own section and flatten emits paragraph-level + body-final `w:sectPr`.
@@ -385,35 +562,38 @@ export class WordDocument {
         this.hydratePartitionedSections(this.listBlocks().slice(), trailing);
     }
     /**
-     * Load a `.docx` package from bytes.
+     * Opens a Word document from bytes.
      *
-     * Reuses {@link WordDocument.openSync} parsing — returns `WordDocument` directly
-     * (not a `Promise`). Prefer {@link WordDocument.openAsync} when a Promise is required.
+     * Returns the document directly. Use {@link WordDocument.openAsync} to get a promise instead.
      *
-     * @param data - OPC ZIP payload (`Uint8Array` or `ArrayBuffer`).
-     * @param options - Optional {@link LoadOptions.limits} overrides.
-     * @throws {@link PackageError} for ZIP/OPC failures.
-     * @throws {@link SecurityError} when a resource limit is exceeded.
-     * @throws {@link XmlError} for malformed Main Document XML.
+     * @param {Uint8Array | ArrayBuffer} data - Specifies the document bytes (`Uint8Array` or `ArrayBuffer`).
+     * @param {LoadOptions} options - Specifies the optional {@link LoadOptions.limits} overrides.
+     * @throws PackageError for ZIP/OPC failures.
+     * @throws SecurityError when a resource limit is exceeded.
+     * @returns {WordDocument} - Returns the loaded document.
+     * @throws XmlError for malformed Main Document XML.
      */
-    static open(data: Uint8Array | ArrayBuffer, options?: LoadOptions): WordDocument;
+    static open(data: Uint8Array | ArrayBuffer, options?: LoadOptions | string): WordDocument;
     /**
-     * Open a `.docx` package from a base64 string. Requires `options.format: 'base64'`.
+     * Opens a Word document from a base64 string. The `format` option must be `'base64'`.
      *
-     * Optional `data:...;base64,` prefixes are stripped.
+     * A leading `data:...;base64,` prefix is ignored.
      *
-     * @param base64 - Base64-encoded OPC ZIP payload.
-     * @param options - Load options including `format: 'base64'`.
-     * @throws {@link InvalidArgumentError} when the payload is not valid base64
+     * @param {string} base64 - Specifies the base64-encoded document.
+     * @param {LoadOptions & { format: 'base64' }} options - Specifies the load options including `format: 'base64'`.
+     * @returns {WordDocument} - Returns the loaded document.
+     * @throws InvalidArgumentError when the payload is not valid base64
      */
     static open(base64: string, options: LoadOptions & { format: 'base64' }): WordDocument;
-    static open(dataOrPath: Uint8Array | ArrayBuffer | string, options?: LoadOptions & { format: 'base64' }): WordDocument {
+    static open(dataOrPath: Uint8Array | ArrayBuffer | string, optionsOrPassword?: (LoadOptions & { format: 'base64' }) | string): WordDocument {
+        const options: (LoadOptions & { format: 'base64' }) | undefined = normalizeLoadOptions(optionsOrPassword);
         // Narrow for TS 3.3 overload resolution (string vs binary packages).
         if (typeof dataOrPath === 'string') {
             if (options !== undefined && options.format === 'base64') {
                 const base64Options: LoadOptions & { format: 'base64' } = {
                     format: 'base64',
-                    limits: options.limits
+                    limits: options.limits,
+                    password: options.password
                 };
                 return WordDocument.openSync(dataOrPath, base64Options);
             }
@@ -422,77 +602,100 @@ export class WordDocument {
         return WordDocument.openSync(dataOrPath, options);
     }
     /**
-     * Open a `.docx` package or an HTML document asynchronously (Promise form of
-     * {@link WordDocument.open}). HTML input is converted to the Word document model;
-     * call {@link WordDocument.save} / {@link WordDocument.saveSync} to emit `.docx` bytes.
+     * Opens a Word or HTML document asynchronously.
      *
-     * Parsing still runs via {@link WordDocument.openSync}; the Promise only wraps
-     * completion / rejection. Use this when call sites require a Promise API.
+     * HTML input is converted to a Word document. For HTML input, images referenced by `http:` or `https:` URLs
+     * that are not supplied in {@link LoadOptions.images} are downloaded automatically.
+     * Only PNG and JPEG images up to 10 MB are embedded. Other images are replaced by their alternative text.
      *
-     * For HTML input, `http:` / `https:` image sources that are not already supplied in
-     * {@link LoadOptions.images} are downloaded automatically before conversion. Only PNG
-     * and JPEG responses up to 10 MB are embedded; anything else is skipped and the image
-     * is replaced by its alt text.
-     *
+     * @param {Uint8Array | ArrayBuffer} data - Specifies the bytes of the document.
+     * @param {LoadOptions | string} options - Specifies the options that control how the document is loaded, or the password of an encrypted document.
+     * @returns {Promise<WordDocument>} - Returns a promise that resolves to the loaded document.
+     * @throws PackageError with code `encryption/password-required` when the document is encrypted and no password is supplied.
+     * @throws PackageError with code `encryption/invalid-password` when the password is empty or incorrect.
+     * @throws PackageError with code `encryption/unsupported` or `encryption/invalid-package` when the encryption is not supported or the encrypted data is damaged.
+     * @example
+     * const document = await Document.openAsync(data, 'syncfusion');
      * @public
      */
-    static openAsync(data: Uint8Array | ArrayBuffer, options?: LoadOptions): Promise<WordDocument>;
+    static openAsync(data: Uint8Array | ArrayBuffer, options?: LoadOptions | string): Promise<WordDocument>;
     /**
-     * Open a browser `File` or `Blob` (file-input / drag-drop). Same input shape the
-     * PDF library uses for an existing document: bytes the page already has, not a
-     * filesystem path. Accepts `.docx` or `.html` file content.
+     * Opens a Word or HTML document from a browser `File` or `Blob`.
      *
+     * @param {Object} file - Specifies the file or blob that contains the document.
+     * @param {LoadOptions | string} options - Specifies the options that control how the document is loaded, or the password of an encrypted document.
+     * @returns {Promise<WordDocument>} - Returns a promise that resolves to the loaded document.
      * @public
      */
-    static openAsync(file: { arrayBuffer(): Promise<ArrayBuffer> }, options?: LoadOptions): Promise<WordDocument>;
+    static openAsync(file: { arrayBuffer(): Promise<ArrayBuffer> }, options?: LoadOptions | string): Promise<WordDocument>;
     /**
+     * Opens a Word or HTML document from a base64 string.
+     *
+     * @param {string} base64 - Specifies the base64-encoded document.
+     * @param {LoadOptions & { format: 'base64' }} options - Specifies the load options. The `format` value must be `'base64'`.
+     * @returns {Promise<WordDocument>} - Returns a promise that resolves to the loaded document.
      * @public
      */
     static openAsync(base64: string, options: LoadOptions & { format: 'base64' }): Promise<WordDocument>;
     static openAsync(
         dataOrPath: Uint8Array | ArrayBuffer | string | { arrayBuffer(): Promise<ArrayBuffer> },
-        options?: LoadOptions & { format: 'base64' }
+        optionsOrPassword?: (LoadOptions & { format: 'base64' }) | string
     ): Promise<WordDocument> {
-        return openDocumentAsync(dataOrPath, options);
+        return openDocumentAsync(dataOrPath, normalizeLoadOptions(optionsOrPassword));
     }
     /**
-     * Open a `.docx` package from bytes synchronously.
+     * Opens a Word document from bytes synchronously.
      *
-     * @param data - OPC ZIP payload (`Uint8Array` or `ArrayBuffer`).
-     * @param options - Optional {@link LoadOptions.limits} overrides.
+     * @param {Uint8Array | ArrayBuffer} data - Specifies the document bytes (`Uint8Array` or `ArrayBuffer`).
+     * @param {LoadOptions | string} options - Specifies the optional {@link LoadOptions} or the password of an encrypted document.
+     * @returns {WordDocument} - Returns the loaded document.
      */
-    static openSync(data: Uint8Array | ArrayBuffer, options?: LoadOptions): WordDocument;
+    static openSync(data: Uint8Array | ArrayBuffer, options?: LoadOptions | string): WordDocument;
     /**
-     * Open a `.docx` package from a base64 string synchronously. Requires `options.format: 'base64'`.
+     * Opens a Word document from a base64 string synchronously. The `format` option must be `'base64'`.
      *
-     * @param base64 - Base64-encoded OPC ZIP payload.
-     * @param options - Load options including `format: 'base64'`.
+     * @param {string} base64 - Specifies the base64-encoded document.
+     * @param {LoadOptions & { format: 'base64' }} options - Specifies the load options including `format: 'base64'`.
+     * @returns {WordDocument} - Returns the loaded document.
      */
     static openSync(base64: string, options: LoadOptions & { format: 'base64' }): WordDocument;
-    static openSync(dataOrPath: Uint8Array | ArrayBuffer | string, options?: LoadOptions & { format: 'base64' }): WordDocument {
-        const bytes: Uint8Array = resolveOpenInputToBytes(dataOrPath, options);
+    static openSync(dataOrPath: Uint8Array | ArrayBuffer | string, optionsOrPassword?: (LoadOptions & { format: 'base64' }) | string): WordDocument {
+        const options: (LoadOptions & { format: 'base64' }) | undefined = normalizeLoadOptions(optionsOrPassword);
+        let bytes: Uint8Array = resolveOpenInputToBytes(dataOrPath, options);
+        let openPassword: string | undefined;
+        if (isEncryptedContainer(bytes)) {
+            bytes = decryptDocumentBytes(bytes, options);
+            openPassword = options !== undefined ? options.password : undefined;
+        }
         const inputFormat: string = detectFormat(bytes);
         if (inputFormat === 'html') {
             const converter: HtmlConverter | undefined = htmlConverter();
             if (converter === undefined) {
                 throw new Error('HTML conversion is not registered. Import the package root (src/index) once before opening HTML content.');
             }
-            const doc = WordDocument.create();
-            const htmlText = new TextDecoder().decode(bytes);
+            const doc: WordDocument = WordDocument.create();
+            const htmlText: string = new TextDecoder().decode(bytes);
             converter(htmlText, doc);
             return doc;
         } else if (inputFormat === 'docx') {
-            return WordDocument.fromPackage(loadOpcPackage(bytes, options == null ? undefined : options.limits), options == null ? undefined : options.limits);
+            const loaded: WordDocument = WordDocument.fromPackage(
+                loadOpcPackage(bytes, options == null ? undefined : options.limits),
+                options == null ? undefined : options.limits
+            );
+            if (openPassword !== undefined) {
+                encryptionPasswords.set(loaded, openPassword);
+            }
+            return loaded;
         } else {
             throw new Error('Unsupported format. The provided content is neither a valid HTML document nor a DOCX document.');
         }
     }
     /**
-     * Alias of {@link WordDocument.open} (legacy / DocIO-aligned `load` naming).
+     * Alias of {@link WordDocument.open} (legacy / `load` naming).
      *
      * @private
      */
-    static load(data: Uint8Array | ArrayBuffer, options?: LoadOptions): WordDocument;
+    static load(data: Uint8Array | ArrayBuffer, options?: LoadOptions | string): WordDocument;
     /**
      * Loads a document from a base64-encoded string.
      *
@@ -506,19 +709,21 @@ export class WordDocument {
      * Loads a document from binary content or a base64-encoded string.
      *
      * @param {Uint8Array|ArrayBuffer|string} dataOrPath - The document content to load.
-     * @param {LoadOptions} [options] - Optional load options.
+     * @param {LoadOptions | string} [optionsOrPassword] - Optional load options or the password of an encrypted document.
      * @returns {WordDocument} Returns the loaded document.
      * @private
      */
     static load(
         dataOrPath: Uint8Array | ArrayBuffer | string,
-        options?: LoadOptions & { format: 'base64' }
+        optionsOrPassword?: (LoadOptions & { format: 'base64' }) | string
     ): WordDocument {
+        const options: (LoadOptions & { format: 'base64' }) | undefined = normalizeLoadOptions(optionsOrPassword);
         if (typeof dataOrPath === 'string') {
             if (options !== undefined && options.format === 'base64') {
                 const base64Options: LoadOptions & { format: 'base64' } = {
                     format: 'base64',
-                    limits: options.limits
+                    limits: options.limits,
+                    password: options.password
                 };
                 return WordDocument.open(dataOrPath, base64Options);
             }
@@ -532,16 +737,16 @@ export class WordDocument {
      *
      * @private
      */
-    static loadAsync(data: Uint8Array | ArrayBuffer, options?: LoadOptions): Promise<WordDocument>;
+    static loadAsync(data: Uint8Array | ArrayBuffer, options?: LoadOptions | string): Promise<WordDocument>;
     /**
      * Loads a document from a browser file asynchronously.
      *
      * @param {object} file - The file to load.
-     * @param {LoadOptions} [options] - Optional load options.
+     * @param {LoadOptions | string} [optionsOrPassword] - Optional load options or the password of an encrypted document.
      * @returns {Promise<WordDocument>} Returns the loaded document.
      * @private
      */
-    static loadAsync(file: { arrayBuffer(): Promise<ArrayBuffer> }, options?: LoadOptions): Promise<WordDocument>;
+    static loadAsync(file: { arrayBuffer(): Promise<ArrayBuffer> }, options?: LoadOptions | string): Promise<WordDocument>;
     /**
      * Loads a document from a base64-encoded string asynchronously.
      *
@@ -555,22 +760,22 @@ export class WordDocument {
      * Loads a document from binary content, a browser file, or a base64-encoded string asynchronously.
      *
      * @param {object} dataOrPath - The document content to load.
-     * @param {LoadOptions} [options] - Optional load options.
+     * @param {LoadOptions | string} [optionsOrPassword] - Optional load options or the password of an encrypted document.
      * @returns {Promise<WordDocument>} Returns the loaded document.
      * @private
      */
     static loadAsync(
         dataOrPath: Uint8Array | ArrayBuffer | string | { arrayBuffer(): Promise<ArrayBuffer> },
-        options?: LoadOptions & { format: 'base64' }
+        optionsOrPassword?: (LoadOptions & { format: 'base64' }) | string
     ): Promise<WordDocument> {
-        return openDocumentAsync(dataOrPath, options);
+        return openDocumentAsync(dataOrPath, normalizeLoadOptions(optionsOrPassword));
     }
     /**
-     * Alias of {@link WordDocument.openSync} (legacy / DocIO-aligned `loadSync` naming).
+     * Alias of {@link WordDocument.openSync} (legacy / `loadSync` naming).
      *
      * @private
      */
-    static loadSync(data: Uint8Array | ArrayBuffer, options?: LoadOptions): WordDocument;
+    static loadSync(data: Uint8Array | ArrayBuffer, options?: LoadOptions | string): WordDocument;
     /**
      * Loads a document from a base64-encoded string synchronously.
      *
@@ -584,19 +789,21 @@ export class WordDocument {
      * Loads a document from binary content or a base64-encoded string synchronously.
      *
      * @param {Uint8Array|ArrayBuffer|string} dataOrPath - The document content to load.
-     * @param {LoadOptions} [options] - Optional load options.
+     * @param {LoadOptions | string} [optionsOrPassword] - Optional load options or the password of an encrypted document.
      * @returns {WordDocument} Returns the loaded document.
      * @private
      */
     static loadSync(
         dataOrPath: Uint8Array | ArrayBuffer | string,
-        options?: LoadOptions & { format: 'base64' }
+        optionsOrPassword?: (LoadOptions & { format: 'base64' }) | string
     ): WordDocument {
+        const options: (LoadOptions & { format: 'base64' }) | undefined = normalizeLoadOptions(optionsOrPassword);
         if (typeof dataOrPath === 'string') {
             if (options !== undefined && options.format === 'base64') {
                 const base64Options: LoadOptions & { format: 'base64' } = {
                     format: 'base64',
-                    limits: options.limits
+                    limits: options.limits,
+                    password: options.password
                 };
                 return WordDocument.openSync(dataOrPath, base64Options);
             }
@@ -605,7 +812,7 @@ export class WordDocument {
         return WordDocument.openSync(dataOrPath, options);
     }
     /**
-     * Ordered document sections. Sole main-story entry (API-RULES / TASK-8074).
+     * Gets the ordered document sections. Sole main-story entry.
      *
      * @public
      */
@@ -613,10 +820,9 @@ export class WordDocument {
         return this.sectionsInstance;
     }
     /**
-     * Last section in {@link WordDocument.sections}.
+     * Gets the last section.
      *
-     * Equivalent to `sections[sections.count - 1]`. The document always has at
-     * least one section.
+     * Equivalent to `sections[sections.count - 1]`. The document always has at least one section.
      *
      * @public
      */
@@ -629,14 +835,12 @@ export class WordDocument {
         return section;
     }
     /**
-     * Last block-level paragraph of {@link WordDocument.lastSection}.
+     * Gets the last paragraph.
      *
-     * Does not walk paragraphs nested in tables or text boxes. Authored
-     * documents always have at least one body paragraph per section.
+     * Does not walk paragraphs nested in tables or text boxes. Authored documents always have at least one body paragraph per section.
      *
      * @throws DetachedObjectError when the last section has no block-level
      * paragraph (malformed loaded package).
-     *
      * @public
      */
     get lastParagraph(): Paragraph {
@@ -650,8 +854,7 @@ export class WordDocument {
         return paragraph;
     }
     /**
-     * First section body — convenience bridge matching create-path documents
-     * (single section) and public samples that use `doc.body`.
+     * Gets the body.
      *
      * Prefer {@link WordDocument.sections} for multi-section documents.
      *
@@ -666,9 +869,9 @@ export class WordDocument {
      * Style ids route through {@link Paragraph.applyStyle} so built-in catalog
      * resolution and validation run on assignment.
      *
-     * @param {Object} options - Optional paragraph style id and/or initial text.
-     * @returns {Paragraph} The appended {@link Paragraph}.
+     * @returns {Paragraph} - Returns the appended {@link Paragraph}.
      *
+     * @param {Object} options - Specifies the options.
      * @public
      */
     appendParagraph(options?: {
@@ -678,15 +881,11 @@ export class WordDocument {
         return this.body.appendParagraph(options);
     }
     /**
-     * Appends a new section after the current last section.
+     * Appends a new section after the last section.
      *
-     * Thin delegate over {@link Sections.add}. Clones page setup from the
-     * previous last section when the sections feature has registered a clone
-     * hook; otherwise seeds a default letter page setup when a seed hook is
-     * registered.
+     * The page setup of the previous last section is copied to the new section.
      *
-     * @returns {Section} The new {@link Section}.
-     *
+     * @returns {Section} - Returns the new {@link Section}.
      * @public
      */
     addSection(): Section {
@@ -710,7 +909,7 @@ export class WordDocument {
      * @returns {*} The result.
      * @private
      */
-    owningDocument(): this {
+    owningDocument(): WordDocument {
         return this;
     }
     /**
@@ -823,7 +1022,7 @@ export class WordDocument {
      * Advanced L3 hatch: Main Document `w:document` tree (API-RULES R5.4).
      * Unstable; prefer semantic properties and `save` / `saveSync`.
      *
-     * Always flattens section bodies into one physical `w:body` (TASK-8075/8076).
+     * Always flattens section bodies into one physical `w:body`.
      *
      * @returns {OpenXmlElement} The result.
      * @private
@@ -865,7 +1064,7 @@ export class WordDocument {
         children.push(wmlElement('body', { children: bodyChildren }));
         return wmlElement('document', {
             attributes: this.rootExtra.attributes,
-            namespaceDeclarations: this.rootExtra.namespaceDeclarations,
+            namespaceDeclarations: closePartNamespaces(this.rootExtra.namespaceDeclarations, children, this.rootExtra.attributes),
             children
         });
     }
@@ -885,11 +1084,11 @@ export class WordDocument {
      * Serializes a live section-properties model when the sections feature owns it;
      * otherwise returns preserved OOXML from load / XML write-back.
      *
-     * Prefers the last section's pageSetup (TASK-8074) over the stored finalSectionModel,
+     * Prefers the last section's pageSetup over the stored finalSectionModel,
      * so that programmatically modified sections are properly reflected in the output.
      */
     bodySectPr(): OpenXmlElement | undefined {
-        // Prefer pageSetup on the last section when dual-held (TASK-8074 bridge).
+        // Prefer pageSetup on the last section when dual-held.
         // This ensures that changes to the last section's page setup are serialized,
         // rather than a stale finalSectionModel from document construction.
         const sections: ReadonlyArray<Section> = this.sectionsInstance.asArray();
@@ -926,12 +1125,11 @@ export class WordDocument {
      * Live body-final section properties model (sections feature), if any.
      */
     finalSectionPropertiesModel(): SectionPropertiesModel | undefined {
-        if (this.finalSectionModel !== undefined) {
-            return this.finalSectionModel;
-        }
+        // The last section's model wins: sections appended after load (e.g. imported) replace the final one.
         const sections: ReadonlyArray<Section> = this.sectionsInstance.asArray();
         const last: Section = sections[sections.length - 1];
-        return last == null ? undefined : last.internalPageSetupModel();
+        const lastModel: SectionPropertiesModel | undefined = last == null ? undefined : last.internalPageSetupModel();
+        return lastModel !== undefined ? lastModel : this.finalSectionModel;
     }
     /**
      * @param {SectionPropertiesModel | undefined} value - The value.
@@ -939,7 +1137,7 @@ export class WordDocument {
      * @private
      * Attach or clear the live body-final section properties model.
      * When set, clears preserved `w:sectPr` XML so the model is the sole source of truth.
-     * Also seeds {@link Section.pageSetup} on the last section (TASK-8074 dual-hold).
+     * Also seeds {@link Section.pageSetup} on the last section.
      */
     replaceFinalSectionPropertiesModel(value: SectionPropertiesModel | undefined): void {
         this.finalSectionModel = value;
@@ -977,26 +1175,606 @@ export class WordDocument {
      * @private
      */
     /**
-     * The actual package file format detected from the loaded document part content types.
+     * Gets the actual package file format detected from the loaded document part content types.
      *
-     * @returns {FileFormatType} The detected file format type.
+     * @returns {FileFormatType} Returns the detected file format type.
      * @public
      */
     get actualFileFormatType(): FileFormatType {
         return fileFormatTypeFromFormat(this.inputFormatValue);
     }
-    /** @private */
+    /**
+     * @returns {OpcPackage} The result of the operation.
+     * @private
+     */
     opcPackage(): OpcPackage {
         return this.pkg;
     }
     /**
+     * Updates all supported field results in the document.
+     *
+     * Iterates through the document's field collection and updates each field
+     * based on its type and the current document state. Supported fields include:
+     * - Date, Time, CreateDate
+     * - Formula, Expression
+     * - Comparison and conditional fields
+     * - Document properties (Title, Subject, Author, etc.)
+     * - Section numbering
+     * - Sequence fields
+     * - Reference fields
+     * - And others per ECMA-376-1 specification
+     *
+     * Page-dependent fields (PAGE, NUMPAGES, SECTIONPAGES, PAGEREF) and
+     * content-generation fields (TOC, INDEX, TOA) are preserved without change.
+     *
+     * @returns {void} Nothing is returned.
+     * @public
+     */
+    public updateDocumentFields(): void {
+        // Guard against recursive calls
+        if (this.isUpdatingFields) {
+            return;
+        }
+
+        this.isUpdatingFields = true;
+        this.sequenceFieldResults = new Map<string, number>();
+        this.sequenceFieldValues = new WeakMap<any, number>();
+
+        try {
+            const fields: Array<any> = this.getInternalFieldsSnapshot();
+
+            // Reset updated flags
+            for (const field of fields) {
+                if (field != null && typeof field === 'object' && 'isUpdated' in field) {
+                    field.isUpdated = false;
+                }
+            }
+
+            // CRITICAL: Pre-process SEQ fields in document order to establish correct sequence state
+            // This ensures sequence numbers are calculated from the start of the document,
+            // regardless of when individual fields call their update() methods.
+            // Also populates sequenceFieldValues WeakMap with each field's specific value.
+            this.updateSequenceFieldsInDocumentOrder();
+
+            // First pass: supported non-REF fields
+            for (const field of fields) {
+                if (field == null || typeof field !== 'object') {
+                    continue;
+                }
+                if (field.isUpdated || field.fieldType === 'REF') {
+                    continue;
+                }
+                if (typeof field.update === 'function') {
+                    try {
+                        field.update();
+                    } catch (err) {
+                        // Isolate field failures and continue
+                    }
+                }
+            }
+
+            // Second pass: REF fields after their dependencies
+            for (const field of fields) {
+                if (field == null || typeof field !== 'object') {
+                    continue;
+                }
+                if (field.isUpdated || field.fieldType !== 'REF') {
+                    continue;
+                }
+                if (typeof field.update === 'function') {
+                    try {
+                        field.update();
+                    } catch (err) {
+                        // Isolate field failures and continue
+                    }
+                }
+            }
+        } finally {
+            if (this.sequenceFieldResults !== undefined) {
+                this.sequenceFieldResults.clear();
+            }
+            this.sequenceFieldResults = undefined;
+            this.sequenceFieldValues = undefined;
+            this.seqHeadingResetLevels.clear();
+            this.isUpdatingFields = false;
+        }
+    }
+
+    /**
+     * Update all SEQ fields in document order.
+     *
+     * This traversal ensures sequence numbers are calculated from the beginning of the document,
+     * as specified by the SEQ field standard. The sequence cache is populated in document order
+     * before any individual field's update() method is called.
+     *
+     * Traversal order:
+     * - Sections
+     * - Body content (paragraphs, tables)
+     * - Table rows and cells
+     * - Headers and footers
+     *
+     * @returns {void} Nothing is returned.
+     * @private
+     */
+    private updateSequenceFieldsInDocumentOrder(): void {
+        // Pre-scan: \s levels must be known before the headings that precede the field are visited.
+        this.seqCollectingLevels = true;
+        try {
+            for (const section of this.sections) {
+                this.visitSeqFieldsInBody(section.body);
+            }
+        } finally {
+            this.seqCollectingLevels = false;
+        }
+        // Visit main document body
+        for (const section of this.sections) {
+            this.visitSeqFieldsInBody(section.body);
+            // TODO: Visit headers and footers when supported
+        }
+    }
+
+    /**
+     * Visit all SEQ fields in a body (main document, header, footer).
+     * Processes them in document order and updates the sequence cache.
+     *
+     * @param {any} body - The body.
+     * @returns {void} Nothing is returned.
+     * @private
+     */
+    private visitSeqFieldsInBody(body: any): void {
+        if (body == null || typeof body !== 'object') {
+            return;
+        }
+
+        // Get items collection - handle both BodyItemCollection and arrays
+        let items: any[] | undefined;
+        if (Array.isArray(body.items)) {
+            items = body.items;
+        } else if (body.items != null && typeof body.items === 'object' && typeof body.items.toArray === 'function') {
+            items = body.items.toArray();
+        }
+
+        if (!Array.isArray(items)) {
+            return;
+        }
+
+        for (const block of items) {
+            if (block == null || typeof block !== 'object') {
+                continue;
+            }
+            if (block.type === 'paragraph' && block.paragraph != null) {
+                this.visitSeqFieldsInParagraph(block.paragraph);
+            } else if (block.type === 'table' && block.table != null) {
+                this.visitSeqFieldsInTable(block.table);
+            } else if ('rows' in block) {
+                this.visitSeqFieldsInTable(block);
+            } else if ('items' in block) {
+                this.visitSeqFieldsInParagraph(block);
+            }
+        }
+    }
+
+    /**
+     * Visit all SEQ fields in a paragraph in document order.
+     *
+     * @param {any} paragraph - The paragraph.
+     * @returns {void} Nothing is returned.
+     * @private
+     */
+    private visitSeqFieldsInParagraph(paragraph: any): void {
+        if (paragraph == null || typeof paragraph !== 'object') {
+            return;
+        }
+
+        // \s switch: a heading of level L restarts every sequence whose \s level is >= L
+        const headingMatch: RegExpExecArray | null = /^heading\s*([1-9])$/i.exec(String(paragraph.styleId === undefined || paragraph.styleId === null ? '' : paragraph.styleId));
+        if (!this.seqCollectingLevels && headingMatch != null && this.sequenceFieldResults !== undefined) {
+            const headingLevel: number = parseInt(headingMatch[1], 10);
+            this.seqHeadingResetLevels.forEach((level: number, name: string) => {
+                if (level >= headingLevel) {
+                    this.sequenceFieldResults.delete(name);
+                }
+            });
+        }
+
+        // Get items collection - handle both ParagraphItemCollection and arrays
+        let items: any[] | undefined;
+        if (Array.isArray(paragraph.items)) {
+            items = paragraph.items;
+        } else if (paragraph.items != null && typeof paragraph.items === 'object' && typeof paragraph.items.snapshot === 'function') {
+            items = paragraph.items.snapshot();
+        }
+
+        if (!Array.isArray(items)) {
+            return;
+        }
+
+        for (const item of items) {
+            if (item != null && typeof item === 'object' && item.fieldType === 'SEQ') {
+                // Process this SEQ field to update sequence cache
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- internal api
+                const field: any = item;
+                if (this.seqCollectingLevels) {
+                    const lv: string | undefined = this.extractFieldSwitch(field.fieldCode || '', 's');
+                    const n: number = lv === undefined ? NaN : parseInt(lv, 10);
+                    const key: string | undefined = this.extractSeqCaption(field.fieldCode || '');
+                    if (!isNaN(n) && key !== undefined) {
+                        this.seqHeadingResetLevels.set(key.toLowerCase(), n);
+                    }
+                    continue;
+                }
+                // Call a method that processes the field and updates cache WITHOUT calling updateFieldResult yet
+                this.processSeqFieldForSequencing(field);
+            }
+        }
+    }
+
+    /**
+     * Visit all SEQ fields in a table.
+     *
+     * @param {any} table - The table.
+     * @returns {void} Nothing is returned.
+     * @private
+     */
+    private visitSeqFieldsInTable(table: any): void {
+        if (table == null || typeof table !== 'object') {
+            return;
+        }
+
+        // Handle both TableRowCollection and arrays
+        let rows: any[] | undefined;
+        if (Array.isArray(table.rows)) {
+            rows = table.rows;
+        } else if (table.rows != null && typeof table.rows === 'object' && typeof table.rows.toArray === 'function') {
+            // TableRowCollection has toArray() method
+            rows = table.rows.toArray();
+        }
+
+        if (!Array.isArray(rows)) {
+            return;
+        }
+
+        for (const row of rows) {
+            if (row == null || typeof row !== 'object') {
+                continue;
+            }
+
+            // Handle both TableCellCollection and arrays
+            let cells: any[] | undefined;
+            if (Array.isArray(row.cells)) {
+                cells = row.cells;
+            } else if (row.cells != null && typeof row.cells === 'object' && typeof row.cells.toArray === 'function') {
+                // TableCellCollection has toArray() method
+                cells = row.cells.toArray();
+            }
+
+            if (!Array.isArray(cells)) {
+                continue;
+            }
+
+            for (const cell of cells) {
+                if (cell == null || typeof cell !== 'object') {
+                    continue;
+                }
+                // Visit body in cell
+                this.visitSeqFieldsInBody(cell.body != null ? cell.body : cell);
+            }
+        }
+    }
+
+    /**
+     * Process a SEQ field to update sequence cache (without updating result yet).
+     *
+     * This is called during the pre-processing phase to establish correct sequence state.
+     * Updates both the global caption counter AND stores this field's specific value.
+     *
+     * @param {any} field - The field.
+     * @returns {void} Nothing is returned.
+     * @private
+     */
+    private processSeqFieldForSequencing(field: any): void {
+        try {
+            if (field == null || typeof field !== 'object' || field.fieldCode === undefined) {
+                return;
+            }
+
+            // Parse SEQ instruction - must import parseSeqInstruction
+            // For now, extract caption manually
+            const fieldCode: string = field.fieldCode || '';
+            const seqKey: string = this.extractSeqCaption(fieldCode) || 'Sequence';
+            const seqBookmark: string = seqKey.indexOf('|') >= 0 ? seqKey.substring(seqKey.indexOf('|') + 1) : '';
+            if (seqBookmark.length > 0 && this.bookmarks.findByName(seqBookmark) === undefined) {
+                // Undefined bookmark: field shows an error and does not consume a number.
+                return;
+            }
+            const captionName: string = seqKey.toLowerCase();
+
+            // Get or create sequence cache (global caption counter)
+            let sequenceCache: any = this.sequenceFieldResults;
+            if (sequenceCache === undefined) {
+                sequenceCache = new Map<string, number>();
+                this.sequenceFieldResults = sequenceCache;
+            }
+
+            // Get current sequence value
+            let sequenceValue: number = sequenceCache.get(captionName);
+            if (sequenceValue === undefined || sequenceValue === null) {
+                sequenceValue = 0;
+            }
+
+            // Check for special switches
+            let nextValue: number = sequenceValue;
+
+            const levelSwitch: string | undefined = this.extractFieldSwitch(fieldCode, 's');
+            const resetLevel: number = levelSwitch === undefined ? NaN : parseInt(levelSwitch, 10);
+            if (!isNaN(resetLevel)) {
+                this.seqHeadingResetLevels.set(captionName, resetLevel);
+            }
+
+            // \r switch: reset number to specified value
+            const resetSwitch: string | undefined = this.extractFieldSwitch(fieldCode, 'r');
+            if (resetSwitch) {
+                try {
+                    nextValue = parseInt(resetSwitch, 10);
+                    if (isNaN(nextValue)) {
+                        nextValue = sequenceValue + 1;
+                    }
+                } catch (e) {
+                    nextValue = sequenceValue + 1;
+                }
+            } else if (this.hasFieldSwitch(fieldCode, 'n')) {
+                // \n switch: insert next number (increment)
+                nextValue = sequenceValue + 1;
+            } else if (this.hasFieldSwitch(fieldCode, 'c')) {
+                // \c switch: repeat current number (don't increment)
+                nextValue = sequenceValue;
+            } else {
+                // Default: increment
+                nextValue = sequenceValue + 1;
+            }
+
+            // Update global cache
+            sequenceCache.set(captionName, nextValue);
+
+            // CRITICAL: Store this field's calculated value in WeakMap
+            // This ensures each field retrieves its own value, not the final state
+            if (this.sequenceFieldValues === undefined) {
+                this.sequenceFieldValues = new WeakMap<any, number>();
+            }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- internal api
+            (this.sequenceFieldValues as any).set(field, nextValue);
+        } catch (e) {
+            // Silently ignore errors in sequence processing
+        }
+    }
+
+    /**
+     * Extract SEQ caption name from field code.
+     * Format: "SEQ name" or "SEQ name \r 5"
+     *
+     * @param {string} fieldCode - The field code.
+     * @returns {string | undefined} The caption name, or undefined.
+     * @private
+     */
+    private extractSeqCaption(fieldCode: string): string | undefined {
+        const tokens: string[] = [];
+        const re: RegExp = /"([^"]*)"|(\S+)/g;
+        let m: RegExpExecArray | null = re.exec(fieldCode);
+        while (m != null) {
+            tokens.push(m[1] !== undefined ? m[1] : m[2]);
+            m = re.exec(fieldCode);
+        }
+        const operands: string[] = [];
+        let i: number = 0;
+        // eslint-disable-next-line security/detect-object-injection -- key/index is internal (bounded loop index or fixed lookup table), not user-controlled property path
+        while (i < tokens.length && tokens[i].toUpperCase() === 'SEQ') {
+            i += 1;
+        }
+        for (; i < tokens.length; i++) {
+            // eslint-disable-next-line security/detect-object-injection -- key/index is internal (bounded loop index or fixed lookup table), not user-controlled property path
+            const t: string = tokens[i];
+            if (t.charAt(0) === '\\') {
+                if (/^\\[#*rs]$/i.test(t)) {
+                    i += 1;
+                }
+            } else {
+                operands.push(t);
+            }
+        }
+        if (operands.length === 0) {
+            return undefined;
+        }
+        // Counter key: identifier + bookmark
+        return operands.length > 1 ? operands[0] + '|' + operands[1] : operands[0];
+    }
+
+    /**
+     * Extract a field switch value (e.g., \r 5 or \# "arabic")
+     *
+     * @param {string} fieldCode - The field code.
+     * @param {string} switchChar - The switch character (r, n, c, etc).
+     * @returns {string | undefined} The switch value, or undefined.
+     * @private
+     */
+    private extractFieldSwitch(fieldCode: string, switchChar: string): string | undefined {
+        // eslint-disable-next-line security/detect-non-literal-regexp -- interpolated switch character comes from a fixed set of field switches
+        const pattern: RegExp = new RegExp(`\\\\${switchChar}\\s+(\\S+)`, 'i');
+        const match: RegExpExecArray = pattern.exec(fieldCode);
+        if (match != null && match[1] != null) {
+            return match[1];
+        }
+        return undefined;
+    }
+
+    /**
+     * Check if a field code contains a specific switch.
+     *
+     * @param {string} fieldCode - The field code.
+     * @param {string} switchChar - The switch character.
+     * @returns {boolean} True if the switch is present.
+     * @private
+     */
+    private hasFieldSwitch(fieldCode: string, switchChar: string): boolean {
+        // eslint-disable-next-line security/detect-non-literal-regexp -- interpolated switch character comes from a fixed set of field switches
+        const pattern: RegExp = new RegExp(`\\\\${switchChar}\\s`, 'i');
+        return pattern.test(fieldCode);
+    }
+    /**
+     * Get the internal field collection as a snapshot for safe iteration.
+     *
+     * @returns {Array} A copy of the internal field collection.
+     * @private
+     */
+    getInternalFieldsSnapshot(): Array<any> {
+        return this.fieldCollectionValue.slice();
+    }
+    /**
+     * Register a field in the document's internal collection.
+     *
+     * @param {any} field - The field to register.
+     * @returns {void} Nothing is returned.
+     * @private
+     */
+    registerField(field: any): void {
+        if (field != null && this.fieldCollectionValue.indexOf(field) === -1) {
+            this.fieldCollectionValue.push(field);
+        }
+    }
+    /**
+     * Unregister a field from the document's internal collection.
+     *
+     * @param {any} field - The field to unregister.
+     * @returns {void} Nothing is returned.
+     * @private
+     */
+    unregisterField(field: any): void {
+        if (field != null) {
+            const index: number = this.fieldCollectionValue.indexOf(field);
+            if (index >= 0) {
+                this.fieldCollectionValue.splice(index, 1);
+            }
+        }
+    }
+    /**
+     * Get the internal field collection for direct iteration (internal use only).
+     *
+     * @returns {Array} The internal field collection.
+     * @private
+     */
+    getInternalFields(): Array<any> {
+        return this.fieldCollectionValue;
+    }
+    /**
+     * Traverse all paragraphs in the document and register any fields found.
+     * Called after document loading to populate the field collection.
+     *
+     * @returns {void} Nothing is returned.
+     * @private
+     */
+    private registerAllFieldsInDocument(): void {
+        // Traverse all sections and paragraphs
+        for (const section of this.sections) {
+            this.registerFieldsInBody(section.body);
+        }
+    }
+    /**
+     * Traverse a body and register all fields found in its paragraphs.
+     *
+     * @param {any} body - The body.
+     * @returns {void} Nothing is returned.
+     * @private
+     */
+    private registerFieldsInBody(body: any): void {
+        if (body == null || typeof body !== 'object') {
+            return;
+        }
+        // Bodies expose blocks through rawBlocks(); table cells may hold a plain array.
+        const blocks: any = typeof body.rawBlocks === 'function' ? body.rawBlocks() : body.items;
+        if (!Array.isArray(blocks)) {
+            return;
+        }
+        for (const block of blocks) {
+            if (block == null || typeof block !== 'object') {
+                continue;
+            }
+            if (block.type === 'paragraph' && block.paragraph != null) {
+                this.registerFieldsInParagraph(block.paragraph);
+            } else if (block.type === 'table' && block.table != null) {
+                this.registerFieldsInTable(block.table);
+            } else if (block.type === 'feature' && block.featureId === 'tables' && block.value != null) {
+                this.registerFieldsInTable(block.value);
+            }
+        }
+    }
+    /**
+     * Traverse a paragraph and register all fields found in its items.
+     *
+     * @param {any} paragraph - The paragraph.
+     * @returns {void} Nothing is returned.
+     * @private
+     */
+    private registerFieldsInParagraph(paragraph: any): void {
+        if (paragraph == null || typeof paragraph !== 'object') {
+            return;
+        }
+
+        // Get items collection - handle both ParagraphItemCollection and arrays
+        let items: any[] | undefined;
+        if (Array.isArray(paragraph.items)) {
+            items = paragraph.items;
+        } else if (paragraph.items != null && typeof paragraph.items === 'object' && typeof paragraph.items.snapshot === 'function') {
+            // ParagraphItemCollection has a snapshot() method
+            items = paragraph.items.snapshot();
+        }
+
+        if (!Array.isArray(items)) {
+            return;
+        }
+
+        for (const item of items) {
+            if (item != null && typeof item === 'object' && item.fieldType != null) {
+                this.registerField(item);
+            }
+        }
+    }
+    /**
+     * Traverse a table and register all fields found in its rows and cells.
+     *
+     * @param {any} table - The table.
+     * @returns {void} Nothing is returned.
+     * @private
+     */
+    private registerFieldsInTable(table: any): void {
+        if (table == null || typeof table !== 'object') {
+            return;
+        }
+        // `rows` / `cells` are iterable collections (plain arrays in some callers).
+        if (table.rows == null || typeof table.rows[Symbol.iterator] !== 'function') {
+            return;
+        }
+        for (const row of table.rows) {
+            if (row == null || typeof row !== 'object' || row.cells == null || typeof row.cells[Symbol.iterator] !== 'function') {
+                continue;
+            }
+            for (const cell of row.cells) {
+                if (cell == null || typeof cell !== 'object') {
+                    continue;
+                }
+                this.registerFieldsInBody(cell);
+            }
+        }
+    }
+    /**
      * Serialize the OPC package to bytes in the selected {@link FileFormatType} (defaults to DOCX).
+     *
+     * @returns {Uint8Array} - Returns the document content as bytes.
      */
     saveSync(): Uint8Array;
     /**
-     * Serialize the OPC package to bytes or base64.
+     * Saves the document as a base64 string.
      *
-     * @param options - Serialization options including {@link FileFormatType} and base64.
+     * @param {SaveOptions & { format: 'base64' }} options - Specifies the save options. The `format` value must be `'base64'`.
+     * @returns {string} - Returns the document content as a base64-encoded string.
      */
     saveSync(options: SaveOptions & { format: 'base64' }): string;
     saveSync(options: SaveOptions): Uint8Array;
@@ -1012,6 +1790,7 @@ export class WordDocument {
         return bytes;
     }
     /**
+     * @param {SaveOptions} options - The options.
      * @returns {Uint8Array} The result.
      * @private
      * Shared package serialization used by `saveSync` overloads and async `save`.
@@ -1056,38 +1835,81 @@ export class WordDocument {
         next = withReplacedPart(next, name, utf8.encode(xml));
         // Keep the in-memory package aligned with what was written. Feature multi-part
         // catalogs clear dirty flags after apply; without this, a later saveSync would
-        // start from the pre-apply package and drop embeddings/media/rels (TASK-8056).
+        // start from the pre-apply package and drop embeddings/media/rels.
         this.pkg = next;
-        return saveOpcPackage(withPackageFormat(next, name, target));
+        const packageBytes: Uint8Array = saveOpcPackage(withPackageFormat(next, name, target));
+        const password: string | undefined = encryptionPasswords.get(this);
+        return password === undefined ? packageBytes : encryptDocumentBytes(packageBytes, password);
     }
     /**
-     * Serialize the package to bytes. Resolves with the same result as {@link WordDocument.saveSync}.
+     * Encrypts the document with a password.
+     *
+     * Every save after this call produces a password-protected file until {@link WordDocument.removeEncryption} is called.
+     * Calling this method on an already encrypted document replaces the password.
+     * Do not log the password or include it in messages.
+     *
+     * @param {string} password - Specifies the password to protect the document with. The password must be 1 to 255 characters long.
+     * @returns {void}
+     * @throws InvalidArgumentError when the password is not a string, is empty, or is longer than 255 characters.
+     * @example
+     * document.encryptDocument('syncfusion');
+     * const output = await document.save();
+     * @public
+     */
+    encryptDocument(password: string): void {
+        if (typeof password !== 'string' || password.length === 0 || password.length > MAX_PASSWORD_LENGTH) {
+            throw new InvalidArgumentError('encryptDocument requires a password of 1 to ' + MAX_PASSWORD_LENGTH + ' characters');
+        }
+        encryptionPasswords.set(this, password);
+    }
+    /**
+     * Removes the encryption from the document.
+     *
+     * Every save after this call produces a document without a password. This method has no effect on a document that is not encrypted.
+     * An encrypted document that was opened without the correct password cannot be loaded, so its encryption cannot be removed.
+     *
+     * @returns {void}
+     * @example
+     * const document = await Document.openAsync(data, 'syncfusion');
+     * document.removeEncryption();
+     * const output = await document.save();
+     * @public
+     */
+    removeEncryption(): void {
+        encryptionPasswords.delete(this);
+    }
+    /**
+     * Saves the document as bytes asynchronously.
+     *
+     * @returns {Promise<Uint8Array>} - Returns a promise that resolves to the document content as bytes.
      */
     save(): Promise<Uint8Array>;
     /**
-     * Save the document under a file name by triggering a browser download.
+     * Saves the document by downloading it in the browser with the specified file name.
      *
-     * Matches the PDF library `save(filename)` pattern (`Blob` + anchor click).
-     * Directory segments are stripped (`./out/report.docx` → `report.docx`).
-     * This method does not import Node.js `fs` — a browser bundle must not
-     * touch the filesystem. In Node.js, call parameterless {@link WordDocument.save}
-     * or {@link WordDocument.saveSync} and write the bytes with the host's own I/O.
+     * Directory segments in the file name are removed. This method does not write to the file system.
+     * In Node.js, use {@link WordDocument.save} or {@link WordDocument.saveSync} to get the bytes and write them yourself.
      *
-     * @param fileName - Browser download file name (for example `Output.docx`).
-     * @param formatType - Optional output file format for the downloaded package.
-     * @throws InvalidArgumentError when `fileName` is missing or empty
+     * @param {string} filePath - Specifies the file name of the downloaded document, for example `Output.docx`.
+     * @param {FileFormatType | FileFormat} formatType - Specifies the optional output file format.
+     * @returns {Promise<void>} - Returns a promise that resolves when the download starts.
+     * @throws InvalidArgumentError when `filePath` is missing or empty
      * @throws IoError when no browser document is available to start the download
      */
     save(filePath: string, formatType?: FileFormatType | FileFormat): Promise<void>;
     /**
-     * Serialize the package to a base64 string.
+     * Saves the document as a base64 string asynchronously.
      *
-     * @param options - Must include `format: 'base64'`.
+     * @param {SaveOptions & { format: 'base64' }} options - Specifies the save options. The `format` value must be `'base64'`.
+     * @returns {Promise<string>} - Returns a promise that resolves to the document content as a base64-encoded string.
      */
     save(options: SaveOptions & { format: 'base64' }): Promise<string>;
     save(options: SaveOptions): Promise<Uint8Array>;
     save(formatType: FileFormatType | FileFormat): Promise<Uint8Array>;
-    async save(filePathOrFormatOrOptions?: string | SaveOptions | FileFormatType | FileFormat, formatType?: FileFormatType | FileFormat): Promise<Uint8Array | string | void> {
+    async save(
+        filePathOrFormatOrOptions?: string | SaveOptions | FileFormatType | FileFormat,
+        formatType?: FileFormatType | FileFormat
+    ): Promise<Uint8Array | string | void> {
         let options: SaveOptions | undefined;
         let filePath: string | undefined;
         if (typeof filePathOrFormatOrOptions === 'string') {
@@ -1264,6 +2086,59 @@ function toUint8Array(data: Uint8Array | ArrayBuffer): Uint8Array {
     return new Uint8Array(data);
 }
 
+/**
+ * Passwords of encrypted documents live outside the instance so they are never a property of it,
+ * and are never serialized or enumerated.
+ *
+ * @private
+ */
+const encryptionPasswords: WeakMap<WordDocument, string> = new WeakMap<WordDocument, string>();
+
+function normalizeLoadOptions(
+    optionsOrPassword: (LoadOptions & { format: 'base64' }) | LoadOptions | string | undefined
+): (LoadOptions & { format: 'base64' }) | undefined {
+    if (typeof optionsOrPassword === 'string') {
+        return { password: optionsOrPassword } as LoadOptions & { format: 'base64' };
+    }
+    return optionsOrPassword as (LoadOptions & { format: 'base64' }) | undefined;
+}
+
+function decryptDocumentBytes(bytes: Uint8Array, options: LoadOptions | undefined): Uint8Array {
+    const supplied: unknown = options == null ? undefined : options.password;
+    if (supplied == null) {
+        throw new PackageError('encryption/password-required', 'The document is encrypted; a password is required to open it');
+    }
+    if (typeof supplied !== 'string') {
+        throw new InvalidArgumentError('The password must be a string');
+    }
+    try {
+        return decryptPackage(bytes, supplied, resolveResourceLimits(options == null ? undefined : options.limits).totalUncompressedSize);
+    } catch (err) {
+        // Messages are fixed text so the password and key material never reach an error.
+        if (err instanceof InvalidPasswordError) {
+            throw new PackageError('encryption/invalid-password', 'The password is empty or incorrect; the encrypted document cannot be opened');
+        }
+        if (err instanceof UnsupportedEncryptionError) {
+            throw new PackageError('encryption/unsupported', 'The encryption format or algorithm of this document is not supported', { cause: err });
+        }
+        if (err instanceof EncryptedPackageError) {
+            throw new PackageError('encryption/invalid-package', 'The encrypted document is damaged or failed its integrity check', { cause: err });
+        }
+        if (err instanceof PackageLimitError) {
+            throw new SecurityError('security/limit-exceeded', 'The decrypted document exceeds a package security limit', { cause: err });
+        }
+        throw new PackageError('encryption/invalid-package', 'The encrypted document could not be decrypted', { cause: err });
+    }
+}
+
+function encryptDocumentBytes(packageBytes: Uint8Array, password: string): Uint8Array {
+    try {
+        return encryptPackage(packageBytes, password);
+    } catch (err) {
+        throw new IoError('The document could not be encrypted', { cause: err });
+    }
+}
+
 function openDocumentAsync(
     dataOrPath: Uint8Array | ArrayBuffer | string | { arrayBuffer(): Promise<ArrayBuffer> },
     options?: LoadOptions & { format: 'base64' }
@@ -1272,7 +2147,7 @@ function openDocumentAsync(
         ? dataOrPath.arrayBuffer().then(function (buffer: ArrayBuffer): Uint8Array {
             return toUint8Array(buffer);
         })
-        : new Promise<Uint8Array>(function (resolve) {
+        : new Promise<Uint8Array>(function (resolve: (value: Uint8Array | PromiseLike<Uint8Array>) => void): void {
             resolve(resolveOpenInputToBytes(dataOrPath as Uint8Array | ArrayBuffer | string, options as LoadOptions & { format: 'base64' } | undefined));
         });
     return bytesPromise.then(async function (bytes: Uint8Array): Promise<WordDocument> {
@@ -1280,14 +2155,14 @@ function openDocumentAsync(
             return WordDocument.openSync(bytes, options);
         }
         // For HTML: use the async converter which handles image downloading at the
-        // parser/mapper level (not here in document.ts). This is cleaner: all the
-        // HTML parsing and image embedding logic stays together in html-to-docio/index.ts.
+        // parser/mapper level (not here in the owning module). This is cleaner: all the
+        // HTML parsing and image embedding logic stays together in the HTML conversion module.
         const converter: HtmlAsyncConverter | undefined = htmlAsyncConverter();
         if (converter === undefined) {
             throw new Error('HTML async conversion is not registered. Import the package root (src/index) once before opening HTML content.');
         }
-        const doc = WordDocument.create();
-        const htmlText = new TextDecoder().decode(bytes);
+        const doc: WordDocument = WordDocument.create();
+        const htmlText: string = new TextDecoder().decode(bytes);
         // Supplied images (if any) are published through the image mapper so the
         // converter/parser can read them; the converter downloads the rest automatically.
         _ImageMapper.setResolvedImages(undefined);
@@ -1374,7 +2249,7 @@ function mergeFeatureParts(
     return out;
 }
 
-// Re-export Body from body.ts so existing `import { Document, Body } from '.../document'` keeps working.
+// Re-export Body from the owning module so existing `import { Document, Body } from '.../document'` keeps working.
 export { Body } from './body';
 /** @public Compatibility alias for {@link WordDocument}. */
 export type Document = WordDocument;

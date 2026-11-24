@@ -1,7 +1,7 @@
 /**
  * Logical watermark attachment store (document → watermark).
  *
- * Kept separate from `index.ts` and `serialize.ts` so materialize can read
+ * Kept separate from the owning module and the owning module so materialize can read
  * logical state without a circular import through the public barrel.
  *
  * @packageDocumentation

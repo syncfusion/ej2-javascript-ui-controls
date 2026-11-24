@@ -1,9 +1,6 @@
 import { ownGet } from '../../core/compat/object-compat';
 /**
- * Windows LCID values for run language properties (`w:lang`).
- *
- * Enum member names use underscore BCP-47 style (`en_US`) matching the public
- * DocIO-oriented API. Wire values remain BCP-47 with hyphens (`en-US`).
+ * Specifies the locale identifiers that can be assigned to text.
  *
  * @public
  */
@@ -11,208 +8,411 @@ export enum LocaleIDs {
     /** Unspecified / cleared language. */
     None = 0,
 
+    /** Specifies the Afrikaans (South Africa) locale. */
     'af_ZA' = 1078,
+    /** Specifies the Albanian (Albania) locale. */
     'sq_AL' = 1052,
+    /** Specifies the Amharic (Ethiopia) locale. */
     'am_ET' = 1118,
+    /** Specifies the Arabic (Saudi Arabia) locale. */
     'ar_SA' = 1025,
+    /** Specifies the Arabic (Iraq) locale. */
     'ar_IQ' = 2049,
+    /** Specifies the Arabic (Egypt) locale. */
     'ar_EG' = 3073,
+    /** Specifies the Arabic (Libya) locale. */
     'ar_LY' = 4097,
+    /** Specifies the Arabic (Algeria) locale. */
     'ar_DZ' = 5121,
+    /** Specifies the Arabic (Morocco) locale. */
     'ar_MA' = 6145,
+    /** Specifies the Arabic (Tunisia) locale. */
     'ar_TN' = 7169,
+    /** Specifies the Arabic (Oman) locale. */
     'ar_OM' = 8193,
+    /** Specifies the Arabic (Yemen) locale. */
     'ar_YE' = 9217,
+    /** Specifies the Arabic (Syria) locale. */
     'ar_SY' = 10241,
+    /** Specifies the Arabic (Jordan) locale. */
     'ar_JO' = 11265,
+    /** Specifies the Arabic (Lebanon) locale. */
     'ar_LB' = 12289,
+    /** Specifies the Arabic (Kuwait) locale. */
     'ar_KW' = 13313,
+    /** Specifies the Arabic (United Arab Emirates) locale. */
     'ar_AE' = 14337,
+    /** Specifies the Arabic (Bahrain) locale. */
     'ar_BH' = 15361,
+    /** Specifies the Arabic (Qatar) locale. */
     'ar_QA' = 16385,
+    /** Specifies the Armenian (Armenia) locale. */
     'hy_AM' = 1067,
+    /** Specifies the Assamese (India) locale. */
     'as_IN' = 1101,
+    /** Specifies the Azerbaijani (Latin, Azerbaijan) locale. */
     'az_AZ_Latn' = 1068,
+    /** Specifies the Azerbaijani (Cyrillic, Azerbaijan) locale. */
     'az_AZ_Cyrl' = 2092,
+    /** Specifies the Basque (Spain) locale. */
     'eu_ES' = 1069,
+    /** Specifies the Belarusian (Belarus) locale. */
     'be_BY' = 1059,
+    /** Specifies the Bangla (India) locale. */
     'bn_IN' = 1093,
+    /** Specifies the Bangla (Bangladesh) locale. */
     'bn_BD' = 2117,
+    /** Specifies the Bosnian (Latin, Bosnia and Herzegovina) locale. */
     'bs_BA_Latn' = 5146,
+    /** Specifies the Bosnian (Cyrillic, Bosnia and Herzegovina) locale. */
     'bs_BA_Cyrl' = 8218,
+    /** Specifies the Bulgarian (Bulgaria) locale. */
     'bg_BG' = 1026,
+    /** Specifies the Burmese (Myanmar (Burma)) locale. */
     'my_MM' = 1109,
+    /** Specifies the Catalan (Spain) locale. */
     'ca_ES' = 1027,
+    /** Specifies the Chinese (Taiwan) locale. */
     'zh_TW' = 1028,
+    /** Specifies the Chinese (China) locale. */
     'zh_CN' = 2052,
+    /** Specifies the Chinese (Hong Kong SAR China) locale. */
     'zh_HK' = 3076,
+    /** Specifies the Chinese (Singapore) locale. */
     'zh_SG' = 4100,
+    /** Specifies the Chinese (Macao SAR China) locale. */
     'zh_MO' = 5124,
+    /** Specifies the Croatian (Croatia) locale. */
     'hr_HR' = 1050,
+    /** Specifies the Croatian (Bosnia and Herzegovina) locale. */
     'hr_BA' = 4122,
+    /** Specifies the Czech (Czechia) locale. */
     'cs_CZ' = 1029,
+    /** Specifies the Danish (Denmark) locale. */
     'da_DK' = 1030,
+    /** Specifies the Dari (Afghanistan) locale. */
     'prs_AF' = 1164,
+    /** Specifies the Divehi (Maldives) locale. */
     'dv_MV' = 1125,
+    /** Specifies the Dutch (Netherlands) locale. */
     'nl_NL' = 1043,
+    /** Specifies the Dutch (Belgium) locale. */
     'nl_BE' = 2067,
+    /** Specifies the English (United States) locale. */
     'en_US' = 1033,
+    /** Specifies the English (United Kingdom) locale. */
     'en_GB' = 2057,
+    /** Specifies the English (Australia) locale. */
     'en_AU' = 3081,
+    /** Specifies the English (Canada) locale. */
     'en_CA' = 4105,
+    /** Specifies the English (New Zealand) locale. */
     'en_NZ' = 5129,
+    /** Specifies the English (Ireland) locale. */
     'en_IE' = 6153,
+    /** Specifies the English (South Africa) locale. */
     'en_ZA' = 7177,
+    /** Specifies the English (Jamaica) locale. */
     'en_JM' = 8201,
+    /** Specifies the English (Caribbean) locale. */
     'en_CB' = 9225,
+    /** Specifies the English (Belize) locale. */
     'en_BZ' = 10249,
+    /** Specifies the English (Trinidad and Tobago) locale. */
     'en_TT' = 11273,
+    /** Specifies the English (Zimbabwe) locale. */
     'en_ZW' = 12297,
+    /** Specifies the English (Philippines) locale. */
     'en_PH' = 13321,
+    /** Specifies the English (India) locale. */
     'en_IN' = 16393,
+    /** Specifies the English (Malaysia) locale. */
     'en_MY' = 17417,
+    /** Specifies the English (Singapore) locale. */
     'en_SG' = 18441,
+    /** Specifies the Estonian (Estonia) locale. */
     'et_EE' = 1061,
+    /** Specifies the Faroese (Faroe Islands) locale. */
     'fo_FO' = 1080,
+    /** Specifies the Filipino (Philippines) locale. */
     'fil_PH' = 1124,
+    /** Specifies the Finnish (Finland) locale. */
     'fi_FI' = 1035,
+    /** Specifies the French (France) locale. */
     'fr_FR' = 1036,
+    /** Specifies the French (Belgium) locale. */
     'fr_BE' = 2060,
+    /** Specifies the French (Canada) locale. */
     'fr_CA' = 3084,
+    /** Specifies the French (Switzerland) locale. */
     'fr_CH' = 4108,
+    /** Specifies the French (Luxembourg) locale. */
     'fr_LU' = 5132,
+    /** Specifies the French (Monaco) locale. */
     'fr_MC' = 6156,
+    /** Specifies the Western Frisian (Netherlands) locale. */
     'fy_NL' = 1122,
+    /** Specifies the Galician (Spain) locale. */
     'gl_ES' = 1110,
+    /** Specifies the Georgian (Georgia) locale. */
     'ka_GE' = 1079,
+    /** Specifies the German (Germany) locale. */
     'de_DE' = 1031,
+    /** Specifies the German (Switzerland) locale. */
     'de_CH' = 2055,
+    /** Specifies the German (Austria) locale. */
     'de_AT' = 3079,
+    /** Specifies the German (Luxembourg) locale. */
     'de_LU' = 4103,
+    /** Specifies the German (Liechtenstein) locale. */
     'de_LI' = 5127,
+    /** Specifies the Greek (Greece) locale. */
     'el_GR' = 1032,
+    /** Specifies the Gujarati (India) locale. */
     'gu_IN' = 1095,
+    /** Specifies the Hausa (Latin, Nigeria) locale. */
     'ha_NG_Latn' = 1128,
+    /** Specifies the Hebrew (Israel) locale. */
     'he_IL' = 1037,
+    /** Specifies the Hindi (India) locale. */
     'hi_IN' = 1081,
+    /** Specifies the Hungarian (Hungary) locale. */
     'hu_HU' = 1038,
+    /** Specifies the Icelandic (Iceland) locale. */
     'is_IS' = 1039,
+    /** Specifies the Igbo (Nigeria) locale. */
     'ig_NG' = 1136,
+    /** Specifies the Indonesian (Indonesia) locale. */
     'id_ID' = 1057,
+    /** Specifies the Inuktitut (Latin, Canada) locale. */
     'iu_CA_Latn' = 2141,
+    /** Specifies the Inuktitut (Unified Canadian Aboriginal Syllabics, Canada) locale. */
     'iu_CA_Cans' = 1117,
+    /** Specifies the Irish (Ireland) locale. */
     'ga_IE' = 2108,
+    /** Specifies the Xhosa (South Africa) locale. */
     'xh_ZA' = 1076,
+    /** Specifies the Zulu (South Africa) locale. */
     'zu_ZA' = 1077,
+    /** Specifies the Italian (Italy) locale. */
     'it_IT' = 1040,
+    /** Specifies the Italian (Switzerland) locale. */
     'it_CH' = 2064,
+    /** Specifies the Japanese (Japan) locale. */
     'ja_JP' = 1041,
+    /** Specifies the Kannada (India) locale. */
     'kn_IN' = 1099,
+    /** Specifies the Kazakh (Kazakhstan) locale. */
     'kk_KZ' = 1087,
+    /** Specifies the Khmer (Cambodia) locale. */
     'km_KH' = 1107,
+    /** Specifies the Kʼicheʼ (Guatemala) locale. */
     'quc_GT' = 1158,
+    /** Specifies the Kinyarwanda (Rwanda) locale. */
     'rw_RW' = 1159,
+    /** Specifies the Swahili (Kenya) locale. */
     'sw_KE' = 1089,
+    /** Specifies the Konkani (India) locale. */
     'kok_IN' = 1111,
+    /** Specifies the Korean (South Korea) locale. */
     'ko_KR' = 1042,
+    /** Specifies the Kyrgyz (Kyrgyzstan) locale. */
     'ky_KG' = 1088,
+    /** Specifies the Lao (Laos) locale. */
     'lo_LA' = 1108,
+    /** Specifies the Latvian (Latvia) locale. */
     'lv_LV' = 1062,
+    /** Specifies the Lithuanian (Lithuania) locale. */
     'lt_LT' = 1063,
+    /** Specifies the Lower Sorbian (Germany) locale. */
     'dsb_DE' = 2094,
+    /** Specifies the Luxembourgish (Luxembourg) locale. */
     'lb_LU' = 1134,
+    /** Specifies the Macedonian (North Macedonia) locale. */
     'mk_MK' = 1071,
+    /** Specifies the Malay (Malaysia) locale. */
     'ms_MY' = 1086,
+    /** Specifies the Malay (Brunei) locale. */
     'ms_BN' = 2110,
+    /** Specifies the Malayalam (India) locale. */
     'ml_IN' = 1100,
+    /** Specifies the Maltese (Malta) locale. */
     'mt_MT' = 1082,
+    /** Specifies the Māori (New Zealand) locale. */
     'mi_NZ' = 1153,
+    /** Specifies the Mapuche (Chile) locale. */
     'arn_CL' = 1146,
+    /** Specifies the Marathi (India) locale. */
     'mr_IN' = 1102,
+    /** Specifies the Mongolian (Mongolia) locale. */
     'mn_MN' = 1104,
+    /** Specifies the Mongolian (China) locale. */
     'mn_CN' = 2128,
+    /** Specifies the Nepali (Nepal) locale. */
     'ne_NP' = 1121,
+    /** Specifies the Norwegian Bokmål (Norway) locale. */
     'nb_NO' = 1044,
+    /** Specifies the Norwegian Nynorsk (Norway) locale. */
     'nn_NO' = 2068,
+    /** Specifies the Occitan (France) locale. */
     'oc_FR' = 1154,
+    /** Specifies the Odia (India) locale. */
     'or_IN' = 1096,
+    /** Specifies the Pashto (Afghanistan) locale. */
     'ps_AF' = 1123,
+    /** Specifies the Persian (Iran) locale. */
     'fa_IR' = 1065,
+    /** Specifies the Polish (Poland) locale. */
     'pl_PL' = 1045,
+    /** Specifies the Portuguese (Brazil) locale. */
     'pt_BR' = 1046,
+    /** Specifies the Portuguese (Portugal) locale. */
     'pt_PT' = 2070,
+    /** Specifies the Punjabi (India) locale. */
     'pa_IN' = 1094,
+    /** Specifies the Quechua (Bolivia) locale. */
     'quz_BO' = 1131,
+    /** Specifies the Quechua (Ecuador) locale. */
     'quz_EC' = 2155,
+    /** Specifies the Quechua (Peru) locale. */
     'quz_PE' = 3179,
+    /** Specifies the Romanian (Romania) locale. */
     'ro_RO' = 1048,
+    /** Specifies the Romansh (Switzerland) locale. */
     'rm_CH' = 1047,
+    /** Specifies the Russian (Russia) locale. */
     'ru_RU' = 1049,
+    /** Specifies the Inari Sami (Finland) locale. */
     'smn_FI' = 9275,
+    /** Specifies the Lule Sami (Norway) locale. */
     'smj_NO' = 4155,
+    /** Specifies the Lule Sami (Sweden) locale. */
     'smj_SE' = 5179,
+    /** Specifies the Northern Sami (Norway) locale. */
     'se_NO' = 3131,
+    /** Specifies the Northern Sami (Sweden) locale. */
     'se_SE' = 1083,
+    /** Specifies the Northern Sami (Finland) locale. */
     'se_FI' = 2107,
+    /** Specifies the Skolt Sami (Finland) locale. */
     'sms_FI' = 8251,
+    /** Specifies the Southern Sami (Norway) locale. */
     'sma_NO' = 6203,
+    /** Specifies the Southern Sami (Sweden) locale. */
     'sma_SE' = 7227,
+    /** Specifies the Sanskrit (India) locale. */
     'sa_IN' = 1103,
+    /** Specifies the Serbian (Cyrillic, Serbia) locale. */
     'sr_SP_Cyrl' = 3098,
+    /** Specifies the Serbian (Latin, Serbia) locale. */
     'sr_SP_Latn' = 2074,
+    /** Specifies the Serbian (Cyrillic, Bosnia and Herzegovina) locale. */
     'sr_BA_Cyrl' = 7194,
+    /** Specifies the Serbian (Latin, Bosnia and Herzegovina) locale. */
     'sr_BA_Latn' = 5146,
+    /** Specifies the Northern Sotho (South Africa) locale. */
     'nso_ZA' = 1132,
+    /** Specifies the Tswana (South Africa) locale. */
     'tn_ZA' = 1074,
+    /** Specifies the Sinhala (Sri Lanka) locale. */
     'si_LK' = 1115,
+    /** Specifies the Slovak (Slovakia) locale. */
     'sk_SK' = 1051,
+    /** Specifies the Slovenian (Slovenia) locale. */
     'sl_SI' = 1060,
+    /** Specifies the Spanish (Spain, Traditional Sort) locale. */
     'es_ES_tradnl' = 1034,
+    /** Specifies the Spanish (Mexico) locale. */
     'es_MX' = 2058,
+    /** Specifies the Spanish (Spain) locale. */
     'es_ES' = 3082,
+    /** Specifies the Spanish (Guatemala) locale. */
     'es_GT' = 4106,
+    /** Specifies the Spanish (Costa Rica) locale. */
     'es_CR' = 5130,
+    /** Specifies the Spanish (Panama) locale. */
     'es_PA' = 6154,
+    /** Specifies the Spanish (Dominican Republic) locale. */
     'es_DO' = 7178,
+    /** Specifies the Spanish (Venezuela) locale. */
     'es_VE' = 8202,
+    /** Specifies the Spanish (Colombia) locale. */
     'es_CO' = 9226,
+    /** Specifies the Spanish (Peru) locale. */
     'es_PE' = 10250,
+    /** Specifies the Spanish (Argentina) locale. */
     'es_AR' = 11274,
+    /** Specifies the Spanish (Ecuador) locale. */
     'es_EC' = 12298,
+    /** Specifies the Spanish (Chile) locale. */
     'es_CL' = 13322,
+    /** Specifies the Spanish (Uruguay) locale. */
     'es_UY' = 14346,
+    /** Specifies the Spanish (Paraguay) locale. */
     'es_PY' = 15370,
+    /** Specifies the Spanish (Bolivia) locale. */
     'es_BO' = 16394,
+    /** Specifies the Spanish (El Salvador) locale. */
     'es_SV' = 17418,
+    /** Specifies the Spanish (Honduras) locale. */
     'es_HN' = 18442,
+    /** Specifies the Spanish (Nicaragua) locale. */
     'es_NI' = 19466,
+    /** Specifies the Spanish (Puerto Rico) locale. */
     'es_PR' = 20490,
+    /** Specifies the Spanish (United States) locale. */
     'es_US' = 21514,
+    /** Specifies the Swedish (Sweden) locale. */
     'sv_SE' = 1053,
+    /** Specifies the Swedish (Finland) locale. */
     'sv_FI' = 2077,
+    /** Specifies the Syriac (Syria) locale. */
     'syr_SY' = 1114,
+    /** Specifies the Tajik (Cyrillic, Tajikistan) locale. */
     'tg_TJ_Cyrl' = 1064,
+    /** Specifies the Tamil (India) locale. */
     'ta_IN' = 1097,
+    /** Specifies the Tatar (Russia) locale. */
     'tt_RU' = 1092,
+    /** Specifies the Telugu (India) locale. */
     'te_IN' = 1098,
+    /** Specifies the Thai (Thailand) locale. */
     'th_TH' = 1054,
+    /** Specifies the Tibetan (China) locale. */
     'bo_CN' = 1105,
+    /** Specifies the Tigrinya (Eritrea) locale. */
     'ti_ER' = 2163,
+    /** Specifies the Tigrinya (Ethiopia) locale. */
     'ti_ET' = 1139,
+    /** Specifies the Tsonga (South Africa) locale. */
     'ts_ZA' = 1073,
+    /** Specifies the Turkish (Türkiye) locale. */
     'tr_TR' = 1055,
+    /** Specifies the Turkmen (Turkmenistan) locale. */
     'tk_TM' = 1090,
+    /** Specifies the Ukrainian (Ukraine) locale. */
     'uk_UA' = 1058,
+    /** Specifies the Upper Sorbian (Germany) locale. */
     'hsb_DE' = 1070,
+    /** Specifies the Urdu (Pakistan) locale. */
     'ur_PK' = 1056,
+    /** Specifies the Uyghur (China) locale. */
     'ug_CN' = 1152,
+    /** Specifies the Uzbek (Latin, Uzbekistan) locale. */
     'uz_UZ_Latn' = 1091,
+    /** Specifies the Uzbek (Cyrillic, Uzbekistan) locale. */
     'uz_UZ_Cyrl' = 2115,
+    /** Specifies the Vietnamese (Vietnam) locale. */
     'vi_VN' = 1066,
+    /** Specifies the Welsh (United Kingdom) locale. */
     'cy_GB' = 1106,
+    /** Specifies the Wolof (Senegal) locale. */
     'wo_SN' = 1160,
+    /** Specifies the Yakut (Russia) locale. */
     'sah_RU' = 1157,
+    /** Specifies the Sichuan Yi (China) locale. */
     'ii_CN' = 1144,
+    /** Specifies the Yoruba (Nigeria) locale. */
     'yo_NG' = 1130,
 }
 

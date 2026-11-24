@@ -6,7 +6,7 @@ import { HighlightColor, TextFormFieldType, CheckBoxSizeType, RevisionType, Coll
 import { Widget, FieldElementBox, CommentCharacterElementBox } from '../viewer/page';
 import { Dictionary, MentionDataEditInfo } from '../..';
 import { WBorder, WBorders, WParagraphFormat } from '../format';
-import { boldProperty, italicProperty, fontSizeProperty, fontFamilyProperty, underlineProperty, underlineColorProperty, fontHintTypeProperty, strikethroughProperty, baselineAlignmentProperty, highlightColorProperty, fontColorProperty, styleNameProperty, bidiProperty, bdoProperty, boldBidiProperty, italicBidiProperty, fontSizeBidiProperty, fontFamilyBidiProperty, allCapsProperty, localeIdBidiProperty, localeIdProperty, complexScriptProperty, fontFamilyAsciiProperty, characterSpacingProperty, scalingProperty, hiddenProperty, fontFamilyFarEastProperty, fontFamilyNonFarEastProperty, bordersProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, beforeSpacingProperty, afterSpacingProperty, spaceBeforeAutoProperty, spaceAfterAutoProperty, lineSpacingProperty, lineSpacingTypeProperty, outlineLevelProperty, keepLinesTogetherProperty, keepWithNextProperty, contextualSpacingProperty, widowControlProperty, topProperty, leftProperty, rightProperty, bottomProperty, horizontalProperty, verticalProperty, colorProperty, hasNoneStyleProperty, lineStyleProperty, lineWidthProperty, shadowProperty, spaceProperty, inlinesProperty, characterFormatProperty, textProperty, fieldTypeProperty, hasFieldEndProperty, localeIdFarEastProperty, ligatureProperty } from '../../index';
+import { boldProperty, italicProperty, fontSizeProperty, fontFamilyProperty, underlineProperty, underlineColorProperty, fontHintTypeProperty, strikethroughProperty, baselineAlignmentProperty, highlightColorProperty, fontColorProperty, styleNameProperty, bidiProperty, bdoProperty, boldBidiProperty, italicBidiProperty, fontSizeBidiProperty, fontFamilyBidiProperty, allCapsProperty, localeIdBidiProperty, localeIdProperty, complexScriptProperty, fontFamilyAsciiProperty, characterSpacingProperty, scalingProperty, hiddenProperty, specVanishProperty, fontFamilyFarEastProperty, fontFamilyNonFarEastProperty, bordersProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, beforeSpacingProperty, afterSpacingProperty, spaceBeforeAutoProperty, spaceAfterAutoProperty, lineSpacingProperty, lineSpacingTypeProperty, outlineLevelProperty, keepLinesTogetherProperty, keepWithNextProperty, contextualSpacingProperty, widowControlProperty, topProperty, leftProperty, rightProperty, bottomProperty, horizontalProperty, verticalProperty, colorProperty, hasNoneStyleProperty, lineStyleProperty, lineWidthProperty, shadowProperty, spaceProperty, inlinesProperty, characterFormatProperty, textProperty, fieldTypeProperty, hasFieldEndProperty, localeIdFarEastProperty, ligatureProperty } from '../../index';
 import { FieldSettingsModel } from '@syncfusion/ej2-navigations';
 
 /**
@@ -1036,6 +1036,9 @@ export class HelperMethods {
         characterFormat[complexScriptProperty[keywordIndex]] = isWriteAllValues? format.complexScript :isInline ? HelperMethods.getBoolInfo(format.complexScript, keywordIndex) : format.getValue('complexScript');
         if (format.hasValue('hidden')) {
             characterFormat[hiddenProperty[keywordIndex]] = isWriteAllValues? format.hidden :isInline ? HelperMethods.getBoolInfo(format.hidden, keywordIndex) : format.getValue('hidden');
+        }
+        if (format.hasValue('specVanish')) {
+            characterFormat[specVanishProperty[keywordIndex]] = isWriteAllValues ? format.specVanish : isInline ? HelperMethods.getBoolInfo(format.specVanish, keywordIndex) : format.getValue('specVanish');
         }
         characterFormat[fontFamilyAsciiProperty[keywordIndex]] = isWriteAllValues? format.fontFamilyAscii :isInline ? this.toWriteInline(format, 'fontFamilyAscii') : format.getValue('fontFamilyAscii');
         characterFormat[fontFamilyNonFarEastProperty[keywordIndex]] = isWriteAllValues? format.fontFamilyNonFarEast :isInline ? this.toWriteInline(format, 'fontFamilyNonFarEast') : format.getValue('fontFamilyNonFarEast');
@@ -2116,6 +2119,7 @@ export interface BlockInfo {
 export interface WidthInfo {
     minimumWordWidth: number
     maximumWordWidth: number
+    maxParaWidth: number
 }
 /**
  * @private

@@ -326,7 +326,7 @@ export function writeValuesAlongFormula(
  * @param {number} row1 - One-based row index.
  * @returns {string} A1 address.
  */
-function colRowToA1(col0: number, row1: number): string {
+export function colRowToA1(col0: number, row1: number): string {
     let n: number = col0 + 1;
     let s: string = '';
     while (n > 0) {
@@ -594,6 +594,10 @@ export function rebuildHostChartOnSheet(api: XlsxChartHostApi, sheet: HostWorksh
     }
     // TASK-1072: restore title / frame formats so dual-write flush keeps prior customize.
     applyTitleAndAreasFromParsed(hostChart, parsed);
+    // 3-D camera (rotation / autoscale / right-angle axes) survives the edit-session rebuild.
+    if (parsed.view3D !== undefined) {
+        hostChart.view3D = { ...parsed.view3D };
+    }
     // TASK-1074: restore legend visibility / position / text / frame.
     applyLegendFromParsed(hostChart, parsed);
     // TASK-1075: restore primary category/value axis bags.
@@ -605,6 +609,12 @@ export function rebuildHostChartOnSheet(api: XlsxChartHostApi, sheet: HostWorksh
             break;
         }
         applySeriesCustomizeFromParsed(hs, arrayAt(seriesList, i));
+        // Combination charts: keep a per-series type that differs from the chart type (same-as-chart is the engine default).
+        const entry: { serieType?: unknown } = arrayAt(seriesList, i) as { serieType?: unknown };
+        if (entry !== null && typeof entry === 'object' && typeof entry.serieType === 'string' &&
+            entry.serieType !== engineType) {
+            hs.serieType = entry.serieType;
+        }
     }
     return hostChart;
 }
@@ -952,7 +962,12 @@ export function flushDualWrite(document: Presentation, instance: ChartInstance, 
                               partNameOptions(instance.partName));
     }
     // PPT paints from presentation-chart caches; fill from dual-write cells only.
-    const chartXml: string = preserve ? exported.xml : enrichChartPartCachesFromSheet(exported.xml, session.sheet, sheetName);
+    const enriched: string = preserve ? exported.xml : enrichChartPartCachesFromSheet(exported.xml, session.sheet, sheetName);
+    // Combination charts holding an area plot put the points on the tick marks (no half-category gap), as Excel does.
+    const midCatXml: string = !preserve && enriched.indexOf('<c:areaChart>') >= 0 && /<c:(barChart|lineChart)>/.test(enriched)
+        ? enriched.replace('<c:crossBetween val="between"/>', '<c:crossBetween val="midCat"/>')
+        : enriched;
+    const chartXml: string = preserve ? midCatXml : completeBar3DXml(midCatXml);
     const reparsed: ParsedChartSpace = api.parseChartSpace(chartXml, undefined, instance.partName);
     if (reparsed === undefined) {
         throw new ChartsError('parseChartSpace returned undefined after dual-write export', partNameOptions(instance.partName));
@@ -1159,4 +1174,46 @@ export function markChartGradientPaintOverride(session: ChartEditSession, target
             value.kind === target.kind && value.series === target.series && value.lane === 'outline')) {
         session.sourcePaintOverrides.push({ ...target, lane: 'outline' });
     }
+}
+
+/**
+ * Complete a `c:bar3DChart` the way PowerPoint writes it.
+ *
+ * @remarks
+ * The engine emits a 3-D bar plot without `c:floor`/`c:sideWall`/`c:backWall`, `c:gapWidth`/`c:gapDepth`, and
+ * (for `barDir="bar"`) with the category axis at the bottom and the value axis at the left. PowerPoint
+ * and other consumers then draw the walls but not the bars. This adds the missing, schema-defined elements
+ * and corrects the axis positions. Existing elements are never replaced.
+ *
+ * Citations: ECMA-376 Part 1 §21.2.2.17 `c:bar3DChart` (barDir, grouping, varyColors, ser, dLbls, gapWidth,
+ * gapDepth, shape, axId); §21.2.2.27 `c:chart` child order (view3D, floor, sideWall, backWall, plotArea);
+ * §21.2.2.15 `c:axPos`.
+ *
+ * @internal
+ * @param {string} xml - Exported `c:chartSpace` XML.
+ * @returns {string} XML with the missing 3-D elements added; unchanged for non-3-D-bar charts.
+ */
+function completeBar3DXml(xml: string): string {
+    if (xml.indexOf('<c:bar3DChart>') < 0) {
+        return xml;
+    }
+    let out: string = xml;
+    if (out.indexOf('<c:floor>') < 0 && out.indexOf('</c:view3D>') >= 0) {
+        out = out.replace('</c:view3D>', '</c:view3D><c:floor><c:thickness val="0"/></c:floor>' +
+            '<c:sideWall><c:thickness val="0"/></c:sideWall><c:backWall><c:thickness val="0"/></c:backWall>');
+    }
+    const plot: RegExpExecArray | null = /<c:bar3DChart>[\s\S]*?<\/c:bar3DChart>/.exec(out);
+    if (plot !== null && plot[0].indexOf('<c:gapWidth') < 0) {
+        out = out.replace(plot[0], plot[0].replace(/(<c:shape val="[^"]*"\/>)?<c:axId/, '<c:gapWidth val="150"/><c:gapDepth val="150"/>$1<c:axId'));
+    }
+    if (plot !== null && plot[0].indexOf('<c:invertIfNegative') < 0) {
+        // CT_BarSer order: tx, spPr, invertIfNegative, ..., cat, val, shape.
+        out = out.replace(/(<c:ser>(?:(?!<\/c:ser>)[\s\S])*?)(<c:cat>|<c:val>)/g, '$1<c:invertIfNegative val="0"/>$2')
+            .replace(/(<c:\/val>|<\/c:val>)(<\/c:ser>)/g, '$1<c:shape val="box"/>$2');
+    }
+    if (out.indexOf('<c:barDir val="bar"/>') >= 0) {
+        out = out.replace(/(<c:catAx>[\s\S]*?)<c:axPos val="b"\/>/, '$1<c:axPos val="l"/>')
+            .replace(/(<c:valAx>[\s\S]*?)<c:axPos val="l"\/>/, '$1<c:axPos val="b"/>');
+    }
+    return out;
 }

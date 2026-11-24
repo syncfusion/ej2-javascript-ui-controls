@@ -6,8 +6,9 @@ import { _PdfCrossReference } from '../pdf-cross-reference';
 import { PdfDocument } from '../pdf-document';
 import { PdfPage } from '../pdf-page';
 import { _PdfDictionary, _PdfName, _PdfReference } from '../pdf-primitives';
-import { _getNewGuidString } from '../utils';
+import { _getNewGuidString, _stringToPdfString } from '../utils';
 import { PdfLayer } from './layer';
+import { PdfLayerRadioGroup } from './layer-radio-group';
 /**
  * The class provides methods and properties to handle the collection of `PdfLayer`.
  * ```typescript
@@ -42,21 +43,29 @@ export class PdfLayerCollection {
      * @private
      * @type {PdfDocument}
      */
-    private _document: PdfDocument;
+    _document: PdfDocument;
     /**
      * Parent layer when this collection represents sublayers.
      *
      * @private
      * @type {PdfLayer}
      */
-    private _parent: PdfLayer;
+    _parent: PdfLayer;
     /**
      * Map from reference to PdfLayer for quick lookup.
      *
      * @private
      * @type {Map<_PdfReference, PdfLayer>}
      */
-    private _layerDictionary: Map<_PdfReference, PdfLayer> = new Map();
+    _layerDictionary: Map<_PdfReference, PdfLayer> = new Map();
+    /**
+     * Indicates whether the hierarchy contains name-based layer groups.
+     *
+     * @private
+     * @type {boolean}
+     */
+    _groupsEnabled: boolean = false;
+    _groupsModified: boolean = false;
     /**
      * Internal counter used when processing BDC/EMC markers.
      *
@@ -68,16 +77,16 @@ export class PdfLayerCollection {
      * Internal ordered list of layers.
      *
      * @private
-     * @type {PdfLayer[]}
+     * @type {Array<PdfLayer | PdfLayerGroup>}
      */
-    private _list: PdfLayer[];
+    _list: (PdfLayer | PdfLayerGroup)[];
     /**
      * Cross-reference used for object resolution.
      *
      * @private
      * @type {_PdfCrossReference}
      */
-    private _crossReference: _PdfCrossReference;
+    _crossReference: _PdfCrossReference;
     /**
      * Catalog associated with the document.
      *
@@ -109,7 +118,7 @@ export class PdfLayerCollection {
         this._document = document;
         if (layer) {
             this._parent = layer;
-        } else {
+        } else if (!(this instanceof PdfLayerGroup)) {
             let _layerDictionary: _PdfDictionary;
             let _layerReference: _PdfReference;
             if (this._document && this._document._catalog && this._document._catalog._catalogDictionary
@@ -130,6 +139,7 @@ export class PdfLayerCollection {
                                         layer.name = layerName;
                                         layer._dictionary = _layerDictionary;
                                         layer._crossReference = this._document._crossReference;
+                                        layer._document = document;
                                         layer._referenceHolder = _layerReference;
                                         const layerId: _PdfName = _layerDictionary.get('LayerID') as _PdfName;
                                         if (layerId) {
@@ -190,6 +200,7 @@ export class PdfLayerCollection {
                     this._checkLayerVisible(ocProperties);
                     this._checkParentLayer(ocProperties);
                     this._createLayerHierarchical(ocProperties);
+                    this._loadGroups(ocProperties);
                 }
             }
         }
@@ -241,9 +252,9 @@ export class PdfLayerCollection {
      * ```
      *
      * @param {number} index Layer index.
-     * @returns {PdfLayer} Layer at the specified index.
+     * @returns {PdfLayer | PdfLayerGroup} Layer or layer group at the specified index.
      */
-    public at(index: number): PdfLayer {
+    public at(index: number): PdfLayer | PdfLayerGroup {
         return this._list[<number>index];
     }
     /**
@@ -304,6 +315,39 @@ export class PdfLayerCollection {
         return newLayer;
     }
     /**
+     * Adds a new name-based `PdfLayerGroup` to the collection.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Access the collection of layers in the document
+     * let layers: PdfLayerCollection = document.layers;
+     * // Add a new layer group named 'Group1'
+     * let group: PdfLayerGroup = layers.addGroup('Group1');
+     * // Add a layer inside the group
+     * group.add('Layer1');
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     *
+     * @param {string} name Display name of the group.
+     * @returns {PdfLayerGroup} The created layer group.
+     */
+    public addGroup(name: string): PdfLayerGroup {
+        if (typeof name !== 'string') {
+            throw new Error('Group name must be a string');
+        }
+        const group: PdfLayerGroup = new PdfLayerGroup(this._document, name, this);
+        this._list.push(group);
+        const root: PdfLayerCollection = this._root();
+        root._groupsEnabled = true;
+        root._groupsModified = true;
+        this._syncOrder();
+        return group;
+    }
+    /**
      * Boolean indicating whether the specified layer exists or not.
      *
      * ```typescript
@@ -352,7 +396,7 @@ export class PdfLayerCollection {
             throw new Error('Layer cannot be null or undefined');
         }
         if (typeof arg === 'string') {
-            return this._list.some((layer: PdfLayer) => layer.name === arg);
+            return this._list.some((item: PdfLayer | PdfLayerGroup) => item instanceof PdfLayer && item.name === arg);
         } else if (arg instanceof PdfLayer) {
             if (this._list.indexOf(arg) !== -1) {
                 return true;
@@ -380,10 +424,19 @@ export class PdfLayerCollection {
      */
     public clear(): void {
         for (let i: number = this._list.length - 1; i > -1; i--) {
-            const layer: PdfLayer = this._list[<number>i];
-            this._removeLayer(layer, true);
+            const item: PdfLayer | PdfLayerGroup = this._list[<number>i];
+            if (item instanceof PdfLayerGroup) {
+                this._removeGroupContent(item, true);
+            } else {
+                this._removeLayer(item, true);
+            }
         }
         this._list.length = 0;
+        const root: PdfLayerCollection = this._root();
+        if (root._groupsEnabled) {
+            root._groupsModified = true;
+        }
+        this._syncOrder();
     }
     /**
      * Index of the specified layer.
@@ -403,10 +456,10 @@ export class PdfLayerCollection {
      * document.destroy();
      * ```
      *
-     * @param {PdfLayer} layer The layer to be checked.
-     * @returns {number} Index of the layer.
+     * @param {PdfLayer | PdfLayerGroup} layer The layer or layer group to be checked.
+     * @returns {number} Index of the layer or layer group; otherwise, -1 if not found.
      */
-    public indexOf(layer: PdfLayer): number {
+    public indexOf(layer: PdfLayer | PdfLayerGroup): number {
         if (!layer) {
             throw new Error('Layer cannot be null or undefined');
         }
@@ -433,10 +486,10 @@ export class PdfLayerCollection {
      * ```
      *
      * @param {number} index Index of the layer.
-     * @param {PdfLayer} layer Layer to move.
+     * @param {PdfLayer | PdfLayerGroup} layer Layer or layer group to move.
      * @returns {void} Returns nothing.
      */
-    public move(index: number, layer: PdfLayer): void {
+    public move(index: number, layer: PdfLayer | PdfLayerGroup): void {
         if (index < 0 || index >= this._list.length) {
             throw new Error('Index cannot be less than 0 or greater than array length');
         }
@@ -453,7 +506,13 @@ export class PdfLayerCollection {
         if (position !== null && typeof position !== 'undefined' && position !== index) {
             this._list.splice(position, 1);
             this._list.splice(index, 0, layer);
-            this._insertLayer(index, layer);
+            const root: PdfLayerCollection = this._root();
+            if (root._groupsEnabled) {
+                root._groupsModified = true;
+                this._syncOrder();
+            } else if (layer instanceof PdfLayer) {
+                this._insertLayer(index, layer);
+            }
         }
     }
     /**
@@ -501,8 +560,18 @@ export class PdfLayerCollection {
         if (arg1 < 0 || arg1 >= this._list.length) {
             throw new Error('Index cannot be less than 0 or greater than array length');
         }
-        const layer: PdfLayer = this._list[<number>arg1];
+        const item: PdfLayer | PdfLayerGroup = this._list[<number>arg1];
         this._list.splice(arg1, 1);
+        const root: PdfLayerCollection = this._root();
+        if (root._groupsEnabled) {
+            root._groupsModified = true;
+        }
+        if (item instanceof PdfLayerGroup) {
+            this._removeGroupContent(item, arg2 || false);
+            this._syncOrder();
+            return;
+        }
+        const layer: PdfLayer = item;
         if (layer) {
             this._removeLayer(layer, arg2 || false);
             if (layer._child.length > 0) {
@@ -514,6 +583,7 @@ export class PdfLayerCollection {
                     }
                 }
             }
+            this._syncOrder();
         }
     }
     /**
@@ -606,8 +676,35 @@ export class PdfLayerCollection {
      * @returns {void} Returns nothing.
      */
     public remove(name: string, removeGraphicalContent: boolean): void
-    public remove(arg1: PdfLayer | string, arg2?: boolean): void {
-        if (arg1 instanceof PdfLayer) {
+    /**
+     * Remove the `PdfLayerGroup` and its descendants from the collection.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Access the collection of layers in the document
+     * let layers: PdfLayerCollection = document.layers;
+     * // Add a group and remove it
+     * let group: PdfLayerGroup = layers.addGroup('Group1');
+     * layers.remove(group, true);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     *
+     * @param {PdfLayerGroup} group Group to remove.
+     * @param {boolean} removeGraphicalContent Whether to remove graphical content of descendant layers.
+     * @returns {void} Returns nothing.
+     */
+    public remove(group: PdfLayerGroup, removeGraphicalContent?: boolean): void
+    public remove(arg1: PdfLayer | PdfLayerGroup | string, arg2?: boolean): void {
+        if (arg1 instanceof PdfLayerGroup) {
+            const groupIndex: number = this._list.indexOf(arg1);
+            if (groupIndex !== -1) {
+                this.removeAt(groupIndex, arg2 || false);
+            }
+        } else if (arg1 instanceof PdfLayer) {
             const layer: PdfLayer = arg1;
             const index: number = this._list.indexOf(layer);
             if (index !== -1) {
@@ -615,9 +712,9 @@ export class PdfLayerCollection {
             }
         } else if (typeof arg1 === 'string') {
             for (let i: number = 0; i < this._list.length; i++) {
-                const layer: PdfLayer = this._list[<number>i];
+                const layer: PdfLayer = this._list[<number>i] as PdfLayer;
                 const index: number = this._list.indexOf(layer);
-                if (layer.name === arg1 && index !== -1) {
+                if (layer instanceof PdfLayer && layer.name === arg1 && index !== -1) {
                     this.removeAt(index, arg2 || false);
                     i = i - 1;
                 }
@@ -656,6 +753,11 @@ export class PdfLayerCollection {
             this._createLayer(layer);
         }
         layer._layer = layer;
+        const root: PdfLayerCollection = this._root();
+        if (root._groupsEnabled) {
+            root._groupsModified = true;
+        }
+        this._syncOrder();
         return index;
     }
     /**
@@ -1030,7 +1132,9 @@ export class PdfLayerCollection {
                             layer._parent = parent;
                         }
                     }
-                    if (array.length > i + 1 && (Array.isArray(array[i + 1]))) {
+                    const next: any = array[i + 1]; // eslint-disable-line
+                    // A following array that starts with a title string and has children is a labeled group, not a sub-layer list.
+                    if (Array.isArray(next) && !(next.length > 1 && typeof next[0] === 'string')) {
                         i++;
                         const pdfArray: any = array[i] as any; // eslint-disable-line
                         layer._subLayer = pdfArray as (_PdfReference | _PdfReference[])[];
@@ -1052,6 +1156,250 @@ export class PdfLayerCollection {
                 }
             }
         }
+    }
+    /**
+     * Returns the root (document-level) collection that owns this collection.
+     *
+     * @private
+     * @returns {PdfLayerCollection} Root collection.
+     */
+    _root(): PdfLayerCollection {
+        if (this instanceof PdfLayerGroup && this._parentCollection) {
+            return this._parentCollection._root();
+        }
+        if (this._parent && this._document) {
+            return this._document.layers;
+        }
+        return this;
+    }
+    /**
+     * Writes the current hierarchy to `/Order` when groups are in use.
+     *
+     * @private
+     * @returns {void} nothing.
+     */
+    _syncOrder(): void {
+        const root: PdfLayerCollection = this._root();
+        if (root._groupsEnabled && root._groupsModified) {
+            root._writeOrder();
+        }
+    }
+    /**
+     * Serializes the layer hierarchy into the default configuration `/Order` array.
+     *
+     * @private
+     * @returns {void} nothing.
+     */
+    _writeOrder(): void {
+        if (!this._document || !this._document._catalog) {
+            return;
+        }
+        const catalog: _PdfDictionary = this._document._catalog._catalogDictionary;
+        const ocProperties: _PdfDictionary = catalog.has('OCProperties') ? catalog.get('OCProperties') as _PdfDictionary : undefined;
+        if (!(ocProperties instanceof _PdfDictionary)) {
+            return;
+        }
+        const defaultView: _PdfDictionary = ocProperties.get('D') as _PdfDictionary;
+        if (!(defaultView instanceof _PdfDictionary)) {
+            return;
+        }
+        const next: any[] = []; // eslint-disable-line
+        this._appendOrder(this, next, 0);
+        const existing: any = defaultView.get('Order'); // eslint-disable-line
+        if (Array.isArray(existing)) {
+            existing.splice(0, existing.length);
+            for (let i: number = 0; i < next.length; i++) {
+                existing.push(next[<number>i]);
+            }
+            this._document._order = existing;
+        } else {
+            defaultView.update('Order', next);
+            this._document._order = next;
+        }
+        defaultView._updated = true;
+        ocProperties._updated = true;
+        catalog._updated = true;
+        this._crossReference._allowCatalog = true;
+    }
+    /**
+     * Appends the entries of a collection to an `/Order` array.
+     *
+     * @private
+     * @param {PdfLayerCollection} collection Collection to traverse.
+     * @param {any[]} out Output array.
+     * @param {number} depth Current depth.
+     * @returns {void} nothing.
+     */
+    private _appendOrder(collection: PdfLayerCollection, out: any[], depth: number): void { // eslint-disable-line
+        for (let i: number = 0; i < collection._list.length; i++) {
+            const item: PdfLayer | PdfLayerGroup = collection._list[<number>i];
+            if (item instanceof PdfLayerGroup) {
+                if (depth < 1000) {
+                    const labeled: any[] = [item.name]; // eslint-disable-line
+                    this._appendOrder(item, labeled, depth + 1);
+                    out.push(labeled);
+                }
+            } else if (item && item._referenceHolder) {
+                out.push(item._referenceHolder);
+                if (item._subLayer && item._subLayer.length > 0) {
+                    out.push(item._subLayer);
+                }
+            }
+        }
+    }
+    /**
+     * Determines whether an `/Order` array contains title strings.
+     *
+     * @private
+     * @param {any[]} order Order array.
+     * @param {number} depth Current depth.
+     * @param {any[]} visiting Arrays being visited.
+     * @returns {boolean} True if a title is present.
+     */
+    private _containsTitle(order: any[], depth: number, visiting: any[]): boolean { // eslint-disable-line
+        if (visiting.indexOf(order) !== -1 || depth > 1000) {
+            return false;
+        }
+        visiting.push(order);
+        let result: boolean = false;
+        for (let i: number = 0; i < order.length && !result; i++) {
+            const entry: any = this._resolveEntry(order[<number>i]); // eslint-disable-line
+            if (typeof entry === 'string') {
+                result = true;
+            } else if (Array.isArray(entry)) {
+                result = this._containsTitle(entry, depth + 1, visiting);
+            }
+        }
+        visiting.pop();
+        return result;
+    }
+    /**
+     * Resolves a non-layer reference to its object.
+     *
+     * @private
+     * @param {any} entry Entry.
+     * @returns {any} Resolved value.
+     */
+    private _resolveEntry(entry: any): any { // eslint-disable-line
+        if (entry instanceof _PdfReference && !this._layerDictionary.has(entry)) {
+            try {
+                return this._crossReference._fetch(entry);
+            } catch (e) {
+                return undefined;
+            }
+        }
+        return entry;
+    }
+    /**
+     * Loads name-based groups from the `/Order` array.
+     *
+     * @private
+     * @param {_PdfDictionary} ocProperties The OCProperties dictionary.
+     * @returns {void} nothing.
+     */
+    private _loadGroups(ocProperties: _PdfDictionary): void {
+        const defaultView: _PdfDictionary = ocProperties.get('D') as _PdfDictionary;
+        if (!(defaultView instanceof _PdfDictionary)) {
+            return;
+        }
+        const order: any = defaultView.get('Order'); // eslint-disable-line
+        if (!Array.isArray(order) || !this._containsTitle(order, 0, [])) {
+            return;
+        }
+        const used: Map<PdfLayer, boolean> = new Map<PdfLayer, boolean>();
+        const rootList: (PdfLayer | PdfLayerGroup)[] = [];
+        this._buildGroupList(order, this, rootList, used, 0, []);
+        for (let i: number = 0; i < this._list.length; i++) {
+            const item: PdfLayer | PdfLayerGroup = this._list[<number>i];
+            if (item instanceof PdfLayer && !used.has(item)) {
+                rootList.push(item);
+            }
+        }
+        this._list.length = 0;
+        for (let i: number = 0; i < rootList.length; i++) {
+            this._list.push(rootList[<number>i]);
+        }
+        this._groupsEnabled = true;
+    }
+    /**
+     * Builds layers and groups from an `/Order` array.
+     *
+     * @private
+     * @param {any[]} order Order array.
+     * @param {PdfLayerCollection} owner Collection that owns the entries.
+     * @param {Array<PdfLayer | PdfLayerGroup>} target Target list.
+     * @param {Map<PdfLayer, boolean>} used Layers already placed.
+     * @param {number} depth Current depth.
+     * @param {any[]} visiting Arrays being visited.
+     * @returns {void} nothing.
+     */
+    private _buildGroupList(
+        order: any[], // eslint-disable-line
+        owner: PdfLayerCollection,
+        target: (PdfLayer | PdfLayerGroup)[],
+        used: Map<PdfLayer, boolean>,
+        depth: number,
+        visiting: any[] // eslint-disable-line
+    ): void {
+        if (visiting.indexOf(order) !== -1 || depth > 1000) {
+            return;
+        }
+        visiting.push(order);
+        for (let i: number = 0; i < order.length; i++) {
+            const entry: any = order[<number>i]; // eslint-disable-line
+            const layer: PdfLayer = entry instanceof _PdfReference ? this._layerDictionary.get(entry) : undefined;
+            if (layer) {
+                if (!layer._parent && !used.has(layer)) {
+                    used.set(layer, true);
+                    target.push(layer);
+                }
+                const following: any = this._resolveEntry(order[i + 1]); // eslint-disable-line
+                if (Array.isArray(following) && !(following.length > 0 && typeof this._resolveEntry(following[0]) === 'string')) {
+                    i++;
+                }
+                continue;
+            }
+            const value: any = this._resolveEntry(entry); // eslint-disable-line
+            if (typeof value === 'string') {
+                const group: PdfLayerGroup = new PdfLayerGroup(this._document, _stringToPdfString(value), owner);
+                target.push(group);
+                const children: any = this._resolveEntry(order[i + 1]); // eslint-disable-line
+                if (Array.isArray(children)) {
+                    i++;
+                    this._buildGroupList(children, group, group._list, used, depth + 1, visiting);
+                }
+            } else if (Array.isArray(value)) {
+                const title: any = value.length > 0 ? this._resolveEntry(value[0]) : undefined; // eslint-disable-line
+                if (typeof title === 'string') {
+                    // ISO 32000-1 8.11.4.3: a sub-array whose first element is a text string is a labeled group.
+                    const labeled: PdfLayerGroup = new PdfLayerGroup(this._document, _stringToPdfString(title), owner);
+                    target.push(labeled);
+                    this._buildGroupList(value.slice(1), labeled, labeled._list, used, depth + 1, visiting);
+                } else {
+                    this._buildGroupList(value, owner, target, used, depth + 1, visiting);
+                }
+            }
+        }
+        visiting.pop();
+    }
+    /**
+     * Removes all descendants of a group from the document.
+     *
+     * @private
+     * @param {PdfLayerGroup} group Group to remove.
+     * @param {boolean} removeGraphicalContent Whether to remove graphical content.
+     * @returns {void} nothing.
+     */
+    _removeGroupContent(group: PdfLayerGroup, removeGraphicalContent: boolean): void {
+        for (let i: number = group._list.length - 1; i > -1; i--) {
+            const item: PdfLayer | PdfLayerGroup = group._list[<number>i];
+            if (item instanceof PdfLayerGroup) {
+                this._removeGroupContent(item, removeGraphicalContent);
+            } else {
+                this._removeLayer(item, removeGraphicalContent);
+            }
+        }
+        group._list.length = 0;
     }
     /**
      * Reorders internal list to reflect hierarchical layer order from OCProperties.
@@ -1117,6 +1465,9 @@ export class PdfLayerCollection {
     private _removeLayer(layer: PdfLayer, removeGraphicalContent: boolean): void {
         let _dictionary: _PdfDictionary;
         if (layer && this._document) {
+            if (this._document._layerRadioGroupsInstance) {
+                this._document._layerRadioGroupsInstance._removeLayer(layer);
+            }
             _dictionary = this._document._catalog._catalogDictionary;
             if (_dictionary && _dictionary.has('OCProperties')) {
                 const ocProperties: _PdfDictionary = _dictionary.get('OCProperties') as _PdfDictionary;
@@ -1489,6 +1840,187 @@ export class PdfLayerCollection {
         data.write('\r\n');
     }
     /**
+     * Flattens all optional content: keeps visible layer content as normal page content,
+     * drops hidden layer content and removes the optional-content metadata.
+     * Effective visibility (`PdfLayer.visible`, including locked and radio-group state) is evaluated at call time.
+     *
+     * @private
+     * @returns {void} nothing.
+     */
+    _flattenAll(): void {
+        if (!this._groupsEnabled) {
+            return;
+        }
+        if (!this._groupsModified) {
+            let hasCreatedLayer: boolean = false;
+            this._layerDictionary.forEach((layer: PdfLayer) => {
+                if (layer._dictionary && layer._dictionary.has('LayerID')) {
+                    hasCreatedLayer = true;
+                }
+            });
+            if (!hasCreatedLayer) {
+                return;
+            }
+        }
+        const document: PdfDocument = this._document;
+        const catalog: _PdfDictionary = document._catalog._catalogDictionary;
+        const layers: PdfLayer[] = [];
+        const collect: Function = (collection: PdfLayerCollection): void => {
+            collection._list.forEach((item: PdfLayer | PdfLayerGroup) => {
+                if (item instanceof PdfLayerGroup) {
+                    collect(item);
+                } else if (layers.indexOf(item) === -1) {
+                    layers.push(item);
+                }
+            });
+        };
+        collect(this);
+        this._layerDictionary.forEach((layer: PdfLayer) => {
+            if (layers.indexOf(layer) === -1) {
+                layers.push(layer);
+            }
+        });
+        const byRef: Map<string, PdfLayer> = new Map();
+        const byId: Map<string, PdfLayer> = new Map();
+        layers.forEach((layer: PdfLayer) => {
+            if (layer._referenceHolder) {
+                byRef.set(layer._referenceHolder.toString(), layer);
+            }
+            if (layer._layerId) {
+                byId.set(layer._layerId, layer);
+            }
+        });
+        for (let p: number = 0; p < document.pageCount; p++) {
+            const page: PdfPage = document.getPage(p);
+            const pageDictionary: _PdfDictionary = page._pageDictionary;
+            const resources: _PdfDictionary = pageDictionary.get('Resources') as _PdfDictionary;
+            const properties: _PdfDictionary = resources instanceof _PdfDictionary ? resources.get('Properties') as _PdfDictionary : undefined;
+            const hidden: string[] = [];
+            const visible: string[] = [];
+            if (properties instanceof _PdfDictionary) {
+                Object.keys(properties._map).forEach((key: string) => {
+                    const raw: any = properties.getRaw(key); // eslint-disable-line
+                    let layer: PdfLayer = raw instanceof _PdfReference ? byRef.get(raw.toString()) : undefined;
+                    if (!layer) {
+                        layer = byId.get(key);
+                    }
+                    if (layer) {
+                        (layer.visible ? visible : hidden).push(key);
+                    }
+                });
+            }
+            if (hidden.length > 0 || visible.length > 0) {
+                this._flattenPageContent(pageDictionary, hidden, visible);
+                hidden.concat(visible).forEach((key: string) => {
+                    delete properties._map[<string>key];
+                });
+                properties._updated = true;
+                if (Object.keys(properties._map).length === 0) {
+                    delete resources._map.Properties;
+                }
+                resources._updated = true;
+                pageDictionary._updated = true;
+            }
+        }
+        if (catalog.has('OCProperties')) {
+            delete catalog._map.OCProperties;
+            catalog._updated = true;
+            this._crossReference._allowCatalog = true;
+        }
+        document._order = [];
+        this._list = [];
+        this._layerDictionary.clear();
+        if (document._layerRadioGroupsInstance) {
+            document._layerRadioGroupsInstance._groups.forEach((group: PdfLayerRadioGroup) => {
+                group._layers.forEach((layer: PdfLayer) => {
+                    layer._radioGroups = [];
+                });
+                group._layers = [];
+            });
+            document._layerRadioGroupsInstance._groups = [];
+        }
+    }
+    /**
+     * Rewrites the content streams of a page, unwrapping visible layer content and dropping hidden layer content.
+     *
+     * @private
+     * @param {_PdfDictionary} pageDictionary The page dictionary.
+     * @param {string[]} hidden Resource names of hidden layers.
+     * @param {string[]} visible Resource names of visible layers.
+     * @returns {void} nothing.
+     */
+    private _flattenPageContent(pageDictionary: _PdfDictionary, hidden: string[], visible: string[]): void {
+        let content: any = pageDictionary.getArray('Contents'); // eslint-disable-line
+        let raw: any = pageDictionary.getRaw('Contents'); // eslint-disable-line
+        if (!Array.isArray(content)) {
+            content = content ? [content] : [];
+            raw = [raw];
+        }
+        // Marked-content nesting is tracked across all streams of the page (ISO 32000-1, 14.6).
+        const stack: string[] = [];
+        let hiddenDepth: number = 0;
+        for (let m: number = 0; m < content.length; m++) {
+            const stream: any = content[<number>m]; // eslint-disable-line
+            if (!stream || typeof stream.getBytes !== 'function') {
+                continue;
+            }
+            const bytes: Uint8Array = stream instanceof _PdfContentStream ? new Uint8Array(stream._bytes) : stream.getBytes();
+            const records: _PdfRecord[] = new _ContentParser(bytes)._readContent();
+            const data: _PdfContentStream = new _PdfContentStream([]);
+            for (let j: number = 0; j < records.length; j++) {
+                const entry: _PdfRecord = records[<number>j];
+                const operator: string = entry._operator;
+                if (operator === 'BDC' || operator === 'BMC') {
+                    let kind: string = 'other';
+                    if (operator === 'BDC' && entry._operands.length > 1 && entry._operands[0] === '/OC') {
+                        const key: string = entry._operands[1].substring(1);
+                        if (hidden.indexOf(key) !== -1) {
+                            kind = 'hidden';
+                        } else if (visible.indexOf(key) !== -1) {
+                            kind = 'visible';
+                        }
+                    }
+                    stack.push(kind);
+                    if (kind === 'hidden') {
+                        hiddenDepth++;
+                        continue;
+                    }
+                    if (kind === 'visible' || hiddenDepth > 0) {
+                        continue;
+                    }
+                } else if (operator === 'EMC') {
+                    const kind: string = stack.pop();
+                    if (kind === 'hidden') {
+                        hiddenDepth--;
+                        continue;
+                    }
+                    if (kind === 'visible' || hiddenDepth > 0) {
+                        continue;
+                    }
+                } else if (hiddenDepth > 0) {
+                    continue;
+                }
+                if (entry._inlineImageBytes && operator === 'EI') {
+                    data.write(entry._inlineImageBytes as any); // eslint-disable-line
+                    data.write('\r\n');
+                }
+                if (entry._operands) {
+                    for (const operand of entry._operands) {
+                        data.write(operand);
+                        data.write(' ');
+                    }
+                }
+                data.write(operator);
+                data.write('\r\n');
+            }
+            const ref: _PdfReference = raw[<number>m];
+            if (ref instanceof _PdfReference) {
+                this._crossReference._cacheMap.set(ref, data);
+            }
+        }
+        pageDictionary._updated = true;
+    }
+    /**
      * Inserts a layer reference into the document order at the specified index.
      *
      * @private
@@ -1532,5 +2064,91 @@ export class PdfLayerCollection {
                 }
             }
         }
+    }
+}
+/**
+ * The class provides methods and properties to handle a name-based group of layers.
+ * A group is an organizational node in the Layers panel and does not own an optional content group.
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Add a layer group
+ * let group: PdfLayerGroup = document.layers.addGroup('Group1');
+ * // Add a layer to the group
+ * group.add('Layer1');
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export class PdfLayerGroup extends PdfLayerCollection {
+    _name: string = '';
+    _parentCollection: PdfLayerCollection;
+    /**
+     * Marks this entry as a group so callers can avoid a runtime import of this module.
+     *
+     * @private
+     * @type {boolean}
+     */
+    _isGroup: boolean = true;
+    /**
+     * Initializes a new instance of the `PdfLayerGroup` class.
+     *
+     * @private
+     * @param {PdfDocument} document Document.
+     * @param {string} name Group name.
+     * @param {PdfLayerCollection} parentCollection Parent collection.
+     */
+    constructor(document: PdfDocument, name?: string, parentCollection?: PdfLayerCollection) {
+        super(document);
+        this._name = name || '';
+        this._parentCollection = parentCollection;
+    }
+    /**
+     * Gets the name of the group.
+     *
+     * @returns {string} Group name.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Add a layer group
+     * let group: PdfLayerGroup = document.layers.addGroup('Group1');
+     * // Get the group name
+     * let name: string = group.name;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get name(): string {
+        return this._name;
+    }
+    /**
+     * Sets the name of the group.
+     *
+     * @param {string} value Group name.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Add a layer group
+     * let group: PdfLayerGroup = document.layers.addGroup('Group1');
+     * // Rename the group
+     * group.name = 'Renamed';
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set name(value: string) {
+        if (typeof value !== 'string') {
+            throw new Error('Group name must be a string');
+        }
+        this._name = value;
+        const root: PdfLayerCollection = this._root();
+        if (root._groupsEnabled) {
+            root._groupsModified = true;
+        }
+        this._syncOrder();
     }
 }

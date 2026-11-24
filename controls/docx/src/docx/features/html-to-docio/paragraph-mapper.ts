@@ -1,19 +1,21 @@
 /**
  */
 /* eslint-disable security/detect-object-injection, valid-jsdoc */
-import { ParagraphAlignment } from '../document/alignment.js';
-import { WordDocument } from '../document/document.js';
-import { Paragraph, ParagraphOwner } from '../document/paragraph.js';
-import { TextRange, BreakType } from '../document/text-range.js';
-import { SubSuperScript } from '../document/sub-super-script.js';
-import { UnderlineStyle } from '../document/underline-style.js';
-import { HyperlinkType } from '../fields/index.js';
-import { BuiltInStyle } from '../styles/builtin-catalog.js';
-import { _HTMLElement, _HTMLParagraphElement, _HTMLHeadingElement } from '../html-parser/dom-node.js';
-import { _ImageMapper } from './image-mapper.js';
-import { CSSStyleCache, applyCharacterDeclarations, applyParagraphDeclarations } from './css-paragraph-style-builder.js';
-import { CSSCharacterStyleCache } from './css-character-style-builder.js';
-import { cssToCharacterFormat, CharacterFormatDelta } from './css-character-format-converter.js';
+import { ParagraphAlignment } from '../document/alignment';
+import { WordDocument } from '../document/document';
+import { Paragraph } from '../document/paragraph';
+import { Body } from '../document/body';
+import { TextRange, BreakType } from '../document/text-range';
+import { SubSuperScript } from '../document/sub-super-script';
+import { UnderlineStyle } from '../document/underline-style';
+import { HyperlinkType } from '../fields/index';
+import { BuiltInStyle } from '../styles/builtin-catalog';
+import { _HTMLElement, _HTMLParagraphElement, _HTMLHeadingElement } from '../html-parser/dom-node';
+import { _ImageMapper } from './image-mapper';
+import { CSSStyleCache, applyCharacterDeclarations, applyParagraphDeclarations } from './css-paragraph-style-builder';
+import { CSSCharacterStyleCache } from './css-character-style-builder';
+import { cssToCharacterFormat, CharacterFormatDelta } from './css-character-format-converter';
+import { ParagraphStyle } from '../styles/style-base';
 
 /**
  */
@@ -80,7 +82,7 @@ export class _ParagraphMapper {
     }
 
     /**
-     * Map an HTML paragraph element to a DocIO Paragraph with applied styles.
+     * Map an HTML paragraph element to a document Paragraph with applied styles.
      *
      * Handles inline formatting tags (b, strong, i, em, u, mark, code, sub, sup, etc.)
      * and applies character-level styles. Supports color, bold, italic, font-size, font-family.
@@ -88,38 +90,27 @@ export class _ParagraphMapper {
      *
      * @param {_HTMLParagraphElement} pElement - The HTML <p> element to map
      * @param {WordDocument} document - The WordDocument (for TextRange context)
-     * @param {ParagraphOwner} [owner] - Optional paragraph owner (Body) to attach the paragraph to
+     * @param {Body} [owner] - Optional paragraph owner (Body) to attach the paragraph to
      * @returns {Paragraph} A new Paragraph with applied styles
      * @private
      */
     static mapHTMLParagraph(
         pElement: _HTMLParagraphElement,
         document: WordDocument,
-        owner?: ParagraphOwner
+        owner?: Body
     ): Paragraph {
     // Create paragraph - if owner provided, attach immediately before processing items
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const paragraph: any = new Paragraph(undefined);
-        
+
         // Apply CSS class-based paragraph style BEFORE attaching to owner
         if (this._styleCache && owner) {
             applyCSSClassStyleToParagraph(paragraph, pElement, this._styleCache);
         }
-        
+
         // If an owner is provided, attach AFTER applying style
         if (owner) {
-            // For Body owner, use items.add() API; for ParagraphOwner, use appendParagraph()
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if ((owner as any).items) {
-                // This is a Body instance
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (owner as any).items.add(paragraph);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } else if ((owner as any).appendParagraph) {
-                // This is another ParagraphOwner type
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (owner as any).appendParagraph(paragraph);
-            }
+            owner.items.add(paragraph);
         }
         // Process paragraph content: child nodes with inline formatting
         const hasContent: boolean = this.processNodeContent(pElement, paragraph, document, !!owner);
@@ -137,7 +128,7 @@ export class _ParagraphMapper {
      * @param {_HTMLParagraphElement} pElement - The HTMLParagraphElement to map
      * @param {Paragraph} paragraph - The Paragraph object to populate (must be already attached to owner)
      * @param {WordDocument} document - The WordDocument (for TextRange context)
-     * @param {ParagraphOwner} owner - The paragraph owner (for isAttached flag)
+     * @param {Body} owner - The paragraph owner (for isAttached flag)
      * @returns {boolean} True if content was added
      * @private
      */
@@ -145,7 +136,7 @@ export class _ParagraphMapper {
         pElement: _HTMLParagraphElement,
         paragraph: Paragraph,
         document: WordDocument,
-        owner: ParagraphOwner
+        owner: Body
     ): boolean {
     // Process paragraph content: split at <br> elements to create multiple paragraphs
         const hasContent: boolean = this.processNodeContentWithBrHandling(pElement, paragraph, document, !!owner, owner);
@@ -156,39 +147,28 @@ export class _ParagraphMapper {
         return hasContent;
     }
     /**
-     * Map an HTML heading element (h1-h6) to a DocIO Paragraph with heading style.
+     * Map an HTML heading element (h1-h6) to a document Paragraph with heading style.
      *
      * Similar to mapHTMLParagraph, but applies the appropriate heading style
      * (Heading1-Heading9) based on the heading level.
      *
      * @param {_HTMLHeadingElement} hElement - The HTML heading element to map (h1-h6)
      * @param {WordDocument} document - The WordDocument (for TextRange context)
-     * @param {ParagraphOwner} [owner] - Optional heading owner (Body) to attach the paragraph to
+     * @param {Body} [owner] - Optional heading owner (Body) to attach the paragraph to
      * @returns {Paragraph} A new Paragraph with heading style applied
      * @private
      */
     static mapHTMLHeading(
         hElement: _HTMLHeadingElement,
         document: WordDocument,
-        owner?: ParagraphOwner
+        owner?: Body
     ): Paragraph {
     // Create paragraph - if owner provided, attach immediately before processing items
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const paragraph: any = new Paragraph(undefined);
         // If an owner is provided, attach BEFORE processing content so items can be added
         if (owner) {
-            // For Body owner, use items.add() API; for ParagraphOwner, use appendParagraph()
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if ((owner as any).items) {
-                // This is a Body instance
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (owner as any).items.add(paragraph);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } else if ((owner as any).appendParagraph) {
-                // This is another ParagraphOwner type
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (owner as any).appendParagraph(paragraph);
-            }
+            owner.items.add(paragraph);
         }
         // Process heading content: child nodes with inline formatting
         const hasContent: boolean = this.processNodeContent(hElement, paragraph, document, !!owner);
@@ -217,7 +197,7 @@ export class _ParagraphMapper {
         hElement: _HTMLHeadingElement,
         paragraph: Paragraph,
         document: WordDocument,
-        owner: ParagraphOwner
+        owner: Body
     ): boolean {
     // Process heading content: child nodes with inline formatting
         const hasContent: boolean = this.processNodeContent(hElement, paragraph, document, !!owner);
@@ -280,11 +260,11 @@ export class _ParagraphMapper {
         const inlineTags: string[] = ['span', 'b', 'i', 'u', 'strong', 'em', 's', 'ins', 'del', 'code',
             'samp', 'kbd', 'mark', 'small', 'big', 'sub', 'sup', 'a', 'abbr', 'cite', 'dfn', 'var',
             'q', 'bdi', 'bdo', 'br', 'wbr', 'font', 'img'];
-        const isInline = (el: _HTMLElement): boolean => {
+        const isInline: (el: _HTMLElement) => boolean = (el: _HTMLElement): boolean => {
             const tag: string = el && el.tagName ? el.tagName.toLowerCase() : '';
             return inlineTags.indexOf(tag) !== -1;
         };
-        const isBlankText = (el: _HTMLElement): boolean =>
+        const isBlankText: (el: _HTMLElement) => boolean = (el: _HTMLElement): boolean =>
             el && el.tagName === '#text' && isBlankHtmlText(el._text || '');
         const siblings: _HTMLElement[] = parent._childNodes;
         const myIndex: number = siblings.indexOf(textNode);
@@ -330,12 +310,12 @@ export class _ParagraphMapper {
                     const text: string = typeof child === 'string' ? child :
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         ((child as any).textContent || (child as any)._nodeValue || (child as any)._text || '');
-                    
+
                     // Get parent tag name to check if we're in a <pre> element
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const parentTagName = node.tagName ? node.tagName.toLowerCase() : '';
+                    const parentTagName: string = node.tagName ? node.tagName.toLowerCase() : '';
                     const isPreTag: boolean = parentTagName === 'pre';
-                    
+
                     // For <pre> tags, preserve ALL whitespace (including whitespace-only text nodes)
                     // For other tags, skip whitespace-only text nodes — except:
                     //  - a non-breaking space is rendered content, not collapsible whitespace
@@ -346,33 +326,33 @@ export class _ParagraphMapper {
                     if (shouldSkip) {
                         continue;
                     }
-                    
+
                     // Process non-empty or <pre> whitespace text
                     if (text.length > 0) {
                         // isPreTag already defined above
-                        
+
                         if (isPreTag) {
                             // For <pre> tags, handle line breaks explicitly
                             // Split by newlines and add line breaks between them
                             const lines: string[] = text.split(/\r?\n/);
                             for (let i: number = 0; i < lines.length; i++) {
                                 const line: string = lines[i];
-                                
+
                                 // Add the line text if it's not empty (or if it's the last line and was originally there)
                                 if (line.length > 0 || i < lines.length - 1) {
                                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     const textRange: any = new TextRange(document);
                                     textRange.text = line;
-                                    
+
                                     // Apply character styles
                                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                    const isBlockElement = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].indexOf(parentTagName) !== -1;
+                                    const isBlockElement: boolean = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].indexOf(parentTagName) !== -1;
                                     if (isBlockElement) {
                                         applyBlockRunStyles(textRange, node);
                                     } else {
                                         applyCharacterStylesToRange(textRange, {}, node);
                                     }
-                                    
+
                                     if (isAttached) {
                                         try {
                                             paragraph.items.add(textRange);
@@ -389,7 +369,7 @@ export class _ParagraphMapper {
                                     }
                                     hasContent = true;
                                 }
-                                
+
                                 // Add a line break after each line except the last
                                 if (i < lines.length - 1) {
                                     try {
@@ -407,12 +387,12 @@ export class _ParagraphMapper {
                             // Collapse multiple spaces/tabs/newlines into single space
                             const normalizedText: string = text.replace(HTML_BLANK_PATTERN, ' ');
                             textRange.text = normalizedText;
-                            
+
                             // For heading and paragraph elements, don't apply character-level styles from the parent
                             // to text content; only apply inline element styles (b, i, em, strong, etc.)
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            const isBlockElement = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].indexOf(parentTagName) !== -1;;
-                            
+                            const isBlockElement: boolean = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].indexOf(parentTagName) !== -1;
+
                             // If parent is a block element (heading/paragraph), pass undefined instead of node
                             // to prevent CSS character styles from the heading from applying to text content.
                             // Inline tags like <b>, <i>, <em>, etc. will apply their styles via processInlineElement.
@@ -449,30 +429,30 @@ export class _ParagraphMapper {
         if (node._text && !isBlankHtmlText(node._text) && (!node._childNodes || node._childNodes.length === 0)) {
             // Get parent tag name to check if we're in a <pre> element
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const parentTagName = node.tagName ? node.tagName.toLowerCase() : '';
+            const parentTagName: string = node.tagName ? node.tagName.toLowerCase() : '';
             const isPreTag: boolean = parentTagName === 'pre';
-            
+
             if (isPreTag) {
                 // For <pre> tags, handle line breaks explicitly
                 const lines: string[] = node._text.split(/\r?\n/);
                 for (let i: number = 0; i < lines.length; i++) {
                     const line: string = lines[i];
-                    
+
                     // Add the line text if it's not empty (or if it's the last line and was originally there)
                     if (line.length > 0 || i < lines.length - 1) {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const textRange: any = new TextRange(document);
                         textRange.text = line;
-                        
+
                         // For heading and paragraph elements, don't apply character-level styles
-                        const isBlockElement = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].indexOf(parentTagName) !== -1;;
-                        
+                        const isBlockElement: boolean = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].indexOf(parentTagName) !== -1;
+
                         if (isBlockElement) {
                             applyBlockRunStyles(textRange, node);
                         } else {
                             applyCharacterStylesToRange(textRange, node._styles, node);
                         }
-                        
+
                         if (isAttached) {
                             try {
                                 paragraph.items.add(textRange);
@@ -488,7 +468,7 @@ export class _ParagraphMapper {
                             }
                         }
                     }
-                    
+
                     // Add a line break after each line except the last
                     if (i < lines.length - 1) {
                         try {
@@ -504,10 +484,10 @@ export class _ParagraphMapper {
                 const textRange: any = new TextRange(document);
                 const normalizedText: string = node._text.replace(HTML_BLANK_PATTERN, ' ');
                 textRange.text = normalizedText;
-                
+
                 // For heading and paragraph elements, don't apply character-level styles from the parent
-                const isBlockElement = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].indexOf(parentTagName) !== -1;;
-                
+                const isBlockElement: boolean = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].indexOf(parentTagName) !== -1;
+
                 if (isBlockElement) {
                     applyBlockRunStyles(textRange, node);
                 } else {
@@ -540,7 +520,7 @@ export class _ParagraphMapper {
      * @param {Paragraph} paragraph - The first paragraph to add content to
      * @param {WordDocument} document - The WordDocument context
      * @param {boolean} isAttached - Whether paragraph is attached to an owner
-     * @param {ParagraphOwner} [owner] - Optional owner to attach new paragraphs to
+     * @param {Body} [owner] - Optional owner to attach new paragraphs to
      * @returns {boolean} True if any content was added
      * @private
      */
@@ -549,39 +529,31 @@ export class _ParagraphMapper {
         paragraph: Paragraph,
         document: WordDocument,
         isAttached: boolean,
-        owner?: ParagraphOwner
+        owner?: Body
     ): boolean {
         let hasContent: boolean = false;
         let currentParagraph: Paragraph = paragraph;
-        
+
         // Split children into groups separated by <br>
         if (node._childNodes && Array.isArray(node._childNodes)) {
             let currentGroup: any[] = [];
-            
+
             for (const child of node._childNodes) {
                 // Check if this is a <br> tag
-                const isBrTag = child.tagName && child.tagName.toLowerCase() === 'br';
-                
+                const isBrTag: boolean = child.tagName && child.tagName.toLowerCase() === 'br';
+
                 if (isBrTag) {
                     // Process the current group in the current paragraph
                     if (currentGroup.length > 0) {
                         const groupHasContent: boolean = this.processNodeGroup(currentGroup, currentParagraph, document, isAttached, node);
                         hasContent = groupHasContent || hasContent;
                     }
-                    
+
                     // Create a new paragraph for the next group (after <br>)
                     if (owner) {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         currentParagraph = new Paragraph(undefined);
-                        if ((owner as any).items) {
-                            // Body owner
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            (owner as any).items.add(currentParagraph);
-                        } else if ((owner as any).appendParagraph) {
-                            // Other owner types
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            (owner as any).appendParagraph(currentParagraph);
-                        }
+                        owner.items.add(currentParagraph);
                         // Copy paragraph styles from original
                         try {
                             if (currentParagraph.paragraphFormat && paragraph.paragraphFormat) {
@@ -594,7 +566,7 @@ export class _ParagraphMapper {
                             // Ignore errors copying format
                         }
                     }
-                    
+
                     // Clear the current group
                     currentGroup = [];
                 } else {
@@ -602,17 +574,17 @@ export class _ParagraphMapper {
                     currentGroup.push(child);
                 }
             }
-            
+
             // Process remaining group
             if (currentGroup.length > 0) {
                 const groupHasContent: boolean = this.processNodeGroup(currentGroup, currentParagraph, document, isAttached, node);
                 hasContent = groupHasContent || hasContent;
             }
         }
-        
+
         return hasContent;
     }
-    
+
     /**
      * Process a group of child nodes (text/elements) and add their content to a paragraph.
      * This is extracted from processNodeContent to be reusable with <br> handling.
@@ -633,7 +605,7 @@ export class _ParagraphMapper {
         parentNode: _HTMLElement
     ): boolean {
         let hasContent: boolean = false;
-        
+
         for (const child of children) {
             // Check if it's a text node
             const isTextNode: boolean = typeof child === 'string' ||
@@ -643,17 +615,17 @@ export class _ParagraphMapper {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     ('tagName' in child && (child as any).tagName === '#text')
                 ));
-            
+
             if (isTextNode) {
                 // Handle text nodes
                 const text: string = typeof child === 'string' ? child :
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     ((child as any).textContent || (child as any)._nodeValue || (child as any)._text || '');
-                
+
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const parentTagName = parentNode.tagName ? parentNode.tagName.toLowerCase() : '';
+                const parentTagName: string = parentNode.tagName ? parentNode.tagName.toLowerCase() : '';
                 const isPreTag: boolean = parentTagName === 'pre';
-                
+
                 // For <pre> tags with newlines, split and add each line with line breaks
                 if (isPreTag && text.includes('\n')) {
                     const lines: string[] = text.split(/\r?\n/);
@@ -665,16 +637,16 @@ export class _ParagraphMapper {
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 const textRange: any = new TextRange(document);
                                 textRange.text = line;
-                                
+
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                const isBlockElement = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].indexOf(parentTagName) !== -1;;
-                                
+                                const isBlockElement: boolean = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].indexOf(parentTagName) !== -1;
+
                                 if (isBlockElement) {
                                     applyBlockRunStyles(textRange, parentNode);
                                 } else {
                                     applyCharacterStylesToRange(textRange, {}, parentNode);
                                 }
-                                
+
                                 if (isAttached) {
                                     try {
                                         paragraph.items.add(textRange);
@@ -690,7 +662,7 @@ export class _ParagraphMapper {
                                 }
                                 hasContent = true;
                             }
-                            
+
                             // Add line break after each line except the last
                             if (i < lines.length - 1) {
                                 try {
@@ -708,16 +680,16 @@ export class _ParagraphMapper {
                     const textRange: any = new TextRange(document);
                     const normalizedText: string = isPreTag ? text : text.replace(HTML_BLANK_PATTERN, ' ');
                     textRange.text = normalizedText;
-                    
+
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const isBlockElement = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].indexOf(parentTagName) !== -1;;
-                    
+                    const isBlockElement: boolean = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].indexOf(parentTagName) !== -1;
+
                     if (isBlockElement) {
                         applyBlockRunStyles(textRange, parentNode);
                     } else {
                         applyCharacterStylesToRange(textRange, {}, parentNode);
                     }
-                    
+
                     if (isAttached) {
                         try {
                             paragraph.items.add(textRange);
@@ -739,7 +711,7 @@ export class _ParagraphMapper {
                 hasContent = this.processInlineElement(child, paragraph, document, isAttached) || hasContent;
             }
         }
-        
+
         return hasContent;
     }
     /**
@@ -793,7 +765,7 @@ export class _ParagraphMapper {
                 if (imageData && imageData.bytes && isAttached) {
                     try {
                         // eslint-disable-next-line
-            const appendImageMethod = (paragraph as any).appendImage;
+            const appendImageMethod: any = (paragraph as any).appendImage;
                         if (appendImageMethod) {
                             appendImageMethod.call(paragraph, imageData.bytes, {
                                 width: imageData.width,
@@ -922,15 +894,15 @@ export class _ParagraphMapper {
             }
             return false;
         }
-        
+
         // For other inline elements (span, b, i, u, strong, em, etc.):
         // Recursively process children to preserve nested formatting
         let hasContent: boolean = false;
         const styles: Record<string, string> = { ...element.styles };
-        
+
         // Apply tag-specific formatting
         applyInlineTagFormatting(tagName, styles, element);
-        
+
         // Process children (both text nodes and nested inline elements)
         if (element._childNodes && Array.isArray(element._childNodes)) {
             for (const child of element._childNodes) {
@@ -942,7 +914,7 @@ export class _ParagraphMapper {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         ('tagName' in child && (child as any).tagName === '#text')
                     ));
-                
+
                 if (isTextNode) {
                     // Handle text node within inline element
                     const text: string = typeof child === 'string' ? child :
@@ -957,16 +929,16 @@ export class _ParagraphMapper {
                         const isPreTag: boolean = parentTagName === 'pre';
                         const normalizedText: string = isPreTag ? text : text.replace(HTML_BLANK_PATTERN, ' ');
                         textRange.text = normalizedText;
-                        
+
                         // Apply the parent inline element's styles to text content
                         applyCharacterStylesToRange(textRange, styles, element);
-                        
+
                         if (isAttached) {
                             try {
                                 paragraph.items.add(textRange);
                                 hasContent = true;
                             } catch (error) {
-                                console.error(`Error adding text range to paragraph:`, error);
+                                console.error('Error adding text range to paragraph:', error);
                             }
                         } else {
                             // For detached paragraphs, store reference for testing (only first one)
@@ -982,7 +954,7 @@ export class _ParagraphMapper {
                     // Handle nested inline elements recursively
                     const childTagName: string = child.tagName ? child.tagName.toLowerCase() : '';
                     // Only recurse if it's an inline element; block elements should not appear inside inline
-                    const inlineElements = ['span', 'b', 'i', 'u', 'strong', 'em', 's', 'ins', 'del', 'code', 'samp', 'kbd', 'mark', 'small', 'big', 'sub', 'sup', 'a', 'abbr', 'cite', 'dfn', 'var', 'q', 'bdi', 'bdo', 'br', 'wbr', 'font'];
+                    const inlineElements: string[] = ['span', 'b', 'i', 'u', 'strong', 'em', 's', 'ins', 'del', 'code', 'samp', 'kbd', 'mark', 'small', 'big', 'sub', 'sup', 'a', 'abbr', 'cite', 'dfn', 'var', 'q', 'bdi', 'bdo', 'br', 'wbr', 'font'];
                     if (inlineElements.indexOf(childTagName) !== -1) {
                         // Merge parent styles into child for proper style inheritance
                         // Child's own styles take precedence over parent styles
@@ -992,14 +964,14 @@ export class _ParagraphMapper {
                         }
                         // Temporarily replace child._styles with merged styles
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        const originalStyles = (child as any)._styles;
+                        const originalStyles: any = (child as any)._styles;
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         (child as any)._styles = inheritedStyles;
-                        
+
                         // Pass parent node to detect if we're in <pre> tag
-                        const childProcessed = this.processInlineElement(child, paragraph, document, isAttached, parentNode);
+                        const childProcessed: boolean = this.processInlineElement(child, paragraph, document, isAttached, parentNode);
                         hasContent = childProcessed || hasContent;
-                        
+
                         // Restore original styles
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         (child as any)._styles = originalStyles;
@@ -1007,7 +979,7 @@ export class _ParagraphMapper {
                 }
             }
         }
-        
+
         // If no children, try to get text directly from element
         if (!hasContent && element._text && !isBlankHtmlText(element._text)) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1017,10 +989,10 @@ export class _ParagraphMapper {
             const isPreTag: boolean = parentTagName === 'pre';
             const normalizedText: string = isPreTag ? element._text : element._text.replace(HTML_BLANK_PATTERN, ' ');
             textRange.text = normalizedText;
-            
+
             // Apply styles to text range
             applyCharacterStylesToRange(textRange, styles, element);
-            
+
             if (isAttached) {
                 try {
                     paragraph.items.add(textRange);
@@ -1038,7 +1010,7 @@ export class _ParagraphMapper {
                 hasContent = true;
             }
         }
-        
+
         return hasContent;
     }
 }
@@ -1125,7 +1097,7 @@ function applyInlineTagFormatting(tagName: string, styles: Record<string, string
         // Handle <font> tag color and size attributes
         if (element && element._attributes) {
             // Handle color attribute
-            const color = element._attributes.get ? element._attributes.get('color') : element._attributes.color;
+            const color: any = element._attributes.get ? element._attributes.get('color') : element._attributes.color;
             if (color && !styles.color) {
                 // Color can be hex like "#FF0000" or named like "red" or "blue"
                 if (color.startsWith('#') || /^[0-9a-fA-F]{6}$/.test(color)) {
@@ -1139,14 +1111,14 @@ function applyInlineTagFormatting(tagName: string, styles: Record<string, string
                         'olive': '#808000', 'lime': '#00FF00', 'aqua': '#00FFFF', 'teal': '#008080',
                         'navy': '#000080', 'purple': '#800080', 'fuchsia': '#FF00FF'
                     };
-                    const hexColor = colorMap[color.toLowerCase()];
+                    const hexColor: string = colorMap[color.toLowerCase()];
                     if (hexColor) {
                         styles.color = hexColor;
                     }
                 }
             }
             // Handle size attribute (1-7 in HTML)
-            const size = element._attributes.get ? element._attributes.get('size') : element._attributes.size;
+            const size: any = element._attributes.get ? element._attributes.get('size') : element._attributes.size;
             if (size && !styles.fontSize) {
                 // HTML font sizes: 1=10pt, 2=13pt, 3=16pt, 4=18pt, 5=24pt, 6=32pt, 7=48pt
                 // Can also be relative: +1, -1, etc.
@@ -1154,14 +1126,14 @@ function applyInlineTagFormatting(tagName: string, styles: Record<string, string
                     '1': '10pt', '2': '13pt', '3': '16pt', '4': '18pt',
                     '5': '24pt', '6': '32pt', '7': '48pt'
                 };
-                const ptSize = sizeMap[size];
+                const ptSize: string = sizeMap[size];
                 if (ptSize) {
                     styles.fontSize = ptSize;
                 } else if (size.startsWith('+') || size.startsWith('-')) {
                     // Relative sizing: +1 means one size larger, -1 means one size smaller
-                    const baseSize = 4; // Default is size 4 (18pt)
-                    const delta = parseInt(size, 10);
-                    const newSize = baseSize + delta;
+                    const baseSize: number = 4; // Default is size 4 (18pt)
+                    const delta: number = parseInt(size, 10);
+                    const newSize: number = baseSize + delta;
                     const relativeSizeMap: Record<number, string> = {
                         1: '10pt', 2: '13pt', 3: '16pt', 4: '18pt',
                         5: '24pt', 6: '32pt', 7: '48pt'
@@ -1197,7 +1169,7 @@ function applyInlineTagFormatting(tagName: string, styles: Record<string, string
  *
  * Looks up the first CSS class or ID on the element and creates/applies
  * a paragraph style with full formatting (paragraph and character format).
- * 
+ *
  * Priority: ID selector > Descendant selector > Class selector
  *
  * @param {any} paragraph - The paragraph to apply style to
@@ -1216,7 +1188,7 @@ function applyCSSClassStyleToParagraph(
         return;
     }
     // Priority 1: Try ID selector first (highest specificity)
-    const idAttr = element._attributes.get('id');
+    const idAttr: string = element._attributes.get('id');
     if (idAttr) {
         // Look up CSS rules for this ID
         if (_ParagraphMapper._cssRules && _ParagraphMapper._cssRules.length > 0) {
@@ -1234,7 +1206,7 @@ function applyCSSClassStyleToParagraph(
 
             if (matchingRule && matchingRule.declarations) {
                 // Get or create paragraph style from cache
-                const style = styleCache.getOrCreateStyle(idAttr, {
+                const style: ParagraphStyle = styleCache.getOrCreateStyle(idAttr, {
                     ...matchingRule.declarations,
                     ...getIDSelectorStyles(element)
                 });
@@ -1252,18 +1224,18 @@ function applyCSSClassStyleToParagraph(
 
     // Priority 3: Try class selector (medium specificity)
     // Get class attribute
-    const classAttr = element._attributes.get('class');
+    const classAttr: string = element._attributes.get('class');
     if (!classAttr) {
         return;
     }
 
     // Get first class name
-    const classNames = classAttr.split(/\s+/).filter((c) => c.length > 0);
+    const classNames: string[] = classAttr.split(/\s+/).filter((c: string) => c.length > 0);
     if (classNames.length === 0) {
         return;
     }
 
-    const className = classNames[0];
+    const className: string = classNames[0];
 
     // Look up CSS rules for this class
     if (!_ParagraphMapper._cssRules || _ParagraphMapper._cssRules.length === 0) {
@@ -1287,7 +1259,7 @@ function applyCSSClassStyleToParagraph(
     }
 
     // Get or create paragraph style from cache
-    const style = styleCache.getOrCreateStyle(className, matchingRule.declarations);
+    const style: ParagraphStyle = styleCache.getOrCreateStyle(className, matchingRule.declarations);
 
     // Apply style to paragraph
     if (style) {
@@ -1316,7 +1288,7 @@ function getHTMLAttributeDeclarations(element: _HTMLElement): Record<string, str
     // HTML presentation attributes → CSS equivalents
     // align → text-align (if not already set via CSS)
     if (element._attributes.has('align')) {
-        const align = element._attributes.get('align');
+        const align: string = element._attributes.get('align');
         if (align && !declarations.textAlign) {
             declarations.textAlign = align.toLowerCase();
         }
@@ -1324,7 +1296,7 @@ function getHTMLAttributeDeclarations(element: _HTMLElement): Record<string, str
 
     // dir → direction
     if (element._attributes.has('dir')) {
-        const dir = element._attributes.get('dir');
+        const dir: string = element._attributes.get('dir');
         if (dir && (dir.toLowerCase() === 'rtl' || dir.toLowerCase() === 'ltr') && !declarations.direction) {
             declarations.direction = dir.toLowerCase();
         }
@@ -1332,7 +1304,7 @@ function getHTMLAttributeDeclarations(element: _HTMLElement): Record<string, str
 
     // bgcolor → background-color / backgroundColor
     if (element._attributes.has('bgcolor')) {
-        const bgcolor = element._attributes.get('bgcolor');
+        const bgcolor: string = element._attributes.get('bgcolor');
         if (bgcolor && !declarations.backgroundColor) {
             declarations.backgroundColor = bgcolor;
         }
@@ -1340,7 +1312,7 @@ function getHTMLAttributeDeclarations(element: _HTMLElement): Record<string, str
 
     // color → text color (for text-level HTML like <font>)
     if (element._attributes.has('color')) {
-        const color = element._attributes.get('color');
+        const color: string = element._attributes.get('color');
         if (color && !declarations.color) {
             declarations.color = color;
         }
@@ -1348,7 +1320,7 @@ function getHTMLAttributeDeclarations(element: _HTMLElement): Record<string, str
 
     // face → font-family (legacy <font> attribute)
     if (element._attributes.has('face')) {
-        const face = element._attributes.get('face');
+        const face: string = element._attributes.get('face');
         if (face && !declarations.fontFamily) {
             declarations.fontFamily = face;
         }
@@ -1356,7 +1328,7 @@ function getHTMLAttributeDeclarations(element: _HTMLElement): Record<string, str
 
     // size → font-size (legacy <font> attribute, values 1-7)
     if (element._attributes.has('size')) {
-        const size = element._attributes.get('size');
+        const size: string = element._attributes.get('size');
         if (size && !declarations.fontSize) {
             // Convert HTML font size (1-7) to points
             // HTML: 1=8pt, 2=10pt, 3=12pt, 4=14pt, 5=18pt, 6=24pt, 7=36pt
@@ -1377,7 +1349,7 @@ function getHTMLAttributeDeclarations(element: _HTMLElement): Record<string, str
 
     // width, height → CSS width/height
     if (element._attributes.has('width')) {
-        const width = element._attributes.get('width');
+        const width: string = element._attributes.get('width');
         if (width && !declarations.width) {
             // Append px if no unit is specified
             declarations.width = width.match(/^\d+$/) ? `${width}px` : width;
@@ -1385,7 +1357,7 @@ function getHTMLAttributeDeclarations(element: _HTMLElement): Record<string, str
     }
 
     if (element._attributes.has('height')) {
-        const height = element._attributes.get('height');
+        const height: string = element._attributes.get('height');
         if (height && !declarations.height) {
             // Append px if no unit is specified
             declarations.height = height.match(/^\d+$/) ? `${height}px` : height;
@@ -1394,7 +1366,7 @@ function getHTMLAttributeDeclarations(element: _HTMLElement): Record<string, str
 
     // valign → vertical-align (table cells)
     if (element._attributes.has('valign')) {
-        const valign = element._attributes.get('valign');
+        const valign: string = element._attributes.get('valign');
         if (valign && !declarations.verticalAlign) {
             declarations.verticalAlign = valign.toLowerCase();
         }
@@ -1420,7 +1392,7 @@ function getClassSelectorStyles(element: _HTMLElement): Record<string, string> {
     if (element._styles && Object.keys(element._styles).length > 0) {
         return { ...element._styles };
     }
-    
+
     return {};
 }
 
@@ -1441,7 +1413,7 @@ function getIDSelectorStyles(element: _HTMLElement): Record<string, string> {
     if (element._styles && Object.keys(element._styles).length > 0) {
         return { ...element._styles };
     }
-    
+
     return {};
 }
 
@@ -1460,13 +1432,13 @@ function detectDescendantSelectorStyle(element: _HTMLElement): string | undefine
     // Descendant selectors are pre-resolved during parsing and stored as metadata on the element
     // Check if element has descendant selector information
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const elementAny = element as any;
-    
+    const elementAny: any = element as any;
+
     // Check if element has descendant selector data attached by parser
     if (elementAny._descendantSelectorId) {
         return elementAny._descendantSelectorId;
     }
-    
+
     return undefined;
 }
 
@@ -1641,12 +1613,12 @@ function applyCharacterStylesToRange(textRange: any, styles: Record<string, stri
 
     // Priority 1: ID selector - highest specificity
     if (usesNamedStyle(element) && element && element._attributes && element._attributes.has('id')) {
-        const idAttr = element._attributes.get('id');
+        const idAttr: string = element._attributes.get('id');
         if (idAttr && _ParagraphMapper._characterStyleCache) {
-            const idStyles = withoutBoxStyles(getIDSelectorStyles(element), element);
-            
+            const idStyles: Record<string, string> = withoutBoxStyles(getIDSelectorStyles(element), element);
+
             // Try to create a character style for this ID selector
-            const styleId = _ParagraphMapper._characterStyleCache.getOrCreateCharacterStyle(`${idAttr}${blockSuffix}`, idStyles);
+            const styleId: string = _ParagraphMapper._characterStyleCache.getOrCreateCharacterStyle(`${idAttr}${blockSuffix}`, idStyles);
             if (styleId) {
                 // Apply the character style instead of direct formatting
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1660,16 +1632,18 @@ function applyCharacterStylesToRange(textRange: any, styles: Record<string, stri
     // For elements with CSS class selectors, try to create/use a character style
     // This creates reusable styles in styles.xml instead of applying direct formatting
     if (usesNamedStyle(element) && element && element._attributes && element._attributes.has('class')) {
-        const classAttr = element._attributes.get('class');
+        const classAttr: string = element._attributes.get('class');
         if (classAttr) {
-            const classNames = classAttr.split(/\s+/).filter((c: string) => c.length > 0);
+            const classNames: string[] = classAttr.split(/\s+/).filter((c: string) => c.length > 0);
             // Use the first class as the primary style
             if (classNames.length > 0 && _ParagraphMapper._characterStyleCache) {
-                const primaryClass = classNames[0];
-                const classStyles = withoutBoxStyles(getClassSelectorStyles(element), element);
-                
+                const primaryClass: string = classNames[0];
+                const classStyles: Record<string, string> = withoutBoxStyles(getClassSelectorStyles(element), element);
+
                 // Try to create a character style for this class
-                const styleId = _ParagraphMapper._characterStyleCache.getOrCreateCharacterStyle(primaryClass + blockSuffix, classStyles);
+                const styleId: string = _ParagraphMapper._characterStyleCache.getOrCreateCharacterStyle(
+                    primaryClass + blockSuffix, classStyles
+                );
                 if (styleId) {
                     // Apply the character style instead of direct formatting
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1683,9 +1657,9 @@ function applyCharacterStylesToRange(textRange: any, styles: Record<string, stri
     // Priority 4: element selector on <a> (e.g. `a { ... }`) -> reusable style in styles.xml
     if (element && element.tagName && element.tagName.toLowerCase() === 'a' && _ParagraphMapper._characterStyleCache &&
         !hasIdAttribute(element) && !(element._attributes && element._attributes.get('class'))) {
-        const anchorStyles = getClassSelectorStyles(element);
+        const anchorStyles: Record<string, string> = getClassSelectorStyles(element);
         if (!(element._attributes && element._attributes.has('style')) && Object.keys(anchorStyles).length > 0) {
-            const styleId = _ParagraphMapper._characterStyleCache.getOrCreateCharacterStyle('CSS_el_a', anchorStyles);
+            const styleId: string = _ParagraphMapper._characterStyleCache.getOrCreateCharacterStyle('CSS_el_a', anchorStyles);
             if (styleId) {
                 (textRange as any).characterFormat.characterStyle = styleId;
                 return;
@@ -1697,13 +1671,13 @@ function applyCharacterStylesToRange(textRange: any, styles: Record<string, stri
     // 1. CSS class selector styles (from stylesheet)
     // 2. Inline style attribute (from <elem style="...">)
     // 3. Programmatic styles passed as parameter (highest priority)
-    let mergedStyles: Record<string, string> = {};
+    const mergedStyles: Record<string, string> = {};
 
     if (element) {
         // Start with CSS class selector styles
-        const classStyles = getClassSelectorStyles(element);
+        const classStyles: Record<string, string> = getClassSelectorStyles(element);
         Object.assign(mergedStyles, classStyles);
-        
+
         // Merge with element's inline style attribute (_styles from style="...")
         if (element._styles && Object.keys(element._styles).length > 0) {
             Object.assign(mergedStyles, element._styles);
@@ -1719,22 +1693,22 @@ function applyCharacterStylesToRange(textRange: any, styles: Record<string, stri
     // Use centralized CSS converter to apply all character format properties
     // This eliminates code duplication and ensures consistency
     const delta: CharacterFormatDelta = cssToCharacterFormat(withoutBoxStyles(mergedStyles, element));
-    
+
     // Apply all converted properties
-    if (delta.bold !== undefined) format.bold = delta.bold;
-    if (delta.italic !== undefined) format.italic = delta.italic;
-    if (delta.fontSize !== undefined) format.fontSize = delta.fontSize;
-    if (delta.fontName !== undefined) format.fontName = delta.fontName;
-    if (delta.textColor !== undefined) format.textColor = delta.textColor;
-    if (delta.strikethrough !== undefined) format.strikethrough = delta.strikethrough;
-    if (delta.doubleStrikethrough !== undefined) format.doubleStrikethrough = delta.doubleStrikethrough;
-    if (delta.underlineStyle !== undefined) format.underlineStyle = delta.underlineStyle;
-    if (delta.underlineColor !== undefined) format.underlineColor = delta.underlineColor;
-    if (delta.highlightColor !== undefined) format.highlightColor = delta.highlightColor;
-    if (delta.textBackgroundColor !== undefined) format.textBackgroundColor = delta.textBackgroundColor;
+    if (delta.bold !== undefined) { format.bold = delta.bold; }
+    if (delta.italic !== undefined) { format.italic = delta.italic; }
+    if (delta.fontSize !== undefined) { format.fontSize = delta.fontSize; }
+    if (delta.fontName !== undefined) { format.fontName = delta.fontName; }
+    if (delta.textColor !== undefined) { format.textColor = delta.textColor; }
+    if (delta.strikethrough !== undefined) { format.strikethrough = delta.strikethrough; }
+    if (delta.doubleStrikethrough !== undefined) { format.doubleStrikethrough = delta.doubleStrikethrough; }
+    if (delta.underlineStyle !== undefined) { format.underlineStyle = delta.underlineStyle; }
+    if (delta.underlineColor !== undefined) { format.underlineColor = delta.underlineColor; }
+    if (delta.highlightColor !== undefined) { format.highlightColor = delta.highlightColor; }
+    if (delta.textBackgroundColor !== undefined) { format.textBackgroundColor = delta.textBackgroundColor; }
     if (delta.textColorHex !== undefined || delta.textBackgroundHex !== undefined) {
         // Colours outside the Color enum are written through the snapshot to keep the exact RGB value.
-        const snap = format.snapshot();
+        const snap: any = format.snapshot();
         if (delta.textColorHex !== undefined) {
             snap.textColorValue = delta.textColorHex;
             snap.textColorTheme = undefined;
@@ -1756,11 +1730,11 @@ function applyCharacterStylesToRange(textRange: any, styles: Record<string, stri
             applyCharacterDeclarations(format, boxDecls);
         }
     }
-    if (delta.allCaps !== undefined) format.allCaps = delta.allCaps;
-    if (delta.smallCaps !== undefined) format.smallCaps = delta.smallCaps;
-    if (delta.subSuperScript !== undefined) format.subSuperScript = delta.subSuperScript;
-    if (delta.noProof !== undefined) format.noProof = delta.noProof;
-    if (delta.webHidden !== undefined) format.webHidden = delta.webHidden;
+    if (delta.allCaps !== undefined) { format.allCaps = delta.allCaps; }
+    if (delta.smallCaps !== undefined) { format.smallCaps = delta.smallCaps; }
+    if (delta.subSuperScript !== undefined) { format.subSuperScript = delta.subSuperScript; }
+    if (delta.noProof !== undefined) { format.noProof = delta.noProof; }
+    if (delta.webHidden !== undefined) { format.webHidden = delta.webHidden; }
 }
 /**
  * Apply paragraph-level formatting styles (alignment, indentation, background color, etc.).
@@ -1788,14 +1762,14 @@ function applyParagraphStyles(paragraph: Paragraph, styles: Record<string, strin
     }
     // Priority 1: ID selector - highest specificity
     if (usesNamedStyle(element) && element && element._attributes && element._attributes.has('id')) {
-        const idAttr = element._attributes.get('id');
+        const idAttr: string = element._attributes.get('id');
         if (idAttr && _ParagraphMapper._styleCache) {
-            const idStyles = getIDSelectorStyles(element);
-            
+            const idStyles: Record<string, string> = getIDSelectorStyles(element);
+
             // Try to create a paragraph style for this ID selector
             try {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const style = (_ParagraphMapper._styleCache as any).getOrCreateStyle(idAttr, idStyles);
+                const style: any = (_ParagraphMapper._styleCache as any).getOrCreateStyle(idAttr, idStyles);
                 basePStyleOnNormalWeb(paragraph, style, element);
                 if (style && (style as any).styleId) {
                     // Apply the paragraph style instead of direct formatting
@@ -1817,18 +1791,18 @@ function applyParagraphStyles(paragraph: Paragraph, styles: Record<string, strin
     // For elements with CSS class selectors, try to create/use a paragraph style
     // This creates reusable styles in styles.xml instead of applying direct formatting
     if (usesNamedStyle(element) && element && element._attributes && element._attributes.has('class')) {
-        const classAttr = element._attributes.get('class');
+        const classAttr: string = element._attributes.get('class');
         if (classAttr && _ParagraphMapper._styleCache) {
-            const classNames = classAttr.split(/\s+/).filter((c: string) => c.length > 0);
+            const classNames: string[] = classAttr.split(/\s+/).filter((c: string) => c.length > 0);
             // Use the first class as the primary style
             if (classNames.length > 0) {
-                const primaryClass = classNames[0];
-                const classStyles = getClassSelectorStyles(element);
-                
+                const primaryClass: string = classNames[0];
+                const classStyles: Record<string, string> = getClassSelectorStyles(element);
+
                 // Try to create a paragraph style for this class
                 try {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const style = (_ParagraphMapper._styleCache as any).getOrCreateStyle(primaryClass, classStyles);
+                    const style: any = (_ParagraphMapper._styleCache as any).getOrCreateStyle(primaryClass, classStyles);
                     if (style && (style as any).styleId) {
                         // Apply the paragraph style instead of direct formatting
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1862,25 +1836,25 @@ function applyParagraphStyles(paragraph: Paragraph, styles: Record<string, strin
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const format: any = paragraph.paragraphFormat;
-    
+
     // Defensive check: if format is not available, skip direct formatting
     if (!format) {
         return;
     }
-    
+
     // Merge declarations: CSS styles take priority over HTML attributes
     // HTML attributes provide fallback values when CSS is not specified
     const mergedDeclarations: Record<string, string> = {};
-    
+
     // Start with HTML attribute declarations (lowest priority)
     if (element) {
-        const attrDeclarations = getHTMLAttributeDeclarations(element);
+        const attrDeclarations: Record<string, string> = getHTMLAttributeDeclarations(element);
         Object.assign(mergedDeclarations, attrDeclarations);
     }
-    
+
     // Override with CSS styles (higher priority)
     Object.assign(mergedDeclarations, styles);
-    
+
     // Direct formatting in document.xml (tags that do not use a named style)
     const declarations: Record<string, string> = {};
     for (const key of Object.keys(mergedDeclarations)) {

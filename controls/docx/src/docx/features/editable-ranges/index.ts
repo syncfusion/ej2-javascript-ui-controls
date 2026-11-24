@@ -4,8 +4,7 @@ import { FeatureInline } from '../document/feature-inline';
 import { Paragraph, BlockContent } from '../document/paragraph';
 import {
     FeatureInlineParagraphItem,
-    InlineContent,
-    ParagraphItem, ConcreteParagraphItem
+    ParagraphItem
 } from '../document/text-range';
 import { isWml, wmlAttr, wmlElement } from '../document/wml';
 import { enumValues } from '../../core/compat/object-compat';
@@ -481,9 +480,9 @@ function locateMarker(document: WordDocument, marker: EditableRangeStart | Edita
         if (found !== undefined) {
             return;
         }
-        const content: ConcreteParagraphItem[] = paragraph.items.toArray();
+        const content: ParagraphItem[] = paragraph.items.toArray();
         for (const [i, item] of content.entries()) {
-            // TS 3.3 does not narrow InlineContent through `(x == null ? undefined : x.type)`.
+            // TS 3.3 does not narrow ParagraphItem through `(x == null ? undefined : x.type)`.
             if (item !== undefined &&
                 item instanceof FeatureInlineParagraphItem &&
                 item.value === marker) {
@@ -687,7 +686,7 @@ export function moveEditableRangeMarkerToParagraph(
  */
 export function remapEditableRangeIdsInParagraphToPending(paragraph: Paragraph): void {
     const document: WordDocument = paragraph.owningDocument();
-    const content: ConcreteParagraphItem[] = paragraph.items.toArray();
+    const content: ParagraphItem[] = paragraph.items.toArray();
     const oldToPending: Map<number, number> = new Map<number, number>();
     const usedIds: Set<number> = new Set<number>();
     collectEditableRangeIds(document, (id: number) => {
@@ -756,7 +755,7 @@ export function cloneEditableRangeMarkersFromParagraph(document: WordDocument, s
         usedPending.add(candidate);
         return candidate;
     };
-    const content: ConcreteParagraphItem[] = sourceParagraph.items.toArray();
+    const content: ParagraphItem[] = sourceParagraph.items.toArray();
     for (const inline of content) {
         if (!(inline instanceof FeatureInlineParagraphItem)) {
             continue;
@@ -772,7 +771,7 @@ export function cloneEditableRangeMarkersFromParagraph(document: WordDocument, s
         marker: EditableRangeStart | EditableRangeEnd;
     }[] = [];
     for (const [i, inline] of content.entries()) {
-        // TS 3.3 does not narrow InlineContent through `(x == null ? undefined : x.type)`.
+        // TS 3.3 does not narrow ParagraphItem through `(x == null ? undefined : x.type)`.
         if (inline === undefined || !(inline instanceof FeatureInlineParagraphItem)) {
             continue;
         }
@@ -1332,6 +1331,7 @@ Paragraph.prototype.insertEditableRangeAt = function (this: Paragraph, options: 
 };
 /**
  * Feature id string for editable-range markers (`editable-ranges`).
+ *
  * @private
  */
 export const EDITABLE_RANGES_FEATURE_ID: FeatureId = EDITABLE_RANGES;

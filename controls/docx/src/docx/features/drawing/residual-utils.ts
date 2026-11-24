@@ -44,7 +44,7 @@ export function cloneResidualElement(el: OpenXmlElement): OpenXmlElement {
 }
 /**
  * Locate the nested-child host element for a group (`wpg:wgp` / nested
- * `wpg:grpSp`) or canvas (`wpc:wpc`) residual tree (TASK-8051).
+ * `wpg:grpSp`) or canvas (`wpc:wpc`) residual tree.
  *
  * Accepts top-level `w:drawing` / MC dual-AC roots, bare nested group residuals,
  * or an already-resolved container. Returns undefined for leaf shapes.
@@ -119,7 +119,7 @@ export function detectDmlVariant(drawingEl: OpenXmlElement): DrawingVariant {
 }
 /**
  * True when residual is (or contains) MC AlternateContent with a Fallback
- * branch that carries `w:pict` (Policy B dual AC VML Fallback — TASK-8050).
+ * branch that carries `w:pict` (Policy B dual AC VML Fallback).
  * Does not execute or interpret VML children.
  *
  * @param {OpenXmlElement} root - The root.

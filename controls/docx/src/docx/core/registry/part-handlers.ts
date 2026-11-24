@@ -4,7 +4,9 @@ import { partByName, relationshipsForPart, withAddedPart, withContentTypeOverrid
 import { resolveInternalTarget, PartName } from '../opc/part-name';
 import { ResourceLimitOverrides } from '../security/limits';
 import { FeatureId } from './feature-registry';
-/** @public */
+/**
+ * @public
+ */
 export interface FeaturePartLoadContext {
     readonly mainPartName: PartName;
     readonly limits?: ResourceLimitOverrides | undefined;

@@ -2699,6 +2699,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 }
             }
         }
+        if (this.enableCollaborativeEditing && this.collaborativeEditingHandlerModule && !this.editorModule.isRemoteAction) {
+            this.collaborativeEditingHandlerModule.trackLocalOperation(eventArgs.operations);
+        }
         this.trigger(contentChangeEvent, eventArgs);
     }
     /** 

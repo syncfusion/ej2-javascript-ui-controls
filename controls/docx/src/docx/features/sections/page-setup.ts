@@ -62,7 +62,9 @@ const RELATIONSHIPS_OFFICE_NS: string =
     'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
 const SETTINGS_FEATURE_ID: string = 'settings';
 
-/** Header or footer reference type (`ST_HdrFtr`) — wire tokens until odd rename. */
+/**
+ * Specifies the type of a header or footer, such as odd, even, or first page.
+ */
 export type HeaderFooterReferenceType = 'default' | 'first' | 'even';
 
 /**
@@ -594,10 +596,7 @@ export class PageBorders implements PageBordersContract {
 }
 
 /**
- * Live section page setup (`CT_SectPr` model) — public surface per architecture §§4–12.
- *
- * Implements the core {@link PageSetupContract} public contract and internal
- * {@link SectionPropertiesModel} for dual-hold serialization.
+ * Represents the page setup of a section, such as page size, margins, and orientation.
  *
  * @public
  */
@@ -871,7 +870,7 @@ export class PageSetup implements PageSetupContract, SectionPropertiesModel {
     // —— public surface ——
 
     /**
-     * Page orientation. Setter swaps width/height only when needed (architecture §7).
+     * Gets or sets the page orientation. Setter swaps width/height only when needed.
      */
     get orientation(): PageOrientation {
         return this.orientationValue;
@@ -897,7 +896,7 @@ export class PageSetup implements PageSetupContract, SectionPropertiesModel {
     }
 
     /**
-     * Live page size (stable identity). Setter copies width/height and derives orientation.
+     * Gets or sets the page size.
      */
     get pageSize(): SizeF {
         return this.pageSizeValue;
@@ -913,14 +912,14 @@ export class PageSetup implements PageSetupContract, SectionPropertiesModel {
     }
 
     /**
-     * Live margins instance (stable identity for the life of this PageSetup).
+     * Gets the margins.
      */
     get margins(): Margins {
         return this.marginsValue;
     }
 
     /**
-     * Distance from page top to header (`w:pgMar/@w:header`), points.
+     * Gets or sets the distance from page top to header, points.
      */
     get headerDistance(): number {
         return this.headerDistanceValue;
@@ -931,7 +930,7 @@ export class PageSetup implements PageSetupContract, SectionPropertiesModel {
     }
 
     /**
-     * Distance from page bottom to footer (`w:pgMar/@w:footer`), points.
+     * Gets or sets the distance from page bottom to footer, points.
      */
     get footerDistance(): number {
         return this.footerDistanceValue;
@@ -942,14 +941,14 @@ export class PageSetup implements PageSetupContract, SectionPropertiesModel {
     }
 
     /**
-     * Live page borders (stable identity).
+     * Gets the borders.
      */
     get borders(): PageBorders {
         return this.bordersValue;
     }
 
     /**
-     * First-page printer tray (`w:paperSrc/@w:first`).
+     * Gets or sets the first-page printer tray.
      */
     get firstPageTray(): PrinterPaperTray {
         return (this.firstPageTrayValue !== undefined
@@ -966,7 +965,7 @@ export class PageSetup implements PageSetupContract, SectionPropertiesModel {
     }
 
     /**
-     * Other-pages printer tray (`w:paperSrc/@w:other`).
+     * Gets or sets the other-pages printer tray.
      */
     get otherPagesTray(): PrinterPaperTray {
         return (this.otherPagesTrayValue !== undefined
@@ -983,7 +982,7 @@ export class PageSetup implements PageSetupContract, SectionPropertiesModel {
     }
 
     /**
-     * Different first page (`w:titlePg`).
+     * Gets or sets the different first page.
      */
     get differentFirstPage(): boolean {
         return this.differentFirstPageValue;
@@ -994,7 +993,7 @@ export class PageSetup implements PageSetupContract, SectionPropertiesModel {
     }
 
     /**
-     * Different odd and even pages — document-scoped via settings `w:evenAndOddHeaders`.
+     * Gets or sets a value indicating whether odd and even pages use different headers and footers.
      */
     get differentOddAndEvenPages(): boolean {
         let ts333: any;
@@ -1044,7 +1043,7 @@ export class PageSetup implements PageSetupContract, SectionPropertiesModel {
     }
 
     /**
-     * Starting page number when restart is enabled (`w:pgNumType/@w:start`).
+     * Gets or sets the starting page number when restart is enabled.
      */
     get pageStartingNumber(): number {
         return this.pageStartingNumberValue;
@@ -1056,7 +1055,7 @@ export class PageSetup implements PageSetupContract, SectionPropertiesModel {
     }
 
     /**
-     * When `true`, write `w:start` with {@link pageStartingNumber}; when `false`, omit start.
+     * Gets or sets a value indicating whether page numbering restarts at the value of {@link pageStartingNumber}.
      */
     get restartPageNumbering(): boolean {
         return this.restartPageNumberingValue;
@@ -1068,7 +1067,7 @@ export class PageSetup implements PageSetupContract, SectionPropertiesModel {
     }
 
     /**
-     * Page number format (`w:pgNumType/@w:fmt`). Always emitted when numbering state is set.
+     * Gets or sets the page number format. Always emitted when numbering state is set.
      */
     get pageNumberStyle(): PageNumberStyle {
         return this.pageNumberStyleValue;
@@ -1080,7 +1079,7 @@ export class PageSetup implements PageSetupContract, SectionPropertiesModel {
     }
 
     /**
-     * Distance from text to line numbers (`w:lnNumType/@w:distance`), points.
+     * Gets or sets the distance from text to line numbers, points.
      */
     get lineNumberingDistanceFromText(): number {
         return this.lineNumberingDistanceFromTextValue;
@@ -1095,7 +1094,7 @@ export class PageSetup implements PageSetupContract, SectionPropertiesModel {
     }
 
     /**
-     * Line-number restart mode (`w:lnNumType/@w:restart`).
+     * Gets or sets the line-number restart mode.
      */
     get lineNumberingMode(): LineNumberingMode {
         return this.lineNumberingModeValue;
@@ -1107,10 +1106,7 @@ export class PageSetup implements PageSetupContract, SectionPropertiesModel {
     }
 
     /**
-     * Line-number start value (one-based public API).
-     *
-     * Maps to zero-based `w:lnNumType/@w:start` as `wire = api - 1`.
-     * Example: API `1` ↔ `w:start="0"`.
+     * Gets or sets the starting line number. The first line number is 1.
      */
     get lineNumberingStartValue(): number {
         return this.lineNumberingStartValueValue;
@@ -1125,7 +1121,7 @@ export class PageSetup implements PageSetupContract, SectionPropertiesModel {
     }
 
     /**
-     * Line-number count-by step (`w:lnNumType/@w:countBy`).
+     * Gets or sets the line-number count-by step.
      */
     get lineNumberingStep(): number {
         return this.lineNumberingStepValue;
@@ -1233,7 +1229,8 @@ export class PageSetup implements PageSetupContract, SectionPropertiesModel {
         this.headerFooterReferencesValue = next;
     }
 
-    /**Gutter margin (`w:pgMar/@w:gutter`), points.
+    /**
+     * Gets or sets the gutter margin, points.
      */
     get gutter(): number {
         return this.gutterValue;
@@ -1244,7 +1241,7 @@ export class PageSetup implements PageSetupContract, SectionPropertiesModel {
     }
 
     /**
-     * Vertical text alignment on the page (`w:vAlign` / `ST_VerticalJc`).
+     * Gets or sets the vertical text alignment on the page.
      */
     get verticalAlignment(): VerticalAlignment {
         return this.verticalAlignmentValue;
@@ -1255,7 +1252,7 @@ export class PageSetup implements PageSetupContract, SectionPropertiesModel {
     }
 
     /**
-     * Right-to-left section layout (`w:bidi`, ECMA-376-1 §17.6.1).
+     * Gets or sets the right-to-left section layout.
      */
     get bidi(): boolean {
         return this.bidiValue;
@@ -1266,7 +1263,7 @@ export class PageSetup implements PageSetupContract, SectionPropertiesModel {
     }
 
     /**
-     * Page border offset origin (`w:pgBorders/@w:offsetFrom`).
+     * Gets or sets the page border offset origin.
      */
     get pageBorderOffsetFrom(): PageBorderOffsetFrom {
         return this.bordersValue.measureFrom === 'page'
@@ -1287,7 +1284,7 @@ export class PageSetup implements PageSetupContract, SectionPropertiesModel {
     }
 
     /**
-     * Which pages receive page borders (`w:pgBorders/@w:display`).
+     * Gets or sets the which pages receive page borders.
      */
     get pageBordersApplyType(): PageBordersApplyType {
         const apply: string = this.bordersValue.applyTo;
@@ -1398,9 +1395,7 @@ export class PageSetup implements PageSetupContract, SectionPropertiesModel {
             children.push(element as OpenXmlElement);
         }
         const wire: SectionMarkWire = breakCodeToWire(this.breakCodeValue);
-        if (wire !== 'newPage') {
-            children.push(wmlElement('type', { attributes: [wmlAttr('val', wire)] }));
-        }
+        children.push(wmlElement('type', { attributes: [wmlAttr('val', wire)] }));
         children.push(
             serializePageSize(
                 this.pageSizeValue.width,

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 35.2.13 (2026-11-24)
+
+### Ribbon
+
+#### Bug Fixes
+
+`#I891245` - Now, the File menu appears properly in the Ribbon when it is rendered inside a container that is not laid out during initialization, such as the Syncfusion Dialog component with the visible property set to false.
+
 ## 35.1.46 (2026-11-11)
 
 ### Ribbon

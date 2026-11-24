@@ -7,15 +7,11 @@ import { FeatureRunLeaf } from '../document/feature-run-leaf';
 import { parseOnOff } from '../document/on-off';
 import { Paragraph, setParagraphItemsPostProcessor } from '../document/paragraph';
 import {
-    ConcreteParagraphItem,
+    ParagraphItem,
     FeatureInlineParagraphItem,
     FeatureRunParagraphItem,
-    InlineContent,
-    ParagraphItem,
-    Run,
-    RunLeaf,
-    serializeRun,
-    TextRange
+    TextRange,
+    serializeTextRange
 } from '../document/text-range';
 import { elementChildren, isWml, isWmlNamespace, textContent, wValAttribute, wmlAttr, wmlElement, xmlSpaceIsPreserve, xmlSpacePreserve } from '../document/wml';
 import { featureId, registerFeature, registerFeatureInlineHandler, registerFeatureRunLeafHandler, visitParagraphsInDocumentOrder } from '../../core/registry/index';
@@ -28,6 +24,7 @@ import {
     Field,
     IfField,
     MergeField,
+    SeqField,
     FormField as NewFormField,
     CheckBoxFormField,
     CheckBoxSizeType,
@@ -44,6 +41,7 @@ export {
     Field,
     IfField,
     MergeField,
+    SeqField,
     FieldMark,
     FieldMarkType,
     FieldType,
@@ -69,7 +67,83 @@ const SUPPORTED_FIELD_TYPES: ReadonlyMap<string, FieldType> = new Map([
     [FieldType.NumPages, FieldType.NumPages],
     [FieldType.If, FieldType.If],
     [FieldType.MergeField, FieldType.MergeField],
-    [FieldType.Hyperlink, FieldType.Hyperlink]
+    [FieldType.Hyperlink, FieldType.Hyperlink],
+    [FieldType.FieldAddin, FieldType.FieldAddin],
+    [FieldType.FieldAdvance, FieldType.FieldAdvance],
+    [FieldType.FieldAsk, FieldType.FieldAsk],
+    [FieldType.FieldAuthor, FieldType.FieldAuthor],
+    [FieldType.FieldAutoNum, FieldType.FieldAutoNum],
+    [FieldType.FieldAutoNumLegal, FieldType.FieldAutoNumLegal],
+    [FieldType.FieldAutoNumOutline, FieldType.FieldAutoNumOutline],
+    [FieldType.FieldAutoText, FieldType.FieldAutoText],
+    [FieldType.FieldAutoTextList, FieldType.FieldAutoTextList],
+    [FieldType.FieldBarCode, FieldType.FieldBarCode],
+    [FieldType.FieldComments, FieldType.FieldComments],
+    [FieldType.FieldDocProperty, FieldType.FieldDocProperty],
+    [FieldType.FieldCompare, FieldType.FieldCompare],
+    [FieldType.FieldCreateDate, FieldType.FieldCreateDate],
+    [FieldType.FieldData, FieldType.FieldData],
+    [FieldType.FieldDatabase, FieldType.FieldDatabase],
+    [FieldType.FieldDate, FieldType.FieldDate],
+    [FieldType.FieldDDE, FieldType.FieldDDE],
+    [FieldType.FieldDDEAuto, FieldType.FieldDDEAuto],
+    [FieldType.FieldEditTime, FieldType.FieldEditTime],
+    [FieldType.FieldExpression, FieldType.FieldExpression],
+    [FieldType.FieldFileName, FieldType.FieldFileName],
+    [FieldType.FieldFileSize, FieldType.FieldFileSize],
+    [FieldType.FieldFillIn, FieldType.FieldFillIn],
+    [FieldType.FieldFootnoteRef, FieldType.FieldFootnoteRef],
+    [FieldType.FieldFormula, FieldType.FieldFormula],
+    [FieldType.FieldGlossary, FieldType.FieldGlossary],
+    [FieldType.FieldGoToButton, FieldType.FieldGoToButton],
+    [FieldType.FieldHTMLActiveX, FieldType.FieldHTMLActiveX],
+    [FieldType.FieldImport, FieldType.FieldImport],
+    [FieldType.FieldInclude, FieldType.FieldInclude],
+    [FieldType.FieldIncludePicture, FieldType.FieldIncludePicture],
+    [FieldType.FieldIncludeText, FieldType.FieldIncludeText],
+    [FieldType.FieldIndex, FieldType.FieldIndex],
+    [FieldType.FieldIndexEntry, FieldType.FieldIndexEntry],
+    [FieldType.FieldInfo, FieldType.FieldInfo],
+    [FieldType.FieldKeyWord, FieldType.FieldKeyWord],
+    [FieldType.FieldLastSavedBy, FieldType.FieldLastSavedBy],
+    [FieldType.FieldLink, FieldType.FieldLink],
+    [FieldType.FieldListNum, FieldType.FieldListNum],
+    [FieldType.FieldMacroButton, FieldType.FieldMacroButton],
+    [FieldType.FieldMergeRec, FieldType.FieldMergeRec],
+    [FieldType.FieldMergeSeq, FieldType.FieldMergeSeq],
+    [FieldType.FieldNext, FieldType.FieldNext],
+    [FieldType.FieldNextIf, FieldType.FieldNextIf],
+    [FieldType.FieldNoteRef, FieldType.FieldNoteRef],
+    [FieldType.FieldNumChars, FieldType.FieldNumChars],
+    [FieldType.FieldNumWords, FieldType.FieldNumWords],
+    [FieldType.FieldOCX, FieldType.FieldOCX],
+    [FieldType.FieldPageRef, FieldType.FieldPageRef],
+    [FieldType.FieldPrint, FieldType.FieldPrint],
+    [FieldType.FieldPrintDate, FieldType.FieldPrintDate],
+    [FieldType.FieldPrivate, FieldType.FieldPrivate],
+    [FieldType.FieldQuote, FieldType.FieldQuote],
+    [FieldType.FieldRef, FieldType.FieldRef],
+    [FieldType.FieldRefDoc, FieldType.FieldRefDoc],
+    [FieldType.FieldRevisionNum, FieldType.FieldRevisionNum],
+    [FieldType.FieldSaveDate, FieldType.FieldSaveDate],
+    [FieldType.FieldSection, FieldType.FieldSection],
+    [FieldType.FieldSectionPages, FieldType.FieldSectionPages],
+    [FieldType.FieldSet, FieldType.FieldSet],
+    [FieldType.FieldSkipIf, FieldType.FieldSkipIf],
+    [FieldType.FieldStyleRef, FieldType.FieldStyleRef],
+    [FieldType.FieldSubject, FieldType.FieldSubject],
+    [FieldType.FieldSubscriber, FieldType.FieldSubscriber],
+    [FieldType.FieldSymbol, FieldType.FieldSymbol],
+    [FieldType.FieldTemplate, FieldType.FieldTemplate],
+    [FieldType.FieldTime, FieldType.FieldTime],
+    [FieldType.FieldTitle, FieldType.FieldTitle],
+    [FieldType.FieldUserAddress, FieldType.FieldUserAddress],
+    [FieldType.FieldUserInitials, FieldType.FieldUserInitials],
+    [FieldType.FieldUserName, FieldType.FieldUserName],
+    [FieldType.FieldShape, FieldType.FieldShape],
+    [FieldType.FieldBidiOutline, FieldType.FieldBidiOutline],
+    [FieldType.FieldAddressBlock, FieldType.FieldAddressBlock],
+    [FieldType.FieldSequence, FieldType.FieldSequence]
 ]);
 /**
  * Hyperlink classification for field-based ({@link Hyperlink}) authoring.
@@ -77,9 +151,13 @@ const SUPPORTED_FIELD_TYPES: ReadonlyMap<string, FieldType> = new Map([
  * @public
  */
 export enum HyperlinkType {
+    /** Specifies the web link type. */
     WebLink = 'WebLink',
+    /** Specifies the email link type. */
     EmailLink = 'EmailLink',
+    /** Specifies the file link type. */
     FileLink = 'FileLink',
+    /** Specifies the bookmark type. */
     Bookmark = 'Bookmark'
 }
 /**
@@ -171,6 +249,7 @@ class SimpleField implements FeatureInline {
     }
     /**
      * Field instruction (`w:fldSimple/@w:instr`).
+     *
      * @private
      */
     get instruction(): string {
@@ -186,6 +265,7 @@ class SimpleField implements FeatureInline {
     }
     /**
      * Result text ranges inside the simple field.
+     *
      * @private
      */
     get runs(): ReadonlyArray<TextRange> {
@@ -209,7 +289,7 @@ class SimpleField implements FeatureInline {
         const children: OpenXmlElement[] = [...this.extras];
         for (const item of this.items) {
             if (item.type === 'textRange') {
-                children.push(serializeRun(item.run));
+                children.push(serializeTextRange(item.run));
             }
             else {
                 children.push(item.xml);
@@ -284,6 +364,7 @@ class InstrText implements FeatureRunLeaf {
     }
     /**
      * Instruction text content.
+     *
      * @private
      */
     get text(): string {
@@ -338,6 +419,7 @@ class ComplexField {
     }
     /**
      * Instruction snapshot / live value.
+     *
      * @private
      */
     get instruction(): string {
@@ -389,8 +471,8 @@ class ComplexField {
 /**
  * Customer-facing Word field (PAGE / NUMPAGES base; subclasses for IF / MERGEFIELD).
  *
- * Wraps either a simple field (`w:fldSimple`) or a complex field span
- * (`w:fldChar` / `w:instrText`). Does **not** recalculate Word field results.
+ * Wraps either a simple field or a complex field span
+ *. Does **not** recalculate Word field results.
  *
  * @public
  */
@@ -416,7 +498,7 @@ export class LegacyField {
         this.lockedType = lockedType;
     }
     /**
-     * Full field instruction / field code (for example ` PAGE `, ` MERGEFIELD Name `).
+     * Gets or sets the field code.
      *
      * The instruction keyword must remain this field’s {@link fieldType}.
      */
@@ -446,19 +528,19 @@ export class LegacyField {
         }
     }
     /**
-     * Supported field type for this instance (fixed at construction).
+     * Gets the supported field type for this instance (fixed at construction).
      */
     get fieldType(): FieldType {
         return this.lockedType;
     }
     /**
-     * Cached field-result text (read-only). Prefer {@link text} to mutate display text.
+     * Gets the cached field-result text (read-only).
      */
     get fieldValue(): string {
         return this.readResultText();
     }
     /**
-     * Cached visible field-result text.
+     * Gets or sets the cached visible field-result text.
      */
     get text(): string {
         return this.readResultText();
@@ -467,7 +549,7 @@ export class LegacyField {
         this.writeResultText(value);
     }
     /**
-     * Character formatting of the first result {@link TextRange}.
+     * Gets the character format.
      */
     get characterFormat(): CharacterFormat {
         const run: TextRange = this.firstResultRun();
@@ -526,6 +608,9 @@ export class LegacyIfField extends LegacyField {
  * @public
  */
 export class LegacyMergeField extends LegacyField {
+    /**
+     * Gets the name of the data field referenced by the merge field.
+     */
     get fieldName(): string {
         return parseMergeFieldInstruction(this.fieldCode).fieldName;
     }
@@ -538,6 +623,9 @@ export class LegacyMergeField extends LegacyField {
         parsed.fieldName = name;
         this.fieldCode = formatMergeFieldInstruction(parsed);
     }
+    /**
+     * Gets the text that is displayed before the merged value when the field is not empty.
+     */
     get textBefore(): string {
         return parseMergeFieldInstruction(this.fieldCode).textBefore;
     }
@@ -546,6 +634,9 @@ export class LegacyMergeField extends LegacyField {
         parsed.textBefore = value;
         this.fieldCode = formatMergeFieldInstruction(parsed);
     }
+    /**
+     * Gets the text that is displayed after the merged value when the field is not empty.
+     */
     get textAfter(): string {
         return parseMergeFieldInstruction(this.fieldCode).textAfter;
     }
@@ -554,14 +645,23 @@ export class LegacyMergeField extends LegacyField {
         parsed.textAfter = value;
         this.fieldCode = formatMergeFieldInstruction(parsed);
     }
+    /**
+     * Gets the date format switch applied to the merged value.
+     */
     get dateFormat(): string {
         return parseMergeFieldInstruction(this.fieldCode).dateFormat;
     }
+    /**
+     * Gets the numeric format switch applied to the merged value.
+     */
     get numberFormat(): string {
         return parseMergeFieldInstruction(this.fieldCode).numberFormat;
     }
+    /**
+     * Gets the text that is displayed before the merged value. It mirrors {@link LegacyMergeField.textBefore} when present.
+     */
     get prefix(): string {
-        // DocIO-style prefix mirrors text-before (`\b`) when present.
+        // prefix mirrors text-before (`\b`) when present.
         return this.textBefore;
     }
 }
@@ -746,13 +846,32 @@ function concatenateRunText(runs: ReadonlyArray<TextRange>): string {
     }
     return text;
 }
-function trySupportedFieldTypeFromInstruction(instruction: string): FieldType | undefined {
-    let ts331: any;
-    const token: string = (((ts331 = tokenizeFieldInstruction(instruction)[0]), ts331 != null ? ts331 : '')).toUpperCase();
-    if (token.length === 0) {
-        return undefined;
+/**
+ * Field keyword of an instruction: `=` for formula fields (Word writes `=10+20` or `= 10+20`
+ * without a separating space), otherwise the first whitespace-delimited word, upper-cased.
+ *
+ * @param {string} instruction - The field instruction.
+ * @returns {string} The keyword, or an empty string.
+ * @private
+ */
+export function instructionKeyword(instruction: string): string {
+    const trimmed: string = instruction.trim();
+    if (trimmed.charAt(0) === '=') {
+        return '=';
     }
-    return SUPPORTED_FIELD_TYPES.get(token);
+    const match: RegExpExecArray | null = /^[^\s"]+/.exec(trimmed);
+    return match === null ? '' : match[0].toUpperCase();
+}
+/**
+ * Supported field type for an instruction, or undefined when the keyword is not supported.
+ *
+ * @param {string} instruction - The field instruction.
+ * @returns {FieldType | undefined} The type.
+ * @private
+ */
+function trySupportedFieldTypeFromInstruction(instruction: string): FieldType | undefined {
+    const keyword: string = instructionKeyword(instruction);
+    return keyword.length === 0 ? undefined : SUPPORTED_FIELD_TYPES.get(keyword);
 }
 function wrapSupportedField(kind: 'simple' | 'complex', simple: SimpleField | undefined, complex: ComplexField | undefined, host: Paragraph, instruction: string): LegacyField | undefined {
     const type: FieldType = trySupportedFieldTypeFromInstruction(instruction);
@@ -835,6 +954,12 @@ function quoteFieldOperand(value: string): string {
     }
     return value;
 }
+function unquoteFieldOperand(value: string): string {
+    if (value.length >= 2 && value.charAt(0) === '"' && value.charAt(value.length - 1) === '"') {
+        return value.substring(1, value.length - 1);
+    }
+    return value;
+}
 function formatMergeFieldInstruction(parsed: MergeFieldParsed): string {
     let code: string = ' MERGEFIELD ' + parsed.fieldName;
     if (parsed.textBefore.length > 0) {
@@ -857,6 +982,7 @@ function formatMergeFieldInstruction(parsed: MergeFieldParsed): string {
     }
     return code + ' ';
 }
+
 interface HyperlinkParsed {
     type: HyperlinkType;
     target: string;
@@ -946,6 +1072,7 @@ function formatHyperlinkInstruction(parsed: HyperlinkParsed): string {
     }
     return code + ' ';
 }
+
 function firstWmlChild(parent: OpenXmlElement, localName: string): OpenXmlElement | undefined {
     for (const child of elementChildren(parent)) {
         if (isWml(child, localName)) {
@@ -1072,7 +1199,7 @@ function parseInstrText(element: OpenXmlElement): InstrText | undefined {
  * instruction text are elevated `featureRun` items; result text is {@link TextRange}.
  */
 interface FlatFieldItem {
-    readonly item: ConcreteParagraphItem;
+    readonly item: ParagraphItem;
 }
 function flattenFieldItems(paragraph: Paragraph): FlatFieldItem[] {
     const flat: FlatFieldItem[] = [];
@@ -1099,7 +1226,7 @@ function instructionFromItems(items: ReadonlyArray<FlatFieldItem>, start: number
         if (entry === undefined) {
             continue;
         }
-        const item: ConcreteParagraphItem = entry.item;
+        const item: ParagraphItem = entry.item;
         if (item instanceof FeatureRunParagraphItem && item.value instanceof InstrText) {
             instruction += item.value.text;
         }
@@ -1125,7 +1252,7 @@ function pairComplexField(flat: ReadonlyArray<FlatFieldItem>, beginIndex: number
         if (entry === undefined) {
             return undefined;
         }
-        const item: ConcreteParagraphItem = entry.item;
+        const item: ParagraphItem = entry.item;
         if (item instanceof FeatureRunParagraphItem && item.value instanceof FieldMark) {
             const mark: FieldMark = item.value;
             if (mark.fldCharType === 'begin') {
@@ -1175,7 +1302,7 @@ function pairComplexField(flat: ReadonlyArray<FlatFieldItem>, beginIndex: number
         if (entry === undefined) {
             return undefined;
         }
-        const item: ConcreteParagraphItem = entry.item;
+        const item: ParagraphItem = entry.item;
         if (item instanceof FeatureRunParagraphItem && item.value instanceof FieldMark) {
             const mark: FieldMark = item.value;
             if (mark.fldCharType === 'begin') {
@@ -1208,7 +1335,7 @@ function pairComplexField(flat: ReadonlyArray<FlatFieldItem>, beginIndex: number
 let registered: boolean = false;
 
 /**
- * @param {ConcreteParagraphItem[]} items - The items.
+ * @param {ParagraphItem[]} items - The items.
  * @returns {void} Nothing is returned.
  * @private
  * Post-process a paragraph to expose field markers as proper ParagraphItems.
@@ -1224,11 +1351,12 @@ let registered: boolean = false;
  * the complete DOM structure: Field (begin) → TextRange (code) → FieldMark (separate)
  * → TextRange (result) → FieldMark (end)
  */
-function reconstructFieldStructure(items: ConcreteParagraphItem[]): void {
+function reconstructFieldStructure(items: ParagraphItem[]): void {
     // First pass: collect field information (begin markers and instruction text)
     const fieldBeginsByIndex: Map<number, { beginIdx: number; instrText: string }> =
         new Map<number, { beginIdx: number; instrText: string | undefined }>();
-    let currentBeginIdx: number = -1;
+    // Stack of open fields so nested fields keep their own (concatenated) instruction text.
+    const open: Array<{ beginIdx: number; inInstruction: boolean }> = [];
 
     for (const [i, item] of items.entries()) {
 
@@ -1238,50 +1366,119 @@ function reconstructFieldStructure(items: ConcreteParagraphItem[]): void {
 
         const value: FeatureRunLeaf = item.value;
 
-        // Track field begin markers
-        if (value instanceof FieldMark && value.fldCharType === 'begin') {
-            currentBeginIdx = i;
-            fieldBeginsByIndex.set(i, { beginIdx: i, instrText: undefined });
-        }
-        // Track instruction text for the current field
-        else if (value instanceof InstrText && currentBeginIdx >= 0) {
-            const fieldInfo: { beginIdx: number; instrText: string; } = fieldBeginsByIndex.get(currentBeginIdx);
-            if (fieldInfo !== undefined) {
-                fieldInfo.instrText = value.text;
+        if (value instanceof FieldMark) {
+            if (value.fldCharType === 'begin') {
+                open.push({ beginIdx: i, inInstruction: true });
+                fieldBeginsByIndex.set(i, { beginIdx: i, instrText: undefined });
+            } else if (value.fldCharType === 'separate' && open.length > 0) {
+                open[open.length - 1]!.inInstruction = false;
+            } else if (value.fldCharType === 'end') {
+                open.pop();
+            }
+        } else if (value instanceof InstrText && open.length > 0) {
+            const top: { beginIdx: number; inInstruction: boolean } = open[open.length - 1]!;
+            const fieldInfo: { beginIdx: number; instrText: string; } = fieldBeginsByIndex.get(top.beginIdx);
+            if (top.inInstruction && fieldInfo !== undefined) {
+                fieldInfo.instrText = (fieldInfo.instrText === undefined ? '' : fieldInfo.instrText) + value.text;
             }
         }
     }
 
-    // Second pass: convert items in-place
-    for (let i: number = 0; i < items.length; i += 1) {
+    // Second pass: convert items in-place (complex and simple fields).
+    // Walk in reverse: expanding a w:fldSimple inserts items and would shift any
+    // later fldChar begin marker to a new index, breaking the index-keyed
+    // fieldBeginsByIndex lookups collected above. Processing from the end means
+    // every begin marker is converted at its original index before any
+    // lower-index expansion can shift it.
+    for (let i: number = items.length - 1; i >= 0; i -= 1) {
         // eslint-disable-next-line security/detect-object-injection -- integer index bounded by the collection length (loop counter or range-checked argument); not a user-controlled property name
-        const item: ConcreteParagraphItem = items[i];
+        const item: ParagraphItem = items[i];
 
-        if (!(item instanceof FeatureRunParagraphItem) || item.featureId !== FIELDS) {
+        // Handle FeatureRunParagraphItem (complex fields)
+        if (item instanceof FeatureRunParagraphItem && item.featureId === FIELDS) {
+            const value: FeatureRunLeaf = item.value;
+
+            // Convert FieldMark to ParagraphItem Field or FieldMark
+            if (value instanceof FieldMark) {
+                const fieldInfo: { beginIdx: number; instrText: string; } = fieldBeginsByIndex.get(i);
+                const converted: Field | ParagraphFieldMark = convertFieldMarkToFieldMark(
+                    value,
+                    item,
+                    fieldInfo === undefined ? undefined : fieldInfo.instrText
+                );
+                if (converted !== undefined) {
+                    // eslint-disable-next-line security/detect-object-injection -- integer index bounded by the collection length (loop counter or range-checked argument); not a user-controlled property name
+                    items[i] = converted;
+                }
+            }
+            // Convert InstrText to TextRange
+            else if (value instanceof InstrText) {
+                const textRange: TextRange = new TextRange(undefined, item.wireGroup);
+                textRange.setTextFromParse(value.text, value.xmlSpacePreserve);
+                // eslint-disable-next-line security/detect-object-injection -- integer index bounded by the collection length (loop counter or range-checked argument); not a user-controlled property name
+                items[i] = textRange;
+            }
             continue;
         }
 
-        const value: FeatureRunLeaf = item.value;
+        // Handle FeatureInlineParagraphItem (simple fields)
+        if (item instanceof FeatureInlineParagraphItem && item.featureId === FIELDS) {
+            const value: FeatureInline = item.value;
 
-        // Convert FieldMark to ParagraphItem Field or FieldMark
-        if (value instanceof FieldMark) {
-            const fieldInfo: { beginIdx: number; instrText: string; } = fieldBeginsByIndex.get(i);
-            const converted: Field | ParagraphFieldMark = convertFieldMarkToFieldMark(
-                value,
-                item,
-                fieldInfo === undefined ? undefined : fieldInfo.instrText
-            );
-            if (converted !== undefined) {
+            // Convert SimpleField to complex field structure (multiple ParagraphItems)
+            // This expands w:fldSimple into: Field + TextRange (instr) + FieldMark (sep) + TextRange (result) + FieldMark (end)
+            if (value instanceof SimpleField) {
+                // Get result text ranges from the simple field
+                const resultRanges: ReadonlyArray<TextRange> = value.runs;
+
+                // Create the complex field structure
+                const field: Field = convertSimpleFieldToField(value);
+
+                // Create instruction text range
+                const instrRange: TextRange = new TextRange();
+                instrRange.setTextFromParse(value.instruction, false);
+
+                // Create separator mark (using ParagraphFieldMark alias)
+                const sepMark: ParagraphFieldMark = new ParagraphFieldMark(
+                    ParagraphFieldMarkType.Separator,
+                    value.fldLock,
+                    value.dirty,
+                    []
+                );
+
+                // Create end mark
+                const endMark: ParagraphFieldMark = new ParagraphFieldMark(
+                    ParagraphFieldMarkType.End,
+                    value.fldLock,
+                    value.dirty,
+                    []
+                );
+
+                // Build the expanded structure: Field + instr + sep + result(s) + end
+                // The index i will be replaced with the Field, then we insert the rest after
                 // eslint-disable-next-line security/detect-object-injection -- integer index bounded by the collection length (loop counter or range-checked argument); not a user-controlled property name
-                items[i] = converted;
+                items[i] = field;
+
+                // Insert instruction, separator, result ranges, and end mark after the field
+                let insertIndex: number = i + 1;
+
+                // Insert instruction TextRange
+                items.splice(insertIndex, 0, instrRange);
+                insertIndex += 1;
+
+                // Insert separator FieldMark
+                items.splice(insertIndex, 0, sepMark);
+                insertIndex += 1;
+
+                // Insert result TextRanges (preserve original formatting and content)
+                for (const resultRange of resultRanges) {
+                    items.splice(insertIndex, 0, resultRange);
+                    insertIndex += 1;
+                }
+
+                // Insert end FieldMark
+                items.splice(insertIndex, 0, endMark);
             }
-        }
-        // Convert InstrText to TextRange
-        else if (value instanceof InstrText) {
-            const textRange: TextRange = new TextRange(undefined, item.wireGroup);
-            textRange.setTextFromParse(value.text, value.xmlSpacePreserve);
-            // eslint-disable-next-line security/detect-object-injection -- integer index bounded by the collection length (loop counter or range-checked argument); not a user-controlled property name
-            items[i] = textRange;
         }
     }
 }
@@ -1314,12 +1511,13 @@ function reconstructFormFieldFromFFData(
         if (isWml(child, 'name')) {
             nameValue = wValAttribute(child) || '';
         } else if (isWml(child, 'enabled')) {
-            // Element presence means enabled=false (inverted logic)
-            enabledValue = false;
+            // ST_OnOff: a bare element or a true-like value means enabled; off values disable it.
+            const rawEnabled: string = (wValAttribute(child) || '').toLowerCase();
+            enabledValue = !(rawEnabled === '0' || rawEnabled === 'false' || rawEnabled === 'off');
         } else if (isWml(child, 'helpText')) {
             helpTextValue = wValAttribute(child) || '';
             // Also capture the type attribute
-            const typeAttrFound: OpenXmlAttribute | undefined = child.attributes.find((a: OpenXmlAttribute) => 
+            const typeAttrFound: OpenXmlAttribute | undefined = child.attributes.find((a: OpenXmlAttribute) =>
                 a.localName === 'type' && (isWmlNamespace(a.namespaceUri) || a.namespaceUri === '')
             );
             if (typeAttrFound !== undefined) {
@@ -1328,7 +1526,7 @@ function reconstructFormFieldFromFFData(
         } else if (isWml(child, 'statusText')) {
             statusBarHelpValue = wValAttribute(child) || '';
             // Also capture the type attribute
-            const typeAttrFound: OpenXmlAttribute | undefined = child.attributes.find((a: OpenXmlAttribute) => 
+            const typeAttrFound: OpenXmlAttribute | undefined = child.attributes.find((a: OpenXmlAttribute) =>
                 a.localName === 'type' && (isWmlNamespace(a.namespaceUri) || a.namespaceUri === '')
             );
             if (typeAttrFound !== undefined) {
@@ -1376,27 +1574,31 @@ function reconstructFormFieldFromFFData(
 
 /**
  * Parse checkbox-specific FFData children.
+ *
+ * @param {OpenXmlElement} checkBoxElement - The check box element.
+ * @param {CheckBoxFormField} field - The field.
+ * @returns {void}
  * @private
  */
 function parseCheckBoxFFDataChildren(checkBoxElement: OpenXmlElement, field: CheckBoxFormField): void {
-    let hasExplicitSize = false;
+    let hasExplicitSize: boolean = false;
 
     for (const child of elementChildren(checkBoxElement)) {
         if (isWml(child, 'checked')) {
             // w:checked element - indicates checkbox is checked
             // w:val attribute is optional; presence means true, absence/false means false
-            const valAttr = wValAttribute(child);
+            const valAttr: string = wValAttribute(child);
             field.checked = valAttr !== '0' && valAttr !== 'false';
         } else if (isWml(child, 'default')) {
             // w:default element - default checkbox state
             // w:val attribute is optional; presence/true means checked, absence/false means unchecked
-            const valAttr = wValAttribute(child);
+            const valAttr: string = wValAttribute(child);
             field.defaultCheckBoxValue = valAttr !== '0' && valAttr !== 'false';
         } else if (isWml(child, 'size')) {
             // w:size element - explicit size in half-points
-            const sizeStr = wValAttribute(child);
+            const sizeStr: string = wValAttribute(child);
             if (sizeStr !== undefined) {
-                const size = parseInt(sizeStr, 10);
+                const size: number = parseInt(sizeStr, 10);
                 if (!isNaN(size) && size > 0) {
                     field.checkBoxSize = size;
                     field.sizeType = CheckBoxSizeType.Exactly;
@@ -1420,22 +1622,26 @@ function parseCheckBoxFFDataChildren(checkBoxElement: OpenXmlElement, field: Che
 
 /**
  * Parse dropdown-specific FFData children.
+ *
+ * @param {OpenXmlElement} ddListElement - The dd list element.
+ * @param {DropDownFormField} field - The field.
+ * @returns {void}
  * @private
  */
 function parseDropDownFFDataChildren(ddListElement: OpenXmlElement, field: DropDownFormField): void {
-    let selectedIndex = 0;
+    let selectedIndex: number = 0;
 
     for (const child of elementChildren(ddListElement)) {
         if (isWml(child, 'result')) {
-            const resultStr = wValAttribute(child);
+            const resultStr: string = wValAttribute(child);
             if (resultStr !== undefined) {
-                const idx = parseInt(resultStr, 10);
+                const idx: number = parseInt(resultStr, 10);
                 if (!isNaN(idx)) {
                     selectedIndex = idx;
                 }
             }
         } else if (isWml(child, 'listEntry')) {
-            const text = wValAttribute(child);
+            const text: string = wValAttribute(child);
             if (text !== undefined) {
                 field.dropDownItems.add(text);
             }
@@ -1450,28 +1656,32 @@ function parseDropDownFFDataChildren(ddListElement: OpenXmlElement, field: DropD
 
 /**
  * Parse text-input-specific FFData children.
+ *
+ * @param {OpenXmlElement} textInputElement - The text input element.
+ * @param {TextFormField} field - The field.
+ * @returns {void}
  * @private
  */
 function parseTextFormFieldFFDataChildren(textInputElement: OpenXmlElement, field: TextFormField): void {
     for (const child of elementChildren(textInputElement)) {
         if (isWml(child, 'default')) {
-            const defaultText = wValAttribute(child);
+            const defaultText: string = wValAttribute(child);
             if (defaultText !== undefined) {
                 field.defaultText = defaultText;
             }
         } else if (isWml(child, 'maxLength')) {
-            const maxStr = wValAttribute(child);
+            const maxStr: string = wValAttribute(child);
             if (maxStr !== undefined) {
-                const max = parseInt(maxStr, 10);
+                const max: number = parseInt(maxStr, 10);
                 if (!isNaN(max)) {
                     field.maximumLength = max;
                 }
             }
         } else if (isWml(child, 'type')) {
-            const typeStr = wValAttribute(child);
+            const typeStr: string = wValAttribute(child);
             if (typeStr !== undefined) {
                 // Map type string to TextFormFieldType
-                let type = TextFormFieldType.RegularText;
+                let type: TextFormFieldType = TextFormFieldType.RegularText;
                 if (typeStr === 'number') {
                     type = TextFormFieldType.NumberText;
                 } else if (typeStr === 'date') {
@@ -1486,15 +1696,15 @@ function parseTextFormFieldFFDataChildren(textInputElement: OpenXmlElement, fiel
                 field.type = type;
             }
         } else if (isWml(child, 'format')) {
-            const formatStr = wValAttribute(child);
+            const formatStr: string = wValAttribute(child);
             if (formatStr !== undefined) {
                 field.stringFormat = formatStr;
             }
         } else if (isWml(child, 'textFormat')) {
-            const formatStr = wValAttribute(child);
+            const formatStr: string = wValAttribute(child);
             if (formatStr !== undefined) {
                 // Map format string to TextFormat
-                let format = TextFormat.None;
+                let format: TextFormat = TextFormat.None;
                 if (formatStr === 'uppercase') {
                     format = TextFormat.Uppercase;
                 } else if (formatStr === 'lowercase') {
@@ -1545,22 +1755,15 @@ function convertFieldMarkToFieldMark(
         // Extract field type from instruction text for regular fields
         let fieldType: FieldType = FieldType.Page; // Default
         if (instrText !== undefined) {
-            const trimmed: string = instrText.trim();
-            if (trimmed.length > 0) {
-                // Extract the first word (field keyword)
-                const match: RegExpExecArray = /^(\S+)/.exec(trimmed);
-                if (match !== null) {
-                    const keyword: string = match[1]!.toUpperCase();
-                    // Map to supported field type if available
-                    if (SUPPORTED_FIELD_TYPES.has(keyword)) {
-                        fieldType = SUPPORTED_FIELD_TYPES.get(keyword)!;
-                    }
-                }
+            const resolved: FieldType | undefined = trySupportedFieldTypeFromInstruction(instrText);
+            if (resolved !== undefined) {
+                fieldType = resolved;
             }
         }
 
         // Convert begin marker to Field ParagraphItem
-        const field: Field = new Field(
+        const FieldCtor: typeof Field = fieldType === FieldType.FieldSequence ? SeqField : Field;
+        const field: Field = new FieldCtor(
             fieldType as any,
             leafMark.fldLock,
             leafMark.dirty,
@@ -1589,6 +1792,83 @@ function convertFieldMarkToFieldMark(
 }
 
 /**
+ * Convert a SimpleField (w:fldSimple) to a Field ParagraphItem.
+ *
+ * Simple fields have a flat structure with instruction text and result runs.
+ * Convert them to Field objects so they're registered in the field collection
+ * and available for updateDocumentFields().
+ *
+ * The converted Field will serialize as a complex field (w:fldChar begin/separate/end)
+ * which is functionally equivalent to the simple field format.
+ *
+ * @param {SimpleField} simpleField - The simple field to convert.
+ * @returns {Field} A new Field ParagraphItem representing the simple field.
+ * @private
+ */
+function convertSimpleFieldToField(simpleField: SimpleField): Field {
+    // Extract field type from instruction
+    const instruction: string = simpleField.instruction.trim();
+    const resolvedType: FieldType | undefined = trySupportedFieldTypeFromInstruction(instruction);
+    const fieldType: FieldType = resolvedType !== undefined ? resolvedType : FieldType.Page; // Default
+
+    // Create a specialized Field subclass based on field type
+    // This ensures the proper update() handlers are called
+    let field: Field;
+    switch (fieldType) {
+    case FieldType.If:
+        field = new IfField(
+            fieldType,
+            simpleField.fldLock,
+            simpleField.dirty,
+            [],
+            undefined,
+            instruction,
+            true
+        );
+        break;
+
+    case FieldType.MergeField:
+        field = new MergeField(
+            fieldType,
+            simpleField.fldLock,
+            simpleField.dirty,
+            [],
+            undefined,
+            instruction,
+            true
+        );
+        break;
+
+    case FieldType.FieldSequence:
+        field = new SeqField(
+            fieldType,
+            simpleField.fldLock,
+            simpleField.dirty,
+            [],
+            undefined,
+            instruction,
+            true
+        );
+        break;
+
+    default:
+        // For all other field types, use the base Field class
+        field = new Field(
+            fieldType as any,
+            simpleField.fldLock,
+            simpleField.dirty,
+            [],  // No extra XML elements from simple field extras
+            undefined,  // No wireGroup for new fields
+            instruction,  // Pass the full instruction text
+            true  // Mark as converted from simple field
+        );
+        break;
+    }
+
+    return field;
+}
+
+/**
  * @private
  * Attempt to match a complete field structure starting from a begin marker at index `beginIndex`.
  * Returns a reconstructed Field if successful, undefined otherwise.
@@ -1599,11 +1879,11 @@ interface ReconstructedField {
 }
 
 function matchAndReconstructField(
-    items: ConcreteParagraphItem[],
+    items: ParagraphItem[],
     beginIndex: number
 ): ReconstructedField | undefined {
     // eslint-disable-next-line security/detect-object-injection -- integer index bounded by the collection length (loop counter or range-checked argument); not a user-controlled property name
-    const beginItem: ConcreteParagraphItem = items[beginIndex];
+    const beginItem: ParagraphItem = items[beginIndex];
     if (!(beginItem instanceof FeatureRunParagraphItem) ||
         !(beginItem.value instanceof FieldMark) ||
         beginItem.value.fldCharType !== 'begin') {
@@ -1618,7 +1898,7 @@ function matchAndReconstructField(
     // Scan forward to find matching separate and end markers
     for (let i: number = beginIndex + 1; i < items.length; i += 1) {
         // eslint-disable-next-line security/detect-object-injection -- integer index bounded by the collection length (loop counter or range-checked argument); not a user-controlled property name
-        const item: ConcreteParagraphItem = items[i];
+        const item: ParagraphItem = items[i];
 
         if (!(item instanceof FeatureRunParagraphItem) ||
             item.featureId !== FIELDS ||
@@ -1649,16 +1929,15 @@ function matchAndReconstructField(
     let fieldType: string = 'PAGE'; // Default
     for (let i: number = beginIndex + 1; i < separatorIndex; i += 1) {
         // eslint-disable-next-line security/detect-object-injection -- integer index bounded by the collection length (loop counter or range-checked argument); not a user-controlled property name
-        const item: ConcreteParagraphItem = items[i];
+        const item: ParagraphItem = items[i];
         if (item instanceof FeatureRunParagraphItem &&
             item.featureId === FIELDS &&
             item.value instanceof InstrText) {
             const instr: string = item.value.text.trim();
             if (instr.length > 0) {
-                // Extract the first word (field keyword)
-                const match: RegExpExecArray = /^(\S+)/.exec(instr);
-                if (match !== null) {
-                    fieldType = match[1]!.toUpperCase();
+                const keyword: string = instructionKeyword(instr);
+                if (keyword.length > 0) {
+                    fieldType = keyword;
                 }
                 break;
             }
@@ -1666,7 +1945,7 @@ function matchAndReconstructField(
     }
 
     // Create a Field ParagraphItem with the determined type
-    const field: Field = new Field(
+    const field: Field = new (fieldType === FieldType.FieldSequence ? SeqField : Field)(
         fieldType as any, // Type determined from instruction text
         beginMark.fldLock,
         beginMark.dirty,
@@ -1722,7 +2001,7 @@ export function registerFieldsFeature(): void {
     });
 
     // Register the post-processor for field structure reconstruction.
-    // paragraph.ts does not import this module, so a static import introduces no cycle.
+    // the owning module does not import this module, so a static import introduces no cycle.
     setParagraphItemsPostProcessor(reconstructFieldStructure);
 }
 /**
@@ -1773,17 +2052,12 @@ function complexFieldsInParagraph(paragraph: Paragraph): ReadonlyArray<ComplexFi
  *
  * @private
  */
-interface ParsedField {
-    readonly type: string;
-    readonly instruction: string;
-    readonly switches: ReadonlyMap<string, string>;
-}
 /**
  * Tokenize a field instruction into whitespace- and quote-delimited tokens.
  * Double-quoted spans become a single token with the quotes removed.
  *
- * @param {string} instruction - The instruction.
- * @returns {string[]} The result.
+ * @param {string} instruction - Specifies the instruction.
+ * @returns {string[]} Returns the result.
  */
 function tokenizeFieldInstruction(instruction: string): string[] {
     const tokens: string[] = [];
@@ -1837,41 +2111,6 @@ function tokenizeFieldInstruction(instruction: string): string[] {
         }
     }
     return tokens;
-}
-/**
- * Parse a field instruction into {@link ParsedField}.
- *
- * @param {string} instruction - The instruction.
- * @returns {ParsedField} The result.
- * @private
- */
-function parseFieldInstruction(instruction: string): ParsedField {
-    const tokens: string[] = tokenizeFieldInstruction(instruction);
-    const type: string = tokens[0] != null ? tokens[0] : '';
-    const switches: Map<string, string> = new Map<string, string>();
-    let index: number = 1;
-    while (index < tokens.length) {
-        // eslint-disable-next-line security/detect-object-injection -- integer index bounded by the collection length (loop counter or range-checked argument); not a user-controlled property name
-        const fieldToken: string = tokens[index];
-        if (fieldToken === undefined) {
-            break;
-        }
-        if (fieldToken.startsWith('\\')) {
-            const next: string = tokens[index + 1];
-            if (next !== undefined && !next.startsWith('\\')) {
-                switches.set(fieldToken, next);
-                index += 2;
-            }
-            else {
-                switches.set(fieldToken, '');
-                index += 1;
-            }
-            continue;
-        }
-        // Positional operand (MERGEFIELD name, HYPERLINK target, …) — not a switch.
-        index += 1;
-    }
-    return { type, instruction, switches };
 }
 /**
  * Fields in a paragraph, in document order.
@@ -1998,12 +2237,12 @@ function removeField(paragraph: Paragraph, field: LegacyField): void {
 /**
  * Whether a paragraph item is a simple field from this module.
  *
- * @param {InlineContent} inline - The inline.
+ * @param {ParagraphItem} inline - The inline.
  * @returns {Object} The result.
  * @private
  */
 function isSimpleFieldInline(
-    inline: InlineContent
+    inline: ParagraphItem
 ): inline is FeatureInlineParagraphItem & { value: SimpleField } {
     return (
         inline instanceof FeatureInlineParagraphItem &&
@@ -2014,40 +2253,285 @@ function isSimpleFieldInline(
 /**
  * Whether a paragraph item is a modeled field mark from this module.
  *
- * @param {ParagraphItem | RunLeaf} item - The item.
+ * @param {ParagraphItem | ParagraphItem} item - The item.
  * @returns {Object} The result.
  * @private
  */
-function isFieldMarkLeaf(item: ParagraphItem | RunLeaf): item is FeatureRunParagraphItem & { value: FieldMark } {
+function isFieldMarkLeaf(item: ParagraphItem | ParagraphItem): item is FeatureRunParagraphItem & { value: FieldMark } {
     return item instanceof FeatureRunParagraphItem && item.featureId === FIELDS && item.value instanceof FieldMark;
 }
 /**
  * Whether a paragraph item is modeled instruction text from this module.
  *
- * @param {ParagraphItem | RunLeaf} item - The item.
+ * @param {ParagraphItem | ParagraphItem} item - The item.
  * @returns {Object} The result.
  * @private
  */
-function isInstrTextLeaf(item: ParagraphItem | RunLeaf): item is FeatureRunParagraphItem & { value: InstrText } {
+function isInstrTextLeaf(item: ParagraphItem | ParagraphItem): item is FeatureRunParagraphItem & { value: InstrText } {
     return item instanceof FeatureRunParagraphItem && item.featureId === FIELDS && item.value instanceof InstrText;
 }
+/**
+ * Switch text for DATE/TIME appendField: the caller may pass switches such as `\\@ "MM/dd/yyyy"`.
+ *
+ * @param {string} fieldName - The field name argument.
+ * @returns {string} Switches followed by a space, or an empty string.
+ * @private
+ */
+function dateTimeSwitches(fieldName: string): string {
+    const text: string = fieldName.trim().replace(/^(DATE|TIME|CREATEDATE|SAVEDATE|PRINTDATE|EDITTIME)\s+/i, '');
+    if (text.length === 0) {
+        return '';
+    }
+    return text;
+}
+/**
+ * Instruction text for fields that always carry `\* MERGEFORMAT` (AUTHOR, TITLE, DATE, etc.).
+ * When the shared parameter is empty, the field name is omitted and only `\* MERGEFORMAT`
+ * remains. When it already contains `\* MERGEFORMAT`, it is not duplicated.
+ *
+ * @param {string} keyword - The field keyword (e.g. `AUTHOR`).
+ * @param {string} fieldName - The shared parameter passed to `appendField`.
+ * @returns {string} Instruction text padded with leading and trailing spaces.
+ * @private
+ */
+function formatMergeformatField(keyword: string, fieldName: string): string {
+    if (fieldName.length === 0) {
+        return ' ' + keyword + ' \\* MERGEFORMAT ';
+    }
+    if (/\\\*\s*MERGEFORMAT/i.test(fieldName)) {
+        return ' ' + keyword + ' ' + fieldName + ' ';
+    }
+    return ' ' + keyword + ' ' + fieldName + ' \\* MERGEFORMAT ';
+}
+/**
+ * DATE/TIME/CREATEDATE/SAVEDATE/PRINTDATE/EDITTIME instruction text. The shared
+ * parameter (or a `@` picture switch) is placed between the keyword and
+ * `\* MERGEFORMAT`. If the parameter already carries `\* MERGEFORMAT`, it is
+ * left alone.
+ *
+ * @param {string} keyword - The field keyword (e.g. `DATE`).
+ * @param {string} fieldName - The shared parameter passed to `appendField`.
+ * @returns {string} Instruction text padded with leading and trailing spaces.
+ * @private
+ */
+function dateTimeInstruction(keyword: string, fieldName: string): string {
+    const text: string = dateTimeSwitches(fieldName);
+    if (text.length === 0) {
+        return ' ' + keyword + ' \\* MERGEFORMAT ';
+    }
+    return /\\\*\s*MERGEFORMAT/i.test(text)
+        ? ' ' + keyword + ' ' + text + ' '
+        : ' ' + keyword + ' ' + text + ' \\* MERGEFORMAT ';
+}
+
 function isSupportedFieldType(value: string): value is FieldType {
     return SUPPORTED_FIELD_TYPES.has(value);
 }
+
+/**
+ * Restore field-switch backslashes lost to JavaScript string escapes: `'\\* Upper'` arrives as
+ * `* Upper`, and `'\\n'` / `'\\r'` arrive as control characters. Formula-like fields are untouched
+ * because `*` is multiplication there.
+ *
+ * @param {string} text - The field argument text.
+ * @param {FieldType} type - The field type.
+ * @returns {string} The text with switch backslashes restored.
+ * @private
+ */
+function restoreSwitchBackslashes(text: string, type: FieldType): string {
+    if (String(type) === '=') {
+        return text;
+    }
+    return text
+        .replace(/(^|\s)([*#@])(?=\s)/g, '$1\\$2')
+        .replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t').replace(/\f/g, '\\f').replace(/\v/g, '\\v');
+}
 function defaultInstructionForAppend(fieldName: string, type: FieldType): string {
+    const name: string = fieldName ? fieldName.trim() : '';
     switch (type) {
     case FieldType.Page:
-        return ' PAGE ';
+        return name.length > 0 ? ' PAGE ' + name + ' ' : ' PAGE ';
     case FieldType.NumPages:
-        return ' NUMPAGES ';
+        return name.length > 0 ? ' NUMPAGES ' + name + ' ' : ' NUMPAGES ';
     case FieldType.If:
         return ' IF ';
-    case FieldType.MergeField:
-        return ' MERGEFIELD ' + fieldName + ' ';
+    case FieldType.MergeField: {
+        const cleanName: string = name.replace(/^[«"]+|[»"]+$/g, '');
+        return ' MERGEFIELD ' + (cleanName.length > 0 ? cleanName : name) + ' ';
+    }
     case FieldType.Hyperlink:
         // Logical name only; prefer appendHyperlink for target + display text.
-        return ' HYPERLINK ';
-	case FieldType.CheckBox:
+        return ' HYPERLINK ' + (name.length > 0 ? name + ' ' : '');
+    // Metadata fields that require MERGEFORMAT
+    case FieldType.FieldAuthor:
+        return formatMergeformatField('AUTHOR', name);
+    case FieldType.FieldTitle:
+        return formatMergeformatField('TITLE', name);
+    case FieldType.FieldSubject:
+        return formatMergeformatField('SUBJECT', name);
+    case FieldType.FieldComments:
+        return formatMergeformatField('COMMENTS', name);
+    case FieldType.FieldDocProperty: {
+        let propName: string = name;
+        if (/^DOCPROPERTY\s+/i.test(propName)) {
+            propName = propName.replace(/^DOCPROPERTY\s+/i, '').trim();
+        }
+        if (propName.length > 0 && /\s/.test(propName) && !(/^".*"$/.test(propName))) {
+            propName = '"' + propName + '"';
+        }
+        return formatMergeformatField('DOCPROPERTY', propName);
+    }
+    case FieldType.FieldKeyWord:
+        return formatMergeformatField('KEYWORDS', name);
+    case FieldType.FieldLastSavedBy:
+        return formatMergeformatField('LASTSAVEDBY', name);
+    case FieldType.FieldTemplate:
+        return formatMergeformatField('TEMPLATE', name);
+    // Date/time fields that require MERGEFORMAT
+    case FieldType.FieldDate:
+        return dateTimeInstruction('DATE', name);
+    case FieldType.FieldTime:
+        return dateTimeInstruction('TIME', name);
+    case FieldType.FieldCreateDate:
+        return dateTimeInstruction('CREATEDATE', name);
+    case FieldType.FieldSaveDate:
+        return dateTimeInstruction('SAVEDATE', name);
+    case FieldType.FieldPrintDate:
+        return dateTimeInstruction('PRINTDATE', name);
+    case FieldType.FieldEditTime:
+        return dateTimeInstruction('EDITTIME', name);
+    // Reference fields
+    case FieldType.FieldRef:
+        return name.length > 0 ? ' REF ' + name + ' ' : ' REF ';
+    case FieldType.FieldPageRef:
+        return name.length > 0 ? ' PAGEREF ' + name + ' ' : ' PAGEREF ';
+    case FieldType.FieldNoteRef:
+        return name.length > 0 ? ' NOTEREF ' + name + ' ' : ' NOTEREF ';
+    case FieldType.FieldFootnoteRef:
+        return name.length > 0 ? ' FOOTNOTEREF ' + name + ' ' : ' FOOTNOTEREF ';
+    case FieldType.FieldStyleRef:
+        return name.length > 0 ? ' STYLEREF ' + name + ' ' : ' STYLEREF ';
+    // Count fields
+    case FieldType.FieldNumWords:
+        return formatMergeformatField('NUMWORDS', name);
+    case FieldType.FieldNumChars:
+        return formatMergeformatField('NUMCHARS', name);
+    case FieldType.FieldRevisionNum:
+        return formatMergeformatField('REVNUM', name);
+    // Filename/path fields
+    case FieldType.FieldFileName:
+        return formatMergeformatField('FILENAME', name);
+    case FieldType.FieldFileSize:
+        return formatMergeformatField('FILESIZE', name);
+    // User information fields
+    case FieldType.FieldUserName:
+        return formatMergeformatField('USERNAME', name);
+    case FieldType.FieldUserInitials:
+        return formatMergeformatField('USERINITIALS', name);
+    case FieldType.FieldUserAddress:
+        return formatMergeformatField('USERADDRESS', name);
+    // Section fields
+    case FieldType.FieldSection:
+        return formatMergeformatField('SECTION', name);
+    case FieldType.FieldSectionPages:
+        return formatMergeformatField('SECTIONPAGES', name);
+    // Index/TOC/TOA fields
+    case FieldType.FieldIndex:
+        return formatMergeformatField('INDEX', name);
+    case FieldType.FieldIndexEntry:
+        return name.length > 0 ? ' XE ' + name + ' ' : ' XE ';
+    // Fields that take arguments
+    case FieldType.FieldAddin:
+        return name.length > 0 ? ' ADDIN ' + name + ' ' : ' ADDIN ';
+    case FieldType.FieldAdvance:
+        return name.length > 0 ? ' ADVANCE ' + name + ' ' : ' ADVANCE ';
+    case FieldType.FieldAsk:
+        return name.length > 0 ? ' ASK ' + name + ' ' : ' ASK ';
+    case FieldType.FieldAutoNum:
+        return name.length > 0 ? ' AUTONUM ' + name + ' ' : ' AUTONUM ';
+    case FieldType.FieldAutoNumLegal:
+        return name.length > 0 ? ' AUTONUMLGL ' + name + ' ' : ' AUTONUMLGL ';
+    case FieldType.FieldAutoNumOutline:
+        return name.length > 0 ? ' AUTONUMOUT ' + name + ' ' : ' AUTONUMOUT ';
+    case FieldType.FieldAutoText:
+        return name.length > 0 ? ' AUTOTEXT ' + name + ' ' : ' AUTOTEXT ';
+    case FieldType.FieldAutoTextList:
+        return name.length > 0 ? ' AUTOTEXTLIST ' + name + ' ' : ' AUTOTEXTLIST ';
+    case FieldType.FieldBarCode:
+        return name.length > 0 ? ' BARCODE ' + name + ' ' : ' BARCODE ';
+    case FieldType.FieldCompare:
+        return name.length > 0 ? ' COMPARE ' + name + ' ' : ' COMPARE ';
+    case FieldType.FieldData:
+        return name.length > 0 ? ' DATA ' + name + ' ' : ' DATA ';
+    case FieldType.FieldDatabase:
+        return name.length > 0 ? ' DATABASE ' + name + ' ' : ' DATABASE ';
+    case FieldType.FieldDDE:
+        return name.length > 0 ? ' DDE ' + name + ' ' : ' DDE ';
+    case FieldType.FieldDDEAuto:
+        return name.length > 0 ? ' DDEAUTO ' + name + ' ' : ' DDEAUTO ';
+    case FieldType.FieldExpression:
+        return name.length > 0 ? ' = ' + name + ' ' : ' = ';
+    case FieldType.FieldFillIn:
+        return name.length > 0 ? ' FILLIN ' + name + ' ' : ' FILLIN ';
+    case FieldType.FieldFormula:
+        return name.length > 0 ? ' = ' + name + ' ' : ' = ';
+    case FieldType.FieldGlossary:
+        return name.length > 0 ? ' GLOSSARY ' + name + ' ' : ' GLOSSARY ';
+    case FieldType.FieldGoToButton:
+        return name.length > 0 ? ' GOTOBUTTON ' + name + ' ' : ' GOTOBUTTON ';
+    case FieldType.FieldHTMLActiveX:
+        return name.length > 0 ? ' HTMLCONTROL ' + name + ' ' : ' HTMLCONTROL ';
+    case FieldType.FieldImport:
+        return name.length > 0 ? ' IMPORT ' + name + ' ' : ' IMPORT ';
+    case FieldType.FieldInclude:
+        return name.length > 0 ? ' INCLUDE ' + name + ' ' : ' INCLUDE ';
+    case FieldType.FieldIncludePicture:
+        return name.length > 0 ? ' INCLUDEPICTURE ' + name + ' ' : ' INCLUDEPICTURE ';
+    case FieldType.FieldIncludeText:
+        return name.length > 0 ? ' INCLUDETEXT ' + name + ' ' : ' INCLUDETEXT ';
+    case FieldType.FieldInfo:
+        return formatMergeformatField('INFO', name);
+    case FieldType.FieldLink:
+        return name.length > 0 ? ' LINK ' + name + ' ' : ' LINK ';
+    case FieldType.FieldListNum:
+        return name.length > 0 ? ' LISTNUM ' + name + ' ' : ' LISTNUM ';
+    case FieldType.FieldMacroButton:
+        return name.length > 0 ? ' MACROBUTTON ' + name + ' ' : ' MACROBUTTON ';
+    case FieldType.FieldMergeRec:
+        return name.length > 0 ? ' MERGEREC ' + name + ' ' : ' MERGEREC ';
+    case FieldType.FieldMergeSeq:
+        return name.length > 0 ? ' MERGESEQ ' + name + ' ' : ' MERGESEQ ';
+    case FieldType.FieldNext:
+        return name.length > 0 ? ' NEXT ' + name + ' ' : ' NEXT ';
+    case FieldType.FieldNextIf:
+        return name.length > 0 ? ' NEXTIF ' + name + ' ' : ' NEXTIF ';
+    case FieldType.FieldOCX:
+        return name.length > 0 ? ' CONTROL ' + name + ' ' : ' CONTROL ';
+    case FieldType.FieldPrint:
+        return name.length > 0 ? ' PRINT ' + name + ' ' : ' PRINT ';
+    case FieldType.FieldPrivate:
+        return name.length > 0 ? ' PRIVATE ' + name + ' ' : ' PRIVATE ';
+    case FieldType.FieldQuote:
+        return name.length > 0 ? ' QUOTE ' + name + ' ' : ' QUOTE ';
+    case FieldType.FieldRefDoc:
+        return name.length > 0 ? ' RD ' + name + ' ' : ' RD ';
+    case FieldType.FieldSet:
+        return name.length > 0 ? ' SET ' + name + ' ' : ' SET ';
+    case FieldType.FieldSkipIf:
+        return name.length > 0 ? ' SKIPIF ' + name + ' ' : ' SKIPIF ';
+    case FieldType.FieldSubscriber:
+        return name.length > 0 ? ' SUBSCRIBER ' + name + ' ' : ' SUBSCRIBER ';
+    case FieldType.FieldSymbol:
+        return name.length > 0 ? ' SYMBOL ' + name + ' ' : ' SYMBOL ';
+    case FieldType.FieldShape:
+        return name.length > 0 ? ' SHAPE ' + name + ' ' : ' SHAPE ';
+    case FieldType.FieldBidiOutline:
+        return name.length > 0 ? ' BIDIOUTLINE ' + name + ' ' : ' BIDIOUTLINE ';
+    case FieldType.FieldAddressBlock:
+        return name.length > 0 ? ' ADDRESSBLOCK ' + name + ' ' : ' ADDRESSBLOCK ';
+    case FieldType.FieldSequence:
+        return name.length > 0 ? ' SEQ ' + name + ' ' : ' SEQ ';
+    case FieldType.CheckBox:
     case FieldType.DropDown:
     case FieldType.TextInput:
         // Form fields are handled separately through complex field markers
@@ -2061,14 +2545,91 @@ function defaultInstructionForAppend(fieldName: string, type: FieldType): string
 function defaultCachedResultForAppend(fieldName: string, type: FieldType): string {
     switch (type) {
     case FieldType.MergeField:
-        return '«' + fieldName + '»';
+        return fieldName.length > 0 ? '«' + fieldName + '»' : '';
     case FieldType.Page:
     case FieldType.NumPages:
+    case FieldType.FieldSection:
+    case FieldType.FieldSectionPages:
+    case FieldType.FieldRevisionNum:
+    case FieldType.FieldNumChars:
+    case FieldType.FieldNumWords:
+    case FieldType.FieldEditTime:
         return '1';
     case FieldType.If:
     case FieldType.Hyperlink:
+    case FieldType.FieldAdvance:
+    case FieldType.FieldAsk:
+    case FieldType.FieldAutoNum:
+    case FieldType.FieldAutoNumLegal:
+    case FieldType.FieldAutoNumOutline:
+    case FieldType.FieldAutoText:
+    case FieldType.FieldAutoTextList:
+    case FieldType.FieldBarCode:
+    case FieldType.FieldCompare:
+    case FieldType.FieldData:
+    case FieldType.FieldDatabase:
+    case FieldType.FieldDDE:
+    case FieldType.FieldDDEAuto:
+    case FieldType.FieldExpression:
+    case FieldType.FieldFillIn:
+    case FieldType.FieldFormula:
+    case FieldType.FieldGlossary:
+    case FieldType.FieldGoToButton:
+    case FieldType.FieldHTMLActiveX:
+    case FieldType.FieldImport:
+    case FieldType.FieldInclude:
+    case FieldType.FieldIncludePicture:
+    case FieldType.FieldIncludeText:
+    case FieldType.FieldIndexEntry:
+    case FieldType.FieldLink:
+    case FieldType.FieldListNum:
+    case FieldType.FieldMacroButton:
+    case FieldType.FieldMergeRec:
+    case FieldType.FieldMergeSeq:
+    case FieldType.FieldNext:
+    case FieldType.FieldNextIf:
+    case FieldType.FieldOCX:
+    case FieldType.FieldPrint:
+    case FieldType.FieldPrivate:
+    case FieldType.FieldQuote:
+    case FieldType.FieldRefDoc:
+    case FieldType.FieldSet:
+    case FieldType.FieldSkipIf:
+    case FieldType.FieldSubscriber:
+    case FieldType.FieldSymbol:
+    case FieldType.FieldShape:
+    case FieldType.FieldBidiOutline:
+    case FieldType.FieldAddressBlock:
         return '';
-	case FieldType.CheckBox:
+    case FieldType.FieldAuthor:
+    case FieldType.FieldTitle:
+    case FieldType.FieldSubject:
+    case FieldType.FieldComments:
+    case FieldType.FieldDocProperty:
+    case FieldType.FieldKeyWord:
+    case FieldType.FieldLastSavedBy:
+    case FieldType.FieldTemplate:
+    case FieldType.FieldUserName:
+    case FieldType.FieldUserInitials:
+    case FieldType.FieldUserAddress:
+    case FieldType.FieldInfo:
+    case FieldType.FieldDate:
+    case FieldType.FieldTime:
+    case FieldType.FieldCreateDate:
+    case FieldType.FieldSaveDate:
+    case FieldType.FieldPrintDate:
+    case FieldType.FieldRef:
+    case FieldType.FieldPageRef:
+    case FieldType.FieldNoteRef:
+    case FieldType.FieldFootnoteRef:
+    case FieldType.FieldStyleRef:
+    case FieldType.FieldFileName:
+    case FieldType.FieldFileSize:
+    case FieldType.FieldIndex:
+    case FieldType.FieldAddin:
+    case FieldType.FieldSequence:
+        return fieldName;
+    case FieldType.CheckBox:
     case FieldType.DropDown:
     case FieldType.TextInput:
         // Form fields typically don't have a cached result
@@ -2110,7 +2671,7 @@ function appendComplexFieldImpl(paragraph: Paragraph, instruction: string, resul
     }
     const beginMark: FieldMark = new FieldMark('begin', undefined, undefined, []);
     paragraph.appendFeatureRunItem(FIELDS, beginMark);
-    const instrText: InstrText = new InstrText(` ${trimmed} `, false);
+    const instrText: InstrText = new InstrText(` ${trimmed} `, true);
     paragraph.appendFeatureRunItem(FIELDS, instrText);
     const separateMark: FieldMark = new FieldMark('separate', undefined, undefined, []);
     paragraph.appendFeatureRunItem(FIELDS, separateMark);
@@ -2153,7 +2714,7 @@ export function opaqueComplexFieldInstructionsInParagraph(paragraph: Paragraph):
  * @private
  */
 export function fieldInstructionKeyword(instruction: string): string {
-    return parseFieldInstruction(instruction).type;
+    return instructionKeyword(instruction);
 }
 /**
  * Internal Field for any instruction (SEQ captions etc.).
@@ -2188,7 +2749,7 @@ function appendComplexFieldImplPrivate(paragraph: Paragraph, instruction: string
     }
     const beginMark: FieldMark = new FieldMark('begin', undefined, undefined, []);
     paragraph.appendFeatureRunItem(FIELDS, beginMark);
-    const instrText: InstrText = new InstrText(` ${trimmed} `, false);
+    const instrText: InstrText = new InstrText(` ${trimmed} `, true);
     paragraph.appendFeatureRunItem(FIELDS, instrText);
     const separateMark: FieldMark = new FieldMark('separate', undefined, undefined, []);
     paragraph.appendFeatureRunItem(FIELDS, separateMark);
@@ -2207,24 +2768,25 @@ function appendComplexFieldImplPrivate(paragraph: Paragraph, instruction: string
  * (Field begin → instruction TextRange → separator → result → end).
  *
  * @param {Paragraph} this - The this.
- * @param {string} fieldName - The field name.
+ * The instruction is built from the field keyword and the shared parameter; set `fieldCode` on
+ * the returned field to replace arguments and switches.
+ *
+ * @param {string} fieldResult - The shared parameter (field name, bookmark, formula, picture
+ * switch, ...) and the initial (cached) field result text. An empty value uses the type's default.
  * @param {FieldType} fieldType - The field type.
  * @returns {Field} The result.
  * @public
  */
-Paragraph.prototype.appendField = function (this: Paragraph, fieldName: string, fieldType: FieldType): Field {
-    const name: string = fieldName == null ? '' : String(fieldName).trim();
-    if (name.length === 0) {
-        throw new DocxError('content/invalid-field', 'fieldName must not be empty');
-    }
+Paragraph.prototype.appendField = function (this: Paragraph, fieldResult: string, fieldType: FieldType): Field {
+    const resultText: string = fieldResult == null ? '' : String(fieldResult);
     if (fieldType === FieldType.TextInput) {
-        return this.appendTextFormField(name, name);
+        return this.appendTextFormField(resultText, resultText);
     }
     if (fieldType === FieldType.CheckBox) {
-        return this.appendCheckBoxFormField(name, false);
+        return this.appendCheckBoxFormField(resultText, false);
     }
     if (fieldType === FieldType.DropDown) {
-        return this.appendDropDownFormField(name);
+        return this.appendDropDownFormField(resultText);
     }
     if (!isSupportedFieldType(fieldType)) {
         throw new DocxError('content/invalid-field', 'Unsupported fieldType');
@@ -2237,20 +2799,30 @@ Paragraph.prototype.appendField = function (this: Paragraph, fieldName: string, 
     else if (fieldType === FieldType.MergeField) {
         field = new MergeField(FieldType.MergeField, undefined, undefined, []);
     }
+    else if (fieldType === FieldType.FieldSequence) {
+        field = new SeqField(FieldType.FieldSequence, undefined, undefined, []);
+    }
     else {
         field = new Field(fieldType, undefined, undefined, []);
     }
     this.items.add(field);
     const instructionRange: TextRange = new TextRange();
     this.items.add(instructionRange);
-    instructionRange.text = defaultInstructionForAppend(name, fieldType);
+    instructionRange.text = ' ' + defaultInstructionForAppend(resultText, fieldType).trim() + ' ';
     const separator: ParagraphFieldMark = new ParagraphFieldMark(ParagraphFieldMarkType.Separator, undefined, undefined, []);
     this.items.add(separator);
     const resultRange: TextRange = new TextRange();
     this.items.add(resultRange);
-    resultRange.text = defaultCachedResultForAppend(name, fieldType);
+    resultRange.text = resultText.length > 0 ? resultText : defaultCachedResultForAppend(resultText, fieldType);
     const endMark: ParagraphFieldMark = new ParagraphFieldMark(ParagraphFieldMarkType.End, undefined, undefined, []);
     this.items.add(endMark);
+
+    // Register field in document's field collection
+    const document: WordDocument = this.owningDocument();
+    if (document != null && typeof document.registerField === 'function') {
+        document.registerField(field);
+    }
+
     return field;
 };
 /**
@@ -2260,18 +2832,15 @@ Paragraph.prototype.appendField = function (this: Paragraph, fieldName: string, 
  *
  * Picture path uses DrawingML `a:hlinkClick` (no HYPERLINK field markers).
  *
- * @public
- */
-/**
  * Append a hyperlink.
  * - (url, displayText, type) authors a HYPERLINK field
  * - (url, picture, type) sets DrawingML a:hlinkClick on the picture
  *
- * @param {Paragraph} this - The this.
- * @param {string} target - The target.
- * @param {string | Picture} textOrPicture - The text or picture.
- * @param {HyperlinkType} type - The type.
- * @returns {Hyperlink} The result.
+ * @param {Paragraph} this - Specifies the this.
+ * @param {string} target - Specifies the target.
+ * @param {string | Picture} textOrPicture - Specifies the text or picture.
+ * @param {HyperlinkType} type - Specifies the type.
+ * @returns {Hyperlink} Returns the result.
  * @public
  */
 Paragraph.prototype.appendHyperlink = function (

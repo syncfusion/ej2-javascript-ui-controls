@@ -5,7 +5,7 @@ import { ScopedElementSource, cloneScopedElement, scopedElementPath, ScopedClone
 import { selectGradientStyleSource, GradientStyleSource } from '../theme/materialize-gradient-style';
 import { uniqueGradientChild } from '../shapes/gradient-materialization-dom';
 import { getGradientDrawingNamespace } from '../theme/read-gradient';
-import { parseXml } from '../xml/dom';
+import { parseXml, serializeXml } from '../xml/dom';
 import { materializeBackgroundGradient, BackgroundMaterializationSource } from '../presentation/materialize-background-gradient';
 import { materializeShapeGradient, GradientMaterializationSource } from '../shapes/materialize-shape-gradient';
 import { resolveHostTextFills, TextFillTarget } from '../resolve/text-fill-host';
@@ -57,10 +57,13 @@ import { addChart, AddChartOptions } from '../../features/charts/add-chart';
 import { Chart } from '../../features/charts/chart';
 import { Charts, chartsForSlide } from '../../features/charts/charts';
 import { removeChart } from '../../features/charts/remove-chart';
+import { asChartHandle, upgradeChartShapes } from '../../features/charts/as-chart-handle';
 import { addTable, AddTableOptions } from '../../features/tables/add-table';
 import { removeTable } from '../../features/tables/remove-table';
+import { asTable } from '../../features/tables/as-table';
 import { Table } from '../../features/tables/table';
 import { addNotesSlide } from '../../features/notes/attach-notes';
+import { removeNotesSlide } from '../../features/notes/remove-notes';
 import { NotesSlide } from '../../features/notes/notes-slide';
 export { hasAnimationTargets } from './animation-targets';
 
@@ -341,6 +344,10 @@ export class Slide {
      * @returns {AuthoredGradientFill} Independent planned authored fill snapshot.
      */
     inspectGradientFillOverride(shape: Shape): AuthoredGradientFill {
+        const liveSlide: Slide = this.modelSlide();
+        if (liveSlide !== this) {
+            return liveSlide.inspectGradientFillOverride(shape);
+        }
         const path: OoxmlElement[] = scopedElementPath({ root: this.root, node: shape.getElement() }, this.limits, this.partName);
         const snapshot: Slide = this.gradientOverrideSnapshot();
         let node: OoxmlElement = snapshot.root;
@@ -404,12 +411,14 @@ export class Slide {
     /** Builds a detached slide while retaining only read-only inherited source context.
      *
      * @returns {Slide} Private snapshot with no live mutation callback. */
+    private detachedSnapshot: boolean = false;
     private gradientOverrideSnapshot(): Slide {
         const source: ScopedElementSource = { root: this.root, node: this.root, partName: this.partName };
         const root: OoxmlElement = cloneScopedElement(source, { partName: this.partName, limits: this.limits });
         const snapshot: Slide = new Slide({ root, partName: this.partName, slideId: this.slideId,
             relationshipId: this.relationshipId, limits: this.limits, effectiveColorMap: this.effectiveColorMap,
             layoutPartName: this._layoutPartName });
+        snapshot.detachedSnapshot = true;
         snapshot._layoutsByPartName = this._layoutsByPartName;
         snapshot.layoutPlaceholderIndex = this.layoutPlaceholderIndex;
         snapshot.masterPlaceholderIndex = this.masterPlaceholderIndex;
@@ -596,6 +605,48 @@ export class Slide {
         this.presentation = document;
     }
     /**
+     * Moves this slide into the section at `sectionIndex`.
+     *
+     * @remarks A slide belongs to at most one section. The previous section, if
+     * any, loses this slide. The slide stays at its presentation index.
+     * @param {number} sectionIndex - Zero-based index in `presentation.sections`.
+     * @returns {void} Nothing.
+     */
+    moveToSection(sectionIndex: number): void {
+        if (this.presentation === undefined) {
+            throw new InvalidPackageError('Slide is not bound to a presentation.', { partName: this.partName });
+        }
+        this.presentation.moveSlideToSection(this, sectionIndex);
+    }
+    /**
+     * Layout part this slide was created against, when known.
+     *
+     * @internal
+     * @returns {string | undefined} Layout part name.
+     */
+    getLayoutPartName(): string | undefined {
+        return this._layoutPartName;
+    }
+    /**
+     * Returns a detached copy of this slide.
+     *
+     * @remarks The copy is not in a presentation. Pass it to another presentation's
+     * `slides.add(slide)` to import the slide part. Shape ids and slide XML are copied;
+     * the destination allocates a new slide id and part name.
+     * @returns {Slide} Detached copy.
+     */
+    clone(): Slide {
+        return new Slide({
+            partName: this.partName,
+            slideId: this.slideId,
+            relationshipId: this.relationshipId,
+            root: cloneSlideRoot(this.root),
+            limits: this.limits,
+            ...(this.effectiveColorMap === undefined ? {} : { effectiveColorMap: this.effectiveColorMap }),
+            ...(this._layoutPartName === undefined ? {} : { layoutPartName: this._layoutPartName })
+        });
+    }
+    /**
      * Returns the owning presentation when bound, otherwise `undefined`.
      *
      * @internal
@@ -605,6 +656,25 @@ export class Slide {
         return this.presentation;
     }
     /**
+     * Model slide that owns the live XML when this handle is a collection proxy clone.
+     *
+     * @internal
+     * @returns {Slide} Live model slide, or this instance when unbound.
+     */
+    modelSlide(): Slide {
+        if (this.presentation === undefined || this.detachedSnapshot) {
+            return this;
+        }
+        const model = (this.presentation as unknown as { model: { slides: ReadonlyArray<Slide> } }).model;
+        for (let i: number = 0; i < model.slides.length; i++) {
+            const candidate: Slide | undefined = arrayAt(model.slides, i);
+            if (candidate !== undefined && candidate.partName === this.partName && candidate.slideId === this.slideId) {
+                return candidate;
+            }
+        }
+        return this;
+    }
+    /**
      * Returns this slide's notes slide, creating the notesSlide part when absent.
      *
      * @returns Existing or newly associated {@link NotesSlide}.
@@ -612,13 +682,27 @@ export class Slide {
      *
      * @remarks
      * Thin wrapper over the notes feature {@link addNotesSlide} implementation
-     * (API-RULES R6.2 — same pattern as {@link Slide.addChart} /
-     * {@link Slide.addTable}). Idempotent: a second call returns the same notes
+     * (API-RULES R6.2 — same pattern as {@link ShapeCollection.addChart} /
+     * {@link ShapeCollection.addTable}). Idempotent: a second call returns the same notes
      * slide. Does not rename slide parts or renumber shape ids. Body text is
      * authored through the notes text body.
      */
     addNotesSlide(): NotesSlide {
         return addNotesSlide(this);
+    }
+    /**
+     * Removes the notes slide association and unreferenced notes parts for this slide.
+     *
+     * @remarks
+     * Thin wrapper over the notes feature {@link removeNotesSlide} implementation
+     * (API-RULES R6.2 — same pattern as {@link Slide.addNotesSlide}).
+     * Absent notes is a no-op, never a throw. Shared notesSlide parts
+     * are kept while another relationship targets them. Never deletes notesMaster.
+     *
+     * @returns {void} Nothing.
+     */
+    removeNotesSlide(): void {
+        removeNotesSlide(this);
     }
     /**
      * Security limits bound to this slide (shape walk, entry count, …).
@@ -785,7 +869,12 @@ export class Slide {
      * @returns {ShapeCollection} The result.
      */
     get shapes(): ShapeCollection {
-        return bindShapeCollection(() => walkSlideShapeTree(this.root, this.limits, this.partName, this.mediaAccess, this.onMutate), {
+        const live: Slide = this.modelSlide();
+        const owner: Presentation | undefined = live.getPresentation();
+        return bindShapeCollection(() => {
+            const walked: ReadonlyArray<Shape> = walkSlideShapeTree(live.getRoot(), live.limits, live.partName, live.mediaAccess, live.onMutate);
+            return owner === undefined ? walked : upgradeChartShapes(walked, owner);
+        }, {
             addTextBox: (options?: AddTextBoxOptions): Shape => {
                 const args: {
                     root: OoxmlElement;
@@ -795,18 +884,18 @@ export class Slide {
                     options?: AddTextBoxOptions;
                     onMutate?: () => void;
                 } = {
-                    root: this.root,
-                    limits: this.limits,
-                    partName: this.partName
+                    root: live.getRoot(),
+                    limits: live.limits,
+                    partName: live.partName
                 };
-                if (this.mediaAccess !== undefined) {
-                    args.media = this.mediaAccess;
+                if (live.mediaAccess !== undefined) {
+                    args.media = live.mediaAccess;
                 }
                 if (options !== undefined) {
                     args.options = options;
                 }
-                if (this.onMutate !== undefined) {
-                    args.onMutate = this.onMutate;
+                if (live.onMutate !== undefined) {
+                    args.onMutate = live.onMutate;
                 }
                 return addTextBoxToSlide(args);
             },
@@ -821,27 +910,29 @@ export class Slide {
                     options?: AddShapeOptions;
                     onMutate?: () => void;
                 } = {
-                    root: this.root,
-                    limits: this.limits,
-                    partName: this.partName,
+                    root: live.getRoot(),
+                    limits: live.limits,
+                    partName: live.partName,
                     type,
                     bounds
                 };
-                if (this.mediaAccess !== undefined) {
-                    args.media = this.mediaAccess;
+                if (live.mediaAccess !== undefined) {
+                    args.media = live.mediaAccess;
                 }
                 if (options !== undefined) {
                     args.options = options;
                 }
-                if (this.onMutate !== undefined) {
-                    args.onMutate = this.onMutate;
+                if (live.onMutate !== undefined) {
+                    args.onMutate = live.onMutate;
                 }
                 return addShapeToSlide(args);
             },
+            addChart: (options: AddChartOptions): Chart => addChart(live, options),
+            addTable: (options: AddTableOptions): Table => addTable(live, options),
             addPicture: (options: AddPictureOptions): Picture => {
-                if (this.mediaAccess === undefined || this.mediaAccess.write === undefined) {
+                if (live.mediaAccess === undefined || live.mediaAccess.write === undefined) {
                     throw new InvalidPackageError('Picture insert requires package write access on the slide',
-                                                  { partName: this.partName });
+                                                  { partName: live.partName });
                 }
                 const args: {
                     root: OoxmlElement;
@@ -851,21 +942,21 @@ export class Slide {
                     options: AddPictureOptions;
                     onMutate?: () => void;
                 } = {
-                    root: this.root,
-                    limits: this.limits,
-                    partName: this.partName,
-                    media: this.mediaAccess,
+                    root: live.getRoot(),
+                    limits: live.limits,
+                    partName: live.partName,
+                    media: live.mediaAccess,
                     options
                 };
-                if (this.onMutate !== undefined) {
-                    args.onMutate = this.onMutate;
+                if (live.onMutate !== undefined) {
+                    args.onMutate = live.onMutate;
                 }
                 return addPictureToSlide(args);
             },
             removePicture: (picture: Picture): void => {
-                if (this.mediaAccess === undefined || this.mediaAccess.write === undefined) {
+                if (live.mediaAccess === undefined || live.mediaAccess.write === undefined) {
                     throw new InvalidPackageError('Picture remove requires package write access on the slide',
-                                                  { partName: this.partName });
+                                                  { partName: live.partName });
                 }
                 const args: {
                     root: OoxmlElement;
@@ -874,17 +965,28 @@ export class Slide {
                     picture: Picture;
                     onMutate?: () => void;
                 } = {
-                    root: this.root,
-                    partName: this.partName,
-                    media: this.mediaAccess,
+                    root: live.getRoot(),
+                    partName: live.partName,
+                    media: live.mediaAccess,
                     picture
                 };
-                if (this.onMutate !== undefined) {
-                    args.onMutate = this.onMutate;
+                if (live.onMutate !== undefined) {
+                    args.onMutate = live.onMutate;
                 }
                 removePictureFromSlide(args);
             },
             remove: (shape: Shape): void => {
+                const owner: Presentation | undefined = live.getPresentation();
+                const chart: Chart | undefined = owner === undefined ? undefined : asChartHandle(shape, owner);
+                if (chart !== undefined) {
+                    removeChart(live, chart);
+                    return;
+                }
+                const table: Table | undefined = asTable(shape);
+                if (table !== undefined) {
+                    removeTable(live, table);
+                    return;
+                }
                 const args: {
                     root: OoxmlElement;
                     partName: string;
@@ -892,15 +994,15 @@ export class Slide {
                     media?: PictureMediaAccess;
                     onMutate?: () => void;
                 } = {
-                    root: this.root,
-                    partName: this.partName,
+                    root: live.getRoot(),
+                    partName: live.partName,
                     shape
                 };
-                if (this.mediaAccess !== undefined) {
-                    args.media = this.mediaAccess;
+                if (live.mediaAccess !== undefined) {
+                    args.media = live.mediaAccess;
                 }
-                if (this.onMutate !== undefined) {
-                    args.onMutate = this.onMutate;
+                if (live.onMutate !== undefined) {
+                    args.onMutate = live.onMutate;
                 }
                 removeShapeFromSlide(args);
             }
@@ -1048,9 +1150,9 @@ export class Slide {
     find(textOrRegex: string | RegExp, caseSensitive?: boolean, wholeWord?: boolean): TextFindMatch | undefined {
         const slideIndex: number = this.resolveFindSlideIndex();
         if (typeof textOrRegex === 'string') {
-            return findStringOnSlide(this, slideIndex, textOrRegex, caseSensitive === true, wholeWord === true);
+            return findStringOnSlide(this.modelSlide(), slideIndex, textOrRegex, caseSensitive === true, wholeWord === true, this);
         }
-        return findRegExpOnSlide(this, slideIndex, textOrRegex);
+        return findRegExpOnSlide(this.modelSlide(), slideIndex, textOrRegex, this);
     }
     /**
      * Finds all occurrences of `text` in this slide's body text (non-overlapping,
@@ -1081,9 +1183,9 @@ export class Slide {
     findAll(textOrRegex: string | RegExp, caseSensitive?: boolean, wholeWord?: boolean): ReadonlyArray<TextFindMatch> {
         const slideIndex: number = this.resolveFindSlideIndex();
         if (typeof textOrRegex === 'string') {
-            return findAllStringOnSlide(this, slideIndex, textOrRegex, caseSensitive === true, wholeWord === true);
+            return findAllStringOnSlide(this.modelSlide(), slideIndex, textOrRegex, caseSensitive === true, wholeWord === true, this);
         }
-        return findAllRegExpOnSlide(this, slideIndex, textOrRegex);
+        return findAllRegExpOnSlide(this.modelSlide(), slideIndex, textOrRegex, this);
     }
     /**
      * Resolves this slide's index in the parent presentation slide list.
@@ -1133,70 +1235,6 @@ export class Slide {
     get charts(): Charts {
         return chartsForSlide(this);
     }
-    /**
-     * Inserts a classic DrawingML chart on this slide.
-     *
-     * @param options - Chart type catalog key and optional name / transform.
-     * @returns Bound chart handle after parts and relationships are written.
-     *
-     * @remarks
-     * Thin wrapper over the charts feature {@link addChart} implementation
-     * (API-RULES R6.2). The xlsx root is a static import
-     * ({@link getXlsxRootRequired}); this method does not return a Promise.
-     * ChartEx catalog keys are refused. Shape id allocation never renumbers
-     * existing ids. `Presentation.save()` remains the package await.
-     *
-     * @throws {Error} The catalog key is refused, or the xlsx root is missing.
-     */
-    addChart(options: AddChartOptions): Chart {
-        return addChart(this, options);
-    }
-    /**
-     * Removes a classic chart graphic frame and GCs unshared chart package parts.
-     *
-     * @param chart - Handle from {@link Slide.charts} or {@link Slide.addChart}.
-     *
-     * @remarks
-     * Thin wrapper over the charts feature {@link removeChart} implementation
-     * (API-RULES R6.2).
-     */
-    removeChart(chart: Chart): void {
-        removeChart(this, chart);
-    }
-    /**
-     * Appends an inline DrawingML table graphic frame and returns a live {@link Table}.
-     *
-     * @param options - Required `rows` / `columns`; optional `xfrm`, widths, style, name.
-     * @returns Bound table handle (synchronous).
-     *
-     * @remarks
-     * Thin wrapper over the tables feature {@link addTable} implementation
-     * (API-RULES R6.2). Allocates a new `cNvPr/@id` only; never renumbers
-     * survivors. Subject to `shapesPerSlide`.
-     *
-     * @throws {Error} Invalid rows / columns / style options, or the per-slide
-     * shape limit is exceeded.
-     */
-    addTable(options: AddTableOptions): Table {
-        return addTable(this, options);
-    }
-    /**
-     * Removes a table graphic frame owned by this slide.
-     *
-     * @param table - Handle from {@link Slide.addTable} or `asTable` on this slide.
-     *
-     * @remarks
-     * Thin wrapper over the tables feature {@link removeTable} implementation
-     * (API-RULES R6.2). Detaches the `p:graphicFrame` from `p:spTree` only. Does
-     * not renumber remaining shape ids, does not delete `ppt/tableStyles.xml`,
-     * and does not strip timing targets that still cite the removed id.
-     *
-     * @throws {Error} Detached handle, table not on this slide, or frame not a
-     * direct `spTree` child.
-     */
-    removeTable(table: Table): void {
-        removeTable(this, table);
-    }
 }
 
 /**
@@ -1204,6 +1242,16 @@ export class Slide {
  *
  * @public
  */
+/**
+ * Deep-copies a slide root through the XML serializer.
+ *
+ * @param {OoxmlElement} root - Slide root.
+ * @returns {OoxmlElement} Independent copy.
+ */
+function cloneSlideRoot(root: OoxmlElement): OoxmlElement {
+    return parseXml(serializeXml(root));
+}
+
 export interface HyperlinkView {
     readonly action: string;
     readonly url: string | undefined;

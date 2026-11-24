@@ -8,6 +8,7 @@ import { Tab, SelectEventArgs, TabItemModel } from '@syncfusion/ej2-navigations'
 import * as events from '../../common/base/constant';
 import { IOlapField } from '../../base/olap/engine';
 import { PivotUtil } from '../../base/util';
+import { PivotView } from '../../pivotview/base/pivotview';
 
 /**
  * Module to render Pivot Field List Dialog
@@ -226,7 +227,19 @@ export class DialogRenderer {
         }
         this.onCloseFieldList(null, true);
     }
+    private hasDeferredDataSourceChanges(deferredDataSource: string): boolean {
+        return JSON.stringify(PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings)) !==
+            deferredDataSource;
+    }
+    private markPivotViewModified(deferredDataSource: string): void {
+        const pivotView: PivotView = this.parent.isPopupView ? this.parent.pivotGridModule : this.parent.staticPivotGridModule;
+        if (pivotView && this.hasDeferredDataSourceChanges(deferredDataSource)) {
+            pivotView.isModified = true;
+        }
+    }
     private applyButtonClick(): void {
+        const deferredDataSource: string = JSON.stringify(
+            PivotUtil.getClonedDataSourceSettings(this.parent.clonedDataSource));
         if (this.parent.getModuleName() === 'pivotfieldlist' && this.parent.allowDeferLayoutUpdate) {
             (this.parent as PivotFieldList).pivotChange = false;
         }
@@ -237,6 +250,7 @@ export class DialogRenderer {
         this.parent.updateDataSource(false);
         const parent: PivotFieldList = this.parent;
         parent.axisFieldModule.render();
+        this.markPivotViewModified(deferredDataSource);
         parent.clonedDataSource = PivotUtil.getClonedDataSourceSettings(parent.dataSourceSettings);
         if (this.parent.dataType === 'olap') {
             this.parent.clonedFieldListData = PivotUtil.cloneOlapFieldSettings(this.parent.olapEngineModule.fieldListData);
@@ -472,10 +486,13 @@ export class DialogRenderer {
         }
     }
     private onDeferUpdateClick(): void {
+        const deferredDataSource: string = JSON.stringify(
+            PivotUtil.getClonedDataSourceSettings(this.parent.clonedDataSource));
         if (this.parent.isPopupView && this.parent.dataSourceSettings.mode === 'Server') {
             this.parent.isRequiredUpdate = true;
         }
         this.parent.updateDataSource();
+        this.markPivotViewModified(deferredDataSource);
         this.parent.dialogRenderer.fieldListDialog.hide();
         PivotUtil.invokeActionMethod(this.parent, events.actionComplete, events.fieldListRefresh, {});
     }

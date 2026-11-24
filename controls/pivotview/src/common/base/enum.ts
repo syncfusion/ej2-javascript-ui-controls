@@ -98,9 +98,12 @@ export type PdfBorderStyle =
  * Formatting :- Allow options to show the conditional formatting and the number formatting pop-up that used to apply formatting to the values in the component.
  * Field List :- Allows you to show the field list pop-up. It allows you to modify the report with a variety of actions such as re-arrange the fields between axes by drag-and-drop, add new fields to report, remove any fields from report, filtering and sorting a specific field members, etc., that are used to update the pivot table during runtime.
  * MDX :- Allows to show the MDX query that was run to retrieve data from the OLAP data source. **Note: It is applicable only for OLAP data source.**
+ * Layout :- Allows switching between Compact, Tabular and Flat layouts. Flat requires the FlatLayout module and a local relational data source.
  * ```
  */
 export type ToolbarItems =
+    /** Allows switching between Compact, Tabular and Flat layouts. */
+    'Layout' |
     /** Allows to create a new report. */
     'New' |
     /** Allows to save the current report. */
@@ -1188,16 +1191,34 @@ export type ExportView =
     'Chart';
 
 /**
- * Specifies the layout options for displaying the pivot table in either a compact or tabular format.
+ * Specifies the layout used to display pivot results or individual relational records.
  * The available options are:
  * * `Compact`: Displays the pivot table in a compact format, merging row headers into a single column.
  * * `Tabular`: Displays the pivot table in a traditional format with separate columns for row headers, creating a more detailed table format.
+ * * `Flat`: Displays individual relational records without pivot aggregation. Requires the FlatLayout module and a local relational data source.
  */
 export type GridLayout =
      /** Displays the pivot table in a compact format, merging row headers into a single column. */
      'Compact' |
      /** Displays the pivot table in a traditional format with separate columns for row headers, creating a more detailed table format. */
-     'Tabular';
+     'Tabular' |
+     /** Displays individual relational records without pivot aggregation. */
+     'Flat';
+
+/**
+ * Specifies where the Flat layout displays its aggregate row, separately from source records.
+ * The available options are:
+ * * `None`: Hides the aggregate row.
+ * * `Top`: Displays the aggregate row above the records.
+ * * `Bottom`: Displays the aggregate row below the records.
+ */
+export type FlatTotalsPosition =
+    /** Hides the aggregate row. */
+    'None' |
+    /** Displays the aggregate row above the records. */
+    'Top' |
+    /** Displays the aggregate row below the records. */
+    'Bottom';
 
 /**
  * Specifies the available export formats for pivot table data.

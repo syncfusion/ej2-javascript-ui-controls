@@ -41,8 +41,8 @@ export interface SelectorInfo {
  *
  * Handles multiple rules, comments, and cascading properties.
  *
- * @param styleText - The complete CSS text from a <style> element
- * @returns Array of parsed CSS rules
+ * @param {string} styleText - The complete CSS text from a <style> element
+ * @returns {CSSRuleDefinition[]} Array of parsed CSS rules
  * @private
  */
 export function parseCSSRules(styleText: string): CSSRuleDefinition[] {
@@ -53,36 +53,36 @@ export function parseCSSRules(styleText: string): CSSRuleDefinition[] {
     }
 
     // Remove comments
-    let cleaned = styleText.replace(/\/\*[\s\S]*?\*\//g, '');
+    const cleaned: string = styleText.replace(/\/\*[\s\S]*?\*\//g, '');
 
     // Split by closing braces to find rule blocks
-    const ruleBlocks = cleaned.split('}');
+    const ruleBlocks: string[] = cleaned.split('}');
 
     for (const block of ruleBlocks) {
-        const trimmed = block.trim();
+        const trimmed: string = block.trim();
         if (!trimmed) {
             continue;
         }
 
         // Find the opening brace
-        const braceIndex = trimmed.indexOf('{');
+        const braceIndex: number = trimmed.indexOf('{');
         if (braceIndex === -1) {
             continue;
         }
 
         // Extract selector and declarations
-        const selectorText = trimmed.substring(0, braceIndex).trim();
-        const declarationsText = trimmed.substring(braceIndex + 1).trim();
+        const selectorText: string = trimmed.substring(0, braceIndex).trim();
+        const declarationsText: string = trimmed.substring(braceIndex + 1).trim();
 
         if (!selectorText || !declarationsText) {
             continue;
         }
 
         // Parse selector
-        const selector = parseSelector(selectorText);
+        const selector: SelectorInfo = parseSelector(selectorText);
 
         // Parse declarations
-        const declarations = parseDeclarations(declarationsText);
+        const declarations: Record<string, string> = parseDeclarations(declarationsText);
 
         if (Object.keys(declarations).length > 0) {
             rules.push({
@@ -99,16 +99,16 @@ export function parseCSSRules(styleText: string): CSSRuleDefinition[] {
 /**
  * Parses a single CSS selector.
  *
- * @param selectorText - The selector text (e.g., ".title", "#header", "p")
- * @returns Information about the selector
+ * @param {string} selectorText - The selector text (e.g., ".title", "#header", "p")
+ * @returns {SelectorInfo} Information about the selector
  * @private
  */
 export function parseSelector(selectorText: string): SelectorInfo {
-    const trimmed = selectorText.trim();
+    const trimmed: string = selectorText.trim();
 
     // Class selector (.className)
     if (trimmed.startsWith('.')) {
-        const className = trimmed.substring(1).trim();
+        const className: string = trimmed.substring(1).trim();
         return {
             type: 'class',
             name: className,
@@ -118,7 +118,7 @@ export function parseSelector(selectorText: string): SelectorInfo {
 
     // ID selector (#idName)
     if (trimmed.startsWith('#')) {
-        const idName = trimmed.substring(1).trim();
+        const idName: string = trimmed.substring(1).trim();
         return {
             type: 'id',
             name: idName,
@@ -160,8 +160,8 @@ export function parseSelector(selectorText: string): SelectorInfo {
 /**
  * Parses CSS declarations from rule body.
  *
- * @param declarationsText - The CSS declarations text (e.g., "color: red; font-weight: bold;")
- * @returns Object with camelCase property names and values
+ * @param {string} declarationsText - The CSS declarations text (e.g., "color: red; font-weight: bold;")
+ * @returns {Record<string, string>} Object with camelCase property names and values
  * @private
  */
 export function parseDeclarations(declarationsText: string): Record<string, string> {
@@ -172,33 +172,33 @@ export function parseDeclarations(declarationsText: string): Record<string, stri
     }
 
     // Split by semicolon
-    const parts = declarationsText.split(';');
+    const parts: string[] = declarationsText.split(';');
 
     for (const part of parts) {
-        const trimmed = part.trim();
+        const trimmed: string = part.trim();
         if (!trimmed) {
             continue;
         }
 
         // Split by first colon
-        const colonIndex = trimmed.indexOf(':');
+        const colonIndex: number = trimmed.indexOf(':');
         if (colonIndex === -1) {
             continue;
         }
 
-        const property = trimmed.substring(0, colonIndex).trim();
-        const value = trimmed.substring(colonIndex + 1).trim();
+        const property: string = trimmed.substring(0, colonIndex).trim();
+        const value: string = trimmed.substring(colonIndex + 1).trim();
 
         if (!property || !value) {
             continue;
         }
 
         // Remove !important flag if present (keep the value without the flag)
-        const cleanValue = value.replace(/\s*!important\s*$/i, '').trim();
+        const cleanValue: string = value.replace(/\s*!important\s*$/i, '').trim();
 
         if (cleanValue) {
             // Convert kebab-case to camelCase
-            const camelProperty = kebabToCamelCase(property);
+            const camelProperty: string = kebabToCamelCase(property);
             // eslint-disable-next-line security/detect-object-injection
             declarations[camelProperty] = cleanValue;
         }
@@ -210,8 +210,8 @@ export function parseDeclarations(declarationsText: string): Record<string, stri
 /**
  * Converts kebab-case string to camelCase.
  *
- * @param kebabCase - The kebab-case string (e.g., "font-weight")
- * @returns CamelCase version (e.g., "fontWeight")
+ * @param {string} kebabCase - The kebab-case string (e.g., "font-weight")
+ * @returns {string} CamelCase version (e.g., "fontWeight")
  * @private
  */
 export function kebabToCamelCase(kebabCase: string): string {
@@ -221,8 +221,8 @@ export function kebabToCamelCase(kebabCase: string): string {
 /**
  * Checks if a selector is a class selector.
  *
- * @param selector - The selector info
- * @returns true if it's a simple class selector
+ * @param {SelectorInfo} selector - The selector info
+ * @returns {boolean} true if it's a simple class selector
  * @private
  */
 export function isClassSelector(selector: SelectorInfo): boolean {
@@ -232,8 +232,8 @@ export function isClassSelector(selector: SelectorInfo): boolean {
 /**
  * Extracts class name from a class selector.
  *
- * @param selector - The selector info
- * @returns The class name without dot, or undefined if not a class selector
+ * @param {SelectorInfo} selector - The selector info
+ * @returns {string | undefined} The class name without dot, or undefined if not a class selector
  * @private
  */
 export function getClassName(selector: SelectorInfo): string | undefined {

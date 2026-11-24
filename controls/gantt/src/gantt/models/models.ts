@@ -47,3 +47,5 @@ export * from './calendar';
 export * from './calendar-model';
 export * from './webMcp-settings';
 export * from './webMcp-settings-model';
+export * from './dom-virtualization-settings';
+export * from './dom-virtualization-settings-model';

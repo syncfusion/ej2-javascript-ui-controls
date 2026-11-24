@@ -14,7 +14,7 @@ import { setRowElements, resetRowIndex, compareChanges, getCellByColAndRowIndex,
 import * as events from '../base/constant';
 import { ReturnType, BatchChanges, RowSelectable, PinRow, SetRowHeight } from '../base/type';
 import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI, LazyLoadArgs, LoadEventArgs, ContextMenuClickEventArgs, ContextMenuOpenEventArgs, NotifyArgs, ExportHeaders, DetailTemplateDetachArgs, BeforeCustomFilterOpenEventArgs, AdvancedFilterOpenEventArgs, AdvancedFilterCloseEventArgs, AdvancedFilterBeginArgs, AdvancedFilterCompleteEventArgs, WebMcpToolExecuteEventArgs } from './interface';
-import {AggregateQueryCellInfoEventArgs, IGrid } from './interface';
+import {AggregateQueryCellInfoEventArgs, IGrid, DataSetResult } from './interface';
 import { IRenderer, IValueFormatter, IFilterOperator, IIndex, RowDataBoundEventArgs, QueryCellInfoEventArgs } from './interface';
 import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, CellFocusEventArgs, ParentDetails, ContextMenuItemModel, FormulaDefinitionModel } from './interface';
 import { PdfQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, ExcelExportProperties, PdfExportProperties } from './interface';
@@ -24,7 +24,7 @@ import { HeaderCellInfoEventArgs, KeyboardEventArgs, RecordClickEventArgs, Adapt
 import { FailureEventArgs, FilterEventArgs, ColumnDragEventArgs, GroupEventArgs, PrintEventArgs, ICustomOptr, ReorderEventArgs } from './interface';
 import { RowDeselectEventArgs, RowSelectEventArgs, RowSelectingEventArgs, RowDeselectingEventArgs, PageEventArgs, RowDragEventArgs } from './interface';
 import { BeforeBatchAddArgs, BeforeBatchDeleteArgs, BeforeBatchSaveArgs, ResizeArgs, ColumnMenuItemModel } from './interface';
-import { BatchAddArgs, BatchDeleteArgs, BeginEditArgs, CellEditArgs, CellSaveArgs, BeforeDataBoundArgs, RowInfo } from './interface';
+import { BatchAddArgs, BatchDeleteArgs, BeginEditArgs, CellEditArgs, CellSaveArgs, BeforeDataBoundArgs, RowInfo, FlashOptions } from './interface';
 import { DetailDataBoundEventArgs, ColumnChooserEventArgs, AddEventArgs, SaveEventArgs, EditEventArgs, DeleteEventArgs } from './interface';
 import { DetailExpandCollapseArgs } from './interface';
 import { ExcelExportCompleteArgs, PdfExportCompleteArgs, DataStateChangeEventArgs, DataSourceChangedEventArgs } from './interface';
@@ -56,6 +56,7 @@ import { InfiniteScrollSettingsModel, DomVirtualizationSettingsModel } from './g
 import { PageSettingsModel, AggregateRowModel, AggregateColumnModel, ColumnChooserSettingsModel } from '../models/models';
 import { PageSettings } from '../models/page-settings';
 import { ColumnChooserSettings } from '../models/column-chooser-settings';
+import { HighlightSettings, HighlightSettingsModel } from '../models/highlight-settings';
 import { Sort } from '../actions/sort';
 import { Page } from '../actions/page';
 import { Selection } from '../actions/selection';
@@ -75,6 +76,7 @@ import { DetailRow } from '../actions/detail-row';
 import { Toolbar } from '../actions/toolbar';
 import { AggregateRow } from '../models/aggregate';
 import { Edit } from '../actions/edit';
+import { Highlight } from '../actions/highlight';
 import { Row } from '../models/row';
 import { ColumnChooser } from '../actions/column-chooser';
 import { AdvancedFilter } from '../actions/advanced-filter';
@@ -86,6 +88,9 @@ import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { ColumnMenu } from '../actions/column-menu';
 import { CheckState } from './enum';
 import { Aggregate } from '../actions/aggregate';
+import { StatusBar } from '../actions/status-bar';
+import { StatusBarSettings } from '../models/status-bar-settings';
+import { StatusBarSettingsModel } from '../models/status-bar-settings-model';
 import { ILogger, Logger } from '../actions/logger';
 import { IModelGenerator } from '../base/interface';
 import { RowModelGenerator } from '../services/row-model-generator';
@@ -1455,6 +1460,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public editModule: Edit;
 
     /**
+     * The `highlightModule` is used to handle data change highlighting animation.
+     *
+     * @hidden
+     */
+    public highlightModule: Highlight;
+
+    /**
      * The `formulaModule` is used to manage formula parsing, evaluation, and caching in the Grid.
      *
      */
@@ -1493,6 +1505,39 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @hidden
      */
     public aggregateModule: Aggregate;
+
+    /**
+     * Provides the injected Status Bar controller.
+     *
+     * @hidden
+     */
+    public statusBarModule: StatusBar;
+
+    /**
+     * Enables the Status Bar when the StatusBar module is injected.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableStatusBar: boolean;
+
+    /**
+     * Configures the keyed Status Bar panels.
+     *
+     * @default { items: [] }
+     */
+    @Complex<StatusBarSettingsModel>({}, StatusBarSettings)
+    public statusBarSettings: StatusBarSettingsModel;
+
+    /**
+     * Returns a rendered Status Bar panel, or null when disabled or unavailable.
+     * @param {string} key - The configured panel key.
+     * @returns {HTMLElement} The panel element, or null.
+     */
+    public getStatusPanel(key: string): HTMLElement | null {
+        return this.enableStatusBar && !this.isDestroyed && this.statusBarModule ?
+            this.statusBarModule.getStatusPanel(key) : null;
+    }
 
     private loggerModule: ILogger;
     private enableLogger: boolean = false;
@@ -3275,6 +3320,25 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public webMcpSettings: GridWebMcpSettingsModel;
 
     /**
+     * Enables highlighting of cells and rows when data changes.
+     * When set to true, cells and rows that are updated will be highlighted with an animation effect.
+     * {% codeBlock src='grid/enableHighlightOnDataChange/index.md' %}{% endcodeBlock %}
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableHighlightOnDataChange: boolean;
+    /**
+     * Configures the highlight settings for data changes.
+     * Allows customization of flash duration, fade duration, and color scheme.
+     * {% codeBlock src='grid/highlightSettings/index.md' %}{% endcodeBlock %}
+     *
+     * @default {flashDuration: 500, fadeDuration: 1000, color: ''}
+     */
+    @Complex<HighlightSettingsModel>({}, HighlightSettings)
+    public highlightSettings: HighlightSettingsModel;
+
+    /**
      * Constructor for creating the component
      *
      * @param {GridModel} options - specifies the options
@@ -3344,6 +3408,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.setFrozenCount(); this.enableInfiniteAggrgate();
         const modules: ModuleDeclaration[] = [];
         if (this.isDestroyed) { return modules; }
+        if (this.enableStatusBar) {
+            modules.push({ member: 'statusBar', args: [this], name: 'StatusBar' });
+        }
         if (this.enableWebMcp) {
             modules.push({
                 member: 'webMcpGrid',
@@ -3537,6 +3604,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         if (this.enableLogger) {
             modules.push({ member: 'logger', args: [this], name: 'Logger' });
+        }
+        if (this.ensureModuleInjected(Highlight)) {
+            modules.push({
+                member: 'highlight',
+                args: [this, this.serviceLocator],
+                name: 'Highlight'
+            });
         }
     }
 
@@ -4730,6 +4804,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         for (const prop of properties) {
             switch (prop) {
+            case 'enableStatusBar':
+            case 'statusBarSettings':
+                this.notify(events.uiUpdate, { module: 'statusBar', enable: this.enableStatusBar });
+                break;
             case 'allowPaging':
                 this.notify(events.uiUpdate, { module: 'pager', enable: this.allowPaging });
                 requireRefresh = true;
@@ -5078,10 +5156,20 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                             || []);
                     }
                 }
-                this.dataSource = {
-                    result: gResult as Object[] | Group[], count: (<DataResult>this.dataSource).count,
-                    aggregates: (<DataResult>this.dataSource).aggregates
-                };
+                const currentDataSource: DataSetResult = this.dataSource as DataSetResult;
+                let dataSource: DataSetResult;
+                if (this.enableInfiniteScrolling && this.infiniteScrollSettings && this.infiniteScrollSettings.enableCountLessMode) {
+                    dataSource = extend({}, currentDataSource, {
+                        result: gResult as Object[] | Group[], count: currentDataSource.count,
+                        aggregates: currentDataSource.aggregates
+                    }) as DataSetResult;
+                } else {
+                    dataSource = {
+                        result: gResult as Object[] | Group[], count: currentDataSource.count,
+                        aggregates: currentDataSource.aggregates
+                    };
+                }
+                this.dataSource = dataSource;
                 this.getDataModule().setState({});
                 requestPendingState.resolver(this.dataSource);
             } else {
@@ -6288,6 +6376,25 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public getMovableCellFromIndex(rowIndex: number, columnIndex: number): Element {
         return this.getCellFromIndex(rowIndex, columnIndex);
+    }
+
+    /**
+     * Flashes (highlights) rows, whole columns or specific cells. Works independently of `enableHighlightOnDataChange`.
+     * - `{ rowNodes: [row], columns: ['c'] }` flashes the cell of column `c` in that row.
+     * - `{ columns: ['c', 'd'] }` flashes the entire columns.
+     * - `{ rowNodes: [row] }` flashes the entire row.
+     * A row node can be a row index, a row element, a row object or a data record.
+     * Pass `highlightSettings` in the options to override the grid's `highlightSettings` for this call only;
+     * values that are not given fall back to the grid's `highlightSettings`.
+     * {% codeBlock src='grid/flashCells/index.md' %}{% endcodeBlock %}
+     *
+     * @param {FlashOptions} options - Specifies the rows and/or columns to flash.
+     * @returns {void}
+     */
+    public flashCells(options: FlashOptions): void {
+        if (this.highlightModule) {
+            this.highlightModule.flash(options);
+        }
     }
 
     /**

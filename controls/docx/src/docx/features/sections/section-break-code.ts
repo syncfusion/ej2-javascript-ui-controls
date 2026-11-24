@@ -1,5 +1,5 @@
 /**
- * Section break kind (`ST_SectionMark` mapped to public names).
+ * Section break kind.
  *
  * @public
  */
@@ -22,7 +22,7 @@ export enum SectionBreakCode {
  *
  * @private
  */
-export type SectionMarkWire = 'newPage' | 'continuous' | 'nextColumn' | 'evenPage' | 'oddPage';
+export type SectionMarkWire = 'nextPage' | 'continuous' | 'nextColumn' | 'evenPage' | 'oddPage';
 
 /**
  * @param {SectionBreakCode} code - The code.
@@ -32,7 +32,7 @@ export type SectionMarkWire = 'newPage' | 'continuous' | 'nextColumn' | 'evenPag
 export function breakCodeToWire(code: SectionBreakCode): SectionMarkWire {
     switch (code) {
     case SectionBreakCode.NewPage:
-        return 'newPage';
+        return 'nextPage';
     case SectionBreakCode.Continuous:
         return 'continuous';
     case SectionBreakCode.NewColumn:
@@ -44,7 +44,7 @@ export function breakCodeToWire(code: SectionBreakCode): SectionMarkWire {
     default: {
         const _exhaustive: never = code;
         void _exhaustive;
-        return 'newPage';
+        return 'nextPage';
     }
     }
 }
@@ -57,7 +57,7 @@ export function breakCodeToWire(code: SectionBreakCode): SectionMarkWire {
 export function wireToBreakCode(wire: SectionMarkWire | undefined): SectionBreakCode {
     switch (wire) {
     case undefined:
-    case 'newPage':
+    case 'nextPage':
         return SectionBreakCode.NewPage;
     case 'continuous':
         return SectionBreakCode.Continuous;

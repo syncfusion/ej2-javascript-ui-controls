@@ -2,7 +2,7 @@
  * Public section page-setup contract (architecture §4–10).
  *
  * Core types `Section.pageSetup` against this surface so consumers see the live
- * DocIO-aligned API without the core package importing the sections feature. The
+ * API without the core package importing the sections feature. The
  * feature `PageSetup` class implements this interface plus internal
  * {@link SectionPropertiesModel} serialization.
  *
@@ -11,32 +11,32 @@
 
 import { Color } from './color';
 /**
- * Page orientation (`ST_PageOrientation`).
+ * Page orientation.
  *
  * @public
  */
 export enum PageOrientation {
+    /** Specifies the portrait orientation. */
     Portrait = 'portrait',
+    /** Specifies the landscape orientation. */
     Landscape = 'landscape',
 }
 
 /**
- * Page number formats (`ST_NumberFormat` subset used for page numbers).
- *
- * Maps to `w:pgNumType/@w:fmt`.
+ * Specifies the number format used for page numbers.
  *
  * @public
  */
 export enum PageNumberStyle {
     /** Arabic decimal numerals (`decimal`). */
     Arabic = 'decimal',
-    /** Uppercase Roman numerals. */
+    /** Specifies uppercase Roman numerals (I, II, III, …) for the page numbers. */
     UpperRoman = 'upperRoman',
-    /** Lowercase Roman numerals. */
+    /** Specifies lowercase Roman numerals (i, ii, iii, …) for the page numbers. */
     LowerRoman = 'lowerRoman',
-    /** Uppercase letters. */
+    /** Specifies uppercase letters (A, B, C, …) for the page numbers. */
     UpperLetter = 'upperLetter',
-    /** Lowercase letters. */
+    /** Specifies lowercase letters (a, b, c, …) for the page numbers. */
     LowerLetter = 'lowerLetter',
     /** Ordinal numbers (`1st`, `2nd`, …). */
     Ordinal = 'ordinal',
@@ -44,27 +44,28 @@ export enum PageNumberStyle {
     CardinalText = 'cardinalText',
     /** Ordinal text (`First`, `Second`, …). */
     OrdinalText = 'ordinalText',
-    /** Number in dashes. */
+    /** Specifies numbers surrounded by dashes (- 1 -) for the page numbers. */
     NumberInDash = 'numberInDash',
-    /** Chicago style. */
+    /** Specifies the Chicago style, which uses the symbols *, †, ‡, and § for the page numbers. */
     Chicago = 'chicago',
 }
 
 /**
- * When line numbers restart counting (`ST_LineNumberRestart`).
- *
- * EJ2 member names; wire tokens are the enum values.
+ * Specifies when line numbering restarts.
  *
  * @public
  */
 export enum LineNumberingMode {
+    /** Specifies the continuous mode. */
     Continuous = 'continuous',
+    /** Specifies the restart page mode. */
     RestartPage = 'newPage',
+    /** Specifies the restart section mode. */
     RestartSection = 'newSection',
 }
 
 /**
- * Printer paper tray codes (`w:paperSrc` / Win32 `DMBIN_*` style integers).
+ * Printer paper tray codes.
  *
  * Unknown loaded codes are preserved internally and are not forced into an
  * incorrect public member.
@@ -74,31 +75,31 @@ export enum LineNumberingMode {
 export enum PrinterPaperTray {
     /** Default / only bin (typically `1`). */
     DefaultBin = 1,
-    /** Upper bin (`1`). */
+    /** Specifies the upper bin (`1`). */
     UpperBin = 1,
-    /** Lower bin (`2`). */
+    /** Specifies the lower bin (`2`). */
     LowerBin = 2,
-    /** Middle bin (`3`). */
+    /** Specifies the middle bin (`3`). */
     MiddleBin = 3,
-    /** Manual feed (`4`). */
+    /** Specifies the manual feed tray (`4`). */
     ManualFeed = 4,
-    /** Envelope feed (`5`). */
+    /** Specifies the envelope feed tray (`5`). */
     EnvelopeFeed = 5,
     /** Envelope manual feed (`6`). */
     EnvelopeManualFeed = 6,
     /** Auto sheet feed (`7`). */
     AutoSheetFeed = 7,
-    /** Tractor feed (`8`). */
+    /** Specifies the tractor feed tray (`8`). */
     TractorFeed = 8,
-    /** Small-format bin (`9`). */
+    /** Specifies the small-format bin (`9`). */
     SmallFormatBin = 9,
-    /** Large-format bin (`10`). */
+    /** Specifies the large-format bin (`10`). */
     LargeFormatBin = 10,
-    /** Large-capacity bin (`11`). */
+    /** Specifies the large-capacity bin (`11`). */
     LargeCapacityBin = 11,
-    /** Cassette (`14`). */
+    /** Specifies the cassette tray (`14`). */
     Cassette = 14,
-    /** Form source (`15`). */
+    /** Specifies the form source tray (`15`). */
     FormSource = 15,
 }
 
@@ -117,7 +118,7 @@ export enum VerticalAlignment {
 }
 
 /**
- * Page border offset origin (`CT_PageBorders/@w:offsetFrom`).
+ * Page border offset origin.
  *
  * @public
  */
@@ -129,7 +130,7 @@ export enum PageBorderOffsetFrom {
 }
 
 /**
- * Which pages receive page borders (`CT_PageBorders/@w:display`).
+ * Which pages receive page borders.
  *
  * @public
  */
@@ -143,39 +144,64 @@ export enum PageBordersApplyType {
 }
 
 /**
- * Page / paragraph border line styles (`ST_Border` subset).
- *
- * EJ2 member names; wire tokens are the enum values.
+ * Specifies the line style of a page or paragraph border.
  *
  * @public
  */
 export enum BorderStyle {
+    /** Specifies the nil style. */
     Nil = 'nil',
+    /** Specifies the none style. */
     None = 'none',
+    /** Specifies the single style. */
     Single = 'single',
+    /** Specifies the thick style. */
     Thick = 'thick',
+    /** Specifies the double style. */
     Double = 'double',
+    /** Specifies the dotted style. */
     Dotted = 'dotted',
+    /** Specifies the dashed style. */
     Dashed = 'dashed',
+    /** Specifies the dot dash style. */
     DotDash = 'dotDash',
+    /** Specifies the dot dot dash style. */
     DotDotDash = 'dotDotDash',
+    /** Specifies the triple style. */
     Triple = 'triple',
+    /** Specifies the thin thick small gap style. */
     ThinThickSmallGap = 'thinThickSmallGap',
+    /** Specifies the thick thin small gap style. */
     ThickThinSmallGap = 'thickThinSmallGap',
+    /** Specifies the thin thick thin small gap style. */
     ThinThickThinSmallGap = 'thinThickThinSmallGap',
+    /** Specifies the thin thick medium gap style. */
     ThinThickMediumGap = 'thinThickMediumGap',
+    /** Specifies the thick thin medium gap style. */
     ThickThinMediumGap = 'thickThinMediumGap',
+    /** Specifies the thin thick thin medium gap style. */
     ThinThickThinMediumGap = 'thinThickThinMediumGap',
+    /** Specifies the thin thick large gap style. */
     ThinThickLargeGap = 'thinThickLargeGap',
+    /** Specifies the thick thin large gap style. */
     ThickThinLargeGap = 'thickThinLargeGap',
+    /** Specifies the thin thick thin large gap style. */
     ThinThickThinLargeGap = 'thinThickThinLargeGap',
+    /** Specifies the wave style. */
     Wave = 'wave',
+    /** Specifies the double wave style. */
     DoubleWave = 'doubleWave',
+    /** Specifies the dash small gap style. */
     DashSmallGap = 'dashSmallGap',
+    /** Specifies the dash dot stroked style. */
     DashDotStroked = 'dashDotStroked',
+    /** Specifies the three d emboss style. */
     ThreeDEmboss = 'threeDEmboss',
+    /** Specifies the three d engrave style. */
     ThreeDEngrave = 'threeDEngrave',
+    /** Specifies the outset style. */
     Outset = 'outset',
+    /** Specifies the inset style. */
     Inset = 'inset',
 }
 
@@ -193,8 +219,8 @@ export class SizeF {
     private changeListener: ((width: number, height: number) => void) | undefined;
 
     /**
-     * @param {number} width - Width in points.
-     * @param {number} height - Height in points.
+     * @param {number} width - Specifies the width in points.
+     * @param {number} height - Specifies the height in points.
      */
     constructor(width: number, height: number) {
         this.widthValue = width;
@@ -284,13 +310,31 @@ export interface PageBorder {
  * @public
  */
 export interface PageBorders {
+    /**
+     * Gets or sets the border style applied to all the page borders.
+     */
     borderType: BorderStyle;
     /** Common edge color (named {@link Color} or mapped wire). */
     color: Color;
+    /**
+     * Gets or sets the line width, in points, applied to all the page borders.
+     */
     lineWidth: number;
+    /**
+     * Gets the top page border.
+     */
     readonly top: PageBorder;
+    /**
+     * Gets the bottom page border.
+     */
     readonly bottom: PageBorder;
+    /**
+     * Gets the left page border.
+     */
     readonly left: PageBorder;
+    /**
+     * Gets the right page border.
+     */
     readonly right: PageBorder;
 }
 
@@ -330,6 +374,7 @@ export interface PageSetup {
 
     /**
      * Gutter margin (`w:pgMar/@w:gutter`), points.
+     *
      * @private
      */
     gutter: number;

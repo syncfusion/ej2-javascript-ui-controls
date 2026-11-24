@@ -45,7 +45,7 @@ export type EndnotePosition = 'sectEnd' | 'docEnd';
  */
 export type NoteNumberingRestart = 'continuous' | 'eachSect' | 'eachPage';
 /**
- * Closed set of note number formats (`ST_NumberFormat` in Transitional WML).
+ * Closed set of note number formats.
  *
  * Use common values such as `decimal`, `upperRoman`, `lowerRoman`,
  * `upperLetter`, and `lowerLetter`. Less common regional and specialty tokens
@@ -196,10 +196,10 @@ function emptySharedState(onDirty: (() => void) | undefined): SharedNoteState {
  * `tryConsumePos` returns true when the pos child is fully consumed (known token).
  * Returning false places the child in residual (unknown pos, or duplicate).
  *
- * @param {OpenXmlElement} element - The element.
- * @param {Function} onDirty - The on dirty.
- * @param {Function} tryConsumePos - The try consume pos.
- * @returns {SharedNoteState} The result.
+ * @param {OpenXmlElement} element - Specifies the element.
+ * @param {Function|undefined} onDirty - Specifies the on dirty.
+ * @param {Function} tryConsumePos - Specifies the try consume pos.
+ * @returns {SharedNoteState} Returns the result.
  */
 function parseSharedFromElement(
     element: OpenXmlElement,
@@ -350,8 +350,8 @@ export class FootnoteProperties {
     /**
      * Set or clear the footnote number format.
      *
-     * @param {NoteNumberFormat | undefined} value - The value.
-     * @returns {void} Nothing is returned.
+     * @param {NoteNumberFormat | undefined} value - Specifies the value.
+     * @returns {void} Nothing.
      * @throws RangeError when `value` is not a supported {@link NoteNumberFormat}.
      * @public
      */
@@ -379,8 +379,8 @@ export class FootnoteProperties {
     /**
      * Set or clear footnote placement.
      *
-     * @param {FootnotePosition | undefined} value - The value.
-     * @returns {void} Nothing is returned.
+     * @param {FootnotePosition | undefined} value - Specifies the value.
+     * @returns {void} Nothing.
      * @throws RangeError when `value` is not a supported {@link FootnotePosition}.
      * @public
      */
@@ -403,8 +403,8 @@ export class FootnoteProperties {
     /**
      * Set or clear the starting footnote number.
      *
-     * @param {number | undefined} value - The value.
-     * @returns {void} Nothing is returned.
+     * @param {number | undefined} value - Specifies the value.
+     * @returns {void} Nothing.
      * @throws RangeError when `value` is not a finite integer.
      * @public
      */
@@ -427,8 +427,8 @@ export class FootnoteProperties {
     /**
      * Set or clear the footnote numbering restart rule.
      *
-     * @param {NoteNumberingRestart | undefined} value - The value.
-     * @returns {void} Nothing is returned.
+     * @param {NoteNumberingRestart | undefined} value - Specifies the value.
+     * @returns {void} Nothing.
      * @throws RangeError when `value` is not a supported {@link NoteNumberingRestart}.
      * @public
      */
@@ -510,8 +510,8 @@ export class EndnoteProperties {
     /**
      * Set or clear the endnote number format.
      *
-     * @param {NoteNumberFormat | undefined} value - The value.
-     * @returns {void} Nothing is returned.
+     * @param {NoteNumberFormat | undefined} value - Specifies the value.
+     * @returns {void} Nothing.
      * @throws RangeError when `value` is not a supported {@link NoteNumberFormat}.
      * @public
      */
@@ -539,8 +539,8 @@ export class EndnoteProperties {
     /**
      * Set or clear endnote placement.
      *
-     * @param {EndnotePosition | undefined} value - The value.
-     * @returns {void} Nothing is returned.
+     * @param {EndnotePosition | undefined} value - Specifies the value.
+     * @returns {void} Nothing.
      * @throws RangeError when `value` is not a supported {@link EndnotePosition}.
      * @public
      */
@@ -563,8 +563,8 @@ export class EndnoteProperties {
     /**
      * Set or clear the starting endnote number.
      *
-     * @param {number | undefined} value - The value.
-     * @returns {void} Nothing is returned.
+     * @param {number | undefined} value - Specifies the value.
+     * @returns {void} Nothing.
      * @throws RangeError when `value` is not a finite integer.
      * @public
      */
@@ -587,8 +587,8 @@ export class EndnoteProperties {
     /**
      * Set or clear the endnote numbering restart rule.
      *
-     * @param {NoteNumberingRestart | undefined} value - The value.
-     * @returns {void} Nothing is returned.
+     * @param {NoteNumberingRestart | undefined} value - Specifies the value.
+     * @returns {void} Nothing.
      * @throws RangeError when `value` is not a supported {@link NoteNumberingRestart}.
      * @public
      */

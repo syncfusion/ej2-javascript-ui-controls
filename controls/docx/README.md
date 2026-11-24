@@ -47,7 +47,7 @@ Product support is available through the following mediums:
 
 ### Changelog
 
-Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/issues/new). Get minor improvements and bug fixes every week to stay up to date with frequent updates. 
+Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/issues/new). Get minor improvements and bug fixes every week to stay up to date with frequent updates.
 
 ### License and copyright
 

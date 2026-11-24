@@ -12,6 +12,7 @@ import { Paragraph, BlockContent } from '../document/paragraph';
 import { ParagraphAlignment } from '../document/alignment';
 import { visitParagraphsInDocumentOrder } from '../../core/registry/index';
 import { appendOpaqueComplexField, fieldInstructionKeyword, opaqueComplexFieldInstructionsInParagraph } from '../fields/index';
+import { Field } from '../fields/paragraph-field';
 import { stylesFor } from '../styles/index';
 import { providePictureCaptionAuthoring } from './caption-authoring-api';
 import { CAPTION_FORMAT_SWITCH, CAPTION_NUMBERING_FORMATS, CAPTION_POSITIONS, CaptionNumberingFormat as CaptionNf, CaptionPosition as CaptionPos, formatSequenceValue } from './caption-enums';
@@ -63,14 +64,24 @@ function paragraphForPicture(document: WordDocument, picture: Picture): {
  */
 function countSeqFields(document: WordDocument, identifier: string): number {
     let count: number = 0;
+    const countInstruction: (instruction: string) => void = (instruction: string): void => {
+        if (fieldInstructionKeyword(instruction) !== 'SEQ') {
+            return;
+        }
+        const seqIdentifier: string = instruction.trim().split(/\s+/)[1];
+        if ((seqIdentifier != null ? seqIdentifier : '') === identifier) {
+            count += 1;
+        }
+    };
     visitParagraphsInDocumentOrder(document, (paragraph: Paragraph) => {
+        // Freshly authored captions are raw complex fields; captions read from a package are
+        // parsed into Field items. Both count toward the sequence.
         for (const instruction of opaqueComplexFieldInstructionsInParagraph(paragraph)) {
-            if (fieldInstructionKeyword(instruction) !== 'SEQ') {
-                continue;
-            }
-            const seqIdentifier: string = instruction.trim().split(/\s+/)[1];
-            if ((seqIdentifier != null ? seqIdentifier : '') === identifier) {
-                count += 1;
+            countInstruction(instruction);
+        }
+        for (const item of paragraph.items) {
+            if (item instanceof Field) {
+                countInstruction(item.fieldCode);
             }
         }
     });

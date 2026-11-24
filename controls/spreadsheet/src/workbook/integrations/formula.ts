@@ -8,7 +8,7 @@ import { Deferred } from '@syncfusion/ej2-data';
 import { DefineNameModel, getCellAddress, getFormattedCellObject, isNumber, checkIsFormula, removeUniquecol, removeSortcol, checkUniqueRange, checkSortRange } from '../common/index';
 import { getRangeAddress, InsertDeleteEventArgs, getRangeFromAddress, isCellReference, refreshInsertDelete, getUpdatedFormulaOnInsertDelete } from '../common/index';
 import { getUniqueRange, getSortRange, DefineName, selectionComplete, DefinedNameEventArgs, getRangeIndexes, InvalidFormula, getSwapRange } from '../common/index';
-import { FormulaCalculateArgs, updateSheetFromDataSource, ExtendedRange, importModelUpdate } from '../common/index';
+import { FormulaCalculateArgs, updateSheetFromDataSource, ExtendedRange, importModelUpdate, isImported } from '../common/index';
 import { formulaBarOperation } from '../../spreadsheet/common/event';
 import { locale } from '../../spreadsheet/common/constant';
 import { Spreadsheet } from '../../spreadsheet';
@@ -748,7 +748,7 @@ export class WorkbookFormula {
                 const depCells: Map<string, string> = this.calculateInstance.getDependentFormulaCells().get(cellRef);
                 if (depCells && depCells.size && this.calculateInstance.getFormulaInfoTable().has(cellRef) &&
                     this.calculateInstance.getFormulaInfoTable().get(cellRef).getParsedFormula().lastIndexOf('q') === -1 &&
-                    !updatedCell.format) {
+                    !updatedCell.format && (!isImported(this.parent) || this.parent.isEdit)) {
                     let format: string; let fCell: CellModel; let sheetRef: string; let model: SheetModel; let sheetIdx: number;
                     let idx: number[]; const family: CalcSheetFamilyItem = this.calculateInstance.getSheetFamilyItem(null, this.calcID);
                     depCells.forEach((cellRef: string) => {

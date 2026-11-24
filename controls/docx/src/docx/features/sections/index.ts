@@ -253,7 +253,7 @@ function parseHeaderFooterReference(
 function parseSectionMarkWire(element: OpenXmlElement): SectionMarkWire | undefined {
     const val: string = wValAttribute(element);
     if (
-        val === 'newPage' ||
+        val === 'nextPage' ||
         val === 'continuous' ||
         val === 'nextColumn' ||
         val === 'evenPage' ||
@@ -665,7 +665,7 @@ export function parseSectionProperties(
         if (isWml(child, 'type') && breakCode === undefined) {
             const parsed: SectionMarkWire = parseSectionMarkWire(child);
             if (parsed !== undefined) {
-                breakCode = wireToBreakCode(parsed === 'newPage' ? undefined : parsed);
+                breakCode = wireToBreakCode(parsed);
                 seenModeled = true;
                 continue;
             }
@@ -1220,7 +1220,7 @@ export function paragraphSectionBreak(paragraph: Paragraph): PageSetup | undefin
  *
  * After dual-hold update, repartitions {@link Document.sections} so non-final
  * pageSetup lives on its own section and flatten emits mid-body + body-final
- * `w:sectPr` (TASK-8075/8076 authoring path).
+ * `w:sectPr`.
  *
  * @param {Paragraph} paragraph - The paragraph.
  * @param {PageSetup | undefined} properties - The properties.

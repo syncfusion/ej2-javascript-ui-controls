@@ -1266,7 +1266,8 @@ export class ChartRows extends DateProcessor {
             setTimeout(() => {
                 if (!isNullOrUndefined(this.parent.treeGrid.grid) && !isNullOrUndefined(this.parent.treeGrid.grid.contentModule) &&
                     !isNullOrUndefined(this.parent.treeGrid.grid.contentModule.getRows())) {
-                    rows = this.parent.treeGrid.grid.contentModule.getRows()[i as number];
+                    // T-11: use pool-safe lookup instead of absolute DOM index.
+                    rows = this.parent.treeGrid.getRowByIndex(i as number);
                     if (rows && rows.isSelected) {
                         activecls = 'e-active';
                     }
@@ -1287,7 +1288,9 @@ export class ChartRows extends DateProcessor {
                 });
                 isSelected = matchedRow && matchedRow.isSelected ? true : false;
             } else {
-                rows = this.parent.treeGrid.grid.contentModule.getRows()[i as number];
+                rows = (this.parent as any).enableDomVirtualization
+                    ? this.parent.treeGrid.getRowByIndex(i as number)
+                    : this.parent.treeGrid.grid.contentModule.getRows()[i as number];
                 isSelected = rows && rows.isSelected ? true : false;
             }
             activecls = isSelected ? 'e-active' : '';
@@ -1767,7 +1770,11 @@ export class ChartRows extends DateProcessor {
      * @private
      */
     public refreshGanttRows(): void {
-        this.parent.currentViewData = this.parent.treeGrid.getCurrentViewRecords().slice();
+        if ((this.parent as any).enableDomVirtualization) {
+            (this.parent as any).updateCurrentViewData();
+        } else {
+            this.parent.currentViewData = this.parent.treeGrid.getCurrentViewRecords().slice();
+        }
         this.createTaskbarTemplate();
         if (this.parent.showOverAllocation) {
             for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
@@ -1813,6 +1820,15 @@ export class ChartRows extends DateProcessor {
      * @private
      */
     private createTaskbarTemplate(): void {
+        // In DOM virt mode, skip rebuild during active cell editing. The row pool is still
+        // valid; clearing and rebuilding it causes perceptible lag on edit open. Guard here —
+        // before any DOM mutation — so the tbody rows are preserved throughout edit.
+        if ((this.parent as any).enableDomVirtualization && this.parent.domVirtualizationModule) {
+            const cellEditModule: any = this.parent.editModule && (this.parent.editModule as any).cellEditModule;
+            if (cellEditModule && cellEditModule.isCellEdit) {
+                return;
+            }
+        }
         const trs: Element[] = [].slice.call(this.ganttChartTableBody.querySelectorAll('tr'));
         this.ganttChartTableBody.innerHTML = '';
         const collapsedResourceRecord: IGanttData[] = [];
@@ -1838,6 +1854,15 @@ export class ChartRows extends DateProcessor {
                     this.ganttChartTableBody.appendChild(oldRowElements[oldIndex as number]);
                 }
                 this.ganttChartTableBody.querySelectorAll('tr')[index as number].setAttribute('aria-rowindex', (index + 1).toString());
+            }
+        } else if ((this.parent as any).enableDomVirtualization && this.parent.domVirtualizationModule) {
+            // DOM virtualization: only render the rows visible in the current scroll window.
+            this.ganttChartTableBody.innerHTML = '';
+            this.clearDomVirtPool();
+            const result: { records: IGanttData[], startIndex: number } =
+                this.parent.domVirtualizationModule.getVisibleRecordsFromScroll();
+            if (result.records.length > 0) {
+                this.refreshDomVirtualRows(result.records, result.startIndex);
             }
         }  else {
             const gridRowData: Row<{}>[] | HTMLCollectionOf<HTMLTableRowElement> = this.parent.treeGrid.grid.contentModule.getRows();
@@ -1874,6 +1899,9 @@ export class ChartRows extends DateProcessor {
                 }
             });
             this.parent.initialChartRowElements = this.parent.ganttChartModule.getChartRows();
+        }
+        if (this.parent.domVirtualizationModule) {
+            this.parent.treeGridModule['restoreDomVirtualSelection']();
         }
         if (this.parent.enableCriticalPath && this.parent.criticalPathModule) {
             const criticalModule: CriticalPath = this.parent.criticalPathModule;
@@ -2101,6 +2129,29 @@ export class ChartRows extends DateProcessor {
                     this.triggerQueryTaskbarInfoByIndex(segmentElement, data);
                 }
             } else if (trElement) {
+                this.triggerQueryTaskbarInfoByIndex(trElement, data);
+            }
+        }
+    }
+
+    public triggerQueryTaskbarInfoForWindow(startIndex: number): void {
+        if (!this.parent.queryTaskbarInfo) { return; }
+        const trs: NodeListOf<Element> = this.ganttChartTableBody.querySelectorAll('tr');
+        for (let index: number = 0; index < trs.length; index++) {
+            const absIndex: number = startIndex + index;
+            const data: IGanttData = this.parent.currentViewData[absIndex as number];
+            if (!data) { continue; }
+            const trElement: Element = trs[index as number];
+            if (this.parent.enableMultiTaskbar && data.hasChildRecords) {
+                const segmentElements: NodeListOf<Element> = trElement.querySelectorAll('.e-gantt-child-taskbar');
+                if (segmentElements.length > 0) {
+                    for (let j: number = 0; j < segmentElements.length; j++) {
+                        this.triggerQueryTaskbarInfoByIndex(segmentElements[j as number], data);
+                    }
+                } else {
+                    this.triggerQueryTaskbarInfoByIndex(trElement, data);
+                }
+            } else {
                 this.triggerQueryTaskbarInfoByIndex(trElement, data);
             }
         }
@@ -2565,13 +2616,19 @@ export class ChartRows extends DateProcessor {
             this.parent['element'].getElementsByClassName('e-content')[2].children[0]['offsetHeight'] :
             this.parent['element'].getElementsByClassName('e-content')[0].children[0]['offsetHeight'];
         if (!tr) {
-            tr = this.ganttChartTableBody.childNodes[rowIndex as number];
+            tr = (this.parent as any).enableDomVirtualization
+                ? (this.domVirtRowPool as Map<number, HTMLElement>).get(rowIndex as number)
+                : this.ganttChartTableBody.childNodes[rowIndex as number];
         }
         if (this.parent.ganttChartModule.isExpandAll || this.parent.ganttChartModule.isCollapseAll) {
             tr['style'].height = this.parent.treeGrid.getRowByIndex(rowIndex as number)['style'].height = this.parent.rowHeight + 'px';
         }
         else {
-            tr['style'].height = this.parent.treeGrid.getRows()[rowIndex as number]['style'].height = this.parent.rowHeight + 'px';
+            const treeRow: any = (this.parent as any).enableDomVirtualization
+                ? this.parent.treeGrid.getRowByIndex(rowIndex as number)
+                : this.parent.treeGrid.getRows()[rowIndex as number];
+            if (treeRow) { treeRow['style'].height = this.parent.rowHeight + 'px'; }
+            tr['style'].height = this.parent.rowHeight + 'px';
         }
         this.parent.contentHeight = treeGridContentHeight;
         const rowIDs: string[] = [];
@@ -2643,11 +2700,18 @@ export class ChartRows extends DateProcessor {
      * @param {number} index .
      * @param {boolean} isValidateRange .
      * @param {boolean} isUndoRedo .
+     * @param {number} domIndex .
      * @returns {void} .
      * @private
      */
-    public refreshRow(index: number, isValidateRange?: boolean, isUndoRedo?: boolean): void {
-        const tr: Node = this.ganttChartTableBody.childNodes[index as number];
+    public refreshRow(index: number, isValidateRange?: boolean, isUndoRedo?: boolean, domIndex?: number): void {
+        let tr: Node;
+        if ((this.parent as any).enableDomVirtualization) {
+            tr = this.domVirtRowPool.get(index);
+            if (!tr) { return; } // row is outside the virtual viewport — skip, will re-render on scroll
+        } else {
+            tr = this.ganttChartTableBody.childNodes[index as number];
+        }
         let selectedItem: IGanttData;
         if (isUndoRedo) {
             selectedItem = this.parent.previousFlatData[index as number];
@@ -2755,8 +2819,9 @@ export class ChartRows extends DateProcessor {
                 addClass([this.parent.treeGrid.getRows()[parseInt((tr as HTMLElement).getAttribute('aria-rowindex'), 10) - 1].children[this.parent.ganttChartModule.childrenIndex]], 'e-focused');
                 this.parent.ganttChartModule.tempNextElement = null;
             }
+            const treeGridIndex: number = this.parent.domVirtualizationModule ? domIndex : index;
             const row: Row<Column> = this.parent.treeGrid.grid.getRowObjectFromUID(
-                this.parent.treeGrid.grid.getDataRows()[index as number].getAttribute('data-uid'));
+                this.parent.treeGrid.grid.getDataRows()[treeGridIndex as number].getAttribute('data-uid'));
             if (!isNullOrUndefined(row)) {
                 row.data = data;
             }
@@ -2791,17 +2856,25 @@ export class ChartRows extends DateProcessor {
                 this.parent.treeGrid.grid['portals'] = [];
                 this.parent.treeGrid.grid.refresh();
             }
+            let result: { records: IGanttData[], startIndex: number };
+            if (this.parent.enableDomVirtualization && this.parent.domVirtualizationModule) {
+                result = this.parent.domVirtualizationModule.getVisibleRecordsFromScroll();
+            }
             for (let i: number = 0; i < items.length; i++) {
                 let index: number;
+                let domIndex: number;
                 if (isUndoRedo) {
                     index = this.parent.ids.indexOf(items[i as number].ganttProperties.taskId.toString());
                 }
                 else {
                     index = this.parent.currentViewData.indexOf(items[i as number]);
                 }
+                if (this.parent.enableDomVirtualization && this.parent.domVirtualizationModule) {
+                    domIndex = result.records.indexOf(items[i as number]);
+                }
                 if (!this.parent.enableMultiTaskbar ||
                     (this.parent.enableMultiTaskbar && (items[i as number].expanded || !this.parent.isLoad))) {
-                    this.refreshRow(index, isValidateRange, isUndoRedo);
+                    this.refreshRow(index, isValidateRange, isUndoRedo, domIndex);
                 }
             }
             this.parent.ganttChartModule.updateLastRowBottomWidth();
@@ -2891,5 +2964,114 @@ export class ChartRows extends DateProcessor {
                 ' ' + this.getTaskLabel(this.parent.labelSettings.rightLabel);
         }
         return label;
+    }
+    /**
+     * Recycle chart rows for DOM virtualization — fixed DOM pool, incremental update.
+     * Only rows NEWLY entering the viewport call getGanttChartRow (1–3 per frame during normal
+     * scrolling vs. all visible rows with the old replaceChildren approach).
+     * Pool is keyed by absolute row index so existing in-viewport rows are never rebuilt.
+     *
+     * @param {IGanttData[]} records - Visible slice of currentViewData
+     * @param {number} startIndex - Absolute index of the first visible record
+     * @returns {void}
+     * @private
+     */
+    private lastDomVirtKey: string = '';
+    private domVirtRowPool: Map<number, HTMLElement> = new Map();
+    private domVirtPrevStartIndex: number = -1;
+    private domVirtPrevEndIndex: number = -1;
+    // Clear the row pool (call when data source is replaced).
+    public clearDomVirtPool(): void {
+        this.domVirtRowPool.clear();
+        this.domVirtPrevStartIndex = -1;
+        this.domVirtPrevEndIndex = -1;
+        this.lastDomVirtKey = '';
+    }
+    public refreshDomVirtualRows(records: IGanttData[], startIndex: number): void {
+        if (!(this.parent as any).enableDomVirtualization || !this.ganttChartTableBody) { return; }
+        const endIndex: number = startIndex + records.length;
+        const key: string = startIndex + ':' + endIndex + ':' + (records[0] ? records[0].ganttProperties.taskId : '');
+        if (key === this.lastDomVirtKey) { return; }
+        this.lastDomVirtKey = key;
+        const rowHeight: number = (this.parent.rowHeight as number) || 36;
+        this.taskTable.style.transform = 'translateY(' + (startIndex * rowHeight) + 'px)';
+        const tbody: Element = this.ganttChartTableBody;
+        const prevStart: number = this.domVirtPrevStartIndex;
+        const prevEnd: number = this.domVirtPrevEndIndex;
+        this.domVirtPrevStartIndex = startIndex;
+        this.domVirtPrevEndIndex = endIndex;
+        // Full re-render when ranges are disjoint (large jump) or on first call
+        const isJump: boolean = prevStart === -1 || startIndex >= prevEnd || endIndex <= prevStart;
+        if (isJump) {
+            while (tbody.firstChild) { tbody.removeChild(tbody.firstChild); }
+            this.domVirtRowPool.clear();
+            // In DOM-virt mode getRows() returns all N rows; skip it and let
+            // getGanttChartRow fall back to treeGrid.getRowByIndex (O(1) pool lookup).
+            const gridRowData: Row<{}>[] | HTMLCollectionOf<HTMLTableRowElement> =
+                (this.parent as any).enableDomVirtualization ? null :
+                    this.parent.treeGrid.grid.contentModule.getRows();
+            for (let i: number = 0; i < records.length; i++) {
+                const absIndex: number = startIndex + i;
+                const tr: HTMLElement = this.getGanttChartRow(absIndex, records[i as number], gridRowData) as HTMLElement;
+                (tr as Element).setAttribute('aria-rowindex', (absIndex + 1).toString());
+                tr.addEventListener('touchmove', this.handleTouchMove);
+                tr.addEventListener('touchend', this.handleTouchEnd);
+                this.domVirtRowPool.set(absIndex, tr);
+                tbody.appendChild(tr);
+            }
+            return;
+        }
+        // --- Incremental update: only touch rows entering / leaving the viewport ---
+        // 1. Remove rows that scrolled out of the window
+        for (let absIdx: number = prevStart; absIdx < prevEnd; absIdx++) {
+            if (absIdx < startIndex || absIdx >= endIndex) {
+                const tr: HTMLElement = this.domVirtRowPool.get(absIdx);
+                if (tr && tr.parentNode) { tr.parentNode.removeChild(tr); }
+                this.domVirtRowPool.delete(absIdx);
+            }
+        }
+        const gridRowData: Row<{}>[] | HTMLCollectionOf<HTMLTableRowElement> =
+            (this.parent as any).enableDomVirtualization ? null :
+                this.parent.treeGrid.grid.contentModule.getRows();
+        // 2. Add rows entering from the TOP (scroll up)
+        if (startIndex < prevStart) {
+            // insertBefore reference must advance after each insertion so rows land in
+            // ascending index order. Capturing tbody.firstChild once and reusing it
+            // would place every new row before the ORIGINAL first child instead of
+            // before the row just inserted, producing an inverted/shuffled sequence.
+            let insertBefore: ChildNode = tbody.firstChild;
+            for (let i: number = Math.min(prevStart, endIndex) - 1; i >= startIndex; i--) {
+                if (!this.domVirtRowPool.has(i)) {
+                    const relIdx: number = i - startIndex;
+                    if (relIdx >= 0 && relIdx < records.length) {
+                        const tr: HTMLElement =
+                            this.getGanttChartRow(i, records[relIdx as number], gridRowData) as HTMLElement;
+                        (tr as Element).setAttribute('aria-rowindex', (i + 1).toString());
+                        tr.addEventListener('touchmove', this.handleTouchMove);
+                        tr.addEventListener('touchend', this.handleTouchEnd);
+                        this.domVirtRowPool.set(i, tr);
+                        tbody.insertBefore(tr, insertBefore);
+                        insertBefore = tr; // next lower-index row inserts before this one
+                    }
+                }
+            }
+        }
+        // 3. Add rows entering from the BOTTOM (scroll down)
+        if (endIndex > prevEnd) {
+            for (let i: number = Math.max(prevEnd, startIndex); i < endIndex; i++) {
+                if (!this.domVirtRowPool.has(i)) {
+                    const relIdx: number = i - startIndex;
+                    if (relIdx >= 0 && relIdx < records.length) {
+                        const tr: HTMLElement =
+                            this.getGanttChartRow(i, records[relIdx as number], gridRowData) as HTMLElement;
+                        (tr as Element).setAttribute('aria-rowindex', (i + 1).toString());
+                        tr.addEventListener('touchmove', this.handleTouchMove);
+                        tr.addEventListener('touchend', this.handleTouchEnd);
+                        this.domVirtRowPool.set(i, tr);
+                        tbody.appendChild(tr);
+                    }
+                }
+            }
+        }
     }
 }

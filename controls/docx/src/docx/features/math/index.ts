@@ -13,9 +13,10 @@
  */
 import { Paragraph } from '../document/paragraph';
 import { Math } from './math';
-import { ConcreteParagraphItem } from '../document/text-range';
+import { ParagraphItem } from '../document/text-range';
 
 export * from './math';
+export { applyMathFonts } from './math-adapter';
 
 declare module '../document/paragraph' {
     interface Paragraph {
@@ -32,6 +33,6 @@ Object.defineProperty(Paragraph.prototype, 'mathEquations', {
     configurable: true,
     enumerable: false,
     get(this: Paragraph): ReadonlyArray<Math> {
-        return this.items.filter((i: ConcreteParagraphItem) => i instanceof Math) as Math[];
+        return this.items.filter((i: ParagraphItem) => i instanceof Math) as Math[];
     }
 });

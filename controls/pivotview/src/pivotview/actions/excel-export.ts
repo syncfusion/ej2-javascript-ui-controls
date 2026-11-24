@@ -111,7 +111,7 @@ export class ExcelExport {
 
     public exportToExcel(type: string, exportProperties?: ExcelExportProperties, isBlob?: boolean, workBook?: Workbook,
                          isMultipleExport?: boolean, currentPivotInstance?: PivotView): Promise<Workbook> {
-        return new Promise((resolve: Function, reject: Function) => {
+        return new Promise((resolve: (value: Workbook) => void, reject: (reason?: unknown) => void) => {
             try {
                 this.actualrCnt = 0;
                 let expType: string = 'AppendToSheet';
@@ -247,7 +247,7 @@ export class ExcelExport {
                                     const headerStyle: ExcelStyle = { bold: true, vAlign: 'Center', wrapText: true, indent: cCnt === 0 ? pivotCell.level * 10 : 0 };
                                     if (!(pivotCell.level === -1 && !pivotCell.rowSpan)) {
                                         const aggMatrix: IMatrix2D = this.engine.aggregatedValueMatrix;
-                                        let cellValue: string | number = pivotCell.axis === 'value' ?
+                                        let cellValue: string | number | Date = pivotCell.axis === 'value' ?
                                             ((aggMatrix[rCnt as number] && aggMatrix[rCnt as number][cCnt as number]) ?
                                                 aggMatrix[rCnt as number][cCnt as number] :
                                                 ((pivotCell.formattedText === '#DIV/0!' || isEmptyPivotTable) ? pivotCell.formattedText :
@@ -262,6 +262,12 @@ export class ExcelExport {
                                         } else {
                                             cellValue = (!isNullOrUndefined(pivotCell.valueSort) && (this.parent.localeObj.getConstant('grandTotal') + this.parent.dataSourceSettings.valueSortSettings.headerDelimiter + pivotCell.formattedText
                                                 === pivotCell.valueSort.levelName) && isgetValuesHeader) ? this.parent.getValuesHeader(pivotCell, 'value') : cellValue;
+                                        }
+                                        // A typed date Min/Max cell exports its displayed text; the raw
+                                        // Date is written into the cell below for Excel (PIVOT-MINMAX-010),
+                                        // so the formatted text must not be replaced by `Date.toString()`.
+                                        if (pivotCell.value instanceof Date) {
+                                            cellValue = pivotCell.formattedText;
                                         }
                                         pivotCell.formattedText =
                                             !isNullOrUndefined(cellValue) ? cellValue.toString() : cellValue as string;
@@ -282,11 +288,24 @@ export class ExcelExport {
                                                 });
                                                 const lastCell: ExcelCell = cells[cells.length - 1];
                                                 if (pivotCell.axis === 'value') {
-                                                    if (isNaN(pivotCell.value) || pivotCell.formattedText === '' ||
+                                                    if (isNaN(pivotCell.value as number) || pivotCell.formattedText === '' ||
                                                         pivotCell.formattedText === undefined || isNullOrUndefined(pivotCell.value)) {
                                                         lastCell.value = type === 'Excel' ? null : '';
                                                     }
-                                                    styles.numberFormat = typeof cellValue === 'string' ? undefined : styles.numberFormat;
+                                                    // A typed date Min/Max cell is written as a real date; when the
+                                                    // configured format cannot be expressed in the target, the
+                                                    // displayed text is written instead (PIVOT-MINMAX-010).
+                                                    if (pivotCell.value instanceof Date) {
+                                                        if (type === 'Excel') {
+                                                            const datePattern: RegExp = /^[yMdhsEHmaZG'\-/,:. ]+$/;
+                                                            const numberFormat: string = (styles.numberFormat &&
+                                                                datePattern.test(styles.numberFormat)) ? styles.numberFormat : undefined;
+                                                            lastCell.value = numberFormat ? pivotCell.value : pivotCell.formattedText;
+                                                            styles.numberFormat = numberFormat;
+                                                        }
+                                                    } else {
+                                                        styles.numberFormat = typeof cellValue === 'string' ? undefined : styles.numberFormat;
+                                                    }
                                                     lastCell.style = styles;
                                                 } else {
                                                     lastCell.style = headerStyle;
@@ -471,7 +490,7 @@ export class ExcelExport {
                     this.workSheet.push(sheet);
                     this.book['worksheets'] = this.workSheet;
                 }
-                let blobData: Promise<{ blobData: Blob; }>;
+                let blobData: Promise<{ blobData: Blob }>;
                 if (!isMultipleExport) {
                     const book: Workbook = new Workbook(this.book, type === 'Excel' ? 'xlsx' : 'csv', undefined, this.parent.currencyCode);
                     const fileExtension: string = fileName.split('.').pop();

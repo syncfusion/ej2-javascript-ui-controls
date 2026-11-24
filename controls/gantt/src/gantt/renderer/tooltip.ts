@@ -174,11 +174,11 @@ export class Tooltip {
                 } else if (args.target.classList.contains('e-notes-info')) {
                     const ganttData: IGanttData = this.parent.ganttChartModule.getRecordByTarget(args.event as PointerEvent);
                     const notes: string = ganttData.ganttProperties.notes || '';
-                    const text: string = notes
-                        .replace(/<[^>]*>/g, '')
-                        .replace(/&nbsp;|&#0*160;|&#x0*a0;/gi, ' ')
+                    const parsedNotes: Document = new DOMParser().parseFromString(notes, 'text/html');
+                    const text: string = (parsedNotes.body.textContent || '')
+                        .replace(/\u00a0/g, ' ')
                         .trim();
-                    argsData.content = this.toolTipObj.content = notes;
+                    argsData.content = this.toolTipObj.content = text;
                     if (!text) {
                         args.cancel = true;
                     } else {

@@ -124,14 +124,14 @@ import { FeatureId } from '../../core/registry/feature-registry';
 
 
 /**
- * Alias for {@link TableRowHeightRule} (DocIO `RowHeightType` naming).
+ * Alias for {@link TableRowHeightRule} .
  *
  * @public
  */
 export type TableRowHeightType = TableRowHeightRule;
 
 /**
- * AutoFit modes for {@link Table.autoFit}, matching DocIO `AutoFitType`.
+ * AutoFit modes for {@link Table.autoFit}, follows the standard behaviour.
  *
  * - {@link AutoFitType.FitToContent}: auto layout; clear fixed preferred widths.
  * - {@link AutoFitType.FitToWindow}: auto layout; table 100% width; cell % widths.
@@ -140,8 +140,11 @@ export type TableRowHeightType = TableRowHeightRule;
  * @public
  */
 export enum AutoFitType {
+    /** Specifies the fit to content type. */
     FitToContent = 'fitToContent',
+    /** Specifies the fit to window type. */
     FitToWindow = 'fitToWindow',
+    /** Specifies the fixed column width type. */
     FixedColumnWidth = 'fixedColumnWidth'
 }
 
@@ -265,7 +268,7 @@ function cellHasVisibleText(cell: TableCell): boolean {
  *
  * @public
  */
-export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, TableFormatHost {
+export class Table extends BodyItem implements FeatureBlock, TableRowCollectionHost<TableRow>, TableFormatHost {
     private readonly prefixMarkup: OpenXmlElement[];
     private tblPr: OpenXmlElement;
     private tblGrid: OpenXmlElement;
@@ -286,8 +289,12 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
         prefixMarkup: OpenXmlElement[],
         tblPr: OpenXmlElement,
         tblGrid: OpenXmlElement,
+        /**
+         * Gets or sets the rows.
+         */
         rows: TableRow[]
     ) {
+        super();
         this.prefixMarkup = prefixMarkup;
         this.tblPr = tblPr;
         this.tblGrid = tblGrid;
@@ -298,7 +305,9 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
         this.conditionalFormattingDirty = false;
     }
 
-    /** Rows collection (DocIO-aligned). */
+    /**
+     * Gets the rows collection.
+     */
     get rows(): TableRowCollection<TableRow> {
         return this.rowsInstance;
     }
@@ -384,7 +393,7 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
     }
 
     /**
-     * DocIO parity: copy table back fill onto every cell as direct `w:tcPr/w:shd`
+     * Word parity: copy table back fill onto every cell as direct `w:tcPr/w:shd`
      * (`val="clear"` `color="auto"` `fill=<wire>`). Clearing table backColor
      * removes cell fills that still match the previous painted fill so independent
      * cell colors are left alone when possible.
@@ -401,7 +410,7 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
                 const prev: TableShading = readCellShading(cell.readTcPr());
                 if (fill === undefined) {
                     // Clear only when the cell has no independent shading beyond
-                    // the DocIO-shaped clear/auto bag (or empty fill).
+                    // the clear/auto bag (or empty fill).
                     if (prev === undefined) {
                         continue;
                     }
@@ -434,13 +443,15 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
         }
     }
 
-    /** Table-level format facade. */
+    /**
+     * Gets the formatting of the table.
+     */
     get tableFormat(): TableFormat {
         return this.tableFormatInstance;
     }
 
     /**
-     * Accessibility title (`w:tblCaption`). Formerly `caption`.
+     * Gets or sets the accessibility title.
      */
     get title(): string | undefined {
         return readTableCaption(this.tblPr);
@@ -449,6 +460,9 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
         this.tblPr = writeTableCaption(this.tblPr, value);
     }
 
+    /**
+     * Gets or sets the alternative text description of the table.
+     */
     get description(): string | undefined {
         return readTableDescription(this.tblPr);
     }
@@ -457,7 +471,7 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
     }
 
     /**
-     * Left indent in points (`w:tblInd`). Formerly `indent`.
+     * Gets or sets the left indent in points.
      */
     get indentFromLeft(): number | undefined {
         return readTableIndent(this.tblPr);
@@ -467,9 +481,7 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
     }
 
     /**
-     * Effective table width in points from the sum of grid column widths
-     * (`w:tblGrid`). When a fixed DXA preferred width is set, that value is
-     * written on the setter; the getter always reports the grid sum.
+     * Gets or sets the effective table width in points from the sum of grid column widths .
      */
     get width(): number {
         const gridWidths: number[] = this.gridColumnWidthsTwips();
@@ -525,11 +537,7 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
     }
 
     /**
-     * Rows per table-style horizontal band (`w:tblStyleRowBandSize/@w:val`).
-     *
-     * Absent on the wire reads as `undefined` (Word default band height is 1).
-     * Setting `undefined` removes the element. Non-finite values throw
-     * `RangeError`. Does not recompute conditional formatting masks.
+     * Gets or sets the number of rows in each band of the table style. If undefined, the default value of 1 is used.
      *
      * @public
      */
@@ -550,11 +558,7 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
     }
 
     /**
-     * Columns per table-style vertical band (`w:tblStyleColBandSize/@w:val`).
-     *
-     * Absent on the wire reads as `undefined` (Word default band width is 1).
-     * Setting `undefined` removes the element. Non-finite values throw
-     * `RangeError`. Does not recompute conditional formatting masks.
+     * Gets or sets the number of columns in each band of the table style. If undefined, the default value of 1 is used.
      *
      * @public
      */
@@ -575,7 +579,7 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
     }
 
     /**
-     * Canonical table style id (`w:tblStyle/@w:val`), when assigned.
+     * Gets or sets the canonical table style id, when assigned.
      *
      * @public
      */
@@ -588,9 +592,7 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
     }
 
     /**
-     * Style id of the applied table style (`w:tblStyle/@w:val`).
-     * Matches the id written by {@link Table.applyStyle} / authoring defaults
-     * (e.g. `TableGrid`, `LightShading`). Absent style → `undefined`.
+     * Gets the style id of the applied table style.
      *
      * @public
      */
@@ -599,14 +601,10 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
     }
 
     /**
-     * Apply a built-in, custom, or named table style to this table.
+     * Applies a built-in, custom, or named table style to the table.
      *
-     * Resolves the style through the document styles collection, materializing
-     * built-in definitions when needed, and writes `w:tblPr/w:tblStyle`.
-     * Does not change table-look application options.
-     *
-     * @param {string | TableStyle | BuiltinTableStyle} style - Built-in id, live {@link TableStyle}, or style id / name string.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {string | TableStyle | BuiltinTableStyle} style - Specifies the style.
      * @throws DetachedObjectError when the table is not bound to a document.
      * @public
      */
@@ -632,8 +630,7 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
     }
 
     /**
-     * Whether the assigned table style applies first-row conditional formatting.
-     * Maps to `w:tblLook/@w:firstRow`. Absent look → `false`.
+     * Gets or sets a value indicating whether the table style applies special formatting to the first row. The default value is false.
      *
      * @public
      */
@@ -646,8 +643,7 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
     }
 
     /**
-     * Whether the assigned table style applies last-row conditional formatting.
-     * Maps to `w:tblLook/@w:lastRow`. Absent look → `false`.
+     * Gets or sets a value indicating whether the table style applies special formatting to the last row. The default value is false.
      *
      * @public
      */
@@ -660,8 +656,7 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
     }
 
     /**
-     * Whether the assigned table style applies first-column conditional formatting.
-     * Maps to `w:tblLook/@w:firstColumn`. Absent look → `false`.
+     * Gets or sets a value indicating whether the table style applies special formatting to the first column. The default value is false.
      *
      * @public
      */
@@ -674,8 +669,7 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
     }
 
     /**
-     * Whether the assigned table style applies last-column conditional formatting.
-     * Maps to `w:tblLook/@w:lastColumn`. Absent look → `false`.
+     * Gets or sets a value indicating whether the table style applies special formatting to the last column. The default value is false.
      *
      * @public
      */
@@ -688,9 +682,7 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
     }
 
     /**
-     * Whether the assigned table style applies horizontal band formatting to
-     * alternating table rows. Maps inversely to `w:tblLook/@w:noHBand`.
-     * Absent look → `true`.
+     * Gets or sets a value indicating whether the table style formats alternating rows differently. The default value is true.
      *
      * @public
      */
@@ -706,9 +698,7 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
     }
 
     /**
-     * Whether the assigned table style applies vertical band formatting to
-     * alternating table columns. Maps inversely to `w:tblLook/@w:noVBand`.
-     * Absent look → `true`.
+     * Gets or sets a value indicating whether the table style formats alternating columns differently. The default value is true.
      *
      * @public
      */
@@ -758,7 +748,7 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
 
     /**
      * Marks row and cell conditional style membership for recalculation.
-     * Paragraph `w:pPr/w:cnfStyle` is not authored on dirty paths (DocIO parity).
+     * Paragraph `w:pPr/w:cnfStyle` is not authored on dirty paths (Word parity).
      *
      * @returns {void} Nothing is returned.
      * @private
@@ -769,7 +759,7 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
 
     /**
      * Recalculate conditional table-style membership masks on rows and cells
-     * (`w:trPr` / `w:tcPr`). Does not write `w:pPr/w:cnfStyle` — DocIO emits
+     * (`w:trPr` / `w:tcPr`). Does not write `w:pPr/w:cnfStyle` — Word emits
      * membership on row/cell only; paragraph cnf is cleared when styles are
      * removed or when a dirty recompute runs so authored output stays clean.
      * Nested tables own their own cascade.
@@ -937,7 +927,7 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
                         applyFirstCol
                 });
 
-                // DocIO writes cnf on trPr/tcPr only — never author pPr/cnfStyle.
+                // Word writes cnf on trPr/tcPr only — never author pPr/cnfStyle.
                 if (hasAnyCnfStyleFlag(cellState)) {
                     cell.setConditionalFormatting(cellState);
                 } else {
@@ -964,9 +954,9 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
      * Authoring path: empty cells (no auto paragraph), fixed layout, equal
      * client-width columns, and `TableGrid` when document-bound.
      *
-     * @param {number} rowCount - The row count.
-     * @param {number} columnCount - The column count.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {number} rowCount - Specifies the row count.
+     * @param {number} columnCount - Specifies the column count.
      */
     resetCells(rowCount: number, columnCount: number): void {
         if (rowCount < 1 || columnCount < 1) {
@@ -982,12 +972,18 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
             this.bindDocument(this.documentOwner);
         }
         applyAuthoringTableDefaults(this, columnCount);
-        // DocIO paints table backColor onto every cell; rebuilds must re-apply
+        // The library paints table backColor onto every cell; rebuilds must re-apply
         // because paint-at-setter only walks cells that existed when backColor was set.
         this.reapplyTableBackColorToCells();
         this.markConditionalFormattingDirty();
     }
 
+    /**
+     * Resizes the table to fit its content, to fit the window, or to use fixed column widths.
+     *
+     * @param {AutoFitType} autoFitType - Specifies how the table is resized.
+     * @returns {void} Nothing is returned.
+     */
     autoFit(autoFitType: AutoFitType): void {
         switch (autoFitType) {
         case AutoFitType.FitToContent:
@@ -1010,7 +1006,7 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
      * Append an empty row with the current column count.
      * Prefer {@link Table.rows}.add for new code.
      *
-     * @returns {TableRow} The result.
+     * @returns {TableRow} - Returns the TableRow.
      */
     appendRow(): TableRow {
         return this.rowsInstance.add();
@@ -1020,8 +1016,8 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
      * Insert an empty row at `index` (0 … rows.length inclusive).
      * Prefer {@link Table.rows}.insert for new code.
      *
-     * @param {number} index - The index.
-     * @returns {TableRow} The result.
+     * @returns {TableRow} - Returns the TableRow.
+     * @param {number} index - Specifies the index.
      */
     insertRow(index: number): TableRow {
         return this.rowsInstance.insert(index);
@@ -1031,8 +1027,8 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
      * Remove a row that currently belongs to this table.
      * Prefer {@link Table.rows}.remove for new code.
      *
-     * @param {TableRow} row - The row.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {TableRow} row - Specifies the row.
      */
     removeRow(row: TableRow): void {
         this.rowsInstance.remove(row);
@@ -1041,10 +1037,10 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
     /**
      * Merge contiguous structural cells in one row (inclusive cell indexes).
      *
-     * @param {number} rowIndex - The row index.
-     * @param {number} startCellIndex - The start cell index.
-     * @param {number} endCellIndex - The end cell index.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {number} rowIndex - Specifies the row index.
+     * @param {number} startCellIndex - Specifies the start cell index.
+     * @param {number} endCellIndex - Specifies the end cell index.
      */
     applyHorizontalMerge(rowIndex: number, startCellIndex: number, endCellIndex: number): void {
         if (
@@ -1089,10 +1085,10 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
     /**
      * Vertical merge along one grid column across inclusive row indexes.
      *
-     * @param {number} columnIndex - The column index.
-     * @param {number} startRowIndex - The start row index.
-     * @param {number} endRowIndex - The end row index.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {number} columnIndex - Specifies the column index.
+     * @param {number} startRowIndex - Specifies the start row index.
+     * @param {number} endRowIndex - Specifies the end row index.
      */
     applyVerticalMerge(columnIndex: number, startRowIndex: number, endRowIndex: number): void {
         if (
@@ -1331,6 +1327,7 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
                 for (let c: number = start; c < start + span; c += 1) {
                     if (c < fromColumn || c > toColumn) {
                         const piece: TableCell = this.createBoundEmptyCell();
+                        this.ensureAtLeastOneParagraph(piece);
                         next.push(piece);
                         released.push(piece);
                         continue;
@@ -1347,6 +1344,7 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
                         this.ensureAtLeastOneParagraph(piece);
                     } else {
                         piece = this.createBoundEmptyCell();
+                        this.ensureAtLeastOneParagraph(piece);
                     }
                     next.push(piece);
                     released.push(piece);
@@ -1511,7 +1509,7 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
     }
 
     /**
-     * Re-paint every cell from current `w:tblPr/w:shd` fill (DocIO parity).
+     * Re-paint every cell from current `w:tblPr/w:shd` fill (Word parity).
      * No-op when table shading has no fill.
      *
      * @returns {void} Nothing is returned.
@@ -1748,6 +1746,45 @@ export class Table implements FeatureBlock, TableRowCollectionHost<TableRow>, Ta
         }
         return twipsToPoint(DEFAULT_GRID_COL_TWIPS);
     }
+
+    /**
+     * Create an independent copy of this table.
+     * All rows, cells, formatting, and grid structure are cloned.
+     *
+     * The cloned table is detached and ready for attachment to a body.
+     *
+     * @returns {Table} Cloned table.
+     * @public
+     */
+    clone(): Table {
+        // Clone prefix markup
+        const clonedPrefixMarkup: OpenXmlElement[] = [];
+        for (const element of this.prefixMarkup) {
+            clonedPrefixMarkup.push(element);
+        }
+
+        // Clone table properties
+        const clonedTblPr: OpenXmlElement = this.tblPr;
+
+        // Clone table grid
+        const clonedTblGrid: OpenXmlElement = this.tblGrid;
+
+        // Clone all rows
+        const clonedRows: TableRow[] = [];
+        for (const row of this.tableRows) {
+            clonedRows.push(row.clone());
+        }
+
+        // Create the cloned table
+        const cloned: Table = new Table(clonedPrefixMarkup, clonedTblPr, clonedTblGrid, clonedRows);
+
+        // Bind the cloned rows and cells to the new table
+        for (const row of clonedRows) {
+            cloned.bindRow(row);
+        }
+
+        return cloned;
+    }
 }
 
 /**
@@ -1774,7 +1811,13 @@ export class TableRow implements TableCellCollectionHost<TableCell, Table>, RowF
     constructor(
         extras: OpenXmlElement[],
         trPr: OpenXmlElement | undefined,
+        /**
+         * Gets or sets the cells.
+         */
         cells: TableCell[],
+        /**
+         * Gets or sets the owner table.
+         */
         ownerTable?: Table
     ) {
         this.rowExtras = extras;
@@ -1798,7 +1841,9 @@ export class TableRow implements TableCellCollectionHost<TableCell, Table>, RowF
         this.ownerTableRef = table;
     }
 
-    /** Cells collection (DocIO-aligned). */
+    /**
+     * Gets the cells collection.
+     */
     get cells(): TableCellCollection<TableCell> {
         return this.cellsInstance;
     }
@@ -1899,13 +1944,15 @@ export class TableRow implements TableCellCollectionHost<TableCell, Table>, RowF
         this.trPr = next;
     }
 
-    /** Row-level format facade. */
+    /**
+     * Gets the formatting of the row.
+     */
     get rowFormat(): RowFormat {
         return this.rowFormatInstance;
     }
 
     /**
-     * Owning table. Throws {@link DetachedObjectError} when the row is detached.
+     * Gets the owning table.
      */
     get ownerTable(): Table {
         if (this.ownerTableRef === undefined) {
@@ -1915,8 +1962,7 @@ export class TableRow implements TableCellCollectionHost<TableCell, Table>, RowF
     }
 
     /**
-     * Row height in points (`w:trHeight/@w:val` twips on the wire).
-     * `0` when unset (auto height to content).
+     * Gets or sets the row height in points.
      */
     get height(): number {
         const bag: TableRowHeight = readRowHeight(this.trPr);
@@ -1941,8 +1987,7 @@ export class TableRow implements TableCellCollectionHost<TableCell, Table>, RowF
     }
 
     /**
-     * How Word treats {@link TableRow.height} (`w:trHeight/@w:hRule`).
-     * Defaults to `'auto'` when unset.
+     * Gets or sets the height type.
      */
     get heightType(): TableRowHeightType {
         const bag: TableRowHeight = readRowHeight(this.trPr);
@@ -1966,8 +2011,7 @@ export class TableRow implements TableCellCollectionHost<TableCell, Table>, RowF
     }
 
     /**
-     * When `true`, the row repeats at the top of every page the table spans
-     * (a repeating header row). Defaults to `false`.
+     * Gets or sets a value indicating whether the header option is enabled.
      */
     get isHeader(): boolean {
         return readRowIsHeader(this.trPr) === true;
@@ -1994,9 +2038,9 @@ export class TableRow implements TableCellCollectionHost<TableCell, Table>, RowF
      * Serializes the row back to its `w:tr` element.
      */
     /**
-     * Conditional table-style membership on `w:trPr/w:cnfStyle`.
+     * Gets the table style conditions that apply to the row.
      *
-     * @returns {CnfStyle | undefined} The result.
+     * @returns {CnfStyle | undefined} - Returns the table style conditions that apply to the row.
      * @public
      */
     getConditionalFormatting(): CnfStyle | undefined {
@@ -2006,14 +2050,21 @@ export class TableRow implements TableCellCollectionHost<TableCell, Table>, RowF
     /**
      * Write or clear row conditional formatting membership.
      *
-     * @param {NormalizedCnfStyle | CnfStyle | undefined} state - Normalized flags, or `undefined` to remove.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {NormalizedCnfStyle | CnfStyle | undefined} state - Specifies the state.
      * @public
      */
     setConditionalFormatting(state: NormalizedCnfStyle | CnfStyle | undefined): void {
         this.trPr = writeRowCnfStyle(this.trPr, state);
     }
 
+    /**
+     * Converts the row to its OpenXML element.
+     *
+     * @returns {OpenXmlElement} Returns the OpenXML element of the row.
+     *
+     * @private
+     */
     toOpenXml(): OpenXmlElement {
         const children: OpenXmlElement[] = [];
         for (const element of this.rowExtras) {
@@ -2026,6 +2077,37 @@ export class TableRow implements TableCellCollectionHost<TableCell, Table>, RowF
             children.push(cell.toOpenXml());
         }
         return wmlElement('tr', { children: children });
+    }
+
+    /**
+     * Create an independent copy of this row.
+     * All cells and row formatting are cloned.
+     *
+     * The cloned row is detached and ready for attachment to a table.
+     *
+     * @returns {TableRow} Cloned row.
+     * @public
+     */
+    clone(): TableRow {
+        // Clone row extras
+        const clonedExtras: OpenXmlElement[] = [];
+        for (const element of this.rowExtras) {
+            clonedExtras.push(element);
+        }
+
+        // Clone row properties (if any)
+        const clonedTrPr: OpenXmlElement | undefined = this.trPr;
+
+        // Clone all cells
+        const clonedCells: TableCell[] = [];
+        for (const cell of this.tableCells) {
+            clonedCells.push(cell.clone());
+        }
+
+        // Create the cloned row
+        const cloned: TableRow = new TableRow(clonedExtras, clonedTrPr, clonedCells);
+
+        return cloned;
     }
 }
 
@@ -2098,7 +2180,9 @@ export class TableCell extends Body implements CellFormatHost {
         this.tcPrValue = next;
     }
 
-    /** Cell-level format facade. */
+    /**
+     * Gets the formatting of the cell.
+     */
     get cellFormat(): CellFormat {
         return this.cellFormatInstance;
     }
@@ -2151,10 +2235,7 @@ export class TableCell extends Body implements CellFormatHost {
     }
 
     /**
-     * Preferred / effective cell width in points (1/72 inch).
-     *
-     * Fixed DXA `w:tcW` wins when present; otherwise the value is derived from
-     * the parent table grid. Never returns `undefined`.
+     * Gets or sets the preferred width of the cell, in points.
      */
     get width(): number {
         const preferred: TableWidth = readCellPreferredWidth(this.tcPrValue);
@@ -2189,7 +2270,7 @@ export class TableCell extends Body implements CellFormatHost {
     }
 
     /**
-     * Plain text of the cell, concatenated across all paragraphs.
+     * Gets or sets the plain text of the cell, concatenated across all paragraphs.
      */
     get text(): string {
         const parts: string[] = [];
@@ -2217,8 +2298,7 @@ export class TableCell extends Body implements CellFormatHost {
     }
 
     /**
-     * Nested tables contained in this cell body (feature blocks).
-     * Prefer {@link TableCell.appendTable} to create nested tables.
+     * Gets the nested tables contained in this cell body (feature blocks).
      */
     get nestedTables(): ReadonlyArray<Table> {
         const result: Table[] = [];
@@ -2275,9 +2355,9 @@ export class TableCell extends Body implements CellFormatHost {
      * Serializes the cell back to its `w:tc` element.
      */
     /**
-     * Conditional table-style membership on `w:tcPr/w:cnfStyle`.
+     * Gets the table style conditions that apply to the cell.
      *
-     * @returns {CnfStyle | undefined} The result.
+     * @returns {CnfStyle | undefined} - Returns the table style conditions that apply to the cell.
      * @public
      */
     getConditionalFormatting(): CnfStyle | undefined {
@@ -2287,14 +2367,21 @@ export class TableCell extends Body implements CellFormatHost {
     /**
      * Write or clear cell conditional formatting membership.
      *
-     * @param {NormalizedCnfStyle | CnfStyle | undefined} state - Normalized flags, or `undefined` to remove.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {NormalizedCnfStyle | CnfStyle | undefined} state - Specifies the state.
      * @public
      */
     setConditionalFormatting(state: NormalizedCnfStyle | CnfStyle | undefined): void {
         this.tcPrValue = writeCellCnfStyle(this.tcPrValue, state);
     }
 
+    /**
+     * Converts the cell to its OpenXML element.
+     *
+     * @returns {OpenXmlElement} Returns the OpenXML element of the cell.
+     *
+     * @private
+     */
     toOpenXml(): OpenXmlElement {
         const children: OpenXmlElement[] = [];
         if (this.tcPrValue !== undefined) {
@@ -2312,6 +2399,52 @@ export class TableCell extends Body implements CellFormatHost {
             }
         }
         return wmlElement('tc', { children: children });
+    }
+
+    /**
+     * Create an independent copy of this cell.
+     * All block content (paragraphs, nested tables) and cell formatting are cloned.
+     *
+     * The cloned cell is detached and ready for attachment to a table row.
+     *
+     * @returns {TableCell} Cloned cell.
+     * @public
+     */
+    clone(): TableCell {
+        // Clone cell properties
+        const clonedTcPr: OpenXmlElement | undefined = this.tcPrValue;
+
+        // Clone all blocks (paragraphs and nested tables)
+        const clonedBlocks: BlockContent[] = [];
+        const blocks: ReadonlyArray<BlockContent> = this.listBlocks();
+        for (const block of blocks) {
+            if (block.type === 'paragraph') {
+                clonedBlocks.push({
+                    type: 'paragraph',
+                    paragraph: block.paragraph.clone()
+                });
+            } else if (block.type === 'feature' && block.featureId === TABLES && block.value instanceof Table) {
+                // Clone nested table
+                clonedBlocks.push({
+                    type: 'feature',
+                    featureId: TABLES,
+                    value: block.value.clone()
+                });
+            } else {
+                // Preserve feature and opaque blocks as-is for now
+                clonedBlocks.push(block);
+            }
+        }
+
+        // Create the cloned cell
+        const cloned: TableCell = new TableCell(undefined, clonedBlocks);
+
+        // Apply cloned tcPr if any
+        if (clonedTcPr !== undefined) {
+            cloned.tcPrValue = clonedTcPr;
+        }
+
+        return cloned;
     }
 }
 

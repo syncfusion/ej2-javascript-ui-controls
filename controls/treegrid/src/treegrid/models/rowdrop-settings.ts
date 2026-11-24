@@ -6,12 +6,15 @@ import { ITreeData } from '..';
  */
 export class RowDropSettings extends ChildProperty<RowDropSettings> {
     /**
-     * Specifies the ID of the droppable component where rows can be dragged and dropped. Ensures that the row drop operation targets the correct component within the application.
+     * Specifies the ID of the droppable component where rows can be dragged and dropped.
+     * Accepts a single id (string) or an array of ids (string[]) for multi-TreeGrid
+     * drag-and-drop. When an array is supplied, the rows can be dropped into any one
+     * of the configured peer grids.
      *
      * @default null
      */
     @Property()
-    public targetID: string;
+    public targetID: string | string[];
 }
 
 /**

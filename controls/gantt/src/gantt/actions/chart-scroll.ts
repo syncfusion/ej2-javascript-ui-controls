@@ -1,6 +1,6 @@
-import { formatUnit, EventHandler, getValue, isNullOrUndefined} from '@syncfusion/ej2-base';
+import { formatUnit, EventHandler, getValue, isNullOrUndefined, createElement} from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
-import { ScrollArgs } from '../base/interface';
+import { ScrollArgs, IGanttData  } from '../base/interface';
 import { NonWorkingDay } from '../renderer/nonworking-day';
 
 /**
@@ -23,6 +23,13 @@ export class ChartScroll {
     private scrollArrowDirection: 'left' | 'right' | null = null;
     private scrollArrowInterval: number = 0;
     private lastScrollLeft: number = 0;
+    private virtualScrollbar: HTMLElement;
+    private virtualScrollbarInner: HTMLElement;
+    private pendingScrollRaf: number = 0;
+    private latestScrollTop: number = 0;
+    private latestFromTreeGrid: boolean = false;
+    public currentScrollTop: number = 0;
+    public isDomVirtualScrolling: boolean = false;
     /**
      * Constructor for the scrolling.
      *
@@ -41,7 +48,17 @@ export class ChartScroll {
      */
     private addEventListeners(): void {
         this.parent.on('grid-scroll', this.gridScrollHandler, this);
-        EventHandler.add(this.element, 'scroll' , this.onScroll, this);
+        // T-9 follow-on: also guard virtual scrollbar setup so it is skipped when
+        // DomVirtualization was NOT injected (domVirtualizationModule is undefined).
+        if ((this.parent as any).enableDomVirtualization && (this.parent as any).domVirtualizationModule) {
+            this.setupVirtualScrollbar();
+            EventHandler.add(this.virtualScrollbar, 'scroll', this.onVirtualScroll, this);
+            EventHandler.add(this.element, 'wheel', this.onChartWheel, this);
+            EventHandler.add(this.virtualScrollbar, 'pointerup', this.virtualScrollStop, this);
+            EventHandler.add(this.element, 'scroll', this.onHorizontalScroll, this);
+        } else {
+            EventHandler.add(this.element, 'scroll', this.onScroll, this);
+        }
         // Use pointerdown for consistent mouse + touch handling
         EventHandler.add(this.element, 'pointerdown', this.startHold, this);
         // Use pointerup (not mouseup) to handle both mouse and touch releases consistently
@@ -52,13 +69,39 @@ export class ChartScroll {
         this.parent.treeGrid.grid.on('removeGanttShimmer', this.removeShimmer, this);
         this.parent.treeGrid.grid.on('virtualTransform', this.transformChange, this);
     }
+    private virtualScrollStop(): void {
+        if (this.parent.enableDomVirtualization) {
+            this.isDomVirtualScrolling = false;
+        }
+    }
     /**
      * Unbind events
      *
      * @returns {void} .
      */
     private removeEventListeners(): void {
-        EventHandler.remove(this.element, 'scroll', this.onScroll);
+        if ((this.parent as any).enableDomVirtualization) {
+            if (this.virtualScrollbar) {
+                EventHandler.remove(this.virtualScrollbar, 'scroll', this.onVirtualScroll);
+                EventHandler.remove(this.virtualScrollbar, 'pointerup', this.virtualScrollStop);
+                if (this.virtualScrollbar.parentNode) {
+                    this.virtualScrollbar.parentNode.removeChild(this.virtualScrollbar);
+                }
+                this.virtualScrollbar = null;
+                this.virtualScrollbarInner = null;
+            }
+            EventHandler.remove(this.element, 'wheel', this.onChartWheel);
+            EventHandler.remove(this.element, 'scroll', this.onHorizontalScroll);
+            this.element.style.overflowY = '';
+            this.element.style.width = '';
+            this.element.style.marginLeft = '';
+            if (this.pendingScrollRaf) {
+                cancelAnimationFrame(this.pendingScrollRaf);
+                this.pendingScrollRaf = 0;
+            }
+        } else {
+            EventHandler.remove(this.element, 'scroll', this.onScroll);
+        }
         EventHandler.remove(this.element, 'pointerdown', this.startHold);
         EventHandler.remove(this.element, 'pointerup', this.stopHold);
         EventHandler.remove(this.element, 'pointercancel', this.stopHold);
@@ -73,8 +116,25 @@ export class ChartScroll {
      * @returns {void} .
      */
     private gridScrollHandler(args: object ): void {
-        this.element.scrollTop = getValue('top', args);
+        const top: number = getValue('top', args);
         this.isFromTreeGrid = true;
+        if ((this.parent as any).enableDomVirtualization && this.virtualScrollbar) {
+            this.virtualScrollbar.scrollTop = top;
+            // Apply translateY synchronously here too — programmatic scrollTop assignments
+            // may be coalesced by the browser on fast thumb drags, causing the scroll event
+            // on virtualScrollbar to fire fewer times than expected (white space on fast scroll).
+            if (this.parent.chartRowsModule && (this.parent.chartRowsModule as any).taskTable) {
+                const rowH: number = (this.parent.rowHeight as number) || 36;
+                const domVirtSettings: { rowBuffer?: number } =
+                    (this.parent as any).domVirtualizationSettings || {};
+                const rowBuf: number = domVirtSettings.rowBuffer != null ? domVirtSettings.rowBuffer : 20;
+                const startIdx: number = Math.max(0, Math.floor(top / rowH) - rowBuf);
+                (this.parent.chartRowsModule as any).taskTable.style.transform =
+                    'translateY(' + (startIdx * rowH) + 'px)';
+            }
+        } else {
+            this.element.scrollTop = top;
+        }
     }
     /**
      * Method to update vertical grid line, holiday, event markers and weekend container's top position on scroll action
@@ -171,7 +231,234 @@ export class ChartScroll {
             taskTable.style.width = this.parent.timelineModule.wholeTimelineWidth + 'px';
         }
     }
+    /**
+     * Creates the virtual scrollbar element — the single native scroll source for DOM virt mode.
+     * Chart content becomes overflow:hidden; the virtual scrollbar's scroll event drives all scroll.
+     * @returns {void}
+     */
+    private setupVirtualScrollbar(): void {
+        this.element.style.overflowY = 'hidden';
+        // Measure native scrollbar width at runtime (0 on macOS overlay scrollbars).
+        const probeStyle: string = 'position:absolute;visibility:hidden;overflow-y:scroll;width:50px;height:50px;';
+        const probe: HTMLElement = createElement('div', { styles: probeStyle });
+        document.body.appendChild(probe);
+        const sbWidth: number = probe.offsetWidth - probe.clientWidth || 15;
+        document.body.removeChild(probe);
+        const side: string = this.parent.enableRtl ? 'left' : 'right';
+        this.element.style.width = 'calc(100% - ' + sbWidth + 'px)';
+        if (this.parent.enableRtl) {
+            this.element.style.marginLeft = sbWidth + 'px';
+        }
+        const container: HTMLElement = this.element.parentElement;
+        if (container.style.position !== 'relative' && container.style.position !== 'absolute') {
+            container.style.position = 'relative';
+        }
+        this.virtualScrollbar = createElement('div', { className: 'e-gantt-virtual-scrollbar' });
+        this.virtualScrollbar.style.cssText =
+            'position:absolute;' + side + ':0;top:0;width:' + sbWidth + 'px;' +
+            'height:100%;overflow-y:scroll;overflow-x:hidden;z-index:5;';
+        this.virtualScrollbarInner = createElement('div', { className: 'e-gantt-virtual-scrollbar-inner' });
+        this.virtualScrollbarInner.style.width = '1px';
+        this.virtualScrollbar.appendChild(this.virtualScrollbarInner);
+        container.appendChild(this.virtualScrollbar);
+        this.updateVirtualScrollbarHeight();
+    }
+
+    /**
+     * Sync virtual scrollbar inner height and chartBodyContent height to the full virtual content height.
+     * In DOM virt mode the virtual height = all expanded records × rowHeight (NOT parent.contentHeight,
+     * which reflects only the rendered DOM rows and is undefined in dom-virt mode).
+     * Call whenever the expanded record set changes (data load, expand/collapse, filter).
+     * @returns {void}
+     */
+    public updateVirtualScrollbarHeight(): void {
+        let virtualH: number = 0;
+        if ((this.parent as any).enableDomVirtualization) {
+            const rowCount: number = this.parent.currentViewData ? this.parent.currentViewData.length : 0;
+            const rowH: number = (this.parent.rowHeight as number) || 36;
+            virtualH = rowCount * rowH;
+        } else {
+            virtualH = (this.parent as any).contentHeight || 0;
+        }
+        if (virtualH <= 0) { return; }
+        const chartBodyContent: HTMLElement = this.parent.ganttChartModule &&
+            this.parent.ganttChartModule.chartBodyContent;
+        if (chartBodyContent) {
+            // chartBodyContent defines the element's true scroll range — must NOT include the
+            // horizontal-scrollbar padding or it stretches the container (breaking height:100%
+            // on the virtual scrollbar's outer div).
+            chartBodyContent.style.height = virtualH + 'px';
+        }
+        if (this.virtualScrollbarInner) {
+            // The virtual scrollbar's inner height is padded by the horizontal scrollbar
+            // height so the two scroll ranges match:
+            //   vscroll max scrollTop = innerH - vscroll.clientHeight
+            //   element  max scrollTop = virtualH - element.clientHeight
+            // When a horizontal scrollbar is present, element.clientHeight < vscroll.clientHeight
+            // by the scrollbar track height, so innerH must be virtualH + that difference.
+            // We approximate the difference as element.offsetHeight - element.clientHeight.
+            let innerH: number = virtualH;
+            if ((this.parent as any).enableDomVirtualization && this.element) {
+                const hScrollbarHeight: number = this.element.offsetHeight - this.element.clientHeight;
+                if (hScrollbarHeight > 0) { innerH += hScrollbarHeight; }
+            }
+            this.virtualScrollbarInner.style.height = innerH + 'px';
+        }
+    }
+
+    /**
+     * Main scroll handler — fires on the virtual scrollbar element (the only native scroll source).
+     * Sets element.scrollTop to clip content (overflow:hidden — no scroll event fires on element).
+     * Defers row recycling and tree grid sync to rAF so they never block the visual frame.
+     * @returns {void}
+     */
+    private onVirtualScroll(): void {
+        if (!this.virtualScrollbar) { return; }
+        const scrollTop: number = this.virtualScrollbar.scrollTop;
+        const wasFromTreeGrid: boolean = this.isFromTreeGrid;
+        this.isFromTreeGrid = false;
+
+        const hadVerticalScroll: boolean = scrollTop !== this.previousScroll.top;
+        const prevTop: number = this.previousScroll.top;
+
+        if (hadVerticalScroll) {
+            this.previousScroll.top = scrollTop;
+            this.currentScrollTop = scrollTop;
+            this.updateTopPositionDomVirt(scrollTop);
+            // Move taskTable synchronously so the chart rows track the scrollbar
+            // with zero visual lag. Row add/remove stays deferred in rAF.
+            const domVirtModuleSync: any = (this.parent as any).domVirtualizationModule;
+            if (domVirtModuleSync && this.parent.chartRowsModule &&
+                    (this.parent.chartRowsModule as any).taskTable) {
+                const rowHSync: number = (this.parent.rowHeight as number) || 36;
+                const settingsSync: { rowBuffer?: number } =
+                    (this.parent as any).domVirtualizationSettings || {};
+                const rowBufferSync: number = settingsSync.rowBuffer != null ? settingsSync.rowBuffer : 20;
+                const startIndexSync: number = Math.max(0, Math.floor(scrollTop / rowHSync) - rowBufferSync);
+                (this.parent.chartRowsModule as any).taskTable.style.transform =
+                    'translateY(' + (startIndexSync * rowHSync) + 'px)';
+            }
+        }
+
+        // Always update the shared latest values so the rAF sees the most recent position.
+        this.latestScrollTop = scrollTop;
+        this.latestFromTreeGrid = wasFromTreeGrid;
+
+        // Do NOT cancel a pending rAF — let it fire once per frame using latestScrollTop.
+        // Cancelling on every event means the rAF never fires during fast thumb drags,
+        // leaving stale rows that do not cover the visible area (white space).
+        if (!this.pendingScrollRaf) {
+            this.pendingScrollRaf = requestAnimationFrame(() => {
+                this.pendingScrollRaf = 0;
+                if (!this.parent.element) { return; }
+                const rafScrollTop: number = this.latestScrollTop;
+                const rafFromTreeGrid: boolean = this.latestFromTreeGrid;
+                this.element.scrollTop = rafScrollTop;
+                const domVirtModule: any = (this.parent as any).domVirtualizationModule;
+                if (domVirtModule && this.parent.chartRowsModule) {
+                    const result: { records: IGanttData[], startIndex: number } =
+                        domVirtModule.getVisibleRecordsFromScroll(rafScrollTop);
+                    if (result.records.length > 0) {
+                        const previousStartIndex: number =
+                            (this.parent.chartRowsModule as any).domVirtPrevStartIndex;
+                        const viewportChanged: boolean = this.parent.enableDomVirtualization &&
+                            result.startIndex !== previousStartIndex;
+                        if (viewportChanged) {
+                            this.isDomVirtualScrolling = true;
+                        }
+                        this.parent.chartRowsModule.refreshDomVirtualRows(result.records, result.startIndex);
+                        if (!viewportChanged) {
+                            this.isDomVirtualScrolling = false;
+                        }
+                        if (this.parent.queryTaskbarInfo) {
+                            this.parent.chartRowsModule.triggerQueryTaskbarInfoForWindow(result.startIndex);
+                        }
+                        if (this.parent.taskFields && this.parent.taskFields.dependency) {
+                            this.parent.ganttChartModule.reRenderConnectorLines();
+                        }
+                        if (this.parent.enableCriticalPath && this.parent.criticalPathModule &&
+                                (this.parent.criticalPathModule as any).criticalPathCollection) {
+                            const cp: any = this.parent.criticalPathModule;
+                            const cpColl: any = cp.criticalPathCollection;
+                            const dpColl: any = cp.detailPredecessorCollection;
+                            const predIds: any = cp.predecessorCollectionTaskIds;
+                            cp.criticalConnectorLine(cpColl, dpColl, true, predIds);
+                        }
+                        this.parent.renderTemplates();
+                    }
+                }
+                if (!rafFromTreeGrid && this.parent.element) {
+                    this.parent.notify('chartScroll', { top: rafScrollTop });
+                }
+                if (this.parent.domVirtualizationModule) {
+                    this.parent.treeGridModule['restoreDomVirtualSelection']();
+                }
+            });
+        }
+        this.parent.timelineModule['performedTimeSpanAction'] = false;
+        this.parent.isToolBarClick = true;
+        if (hadVerticalScroll && !wasFromTreeGrid) {
+            const scrollArgs: ScrollArgs = {
+                requestType: 'scroll',
+                scrollDirection: 'Vertical',
+                action: 'VerticalScroll',
+                scrollTop: scrollTop,
+                previousScrollTop: prevTop
+            };
+            this.parent.trigger('actionComplete', scrollArgs);
+        }
+        this.parent.timelineModule.isZoomOut = false;
+    }
+
+    /**
+     * Forward wheel events from the chart content area to the virtual scrollbar.
+     * Only intercepts vertical-dominant gestures; horizontal gestures (touchpad
+     * two-finger swipe) are left for the browser to handle as native scrollLeft.
+     * @param {WheelEvent} e - The wheel event from the chart content area.
+     * @returns {void}
+     */
+    private onChartWheel(e: WheelEvent): void {
+        if (!this.virtualScrollbar) { return; }
+        const absX: number = Math.abs(e.deltaX);
+        const absY: number = Math.abs(e.deltaY);
+        if (absX > absY) {
+            // Horizontal-dominant gesture — let browser scroll element.scrollLeft natively;
+            // onHorizontalScroll will sync the timeline header.
+            const scrollArgs: ScrollArgs = {};
+            this.onScrollHelper(scrollArgs);
+            return;
+        }
+        e.preventDefault();
+        const delta: number = e.deltaMode === 1 ? e.deltaY * 33 : e.deltaMode === 2 ? e.deltaY * 300 : e.deltaY;
+        this.virtualScrollbar.scrollTop += delta;
+    }
+
+    /**
+     * Reposition overlay elements using the already-known scrollTop.
+     * Never reads content.scrollTop — avoids FSL after TreeGrid DOM mutations.
+     * @param {number} scrollTop - The current virtual scroll position in pixels.
+     * @returns {void}
+     */
+    private updateTopPositionDomVirt(scrollTop: number): void {
+        if (!isNullOrUndefined(this.parent.dayMarkersModule)) {
+            const holidayContainer: HTMLElement =
+                getValue('nonworkingDayRender.holidayContainer', this.parent.dayMarkersModule);
+            const weekendContainer: HTMLElement =
+                getValue('nonworkingDayRender.weekendContainer', this.parent.dayMarkersModule);
+            const eventMarkersContainer: HTMLElement =
+                getValue('eventMarkerRender.eventMarkersContainer', this.parent.dayMarkersModule);
+            if (holidayContainer) { holidayContainer.style.top = formatUnit(scrollTop); }
+            if (weekendContainer) { weekendContainer.style.top = formatUnit(scrollTop); }
+            if (eventMarkersContainer) { eventMarkersContainer.style.top = formatUnit(scrollTop); }
+        }
+        if (this.parent.chartVerticalLineContainer) {
+            this.parent.chartVerticalLineContainer.style.top = formatUnit(scrollTop);
+        }
+    }
     public updateTopPosition(): void {
+        if ((this.parent as any).enableDomVirtualization) {
+            return;
+        }
         const content: HTMLElement = this.parent.treeGrid.element.querySelector('.e-content');
         const contentScrollTop: number = content.scrollTop;
         let scrollTop: number;
@@ -203,12 +490,15 @@ export class ChartScroll {
         const parent: Gantt = this.parent;
         setTimeout(() => {
             parent.hideMaskRow();
-            if (!parent.allowTaskbarOverlap && parent.showOverAllocation) {
+            if (!parent.allowTaskbarOverlap && parent.showOverAllocation && !(parent as any).enableDomVirtualization) {
                 for (let i: number = 0; i < parent.currentViewData.length; i++) {
+                    // T-12: null-guard both the chart body node and the tree-grid row.
                     const tr: ChildNode = parent.chartRowsModule.ganttChartTableBody.childNodes[i as number];
+                    if (!tr) { continue; }
                     if (tr['style'].display !== 'none' && parent.currentViewData[i as number].hasChildRecords && !parent.currentViewData[i as number].expanded) {
                         if (parent.ganttChartModule.isExpandAll || parent.ganttChartModule.isCollapseAll) {
-                            parent.treeGrid.getRowByIndex(i as number)['style'].height = tr['style'].height;
+                            const treeRow: Element | null = parent.treeGrid.getRowByIndex(i as number);
+                            if (treeRow) { treeRow['style'].height = tr['style'].height; }
                         }
                         else {
                             parent.treeGrid.getRows()[i as number]['style'].height = tr['style'].height;
@@ -256,6 +546,15 @@ export class ChartScroll {
             scrollArgs.action = 'VerticalScroll';
             this.updateTopPosition();
         }
+        this.onScrollHelper(scrollArgs);
+    }
+
+    private onHorizontalScroll(): void {
+        if (this.element.scrollLeft === this.previousScroll.left) { return; }
+        const scrollArgs: ScrollArgs = {};
+        this.onScrollHelper(scrollArgs);
+    }
+    private onScrollHelper(scrollArgs: ScrollArgs): void {
         if (this.element.scrollLeft !== this.previousScroll.left) {
             // In RTL, the visual scroll direction is opposite for `scrollLeft` comparison
             // (browser-specific behavior). Flip the comparison when RTL is enabled.
@@ -296,27 +595,29 @@ export class ChartScroll {
             }
         }
         this.parent.timelineModule['performedTimeSpanAction'] = false;
-        if ((!isNullOrUndefined(scrollArgs.scrollDirection)) && (this.parent.enableVirtualization === true ||
-            this.parent.enableTimelineVirtualization === true) && (this.parent.isToolBarClick ||
-                isNullOrUndefined(this.parent.isToolBarClick))) {
-            this.parent.isVirtualScroll = true;
-            this.parent['isVirtualScrollAction'] = true;
-            if (this.parent.showIndicator || isNullOrUndefined(this.parent.showIndicator)) {
-                if (!this.parent.enableVirtualMaskRow && this.parent.enableVirtualization && this.parent.loadingIndicator.indicatorType === 'Spinner') {
-                    this.updateSpinner();
-                }
-                else if (this.parent.enableTimelineVirtualization && !this.parent['isRowSelected'] && Math.abs(this.element.scrollLeft - scrollArgs.previousScrollLeft) > 1000) {
-                    if (!this.parent.enableVirtualMaskRow && this.parent.loadingIndicator.indicatorType === 'Spinner') {
+        if (!(this.parent.enableDomVirtualization && this.parent.domVirtualizationModule)) {
+            if ((!isNullOrUndefined(scrollArgs.scrollDirection)) && (this.parent.enableVirtualization === true ||
+                this.parent.enableTimelineVirtualization === true) && (this.parent.isToolBarClick ||
+                    isNullOrUndefined(this.parent.isToolBarClick))) {
+                this.parent.isVirtualScroll = true;
+                this.parent['isVirtualScrollAction'] = true;
+                if (this.parent.showIndicator || isNullOrUndefined(this.parent.showIndicator)) {
+                    if (scrollArgs.scrollDirection === 'Vertical' && !this.parent.enableVirtualMaskRow && this.parent.enableVirtualization && this.parent.loadingIndicator.indicatorType === 'Spinner') {
                         this.updateSpinner();
                     }
-                    else {
-                        this.parent.showMaskRow();
-                        setTimeout(() => {
-                            this.removeShimmer();
-                        }, 0);
+                    else if (this.parent.enableTimelineVirtualization && !this.parent['isRowSelected'] && Math.abs(this.element.scrollLeft - scrollArgs.previousScrollLeft) > 1000) {
+                        if (!this.parent.enableVirtualMaskRow && this.parent.loadingIndicator.indicatorType === 'Spinner') {
+                            this.updateSpinner();
+                        }
+                        else {
+                            this.parent.showMaskRow();
+                            setTimeout(() => {
+                                this.removeShimmer();
+                            }, 0);
+                        }
                     }
+                    this.parent['isRowSelected'] = false;
                 }
-                this.parent['isRowSelected'] = false;
             }
         }
         this.isSetScrollLeft = false;
@@ -446,6 +747,9 @@ export class ChartScroll {
      */
     public setHeight(height: string | number): void {
         this.element.style.height = formatUnit(height);
+        if (this.virtualScrollbar) {
+            this.virtualScrollbar.style.height = formatUnit(height);
+        }
     }
     /**
      * To set width for chart scroll container
@@ -468,8 +772,18 @@ export class ChartScroll {
         if (this.parent.enableVirtualization) {
             this.parent['isVirtualScrollAction'] = true;
         }
+        if ((this.parent as any).enableDomVirtualization && this.virtualScrollbar) {
+            this.virtualScrollbar.scrollTop = scrollTop;
+            return;
+        }
         this.element.scrollTop = scrollTop;
-        this.parent.treeGrid.element.querySelector('.e-content').scrollTop = scrollTop;
+        if (!(this.parent as any).enableDomVirtualization) {
+            const treeGridContent: HTMLElement = this.parent.treeGrid && this.parent.treeGrid.element ?
+                this.parent.treeGrid.element.querySelector('.e-content') : null;
+            if (treeGridContent) {
+                treeGridContent.scrollTop = scrollTop;
+            }
+        }
     }
     /**
      * To set scroll left for chart scroll container

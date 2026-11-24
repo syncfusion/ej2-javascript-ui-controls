@@ -39,7 +39,7 @@ export class DataManipulation {
     private loadChildOnDemand: boolean;
     private initialRender: boolean;
     private isCountRequired: boolean;
-    private rowDragAndDropTargetID: string;
+    private rowDragAndDropTargetID: string | string[];
     private isVirtualRemote: boolean;
     private isRemoteData: boolean;
     private remoteCollapsedList: Object[];
@@ -784,7 +784,7 @@ export class DataManipulation {
         this.loadChildOnDemand = this.parent.loadChildOnDemand;
         this.initialRender = this.parent.initialRender;
         this.isCountRequired = isCountRequired(this.parent);
-        this.rowDragAndDropTargetID = this.parent.rowDropSettings.targetID as string;
+        this.rowDragAndDropTargetID = this.parent.rowDropSettings.targetID as string | string[];
         this.isVirtualRemote = this.parent.enableVirtualization && !this.loadChildOnDemand &&
             isRemoteData(this.parent) && !this.initialRender;
         this.isRemoteData = isRemoteData(this.parent);

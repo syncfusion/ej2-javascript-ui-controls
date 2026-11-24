@@ -8,12 +8,16 @@ export interface MaterializableDocument {
     listBlocks(): ReadonlyArray<BlockContent>;
     featurePart(id: FeatureId): unknown;
 }
-/** @public */
+/**
+ * @public
+ */
 export interface FeatureMaterializeHandler {
     readonly featureId: FeatureId;
     materialize(document: MaterializableDocument): void;
 }
-/** @public */
+/**
+ * @public
+ */
 export interface FeatureBlockParagraphWalker {
     readonly featureId: FeatureId;
     visitParagraphs(block: FeatureBlock, visit: (paragraph: Paragraph) => void): void;
@@ -21,7 +25,9 @@ export interface FeatureBlockParagraphWalker {
 const materializeHandlers: FeatureMaterializeHandler[] = [];
 const blockParagraphWalkers: Map<FeatureId, FeatureBlockParagraphWalker> = new Map<FeatureId, FeatureBlockParagraphWalker>();
 /**
- *  @public Test hook
+ * Test hook
+ *
+ * @private
  *
  * @returns {void} Nothing is returned.
  */
@@ -48,7 +54,9 @@ export function registerFeatureBlockParagraphWalker(walker: FeatureBlockParagrap
     blockParagraphWalkers.set(walker.featureId, walker);
 }
 /**
- *  @public Visit body blocks and nested feature paragraphs in document order.
+ * Visit body blocks and nested feature paragraphs in document order.
+ *
+ * @private
  *
  * @param {MaterializableDocument} document - The document.
  * @param {Function} visit - The visit.
@@ -80,7 +88,9 @@ export function visitBlocksInDocumentOrder(blocks: ReadonlyArray<BlockContent>, 
     }
 }
 /**
- *  @public Run every registered feature materialization pass.
+ * Run every registered feature materialization pass.
+ *
+ * @private
  *
  * @param {MaterializableDocument} document - The document.
  * @returns {void} Nothing is returned.

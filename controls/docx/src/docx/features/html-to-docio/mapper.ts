@@ -1,11 +1,11 @@
 /**
  */
 /* eslint-disable security/detect-object-injection, valid-jsdoc, no-console */
-import { WordDocument } from '../document/document.js';
-import { Body } from '../document/body.js';
-import { ParagraphFormat } from '../document/paragraph-format.js';
-import { Paragraph } from '../document/paragraph.js';
-import { BreakType, TextRange } from '../document/text-range.js';
+import { WordDocument } from '../document/document';
+import { Body } from '../document/body';
+import { ParagraphFormat } from '../document/paragraph-format';
+import { Paragraph } from '../document/paragraph';
+import { BreakType, TextRange } from '../document/text-range';
 import {
     _HTMLElement,
     _HTMLBodyElement,
@@ -34,14 +34,14 @@ import {
     _HTMLCenterElement,
     _HTMLFontElement,
     _HTMLSampElement
-} from '../html-parser/dom-node.js';
-import { _ParagraphMapper } from './paragraph-mapper.js';
-import { _ListMapper } from './list-mapper.js';
-import { _TableMapper } from './table-mapper.js';
-import { _ImageMapper } from './image-mapper.js';
-import { registerTablesFeature } from '../tables/index.js';
-import { CSSStyleCache, applyParagraphDeclarations, parseCssHex } from './css-paragraph-style-builder.js';
-import { CSSCharacterStyleCache } from './css-character-style-builder.js';
+} from '../html-parser/dom-node';
+import { _ParagraphMapper } from './paragraph-mapper';
+import { _ListMapper } from './list-mapper';
+import { _TableMapper } from './table-mapper';
+import { _ImageMapper } from './image-mapper';
+import { registerTablesFeature } from '../tables/index';
+import { CSSStyleCache, applyParagraphDeclarations, parseCssHex } from './css-paragraph-style-builder';
+import { CSSCharacterStyleCache } from './css-character-style-builder';
 
 // Type aliases for compatibility
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -80,7 +80,7 @@ export class _HTMLToDocIOMapper {
         this._document = document;
         this._styleCache = new CSSStyleCache(document);
         // Initialize character style cache for CSS class selectors
-        const characterStyleCache = new CSSCharacterStyleCache(document);
+        const characterStyleCache: CSSCharacterStyleCache = new CSSCharacterStyleCache(document);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (_ParagraphMapper as any).setCharacterStyleCache(characterStyleCache);
         // Collect CSS rules from stylesheets
@@ -97,8 +97,8 @@ export class _HTMLToDocIOMapper {
      */
     private _collectCSSRules(): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const htmlElement = this._htmlElement as any;
-        
+        const htmlElement: any = this._htmlElement as any;
+
         // Get pre-parsed CSS rules from parser (stored in body.cssRules)
         // The parser is responsible for parsing ALL stylesheets
         if (htmlElement.cssRules && Array.isArray(htmlElement.cssRules)) {
@@ -159,7 +159,7 @@ export class _HTMLToDocIOMapper {
         }
         return null;
     }
-	 /**
+    /**
      * Map HTML elements to the document body and add paragraphs directly.
      *
      * Phase 1 only supports paragraphs. Paragraphs are created and attached
@@ -248,7 +248,7 @@ export class _HTMLToDocIOMapper {
         let isFirstParagraph: boolean = true;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let currentInlineParagraph: any = null; // Buffer for consecutive inline elements
-        
+
         for (const child of parent._childNodes) {
             // A span wrapping block elements: unwrap it and map its children at body level
             if (child instanceof _HTMLSpanElement && this._containsBlockLevelElements(child)) {
@@ -257,7 +257,7 @@ export class _HTMLToDocIOMapper {
                 isFirstParagraph = false;
                 continue;
             }
-const isInlineElement: boolean =
+            const isInlineElement: boolean =
     child instanceof _HTMLFontElement ||
     child instanceof _HTMLSpanElement ||
     child instanceof _HTMLAnchorElement ||
@@ -270,139 +270,151 @@ const isInlineElement: boolean =
     child instanceof _HTMLSupElement ||
     child instanceof _HTMLCodeElement ||
     child instanceof _HTMLSampElement;
-            const isTextNode = child instanceof _HTMLTextNode;
+            const isTextNode: boolean = child instanceof _HTMLTextNode;
             // Also check for inline-like generic elements (s, ins, big, small, del, mark, etc.)
-            const isGenericInlineElement = child instanceof _HTMLGenericElement &&
+            const isGenericInlineElement: boolean = child instanceof _HTMLGenericElement &&
                 (child.tagName && ['s', 'del', 'ins', 'mark', 'big', 'small', 'abbr', 'cite', 'dfn', 'var', 'q', 'bdi', 'bdo'].indexOf(child.tagName.toLowerCase()) !== -1);
-            
+
             // Check if this is a <br> element (which should stay with inline content)
-            const isBrElement = child instanceof _HTMLBrElement || 
+            const isBrElement: boolean = child instanceof _HTMLBrElement ||
                 (child.tagName && child.tagName.toLowerCase() === 'br');
             // Handle <br> as an inline line break
-if (isBrElement) {
-    if (!currentInlineParagraph) {
+            if (isBrElement) {
+                if (!currentInlineParagraph) {
 
-        if (isFirstParagraph &&
+                    if (isFirstParagraph &&
             body.paragraphs &&
             body.paragraphs.length === 1) {
 
-            const defaultPara: _Paragraph = body.paragraphs[0];
+                        const defaultPara: _Paragraph = body.paragraphs[0];
 
-            let isEmptyPara: boolean = false;
+                        let isEmptyPara: boolean = false;
 
-            if (defaultPara.items && defaultPara.items.snapshot) {
-                const items: any[] = defaultPara.items.snapshot();
-                isEmptyPara = !items || items.length === 0;
+                        if (defaultPara.items && defaultPara.items.snapshot) {
+                            const items: any[] = defaultPara.items.snapshot();
+                            isEmptyPara = !items || items.length === 0;
+                        }
+
+                        if (isEmptyPara) {
+                            currentInlineParagraph = defaultPara;
+                        }
+                    }
+
+                    if (!currentInlineParagraph) {
+                        currentInlineParagraph = new Paragraph(undefined);
+
+                        _HTMLToDocIOMapper.addItemToContainer(
+                            body,
+                            currentInlineParagraph
+                        );
+                    }
+                }
+
+                currentInlineParagraph.appendBreak(
+                    BreakType.LineBreak
+                );
+
+                isFirstParagraph = false;
+                continue;
             }
-
-            if (isEmptyPara) {
-                currentInlineParagraph = defaultPara;
-            }
-        }
-
-        if (!currentInlineParagraph) {
-            currentInlineParagraph = new Paragraph(undefined);
-
-            _HTMLToDocIOMapper.addItemToContainer(
-                body,
-                currentInlineParagraph
-            );
-        }
-    }
-
-    currentInlineParagraph.appendBreak(
-        BreakType.LineBreak
-    );
-
-    isFirstParagraph = false;
-    continue;
-}
             // If this is NOT an inline element and NOT a <br>, and we have accumulated inline elements, flush them
             if (!isInlineElement && !isGenericInlineElement && !isBrElement && !isTextNode && currentInlineParagraph) {
                 currentInlineParagraph = null;
             }
             if (child instanceof _HTMLTextNode) {
 
-    const textContent: string = child._text || '';
+                const textContent: string = child._text || '';
 
-    if (textContent.length === 0) {
-        continue;
-    }
+                if (textContent.length === 0) {
+                    continue;
+                }
 
-    // Whitespace-only text is insignificant when it is not between two inline
-    // elements: HTML collapses it away next to block elements (newlines and
-    // tabs used for source formatting must not become text runs / tabs).
-    // eslint-disable-next-line no-irregular-whitespace
-    const isBlankText: boolean = textContent.replace(/[^\S\u00A0]+/g, '').length === 0;
-    if (isBlankText) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const isInlineNode = (node: any): boolean => {
-            if (node instanceof _HTMLTextNode) { return true; }
-            const t: string = node.tagName ? node.tagName.toLowerCase() : '';
-            return node instanceof _HTMLSpanElement || node instanceof _HTMLBElement ||
+                // Whitespace-only text is insignificant when it is not between two inline
+                // elements: HTML collapses it away next to block elements (newlines and
+                // tabs used for source formatting must not become text runs / tabs).
+                // eslint-disable-next-line no-irregular-whitespace
+                const isBlankText: boolean = textContent.replace(/[^\S\u00A0]+/g, '').length === 0;
+                if (isBlankText) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const isInlineNode: (node: any) => boolean = (node: any): boolean => {
+                        if (node instanceof _HTMLTextNode) { return true; }
+                        const t: string = node.tagName ? node.tagName.toLowerCase() : '';
+                        return node instanceof _HTMLSpanElement || node instanceof _HTMLBElement ||
                 node instanceof _HTMLIElement || node instanceof _HTMLUElement ||
                 node instanceof _HTMLStrongElement || node instanceof _HTMLEmElement ||
                 node instanceof _HTMLAnchorElement || node instanceof _HTMLImageElement ||
                 node instanceof _HTMLBrElement || node instanceof _HTMLFontElement ||
                 ['strong', 'em', 's', 'ins', 'del', 'code', 'samp', 'kbd', 'mark',
                     'small', 'big', 'sub', 'sup', 'abbr', 'cite', 'q', 'wbr'].indexOf(t) !== -1;
-        };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const siblings: any[] = parent._childNodes;
-        const myIndex: number = siblings.indexOf(child);
-        let nextSibling = null;
-        for (let i = myIndex + 1; i < siblings.length; i++) {
-            // eslint-disable-next-line no-irregular-whitespace
-            if (siblings[i] instanceof _HTMLTextNode && (siblings[i]._text || '').replace(/[^\S\u00A0]+/g, '').length === 0) {
-                continue; // consecutive whitespace nodes act as one
-            }
-            nextSibling = siblings[i];
-            break;
-        }
-        if (!nextSibling || !isInlineNode(nextSibling)) {
-            currentInlineParagraph = null;
-            continue;
-        }
-    }
+                    };
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const siblings: any[] = parent._childNodes;
+                    const myIndex: number = siblings.indexOf(child);
+                    let nextSibling: any = null;
+                    for (let i: number = myIndex + 1; i < siblings.length; i++) {
+                        // eslint-disable-next-line no-irregular-whitespace
+                        if (siblings[i] instanceof _HTMLTextNode && (siblings[i]._text || '').replace(/[^\S\u00A0]+/g, '').length === 0) {
+                            continue; // consecutive whitespace nodes act as one
+                        }
+                        nextSibling = siblings[i];
+                        break;
+                    }
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    let previousSibling: any = null;
+                    for (let i: number = myIndex - 1; i >= 0; i--) {
+                        // eslint-disable-next-line no-irregular-whitespace
+                        if (siblings[i] instanceof _HTMLTextNode && (siblings[i]._text || '').replace(/[^\S\u00A0]+/g, '').length === 0) {
+                            continue;
+                        }
+                        previousSibling = siblings[i];
+                        break;
+                    }
+                    // Whitespace is only significant between two inline nodes (e.g. two spans); next to a
+                    // block element, or at the start/end of the container, it collapses away.
+                    if (!nextSibling || !isInlineNode(nextSibling) || !previousSibling || !isInlineNode(previousSibling)) {
+                        currentInlineParagraph = null;
+                        continue;
+                    }
+                }
 
-    // Create paragraph for body-level text
-    if (!currentInlineParagraph) {
+                // Create paragraph for body-level text
+                if (!currentInlineParagraph) {
 
-        if (isFirstParagraph &&
+                    if (isFirstParagraph &&
             body.paragraphs &&
             body.paragraphs.length === 1) {
 
-            const defaultPara: _Paragraph = body.paragraphs[0];
+                        const defaultPara: _Paragraph = body.paragraphs[0];
 
-            let isEmptyPara: boolean = false;
+                        let isEmptyPara: boolean = false;
 
-            if (defaultPara.items && defaultPara.items.snapshot) {
-                const items: any[] = defaultPara.items.snapshot();
-                isEmptyPara = !items || items.length === 0;
+                        if (defaultPara.items && defaultPara.items.snapshot) {
+                            const items: any[] = defaultPara.items.snapshot();
+                            isEmptyPara = !items || items.length === 0;
+                        }
+
+                        if (isEmptyPara) {
+                            currentInlineParagraph = defaultPara;
+                        }
+                    }
+
+                    if (!currentInlineParagraph) {
+                        currentInlineParagraph = new Paragraph(undefined);
+                        _HTMLToDocIOMapper.addItemToContainer(
+                            body,
+                            currentInlineParagraph
+                        );
+                    }
+                }
+
+                const textRange: any = new TextRange(this._document);
+                textRange.text = textContent;
+                _ParagraphMapper.applyInheritedCharacterStyles(textRange, parent._styles || {});
+                currentInlineParagraph.items.add(textRange);
+
+                isFirstParagraph = false;
             }
-
-            if (isEmptyPara) {
-                currentInlineParagraph = defaultPara;
-            }
-        }
-
-        if (!currentInlineParagraph) {
-            currentInlineParagraph = new Paragraph(undefined);
-            _HTMLToDocIOMapper.addItemToContainer(
-                body,
-                currentInlineParagraph
-            );
-        }
-    }
-
-    const textRange: any = new TextRange(this._document);
-    textRange.text = textContent;
-    _ParagraphMapper.applyInheritedCharacterStyles(textRange, parent._styles || {});
-    currentInlineParagraph.items.add(textRange);
-
-    isFirstParagraph = false;
-}
-             else if (child instanceof _HTMLHeadingElement) {
+            else if (child instanceof _HTMLHeadingElement) {
                 // Map heading element (h1-h6) to a heading paragraph style
                 // For the first heading, try to reuse the default empty paragraph if available
                 if (isFirstParagraph && body.paragraphs && body.paragraphs.length === 1) {
@@ -627,7 +639,7 @@ if (isBrElement) {
                 // Div should contain its content as a paragraph (like <p> but can contain block elements)
                 // Check if div contains block-level elements (p, h*, table, ul, ol, div, etc.)
                 let hasBlockElements: boolean = this._containsBlockLevelElements(child);
-                
+
                 // Additional check: explicitly look for table elements which are critical
                 if (!hasBlockElements && child._childNodes) {
                     for (const dchild of child._childNodes) {
@@ -637,7 +649,7 @@ if (isBrElement) {
                         }
                     }
                 }
-                
+
                 if (hasBlockElements) {
                     // If div contains block elements, recursively process its children at body level
                     let before: number = body.paragraphs ? body.paragraphs.length : 0;
@@ -682,7 +694,7 @@ if (isBrElement) {
                 if (!child._styles['margin-left']) {
                     child._styles['margin-left'] = '36pt';
                 }
-                
+
                 // Recursively process children, then apply the container declarations to them
                 const quoteBefore: number = body.paragraphs ? body.paragraphs.length : 0;
                 this._mapElementChildrenToBody(child, body);
@@ -847,15 +859,15 @@ if (isBrElement) {
         if (!element._childNodes || element._childNodes.length === 0) {
             return false;
         }
-        
+
         for (const child of element._childNodes) {
             // Skip text nodes
             if (child instanceof _HTMLTextNode) {
                 continue;
             }
-            
+
             const tagName: string = child.tagName ? child.tagName.toLowerCase() : '';
-            
+
             // Check if child is a block-level element
             const blockLevelTags: string[] = [
                 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -865,7 +877,7 @@ if (isBrElement) {
                 'section', 'article', 'header', 'footer', 'main',
                 'aside', 'nav'
             ];
-            
+
             if (blockLevelTags.indexOf(tagName) !== -1) {
                 return true;
             }
@@ -875,7 +887,7 @@ if (isBrElement) {
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -924,16 +936,16 @@ if (isBrElement) {
             if (!element._childNodes || element._childNodes.length === 0) {
                 return;
             }
-            
+
             // Process each child of blockquote with indentation applied
             for (const child of element._childNodes) {
                 // Skip text nodes at blockquote level
                 if (child instanceof _HTMLTextNode) {
                     continue;
                 }
-                
+
                 const childTagName: string = child.tagName ? child.tagName.toLowerCase() : '';
-                
+
                 // Create a paragraph for each content element in blockquote
                 if (childTagName === 'p' || childTagName === 'div') {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -975,15 +987,15 @@ if (isBrElement) {
             if (!element._childNodes || element._childNodes.length === 0) {
                 return;
             }
-            
+
             // Process each child with center alignment
             for (const child of element._childNodes) {
                 if (child instanceof _HTMLTextNode) {
                     continue;
                 }
-                
+
                 const childTagName: string = child.tagName ? child.tagName.toLowerCase() : '';
-                
+
                 if (childTagName === 'p' || childTagName === 'div' || childTagName === '') {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const centerParagraph: any = new Paragraph(undefined);

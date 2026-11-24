@@ -16,7 +16,7 @@ export interface ModeledRunLanguage {
     readonly bidi: string | undefined;
 }
 /**
- * Underline kind (`ST_Underline` subset used by built-in styles). §17.18.99
+ * Underline kind.
  *
  * @public
  */
@@ -31,12 +31,21 @@ export interface ModeledRunUnderline {
     /** `@w:color` (`ST_HexColor`, `auto` allowed). */
     readonly color: string | undefined;
 }
-/** Vertical alignment (`ST_VerticalAlignRun`). §17.18.100 @public */
+/**
+ * Vertical alignment.
+ *
+ * @public
+ */
 export type RunVerticalAlignment = 'baseline' | 'superscript' | 'subscript';
-/** Font hint (`ST_Hint`). §17.18.40 @public */
+/**
+ * Font hint.
+ *
+ * @public
+ */
 export type RunFontHint = 'default' | 'eastAsia';
 /**
  * Modeled run properties extracted from a `w:rPr` element. *
+ *
  * @private
  */
 export interface ModeledRunProperties {
@@ -296,11 +305,11 @@ function mergeFontSlot(
 /**
  *  Character slot merge: explicit name wins over theme slot; absent falls back.
  *
- * @param {string | undefined} baseFont - The base font.
- * @param {ThemeFontSlot | undefined} baseTheme - The base theme.
- * @param {string | undefined} overrideFont - The override font.
- * @param {ThemeFontSlot | undefined} overrideTheme - The override theme.
- * @returns {Object} The result.
+ * @param {string | undefined} baseFont - Specifies the base font.
+ * @param {ThemeFontSlot | undefined} baseTheme - Specifies the base theme.
+ * @param {string | undefined} overrideFont - Specifies the override font.
+ * @param {ThemeFontSlot | undefined} overrideTheme - Specifies the override theme.
+ * @returns {Object} Returns the result.
  */
 function mergeNamedThemeSlot(
     baseFont: string | undefined,
@@ -472,8 +481,8 @@ export function effectiveItalic(properties: ModeledRunProperties): boolean {
 /**
  *  Point → `ST_HpsMeasure` half-point string (12 pt → "24").
  *
- * @param {number} value - The value.
- * @returns {string} The result.
+ * @param {number} value - Specifies the value.
+ * @returns {string} Returns the result.
  */
 function serializeHpsMeasure(value: number): string {
     return String(pointToHalfPoints(value));

@@ -106,6 +106,13 @@ export class Timeline {
         const timelineContainer: number = this.parent.element.getElementsByClassName('e-timeline-header-container')[0]['offsetHeight'];
         this.parent.element.getElementsByClassName('e-gridcontent')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
         this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
+        if ((this.parent as any).enableDomVirtualization && this.parent.ganttChartModule &&
+            this.parent.ganttChartModule.scrollObject) {
+            const vscrollEl: HTMLElement = this.parent.element.querySelector('.e-gantt-virtual-scrollbar');
+            if (vscrollEl) {
+                vscrollEl.style.height = 'calc(100% - ' + timelineContainer + 'px)';
+            }
+        }
     }
 
     /**

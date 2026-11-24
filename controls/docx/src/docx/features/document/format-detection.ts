@@ -1,10 +1,12 @@
 /**
  * Format detection utilities for automatic HTML/DOCX format identification.
+ *
  * @private
  */
 
 /**
  * Detected format type.
+ *
  * @private
  */
 export type FormatType = 'html' | 'docx' | 'unknown';
@@ -17,8 +19,8 @@ export type FormatType = 'html' | 'docx' | 'unknown';
  * 2. Decode as UTF-8 and check for HTML start tags
  * 3. Return UNKNOWN if neither format detected
  *
- * @param bytes - The binary content to analyze
- * @returns The detected format: 'HTML', 'DOCX', or 'UNKNOWN'
+ * @param {Uint8Array} bytes - The binary content to analyze
+ * @returns {FormatType} The detected format: 'HTML', 'DOCX', or 'UNKNOWN'
  *
  * @private
  */
@@ -34,11 +36,11 @@ export function detectFormat(bytes: Uint8Array): FormatType {
 
     // Try to decode as UTF-8 and detect HTML
     try {
-        const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
-        const trimmed = text.replace(/^\s+/, '').toLowerCase();
+        const text: string = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+        const trimmed: string = text.replace(/^\s+/, '').toLowerCase();
 
         // Common HTML document starts
-        const htmlStarts = [
+        const htmlStarts: string[] = [
             '<!doctype',
             '<html',
             '<head',
@@ -74,10 +76,10 @@ export function detectFormat(bytes: Uint8Array): FormatType {
             '<select',
             '<br',
             '<hr',
-            '<blockquote',
+            '<blockquote'
         ];
 
-        if (htmlStarts.some((tag) => trimmed.startsWith(tag))) {
+        if (htmlStarts.some((tag: string) => trimmed.startsWith(tag))) {
             return 'html';
         }
 

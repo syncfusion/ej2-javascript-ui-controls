@@ -1,25 +1,28 @@
 /**
  * Watermark public model types (text and picture).
  *
- * Construction, validation, residual, and layout state for TASK-8060 / TASK-8061.
- * WordDocument host attachment lives in `index.ts`. Parse lives in `parse.ts`.
+ * Construction, validation, residual, and layout state for the watermark feature.
+ * WordDocument host attachment lives in the owning module. Parse lives in the owning module.
  *
  * OOXML ownership: `docs/ooxml-mapping/watermark.md`. Requirement:
- * `docs/requirements/watermark-basic.md`. Spec: `docs/specs/watermark-basic.md`.
+ * `docs/requirements/watermark-basic.md`. Spec: the format specification.
  *
  * @packageDocumentation
  */
 import { enumValues } from '../../core/compat/object-compat';
+export { setLogicalWatermark } from './logical-store';
 /**
  * Discriminator for logical watermark kinds.
  *
  * Values match the normative public API in `docs/requirements/watermark-basic.md`.
- * Implemented as a const object + union type (API-RULES R7.5); not a TypeScript `enum`.
+ * Implemented as a const object + union type; not a TypeScript `enum`.
  *
  * @public
  */
 export enum WatermarkType {
+    /** Specifies the text watermark type. */
     TextWatermark = 'TextWatermark',
+    /** Specifies the picture watermark type. */
     PictureWatermark = 'PictureWatermark'
 }
 /**
@@ -31,7 +34,9 @@ export enum WatermarkType {
  * @public
  */
 export enum WatermarkLayout {
+    /** Specifies the horizontal layout. */
     Horizontal = 'Horizontal',
+    /** Specifies the diagonal layout. */
     Diagonal = 'Diagonal'
 }
 /**
@@ -60,10 +65,10 @@ export enum ImageType {
  */
 export type SemitransparentState = 'transparent' | 'opaque' | 'unknown';
 /**
- * Serializable residual bag for a recognized watermark VML shape (TASK-8061).
+ * Serializable residual bag for a recognized watermark VML shape.
  *
  * Holds markup the structured model does not own so clean load/save can restore
- * it. Serialize (TASK-8062) merges these back onto dirty rewrite when needed.
+ * it. Serialize merges these back onto dirty rewrite when needed.
  *
  * @private
  */
@@ -107,7 +112,7 @@ export interface TextWatermarkOptions {
     size?: number;
     /** Fill color (e.g. `#808080`). */
     color?: string;
-    /** When true, dirty serialize emits canonical semitransparent fill (TASK-8062). */
+    /** When true, dirty serialize emits canonical semitransparent fill. */
     semitransparent?: boolean;
     /** Layout preset (Horizontal / Diagonal). */
     layout?: WatermarkLayout;
@@ -205,7 +210,7 @@ function cloneResidual(residual: WatermarkShapeResidual | undefined): WatermarkS
         next.fillOpacity = residual.fillOpacity;
     }
     // Clone must not copy live header-local image relationship identity
-    // (requirement Clone contract / TASK-8063). Omit imageRelationshipId.
+    // (requirement Clone contract). Omit imageRelationshipId.
     if (residual.unresolvedImageNote !== undefined) {
         next.unresolvedImageNote = residual.unresolvedImageNote;
     }
@@ -221,8 +226,23 @@ function cloneResidual(residual: WatermarkShapeResidual | undefined): WatermarkS
  */
 export abstract class Watermark {
     private readonly typeValue: WatermarkType;
+    private ownerValue: object | undefined;
     protected constructor(type: WatermarkType) {
         this.typeValue = type;
+    }
+    /** Header or footer that holds this watermark, when any. */
+    get owner(): object | undefined {
+        return this.ownerValue;
+    }
+    /**
+     * Assigns the owning header or footer.
+     *
+     * @param {object | undefined} owner - The owning header or footer.
+     * @returns {void} Nothing is returned.
+     * @private
+     */
+    setOwner(owner: object | undefined): void {
+        this.ownerValue = owner;
     }
     /** Discriminator matching {@link WatermarkType}. */
     get type(): WatermarkType {
@@ -232,7 +252,7 @@ export abstract class Watermark {
     public abstract clone(): Watermark;
 }
 /**
- * Text watermark authored as VML `v:shape` + `v:textpath` (TASK-8062 emit).
+ * Text watermark authored as VML `v:shape` + `v:textpath`.
  *
  * Defaults (requirement table): empty text, Times New Roman, 36pt, `#808080`,
  * semitransparent `true`, Diagonal layout.
@@ -257,8 +277,8 @@ export class TextWatermark extends Watermark {
     private customRotationDegreesValue: number | undefined;
     private parseResidualValue: WatermarkShapeResidual | undefined;
     /**
-     * @param {string} text - Watermark display text.
-     * @param {Object} options - Optional text styling / layout overrides.
+     * @param {string} text - Specifies the watermark display text.
+     * @param {TextWatermarkOptions} options - Specifies the optional text styling / layout overrides.
      */
     public constructor(text?: string, options?: TextWatermarkOptions) {
         super(WatermarkType.TextWatermark);
@@ -469,8 +489,8 @@ export class PictureWatermark extends Watermark {
     private heightValue: number | undefined;
     private parseResidualValue: WatermarkShapeResidual | undefined;
     /**
-     * @param {Uint8Array} imageData - Optional image bytes (defensively copied).
-     * @param {Object} options - Optional picture styling overrides.
+     * @param {Uint8Array} imageData - Specifies the optional image bytes (defensively copied).
+     * @param {PictureWatermarkOptions} options - Specifies the optional picture styling overrides.
      */
     public constructor(imageData?: Uint8Array, options?: PictureWatermarkOptions) {
         super(WatermarkType.PictureWatermark);
@@ -554,9 +574,9 @@ export class PictureWatermark extends Watermark {
     /**
      * Replace picture bytes and optional type (defensive copy).
      *
-     * @param {Uint8Array} data - Image bytes.
-     * @param {ImageType} imageType - Optional content type.
-     * @returns {void} Nothing is returned.
+     * @param {Uint8Array} data - Specifies the image bytes.
+     * @param {ImageType} imageType - Specifies the optional content type.
+     * @returns {void} Nothing.
      */
     public loadPicture(data: Uint8Array, imageType?: ImageType): void {
         this.imageDataValue = copyBytes(data);

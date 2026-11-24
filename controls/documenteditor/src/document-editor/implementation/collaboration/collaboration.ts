@@ -16,6 +16,7 @@ export class CollaborativeEditingHandler {
     private connectionId: string = '';
     private acknowledgmentPending: Operation[];
     private pendingOps: Operation[][] = [];
+    private unsentInserts: Operation[] = [];
     private commentsStart: CommentCharacterElementBox[] = [];
     private commentsEnd: CommentCharacterElementBox[] = [];
     private deletedComments: CommentElementBox[] = [];
@@ -58,6 +59,7 @@ export class CollaborativeEditingHandler {
         if (!isNullOrUndefined(operations) && operations.length === 0) {
             return;
         }
+        this.untrackLocalOperation(operations);
         const lastPendingOp = this.pendingOps[this.pendingOps.length - 1];
         if (!lastPendingOp || !this.checkAndCombineOperation(lastPendingOp, operations)) {
             this.pendingOps.push(operations);
@@ -249,6 +251,7 @@ export class CollaborativeEditingHandler {
             this.logMessage('Pending transform:' + this.pendingOps.length + '-version:' + action.version);
         }   
         this.transform(this.pendingOps, action.operations);
+        this.splitFormatAroundUnsentInserts(action.operations);
         this.logMessage('Applying remote operation-' + this.version);
         this.applyRemoteOperation(action, localStartOffset, selectionLength);
         this.updateVersion(action.version);
@@ -258,6 +261,60 @@ export class CollaborativeEditingHandler {
         }
         if (this.documentEditor.editorHistoryModule.canRedo()) {
             this.documentEditor.editorHistoryModule.redoStack.length = 0;
+        }
+    }
+    /**
+     * Tracks the local insert operations that are generated but not yet handed over to the server
+     * (for example, when the application delays sending them).
+     * @private
+     * @param operations - Specifies the local operations.
+     * @returns {void}
+     */
+    public trackLocalOperation(operations: Operation[]): void {
+        if (isNullOrUndefined(operations)) {
+            return;
+        }
+        for (let i: number = 0; i < operations.length; i++) {
+            if (operations[i].action === 'Insert' && operations[i].length > 0 && this.unsentInserts.indexOf(operations[i]) === -1) {
+                this.unsentInserts.push(operations[i]);
+            }
+        }
+    }
+    private untrackLocalOperation(operations: Operation[]): void {
+        if (isNullOrUndefined(operations)) {
+            return;
+        }
+        for (let i: number = 0; i < operations.length; i++) {
+            const index: number = this.unsentInserts.indexOf(operations[i]);
+            if (index > -1) {
+                this.unsentInserts.splice(index, 1);
+            }
+        }
+    }
+    /**
+     * A remote character format that covers a local insert, which the server has not received yet,
+     * must not format the inserted text. Split the remote format around the inserted content.
+     */
+    private splitFormatAroundUnsentInserts(remoteOperation: Operation[]): void {
+        if (this.unsentInserts.length === 0) {
+            return;
+        }
+        for (let i: number = 0; i < remoteOperation.length; i++) {
+            const format: Operation = remoteOperation[i];
+            if (format.action !== 'Format' || format.type !== 'CharacterFormat' || !(format.length > 0)) {
+                continue;
+            }
+            for (let j: number = 0; j < this.unsentInserts.length; j++) {
+                const insert: Operation = this.unsentInserts[j];
+                if (insert.offset > format.offset && insert.offset < format.offset + format.length) {
+                    const trailing: Operation = JSON.parse(JSON.stringify(format));
+                    trailing.offset = insert.offset + insert.length;
+                    trailing.length = format.offset + format.length - insert.offset;
+                    format.length = insert.offset - format.offset;
+                    remoteOperation.splice(i + 1, 0, trailing);
+                    break;
+                }
+            }
         }
     }
     private transform(operation: Operation[][], remoteOperation: Operation[]): void {
@@ -1839,6 +1896,7 @@ export class CollaborativeEditingHandler {
         this.connectionId = undefined;
         this.acknowledgmentPending = undefined;
         this.pendingOps = undefined;
+        this.unsentInserts = undefined;
         this.serviceUrl = undefined;
         this.isSyncServerChanges = undefined;
         this.message = undefined;

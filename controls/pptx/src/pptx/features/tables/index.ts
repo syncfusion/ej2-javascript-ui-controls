@@ -7,7 +7,8 @@
  * Core continues to preserve `graphicFrame` / `a:tbl` when this module is absent.
  *
  * **TASK-1082** / **TASK-1086**: {@link addTable} / {@link removeTable} are
- * declared directly on the core {@link Slide} class (API-RULES R6.2). Tables are
+ * internal implementations reached via `slide.shapes.addTable` / `slide.shapes.remove`
+ (API-RULES R6.2). Tables are
  * inline under the graphic frame (no package parts). There is no `slide.tables`
  * collection — use {@link asTable}.
  *
@@ -21,7 +22,6 @@ import { addTable, AddTableOptions } from './add-table';
 import { BuiltInTableStyle } from './built-in-table-style';
 import { Shape } from '../../core/shapes/shape';
 import { asTable, tableShapeMaterializer } from './as-table';   
-import { removeTable } from './remove-table';
 import { DRAWINGML_TABLE_URI, TABLES_FEATURE_ID } from './constants';
 import { DEFAULT_TABLE_BOUNDS, DEFAULT_TABLE_NAME, buildEmptyTableCell, buildTableGraphicFrame, buildTbl,
     resolveColumnWidthsEmu, resolveRowHeightsEmu } from './create-table-seed';
@@ -30,10 +30,11 @@ import { TablesError } from './errors';
 import { Table } from './table';
 import { AddTableColumnOptions, AddTableRowOptions } from './table';
 import { TableCell } from './table-cell';
+import { TableColumn, TableColumns, TableRow, TableRows } from './table-collections';
 import { DirectTableCellProperties, DirectTableCellPropertiesPatch, TableMergeInfo } from './table-types';
 registerFeature({ id: TABLES_FEATURE_ID });
 Shape.materializer = tableShapeMaterializer;
-export { addTable, removeTable, asTable, DRAWINGML_TABLE_URI, Table, TableCell, TablesError, TABLES_FEATURE_ID,
+export { addTable, asTable, DRAWINGML_TABLE_URI, Table, TableCell, TableColumn, TableColumns, TableRow, TableRows, TablesError, TABLES_FEATURE_ID,
     DEFAULT_TABLE_BOUNDS, DEFAULT_TABLE_NAME, buildEmptyTableCell, buildTableGraphicFrame, buildTbl, resolveColumnWidthsEmu,
     resolveRowHeightsEmu, BuiltInTableStyle };
 export { AddTableOptions, AddTableColumnOptions, AddTableRowOptions, DirectTableCellProperties, DirectTableCellPropertiesPatch,

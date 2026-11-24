@@ -28,8 +28,12 @@ import { BuiltInTableStyle, classifyBuiltInTableStyle, isBuiltInTableStyle } fro
 import { builtinTableStyleGuid } from './builtin-table-style-ids';
 import { buildEmptyTableCell } from './create-table-seed';
 import { partNameOptions, TablesError } from './errors';
-import { TableCell } from './table-cell';
+import { TableCell, TableCellOwner } from './table-cell';
+import { TableColumns, TableRows } from './table-collections';
+import { cloneElement } from '../../core/text/text-range-write-utils';
 import { arrayAt } from '../../core/util/es5-compat';
+// Side-effect import: registers the Shape.materializer so loading Table is enough for slide.shapes[n] to be a Table.
+import './as-table';
 /** Shared identity invalidation across optional table aliases; no DOM retained globally. */
 const DETACHED_TABLES: WeakSet<OoxmlElement> = new WeakSet();
 /**
@@ -76,10 +80,12 @@ export class Table extends Shape {
     /** True after {@link Table.adoptFrame}: shape element is the graphic frame. */
     private frameAdopted: boolean = false; 
     private gridCols: ReadonlyArray<OoxmlElement>; 
-    private rows: ReadonlyArray<OoxmlElement>;
+    private trs: ReadonlyArray<OoxmlElement>;
     private widths: ReadonlyArray<number>;
     private heights: ReadonlyArray<number>;
     private styleId: string | undefined;
+    private rowsView: TableRows | undefined;
+    private columnsView: TableColumns | undefined;
     /**
      * @internal
      * @param {OoxmlElement} tbl - The tbl value.
@@ -92,14 +98,14 @@ export class Table extends Shape {
         this.onFillMutate = onFillMutate;
         this.tbl = tbl;
         this.gridCols = []; 
-        this.rows = [];
+        this.trs = [];
         this.widths = [];
         this.heights = [];
         this.styleId = undefined;
         this.refreshCaches();
     }
     /**
-     * Whether this handle was invalidated by {@link removeTable}.
+     * Whether this handle was invalidated by `slide.shapes.remove(table)`.
      *
      * @internal
      * @returns {boolean} The result.
@@ -134,7 +140,7 @@ export class Table extends Shape {
      */
     get rowCount(): number {
         this.assertLive();
-        return this.rows.length;
+        return this.trs.length;
     }
     /**
      * Column widths in **points** from each `a:gridCol/@w` (document order).
@@ -323,10 +329,10 @@ export class Table extends Shape {
      */
     getCell(row: number, column: number): TableCell {
         this.assertLive();
-        if (!Number.isInteger(row) || row < 0 || row >= this.rows.length) {
-            throw new RangeError(`Table cell row ${String(row)} out of range (rowCount=${String(this.rows.length)})`);
+        if (!Number.isInteger(row) || row < 0 || row >= this.trs.length) {
+            throw new RangeError(`Table cell row ${String(row)} out of range (rowCount=${String(this.trs.length)})`);
         }
-        const tr: OoxmlElement = arrayAt(this.rows, row);
+        const tr: OoxmlElement = arrayAt(this.trs, row);
         if (tr === undefined) {
             throw new RangeError(`Table cell row ${String(row)} out of range`);
         }
@@ -346,7 +352,390 @@ export class Table extends Shape {
             if (currentCell !== tc) {
                 throw new TablesError('Table cell fill handle is stale after structural edit', partNameOptions(this.boundPartName));
             }
-        });
+        }, this.cellOwner());
+    }
+    /**
+     * Returns the cell at zero-based `(rowIndex, columnIndex)`.
+     *
+     * @remarks Shorthand for {@link Table.getCell}; both APIs are supported and behave identically (same live
+     * {@link TableCell} handle, same errors).
+     * @throws {Error} When the handle is detached.
+     * @throws {RangeError} When the row or column is out of range.
+     * @param {number} rowIndex - Zero-based row index.
+     * @param {number} columnIndex - Zero-based column index.
+     * @returns {TableCell} Live {@link TableCell} handle.
+     */
+    cell(rowIndex: number, columnIndex: number): TableCell {
+        return this.getCell(rowIndex, columnIndex);
+    }
+    /**
+     * Live collection of the table rows (`a:tr`), indexable as `table.rows[0]`.
+     *
+     * @throws {Error} When the handle is detached.
+     * @returns {TableRows} The row collection.
+     */
+    get rows(): TableRows {
+        this.assertLive();
+        if (this.rowsView === undefined) {
+            this.rowsView = new TableRows(this);
+        }
+        return this.rowsView;
+    }
+    /**
+     * Live collection of the table columns (`a:gridCol`), indexable as `table.columns[0]`.
+     *
+     * @throws {Error} When the handle is detached.
+     * @returns {TableColumns} The column collection.
+     */
+    get columns(): TableColumns {
+        this.assertLive();
+        if (this.columnsView === undefined) {
+            this.columnsView = new TableColumns(this);
+        }
+        return this.columnsView;
+    }
+    /**
+     * @internal
+     * @returns {ReadonlyArray<OoxmlElement>} Current `a:tr` elements.
+     */
+    rowElements(): ReadonlyArray<OoxmlElement> {
+        this.assertLive();
+        return this.trs;
+    }
+    /**
+     * @internal
+     * @returns {ReadonlyArray<OoxmlElement>} Current `a:gridCol` elements.
+     */
+    columnElements(): ReadonlyArray<OoxmlElement> {
+        this.assertLive();
+        return this.gridCols;
+    }
+    /**
+     * Height of one `a:tr` in points (0 when unparsable).
+     *
+     * @internal
+     * @param {OoxmlElement} tr - Row element.
+     * @returns {number} Points.
+     */
+    readRowHeight(tr: OoxmlElement): number {
+        const h: number | undefined = parseEmuAttr(tr, 'h');
+        return h === undefined || h === 0 ? 0 : emuToPoints(h);
+    }
+    /**
+     * @internal
+     * @param {OoxmlElement} tr - Row element.
+     * @param {number} points - Positive finite height in points.
+     * @returns {void} Nothing.
+     */
+    writeRowHeight(tr: OoxmlElement, points: number): void {
+        this.assertLive();
+        setUnprefixedAttr(tr, 'h', String(resolveAddRowHeightEmu(points, [], this.boundPartName)));
+        this.refreshCaches();
+    }
+    /**
+     * Width of one `a:gridCol` in points (0 when unparsable).
+     *
+     * @internal
+     * @param {OoxmlElement} col - Grid column element.
+     * @returns {number} Points.
+     */
+    readColumnWidth(col: OoxmlElement): number {
+        const w: number | undefined = parseEmuAttr(col, 'w');
+        return w === undefined || w === 0 ? 0 : emuToPoints(w);
+    }
+    /**
+     * @internal
+     * @param {OoxmlElement} col - Grid column element.
+     * @param {number} points - Positive finite width in points.
+     * @returns {void} Nothing.
+     */
+    writeColumnWidth(col: OoxmlElement, points: number): void {
+        this.assertLive();
+        setUnprefixedAttr(col, 'w', String(resolveAddColumnWidthEmu(points, [], this.boundPartName)));
+        this.refreshCaches();
+    }
+    /**
+     * Number of `a:tc` in row `row`.
+     *
+     * @internal
+     * @param {number} row - Row index.
+     * @returns {number} Cell count.
+     */
+    cellCountInRow(row: number): number {
+        this.assertLive();
+        const tr: OoxmlElement | undefined = arrayAt(this.trs, row);
+        return tr === undefined ? 0 : childrenNamed(tr, DML_NS, 'tc').length;
+    }
+    /**
+     * Inserts a deep clone of `source` (an `a:tr`) at `index`. Fail-closed like {@link Table.insertRowAt}.
+     *
+     * @internal
+     * @param {number} index - Insert position `0..rowCount`.
+     * @param {OoxmlElement} source - Row element to clone.
+     * @returns {void} Nothing.
+     */
+    insertRowClone(index: number, source: OoxmlElement): void {
+        this.assertLive();
+        const rowCount: number = this.trs.length;
+        if (!Number.isInteger(index) || index < 0 || index > rowCount) {
+            throw new PresentationError('model/out-of-range',
+                                        `Table rows insert index ${String(index)} is out of range (rowCount ${String(rowCount)}).`);
+        }
+        const columnCount: number = this.gridCols.length;
+        if (childrenNamed(source, DML_NS, 'tc').length !== columnCount) {
+            throw new TablesError(`Cannot add row: it has a different cell count than columnCount ${String(columnCount)}`,
+                                  partNameOptions(this.boundPartName));
+        }
+        assertRectangularGridOrThrow(this.trs, columnCount, this.boundPartName);
+        assertNoMergeAttrsOrThrow(this.trs, this.boundPartName);
+        assertNoMergeAttrsOrThrow([source], this.boundPartName);
+        const clone: OoxmlElement = cloneElement(source);
+        const mutable: MutableOoxmlElement = asMutable(this.tbl);
+        const anchor: OoxmlElement | undefined = index >= rowCount ? undefined : arrayAt(this.trs, index);
+        const childIndex: number = anchor === undefined ? -1 : mutable.children.indexOf(anchor);
+        if (childIndex < 0) {
+            mutable.children.push(clone);
+        }
+        else {
+            mutable.children.splice(childIndex, 0, clone);
+        }
+        this.refreshCaches();
+    }
+    /**
+     * Removes the `a:tr` at `index`.
+     *
+     * @internal
+     * @param {number} index - Row index.
+     * @returns {void} Nothing.
+     */
+    removeRowAt(index: number): void {
+        this.assertLive();
+        if (!Number.isInteger(index) || index < 0 || index >= this.trs.length) {
+            throw new PresentationError('model/out-of-range',
+                                        `Table rows removeAt index ${String(index)} is out of range (rowCount ${String(this.trs.length)}).`);
+        }
+        assertNoMergeAttrsOrThrow(this.trs, this.boundPartName);
+        const tr: OoxmlElement = arrayAt(this.trs, index);
+        const mutable: MutableOoxmlElement = asMutable(this.tbl);
+        mutable.children = mutable.children.filter((child: OoxmlElement | OoxmlText): boolean => child !== tr);
+        this.refreshCaches();
+    }
+    /**
+     * Inserts a clone of a column (grid column plus its cells) at `index`.
+     *
+     * @internal
+     * @param {number} index - Insert position `0..columnCount`.
+     * @param {OoxmlElement} gridCol - Source `a:gridCol`.
+     * @param {ReadonlyArray<OoxmlElement>} tcs - Source cells, one per row, in row order.
+     * @returns {void} Nothing.
+     */
+    insertColumnClone(index: number, gridCol: OoxmlElement, tcs: ReadonlyArray<OoxmlElement>): void {
+        this.assertLive();
+        const columnCount: number = this.gridCols.length;
+        if (!Number.isInteger(index) || index < 0 || index > columnCount) {
+            throw new PresentationError('model/out-of-range',
+                                        `Table columns insert index ${String(index)} is out of range (columnCount ${String(columnCount)}).`);
+        }
+        if (tcs.length !== this.trs.length) {
+            throw new TablesError(`Cannot add column: it has ${String(tcs.length)} cells; table has ${String(this.trs.length)} rows`,
+                                  partNameOptions(this.boundPartName));
+        }
+        assertRectangularGridOrThrow(this.trs, columnCount, this.boundPartName);
+        assertNoMergeAttrsOrThrow(this.trs, this.boundPartName);
+        for (let i: number = 0; i < tcs.length; i += 1) {
+            if (cellHasMergeAttrs(arrayAt(tcs, i))) {
+                throw new TablesError(`Cannot add column: source cell ${String(i)} has merge attributes (fail-closed)`,
+                                      partNameOptions(this.boundPartName));
+            }
+        }
+        const tblGrid: OoxmlElement = findChild(this.tbl, DML_NS, 'tblGrid');
+        if (tblGrid === undefined) {
+            throw new TablesError('Cannot insert column: table has no tblGrid (required)', partNameOptions(this.boundPartName));
+        }
+        spliceBefore(tblGrid, arrayAt(this.gridCols, index), cloneElement(gridCol));
+        for (let r: number = 0; r < this.trs.length; r += 1) {
+            const tr: OoxmlElement = arrayAt(this.trs, r);
+            spliceBefore(tr, arrayAt(childrenNamed(tr, DML_NS, 'tc'), index), cloneElement(arrayAt(tcs, r)));
+        }
+        this.refreshCaches();
+    }
+    /**
+     * Removes the grid column and the cell at `index` in every row.
+     *
+     * @internal
+     * @param {number} index - Column index.
+     * @returns {void} Nothing.
+     */
+    removeColumnAt(index: number): void {
+        this.assertLive();
+        const columnCount: number = this.gridCols.length;
+        if (!Number.isInteger(index) || index < 0 || index >= columnCount) {
+            throw new PresentationError('model/out-of-range',
+                                        `Table columns removeAt index ${String(index)} is out of range (columnCount ${String(columnCount)}).`);
+        }
+        assertRectangularGridOrThrow(this.trs, columnCount, this.boundPartName);
+        assertNoMergeAttrsOrThrow(this.trs, this.boundPartName);
+        const col: OoxmlElement = arrayAt(this.gridCols, index);
+        const tblGrid: OoxmlElement = findChild(this.tbl, DML_NS, 'tblGrid');
+        const grid: MutableOoxmlElement = asMutable(tblGrid);
+        grid.children = grid.children.filter((child: OoxmlElement | OoxmlText): boolean => child !== col);
+        for (let r: number = 0; r < this.trs.length; r += 1) {
+            const tr: OoxmlElement = arrayAt(this.trs, r);
+            const tc: OoxmlElement = arrayAt(childrenNamed(tr, DML_NS, 'tc'), index);
+            const mutableTr: MutableOoxmlElement = asMutable(tr);
+            mutableTr.children = mutableTr.children.filter((child: OoxmlElement | OoxmlText): boolean => child !== tc);
+        }
+        this.refreshCaches();
+    }
+    /**
+     * Table width in **points** (`p:xfrm/a:ext/@cx` of the graphic frame).
+     *
+     * @remarks Falls back to the sum of {@link Table.columnWidths} when the frame has no readable extent. Setting rescales every
+     * `gridCol/@w` proportionally so the grid sums to the new frame width; `a:off`, shape ids and all other XML are preserved.
+     * @throws {Error} When the handle is detached, or the value is not a finite positive number.
+     * @returns {number} The result.
+     */
+    get width(): number {
+        this.assertLive();
+        const cx: number | undefined = this.readFrameExtent('cx');
+        return cx !== undefined ? emuToPoints(cx) : this.widths.reduce((a: number, b: number): number => a + b, 0) / 12700;
+    }
+    set width(value: number) {
+        this.assertLive();
+        const emu: number = resolveAddColumnWidthEmu(value, [], this.boundPartName);
+        this.rescale(this.gridCols, this.widths, 'w', emu);
+        this.writeFrameExtent('cx', emu);
+        this.refreshCaches();
+    }
+    /**
+     * Table height in **points** (`p:xfrm/a:ext/@cy` of the graphic frame).
+     *
+     * @remarks Falls back to the sum of {@link Table.rowHeights} when the frame has no readable extent. Setting rescales every `tr/@h`
+     * proportionally so the rows sum to the new frame height.
+     * @throws {Error} When the handle is detached, or the value is not a finite positive number.
+     * @returns {number} The result.
+     */
+    get height(): number {
+        this.assertLive();
+        const cy: number | undefined = this.readFrameExtent('cy');
+        return cy !== undefined ? emuToPoints(cy) : this.heights.reduce((a: number, b: number): number => a + b, 0) / 12700;
+    }
+    set height(value: number) {
+        this.assertLive();
+        const emu: number = resolveAddRowHeightEmu(value, [], this.boundPartName);
+        this.rescale(this.trs, this.heights, 'h', emu);
+        this.writeFrameExtent('cy', emu);
+        this.refreshCaches();
+    }
+    private frameExt(): OoxmlElement | undefined {
+        const frame: OoxmlElement = this.getHostElement();
+        if (frame === this.tbl) {
+            return undefined;
+        }
+        const xfrm: OoxmlElement | undefined = findChild(frame, frame.namespaceUri, 'xfrm');
+        return xfrm === undefined ? undefined : findChild(xfrm, DML_NS, 'ext');
+    }
+    private readFrameExtent(name: string): number | undefined {
+        const ext: OoxmlElement | undefined = this.frameExt();
+        return ext === undefined ? undefined : parseEmuAttr(ext, name);
+    }
+    private writeFrameExtent(name: string, emu: number): void {
+        const ext: OoxmlElement | undefined = this.frameExt();
+        if (ext !== undefined) {
+            setUnprefixedAttr(ext, name, String(emu));
+        }
+    }
+    /**
+     * Scales the `attr` of each element so the total equals `totalEmu` (last element absorbs rounding). When the current total is 0 the
+     * space is split equally.
+     */
+    private rescale(elements: ReadonlyArray<OoxmlElement>, current: ReadonlyArray<number>, attr: string, totalEmu: number): void {
+        const count: number = elements.length;
+        if (count === 0) {
+            return;
+        }
+        const sum: number = current.reduce((a: number, b: number): number => a + b, 0);
+        let used: number = 0;
+        for (let i: number = 0; i < count; i += 1) {
+            let part: number;
+            if (i === count - 1) {
+                part = totalEmu - used;
+            }
+            else {
+                part = sum > 0 ? Math.round(totalEmu * arrayAt(current, i) / sum) : Math.floor(totalEmu / count);
+            }
+            part = Math.max(1, part);
+            used += part;
+            setUnprefixedAttr(arrayAt(elements, i), attr, String(part));
+        }
+    }
+    private cellOwner(): TableCellOwner {
+        return {
+            setSpan: (row: number, column: number, axis: 'column' | 'row', value: number): void => this.setCellSpan(row, column, axis, value),
+            getColumnWidth: (column: number): number => this.readColumnWidth(arrayAt(this.gridCols, column)),
+            setColumnWidth: (column: number, points: number): void => this.writeColumnWidth(arrayAt(this.gridCols, column), points)
+        };
+    }
+    private setCellSpan(row: number, column: number, axis: 'column' | 'row', value: number): void {
+        this.assertLive();
+        const name: string = axis === 'column' ? 'columnSpan' : 'rowSpan';
+        if (!Number.isInteger(value) || value < 1) {
+            throw new RangeError(`Table cell ${name} must be an integer >= 1 (got ${String(value)})`);
+        }
+        const origin: OoxmlElement = this.cellElement(row, column);
+        let colSpan: number = spanOf(origin, 'gridSpan');
+        let rowSpan: number = spanOf(origin, 'rowSpan');
+        const nextCol: number = axis === 'column' ? value : colSpan;
+        const nextRow: number = axis === 'row' ? value : rowSpan;
+        if (column + nextCol > this.gridCols.length) {
+            throw new RangeError(`Table cell columnSpan ${String(nextCol)} at column ${String(column)} exceeds columnCount ${String(this.gridCols.length)}`);
+        }
+        if (row + nextRow > this.trs.length) {
+            throw new RangeError(`Table cell rowSpan ${String(nextRow)} at row ${String(row)} exceeds rowCount ${String(this.trs.length)}`);
+        }
+        for (let i: number = 0; i < nextRow; i += 1) {
+            for (let j: number = 0; j < nextCol; j += 1) {
+                this.cellElement(row + i, column + j);
+            }
+        }
+        for (let i: number = 0; i < rowSpan; i += 1) {
+            for (let j: number = 0; j < colSpan; j += 1) {
+                if ((i !== 0 || j !== 0) && row + i < this.trs.length && column + j < this.gridCols.length) {
+                    const old: OoxmlElement = this.cellElement(row + i, column + j);
+                    removeUnprefixedAttr(old, 'hMerge');
+                    removeUnprefixedAttr(old, 'vMerge');
+                }
+            }
+        }
+        colSpan = nextCol;
+        rowSpan = nextRow;
+        setOrRemoveSpan(origin, 'gridSpan', colSpan);
+        setOrRemoveSpan(origin, 'rowSpan', rowSpan);
+        for (let i: number = 0; i < rowSpan; i += 1) {
+            for (let j: number = 0; j < colSpan; j += 1) {
+                if (i === 0 && j === 0) {
+                    continue;
+                }
+                const covered: OoxmlElement = this.cellElement(row + i, column + j);
+                if (j > 0) {
+                    setUnprefixedAttr(covered, 'hMerge', '1');
+                }
+                if (i > 0) {
+                    setUnprefixedAttr(covered, 'vMerge', '1');
+                }
+            }
+        }
+        if (this.onFillMutate !== undefined) {
+            this.onFillMutate();
+        }
+    }
+    private cellElement(row: number, column: number): OoxmlElement {
+        const tcs: Array<OoxmlElement> = childrenNamed(arrayAt(this.trs, row), DML_NS, 'tc');
+        const tc: OoxmlElement | undefined = arrayAt(tcs, column);
+        if (tc === undefined) {
+            throw new RangeError(`Table cell (${String(row)}, ${String(column)}) is missing (ragged row)`);
+        }
+        return tc;
     }
     /**
      * Appends one `a:tr` at the end of the table with `columnCount` empty `a:tc` cells.
@@ -362,7 +751,7 @@ export class Table extends Shape {
      */
     addRow(options?: AddTableRowOptions): void {
         this.assertLive();
-        this.insertRowAt(this.rows.length, options);
+        this.insertRowAt(this.trs.length, options);
     }
     /**
      * Inserts one `a:tr` at zero-based `index` with `columnCount` empty `a:tc` cells.
@@ -379,7 +768,7 @@ export class Table extends Shape {
      */
     insertRowAt(index: number, options?: AddTableRowOptions): void {
         this.assertLive();
-        const rowCount: number = this.rows.length;
+        const rowCount: number = this.trs.length;
         if (!Number.isInteger(index) || index < 0 || index > rowCount) {
             throw new PresentationError('model/out-of-range',
                                         `Table insertRowAt index ${String(index)} is out of range (rowCount ${String(rowCount)}; valid 0..rowCount inclusive).`);
@@ -390,15 +779,15 @@ export class Table extends Shape {
                                   partNameOptions(this.boundPartName));
         }
         const heightEmu: number = resolveAddRowHeightEmu((options == null ? undefined : options.height), this.heights, this.boundPartName);
-        assertRectangularGridOrThrow(this.rows, columnCount, this.boundPartName);
-        assertNoMergeAttrsOrThrow(this.rows, this.boundPartName);
+        assertRectangularGridOrThrow(this.trs, columnCount, this.boundPartName);
+        assertNoMergeAttrsOrThrow(this.trs, this.boundPartName);
         const tr: OoxmlElement = buildEmptyTableRow(columnCount, heightEmu);
         const mutable: MutableOoxmlElement = asMutable(this.tbl);
         if (index >= rowCount) {
             mutable.children.push(tr);
         }
         else {
-            const anchor: OoxmlElement = arrayAt(this.rows, index);
+            const anchor: OoxmlElement = arrayAt(this.trs, index);
             if (anchor === undefined) {
                 throw new PresentationError('model/out-of-range',
                                             `Table insertRowAt index ${String(index)} is out of range (rowCount ${String(rowCount)}; valid 0..rowCount inclusive).`);
@@ -449,8 +838,8 @@ export class Table extends Shape {
                                         `Table insertColumnAt index ${String(index)} is out of range (columnCount ${String(columnCount)}; valid 0..columnCount inclusive).`);
         }
         const widthEmu: number = resolveAddColumnWidthEmu((options == null ? undefined : options.width), this.widths, this.boundPartName);
-        assertRectangularGridOrThrow(this.rows, columnCount, this.boundPartName);
-        assertNoMergeAttrsOrThrow(this.rows, this.boundPartName);
+        assertRectangularGridOrThrow(this.trs, columnCount, this.boundPartName);
+        assertNoMergeAttrsOrThrow(this.trs, this.boundPartName);
         const tblGrid: OoxmlElement = findChild(this.tbl, DML_NS, 'tblGrid');
         if (tblGrid === undefined) {
             throw new TablesError('Cannot insert column: table has no tblGrid (required)', partNameOptions(this.boundPartName));
@@ -473,8 +862,8 @@ export class Table extends Shape {
             }
             mutableGrid.children.splice(colChildIndex, 0, gridCol);
         }
-        for (let r: number = 0; r < this.rows.length; r += 1) {
-            const tr: OoxmlElement = arrayAt(this.rows, r);
+        for (let r: number = 0; r < this.trs.length; r += 1) {
+            const tr: OoxmlElement = arrayAt(this.trs, r);
             if (tr === undefined) {
                 continue;
             }
@@ -596,7 +985,7 @@ export class Table extends Shape {
         this.frameAdopted = true;
     }  
     /**
-     * Throws when the handle was invalidated by {@link removeTable}.
+     * Throws when the handle was invalidated by `slide.shapes.remove(table)`.
      *
      * @internal
      * @returns {void} Nothing.
@@ -712,12 +1101,12 @@ export class Table extends Shape {
     private refreshCaches(): void {
         const tblGrid: OoxmlElement = findChild(this.tbl, DML_NS, 'tblGrid');
         this.gridCols = tblGrid === undefined ? [] : childrenNamed(tblGrid, DML_NS, 'gridCol');
-        this.rows = childrenNamed(this.tbl, DML_NS, 'tr');
+        this.trs = childrenNamed(this.tbl, DML_NS, 'tr');
         this.widths = this.gridCols.map((col: OoxmlElement) => {
             const w: number = parseEmuAttr(col, 'w');
             return w != null ? w : 0;
         });
-        this.heights = this.rows.map((row: OoxmlElement) => {
+        this.heights = this.trs.map((row: OoxmlElement) => {
             const h: number = parseEmuAttr(row, 'h');
             return h != null ? h : 0;
         });
@@ -1018,4 +1407,55 @@ function setUnprefixedAttr(el: OoxmlElement, localName: string, value: string): 
         next.push({ namespaceUri: '', localName, value });
     }
     mutable.attributes = next;
+}
+/**
+ * Inserts `node` before `anchor` among `parent` children; appends when `anchor` is undefined or not a child.
+ *
+ * @param {OoxmlElement} parent - Parent element.
+ * @param {OoxmlElement | undefined} anchor - Existing child.
+ * @param {OoxmlElement} node - Node to insert.
+ * @returns {void} Nothing.
+ */
+function spliceBefore(parent: OoxmlElement, anchor: OoxmlElement | undefined, node: OoxmlElement): void {
+    const mutable: MutableOoxmlElement = asMutable(parent);
+    const at: number = anchor === undefined ? -1 : mutable.children.indexOf(anchor);
+    if (at < 0) {
+        mutable.children.push(node);
+    }
+    else {
+        mutable.children.splice(at, 0, node);
+    }
+}
+
+/**
+ * @param {OoxmlElement} tc - Cell.
+ * @param {string} name - `gridSpan` or `rowSpan`.
+ * @returns {number} Integer >= 1 (XSD default 1).
+ */
+function spanOf(tc: OoxmlElement, name: string): number {
+    const raw: string | undefined = getAttr(tc, '', name);
+    const n: number = raw !== undefined && /^\d+$/u.test(raw) ? Number(raw) : 1;
+    return n >= 1 ? n : 1;
+}
+/**
+ * @param {OoxmlElement} tc - Cell.
+ * @param {string} name - Attribute.
+ * @param {number} value - Span; 1 removes the attribute (XSD default).
+ * @returns {void} Nothing.
+ */
+function setOrRemoveSpan(tc: OoxmlElement, name: string, value: number): void {
+    if (value === 1) {
+        removeUnprefixedAttr(tc, name);
+    }
+    else {
+        setUnprefixedAttr(tc, name, String(value));
+    }
+}
+/**
+ * @param {OoxmlElement} el - Element.
+ * @param {string} localName - Attribute to drop.
+ * @returns {void} Nothing.
+ */
+function removeUnprefixedAttr(el: OoxmlElement, localName: string): void {
+    asMutable(el).attributes = el.attributes.filter((a: OoxmlAttribute): boolean => !(a.namespaceUri === '' && a.localName === localName));
 }

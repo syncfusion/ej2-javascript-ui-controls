@@ -140,7 +140,9 @@ export class Paragraph {
         const result: TextPart[] = [];
         for (let i: number = 0; i < this.paragraph.children.length; i++) {
             const child: OoxmlElement | OoxmlText = arrayAt(this.paragraph.children, i);
-            if (child.kind === 'element' && child.namespaceUri === this.paragraph.namespaceUri && child.localName === 'r') {
+            if (child.kind === 'element' && (
+                (child.namespaceUri === this.paragraph.namespaceUri && child.localName === 'r') || isDrawingRun(child)
+            )) {
                 result.push(new TextPart(child, this.limits, this.partName, this.onMutate));
             }
 
@@ -666,6 +668,23 @@ export class Paragraph {
         return this.paragraph;
     }
 }
+/**
+ *
+ * @param {string} localName - The localName value.
+ * @param {string} value - The value value.
+ * @returns {OoxmlAttribute} The result.
+ */
+/**
+ * Regular run in DrawingML or the PresentationML dialect used by authored text boxes.
+ *
+ * @param child - Paragraph child.
+ * @returns Whether the child is an `r` run.
+ */
+function isDrawingRun(child: OoxmlElement): boolean {
+    return child.localName === 'r' &&
+        (child.namespaceUri === DML_NS || child.namespaceUri === 'http://schemas.openxmlformats.org/presentationml/2006/main');
+}
+
 /**
  *
  * @param {string} localName - The localName value.

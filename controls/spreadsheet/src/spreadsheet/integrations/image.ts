@@ -215,7 +215,7 @@ export class SpreadsheetImage {
         const currCell: CellModel = getCell(indexes[0], indexes[1], sheet);
         for (let i: number = 0; i < currCell.image.length; i++) {
             const image: ImageModel = currCell.image[i as number];
-            if (!image.id) {
+            if (image && !image.id) {
                 image.id = imgData.id;
                 break;
             }

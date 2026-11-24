@@ -77,7 +77,11 @@ export class NonWorkingDay {
         let fromDate: Date;
         let toDate: Date;
         const container: HTMLElement = createElement('div');
-        const height: number = this.parent.contentHeight;
+        const emptydivHeight: number = 36;
+        const emptyHeight: number = this.parent.contentHeight === 0 ?
+            this.parent.flatData.length > 1 ? emptydivHeight : 0 : this.parent.contentHeight;
+        const height: number =
+            this.parent.ganttChartModule.updateChartBodyHeight(emptyHeight, emptydivHeight);
         let toolbarHeight: number = 0;
         const holidays: HolidayModel[] = this.parent.calendarModule.holidays;
         if (!isNullOrUndefined(this.parent.toolbarModule) && !isNullOrUndefined(this.parent.toolbarModule.element)) {

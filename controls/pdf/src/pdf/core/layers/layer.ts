@@ -1,3 +1,4 @@
+import { PdfLayerRadioGroup } from './layer-radio-group';
 import { _PdfBaseStream, _PdfContentStream, _PdfStream } from '../base-stream';
 import { PdfPrintState, PdfRotationAngle } from '../enumerator';
 import { PdfGraphics, PdfGraphicsState } from '../graphics/pdf-graphics';
@@ -130,6 +131,20 @@ export class PdfLayer {
      * @type {Array<PdfPage>}
      */
     _pages: Array<PdfPage> = [];
+    /**
+     * Radio groups this layer belongs to.
+     *
+     * @private
+     * @type {PdfLayerRadioGroup[]}
+     */
+    _radioGroups: PdfLayerRadioGroup[];
+    /**
+     * Indicates whether this entry is a layer group; always falsy for a layer.
+     *
+     * @private
+     * @type {boolean}
+     */
+    _isGroup: boolean;
     /**
      * Child layers collection (initialized lazily).
      *
@@ -368,6 +383,9 @@ export class PdfLayer {
         this._setVisibility(isVisible);
         this._document._catalog._catalogDictionary._updated = true;
         this._crossReference._allowCatalog = true;
+        if (this._radioGroups && typeof isVisible === 'boolean') {
+            this._radioGroups.slice().forEach((group: PdfLayerRadioGroup) => group._onLayerVisibilityChanged(this, isVisible));
+        }
     }
     /**
      * Gets the boolean indicating whether the layer is locked or not.
@@ -813,6 +831,10 @@ export class PdfLayer {
                             if (index !== -1) {
                                 ocgOFF.splice(index, 1);
                             }
+                        }
+                        if (typeof (ocgON) === 'undefined') {
+                            ocgON = [];
+                            defaultView.update('ON', ocgON);
                         }
                         if (ocgON) {
                             const index: number = ocgON.indexOf(this._referenceHolder);

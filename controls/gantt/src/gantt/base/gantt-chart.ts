@@ -274,11 +274,16 @@ export class GanttChart {
                 currentRecord.hasChildRecords &&
                 !currentRecord.expanded
             ) {
-                topValue = this.parent.getRowByIndex(this.parent.getRootParent(currentRecord, 0).index).offsetTop;
+                // T-20: null-guard with mathematical offsetTop fallback for off-screen rows.
+                const rootIdx: number = this.parent.getRootParent(currentRecord, 0).index;
+                const rootRow: HTMLElement = this.parent.getRowByIndex(rootIdx);
+                topValue = rootRow ? rootRow.offsetTop : rootIdx * (this.parent.rowHeight as number);
             }
             else {
-                const rowOffset: number = this.parent.getRowByIndex(rowIndex as number).offsetTop;
-                topValue = !currentRecord.expanded ? rowOffset : rowOffset + this.parent.rowHeight;
+                // T-20: null-guard with mathematical offsetTop fallback for off-screen rows.
+                const rowEl: HTMLElement = this.parent.getRowByIndex(rowIndex as number);
+                const rowOffset: number = rowEl ? rowEl.offsetTop : rowIndex * (this.parent.rowHeight as number);
+                topValue = !currentRecord.expanded ? rowOffset : rowOffset + (this.parent.rowHeight as number);
             }
         }
         else {
@@ -375,6 +380,9 @@ export class GanttChart {
 
         // this.parent.chartRowsModule.createChartTable();
         this.scrollObject = new ChartScroll(this.parent);
+        if ((this.parent as any).enableDomVirtualization && (this.parent as any).domVirtualizationModule) {
+            this.scrollObject.updateVirtualScrollbarHeight();
+        }
         //this.scrollObject.setWidth(this.chartProperties.width);
         let toolbarHeight: number = 0;
         if (!isNullOrUndefined(this.parent.toolbarModule) && !isNullOrUndefined(this.parent.toolbarModule.element)) {
@@ -388,22 +396,19 @@ export class GanttChart {
      * @private
      */
     public updateWidthAndHeight(): void {
+        if ((this.parent as any).enableDomVirtualization) {
+            const contentH: number = this.parent.contentHeight || 0;
+            if (contentH > 0) { this.chartBodyContent.style.height = contentH + 'px'; }
+            if (!this.parent.enableTimelineVirtualization) {
+                this.chartBodyContent.style.width = formatUnit(this.parent.timelineModule.totalTimelineWidth);
+            }
+        }
         //empty row height
         const emptydivHeight: number = 36;
         const emptyHeight: number = this.parent.contentHeight === 0 ? this.parent.flatData.length > 1 ? emptydivHeight : 0 :
             this.parent.contentHeight;
-        const contentElement: HTMLElement = this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0] as HTMLElement;
-        if (emptyHeight >= contentElement['offsetHeight'] || this.parent.height === 'auto' || (contentElement['offsetHeight'] - emptyHeight) < emptydivHeight) {
-            this.chartBodyContent.style.height = formatUnit(emptyHeight);
-        } else {
-            const scrollHeight: number =  this.parent.element.getElementsByClassName('e-chart-rows-container')[0]['offsetHeight'];
-            if (contentElement['offsetHeight'] >= scrollHeight) {
-                this.chartBodyContent.style.height = contentElement['offsetHeight'] - 17 + 'px';
-            }
-            else {
-                this.chartBodyContent.style.height = contentElement['offsetHeight'] + 'px';
-            }
-        }        //let element: HTMLElement = this.chartTimelineContainer.querySelector('.' + cls.timelineHeaderTableContainer);
+        this.updateChartBodyHeight(emptyHeight, emptydivHeight);
+        //let element: HTMLElement = this.chartTimelineContainer.querySelector('.' + cls.timelineHeaderTableContainer);
         // Handled zoomtofit horizontal scrollbar hide while performing different zooming levels in browser at virtualtimeline mode-Task(919516)
         if (this.parent.timelineModule.isZoomToFit && this.parent.enableTimelineVirtualization) {
             this.chartBodyContent.style.width = this.resolveNextElement(
@@ -430,6 +435,34 @@ export class GanttChart {
         this.parent.notify('updateHeight', {});
         this.parent.updateGridLineContainerHeight();
         this.updateLastRowBottomWidth();
+    }
+
+    /**
+     * Updates the chart body height and returns the applied height.
+     *
+     * @param {number} emptyHeight - Height reserved for empty chart rows.
+     * @param {number} emptydivHeight - Minimum height of the empty chart area.
+     * @returns {number} The height applied to the chart body.
+     * @private
+     */
+    public updateChartBodyHeight(emptyHeight: number, emptydivHeight: number): number {
+        const contentElement: HTMLElement =
+            this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0] as HTMLElement;
+        const contentHeight: number = contentElement['offsetHeight'];
+        if (emptyHeight >= contentHeight || this.parent.height === 'auto'
+            || contentHeight - emptyHeight < emptydivHeight) {
+            this.chartBodyContent.style.height = formatUnit(emptyHeight);
+            return emptyHeight;
+        }
+        const scrollHeight: number =
+            this.parent.element.getElementsByClassName('e-chart-rows-container')[0]['offsetHeight'];
+        if (contentHeight >= scrollHeight) {
+            const height: number = contentHeight - 17;
+            this.chartBodyContent.style.height = height + 'px';
+            return height;
+        }
+        this.chartBodyContent.style.height = contentHeight + 'px';
+        return contentHeight;
     }
 
     private setVirtualHeight(): void {
@@ -484,18 +517,7 @@ export class GanttChart {
                     const divHeight: number = this.parent.flatData.length > 1 ? emptydivHeight : 0;
                     const emptyHeight: number = this.parent.contentHeight === 0 ? divHeight :
                         this.parent.contentHeight;
-                    const contentElement: HTMLElement = this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0] as HTMLElement;
-                    if (emptyHeight >= contentElement['offsetHeight'] || (contentElement['offsetHeight'] - emptyHeight) < emptydivHeight) {
-                        this.chartBodyContent.style.height = formatUnit(emptyHeight);
-                    } else {
-                        const scrollHeight: number =  this.parent.element.getElementsByClassName('e-chart-rows-container')[0]['offsetHeight'];
-                        if (contentElement['offsetHeight'] >= scrollHeight) {
-                            this.chartBodyContent.style.height = contentElement['offsetHeight'] - 17 + 'px';
-                        }
-                        else {
-                            this.chartBodyContent.style.height = contentElement['offsetHeight'] + 'px';
-                        }
-                    }
+                    this.updateChartBodyHeight(emptyHeight, emptydivHeight);
                 }
             }
         }
@@ -1000,7 +1022,15 @@ export class GanttChart {
             row = closest(e.target as Element, 'tr');
             if (row) {
                 const rowIndex: number = getValue('rowIndex', closest(e.target as Element, 'tr'));
-                ganttData = this.parent.currentViewData[rowIndex as number];
+                if (this.parent.enableDomVirtualization && this.parent.domVirtualizationModule) {
+                    const storedTop: number = (this.parent.ganttChartModule.scrollObject as any).currentScrollTop ||
+                        (this.parent.ganttChartModule.scrollObject as any).previousScroll.top;
+                    const result: { records: IGanttData[], startIndex: number } =
+                        this.parent.domVirtualizationModule.getVisibleRecordsFromScroll(storedTop);
+                    ganttData = result.records[rowIndex as number];
+                } else {
+                    ganttData = this.parent.currentViewData[rowIndex as number];
+                }
             }
         }
         return ganttData;
@@ -1035,7 +1065,14 @@ export class GanttChart {
         const parentElement: Element = closest((<HTMLElement>target), '.e-gantt-parent-taskbar');
         const record: IGanttData = this.getRecordByTarget(e);
         const chartRow: Node = closest(target as Element, 'tr');
-        const rowIndex: number = getValue('rowIndex', chartRow);
+        let rowIndex: number;
+        if ((this.parent as any).enableDomVirtualization) {
+            // aria-rowindex is 1-based absolute index set by refreshDomVirtualRows
+            const ariaIdx: string = (chartRow as Element).getAttribute('aria-rowindex');
+            rowIndex = ariaIdx ? (parseInt(ariaIdx, 10) - 1) : getValue('rowIndex', chartRow);
+        } else {
+            rowIndex = getValue('rowIndex', chartRow);
+        }
         const gridRow: Node = this.parent.treeGrid.getRows()[rowIndex as number];
         const args: object = { data: record, gridRow: gridRow, chartRow: chartRow, cancel: false };
         this.isExpandCollapseFromChart = true;
@@ -1054,7 +1091,17 @@ export class GanttChart {
         this.parent.connectorLineIds = [];
         this.parent.updatedConnectorLineCollection = [];
         if (this.parent.taskFields.dependency) {
-            this.parent.predecessorModule.createConnectorLinesCollection();
+            // T-14: when DOM virt is enabled, pass the visible-row record window so
+            // createConnectorLinesCollection skips connectors outside the visible range.
+            let visibleRecords: any[] | undefined;
+            if ((this.parent as any).enableDomVirtualization && (this.parent as any).domVirtualizationModule) {
+                const storedTop2: number = (this.parent.ganttChartModule.scrollObject as any).currentScrollTop ||
+                    (this.parent.ganttChartModule.scrollObject as any).previousScroll.top;
+                const result: { records: any[], startIndex: number } =
+                    (this.parent as any).domVirtualizationModule.getVisibleRecordsFromScroll(storedTop2);
+                visibleRecords = result.records.length > 0 ? result.records : undefined;
+            }
+            this.parent.predecessorModule.createConnectorLinesCollection(visibleRecords);
             this.parent.connectorLineModule.renderConnectorLines(this.parent.updatedConnectorLineCollection);
         }
         const criticalModule: CriticalPath = this.parent.criticalPathModule;
@@ -1210,7 +1257,7 @@ export class GanttChart {
                 removeClass([targetElement[t as number]], 'e-row-expand');
             }
         }
-        if (!this.parent.enableVirtualization) {
+        if (!this.parent.enableVirtualization && !(this.parent as any).enableDomVirtualization) {
             const childRecords: IGanttData[] = record.childRecords;
             const chartRows: NodeListOf<Element> = this.getChartRows();
             const rows: HTMLElement[] = [];
@@ -1258,7 +1305,8 @@ export class GanttChart {
         } else {
             this.isCollapseAll = true;
             this.parent.treeGrid.collapseAll();
-            if (this.isCollapseAll && !this.parent.allowTaskbarOverlap) {
+            if (this.isCollapseAll && !this.parent.allowTaskbarOverlap
+                && !(this.parent as any).enableDomVirtualization) {
                 const treeGridContentHeight: number = this.parent.enableRtl ? this.parent['element'].getElementsByClassName('e-content')[2].children[0]['offsetHeight'] :
                     this.parent['element'].getElementsByClassName('e-content')['offsetHeight'];
                 this.parent.contentHeight = treeGridContentHeight;
@@ -1267,6 +1315,24 @@ export class GanttChart {
         }
         this.isExpandAll = false;
         this.isCollapseAll = false;
+        if ((this.parent as any).enableDomVirtualization && this.parent.chartRowsModule) {
+            (this.parent as any).currentViewData = this.parent.getExpandedRecords(this.parent.currentViewData);
+            this.parent.updateContentHeight();
+            // T-8: clamp virtual scrollbar to a valid range so the first repaint after
+            // collapseAll/expandAll starts from a clean state.
+            const vScrollbar: HTMLElement = this.scrollObject && (this.scrollObject as any).virtualScrollbar;
+            if (vScrollbar) {
+                const totalRows: number = ((this.parent as any).currentViewData as any[]).length;
+                const rowH: number = (this.parent.rowHeight as number) || 36;
+                const maxTop: number = Math.max(0, totalRows * rowH - vScrollbar.clientHeight);
+                vScrollbar.scrollTop = Math.min(vScrollbar.scrollTop, maxTop);
+            }
+            (this.parent.chartRowsModule as any).clearDomVirtPool();
+            this.parent.chartRowsModule.refreshGanttRows();
+            if (this.parent.predecessorModule && this.parent.taskFields.dependency) {
+                this.reRenderConnectorLines();
+            }
+        }
     }
 
     /**
@@ -1800,6 +1866,8 @@ export class GanttChart {
                 rowIndex = ($target.parentElement as any).rowIndex;
                 if (isTab) {
                     rowElement = this.parent.getRowByIndex(rowIndex);
+                    // T-19: null-guard — row may be off-screen in DOM virt mode.
+                    if (!rowElement) { return null; }
                     if (this.parent.treeGrid.element.getElementsByClassName('e-editedcell').length > 0) {
                         rowElement = this.getNextRowElement(rowIndex, isTab, true);
                         const childElement: Element | string = this.getChildElement(rowElement, isTab);
@@ -1860,7 +1928,8 @@ export class GanttChart {
         const nextRecord: IGanttData = isTab ? expandedRecords[expandedRecordIndex + 1] : expandedRecords[expandedRecordIndex - 1];
         const nextRowIndex: number = this.parent.currentViewData.indexOf(nextRecord);
         if (nextRecord) {
-            return isChartRow ? this.parent.treeGrid.getRows()[nextRowIndex as number] : this.parent.getRowByIndex(nextRowIndex);
+            // T-21: null-guard — getRowByIndex may return null in DOM virt mode.
+            return isChartRow ? this.parent.treeGrid.getRows()[nextRowIndex as number] : (this.parent.getRowByIndex(nextRowIndex) || null);
         } else {
             return null;
         }

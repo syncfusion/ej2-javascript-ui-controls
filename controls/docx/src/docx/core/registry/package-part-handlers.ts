@@ -4,7 +4,9 @@ import { partByName, withAddedPart, withContentTypeOverride, withPackageRelation
 import { partNameKey, resolveInternalTarget, PartName } from '../opc/part-name';
 import { ResourceLimitOverrides } from '../security/limits';
 import { FeatureId } from './feature-registry';
-/** @public */
+/**
+ * @public
+ */
 export interface FeaturePackagePartLoadContext {
     readonly limits?: ResourceLimitOverrides | undefined;
 }
@@ -101,7 +103,9 @@ export function applyFeaturePackageParts(pkg: OpcPackage, featureParts: Readonly
     return next;
 }
 /**
- *  @public Helpers for feature modules implementing {@link FeaturePackageLevelPart}.
+ * Helpers for feature modules implementing {@link FeaturePackageLevelPart}.
+ *
+ * @private
  *
  * @param {OpcPackage} pkg - The pkg.
  * @param {string} relationshipType - The relationship type.

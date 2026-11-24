@@ -625,6 +625,8 @@ export const beforeSetPartialRecords: string = 'beforeSetPartialRecords';
 /** @hidden */
 export const applyDomVirtualRowHeight: string = 'apply-dom-virtual-row-height';
 /** @hidden */
+export const beforeDomVirtualRenderRows: string = 'before-dom-virtual-rows-render';
+/** @hidden */
 export const registerWebMcpTools: string = 'registerWebMcpTools';
 /** @hidden */
 export const getWebMcpTools: string = 'getWebMcpTools';

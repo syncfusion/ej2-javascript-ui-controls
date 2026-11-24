@@ -371,6 +371,12 @@ export class MasterSlide {
                 }
                 return addPictureToSlide(args);
             },
+            addChart: (): never => {
+                throw new Error('Master slide shapes do not support addChart. Use Slide.shapes.addChart() on a slide.');
+            },
+            addTable: (): never => {
+                throw new Error('Master slide shapes do not support addTable. Use Slide.shapes.addTable() on a slide.');
+            },
             removePicture: (): never => {
                 throw new Error('Master slide shapes do not support removePicture in v1. Use Slide.shapes.removePicture() on a slide.');
             },

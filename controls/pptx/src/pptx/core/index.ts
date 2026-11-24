@@ -205,6 +205,7 @@ export {
     TextSpacingType,
     isTextSpacingType,
     TextFindMatch,
+    TextSelection,
     TextUnderlineTypeValue,
     TextStrikeTypeValue,
     TextCapsTypeValue,

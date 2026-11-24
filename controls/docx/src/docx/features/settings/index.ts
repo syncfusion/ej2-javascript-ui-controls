@@ -707,7 +707,7 @@ function loadSettingsPart(part: PackagePart | undefined): SettingsPart {
     if (part === undefined) {
         // Absent settings part (WordDocument.create scaffold, or package without
         // settings.xml): attach Word-2013 defaults and mark dirty so the next save
-        // always emits settings.xml (TASK-8026 / settings-preserve-basic).
+        // always emits settings.xml (settings-preserve-basic).
         return createDefaultSettingsPart();
     }
     const root: OpenXmlElement = parseXml(utf8Decoder.decode(part.data));

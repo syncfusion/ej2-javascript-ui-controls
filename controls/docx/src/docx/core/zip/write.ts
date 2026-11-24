@@ -47,7 +47,7 @@ function u32(value: number): Uint8Array {
 /**
  * Writes a ZIP archive, deflating each entry with `@syncfusion/ej2-compression`
  * (method 8) and falling back to STORE (method 0) when deflate does not shrink it.
- * Inflated payload bytes are unchanged (docs/specs/opc-package.md).
+ * Inflated payload bytes are unchanged (the format specification).
  * OPC ZIP item names are ASCII (ECMA-376-2 §7.3.3).
  *
  * @param {ReadonlyArray<ZipEntry>} entries - The entries.

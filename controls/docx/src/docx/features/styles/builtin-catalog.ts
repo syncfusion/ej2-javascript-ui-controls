@@ -2,7 +2,7 @@
  * Centralized built-in style catalog — immutable templates for every built-in
  * style the library recognizes, references, or requires.
  *
- * Design (`docs/specs/styles-builtin-definitions-catalog.md` §2):
+ * Design (the format specification §2):
  * - Templates are structured data (`BuiltinStyleTemplate`), never serialized
  *   XML strings — the serializer consumes the `DocxStyle` graph produced by
  *   {@link instantiateBuiltinStyle}.
@@ -10,7 +10,7 @@
  *   `ReadonlyMap`; templates are shared but never mutated (deep-cloned on
  *   every instantiation).
  * - Formatting payloads reuse the modeled property subsets from
- *   `run-properties.ts` / `paragraph-properties.ts` (single source of truth for
+ * the owning module / the owning module (single source of truth for
  *   parse/serialize/clone) — no duplicate formatting models.
  *
  * Value sourcing (never-invent-OOXML, spec §2.5):
@@ -25,7 +25,7 @@
  *   scale (Arial, bold, 13/12/11/11/11/11/11 pt per level).
  * - `DefaultParagraphFont`, `TableNormal`, `NoList`, `TableGrid`,
  *   `Hyperlink` — re-sourced from the shipped Word "Hello World" create-path
- *   evidence (`default-styles.ts`, TASK-8027).
+ * evidence (the owning module).
  * - Other character/paragraph defaults (`Strong` bold, `Emphasis` italic,
  *   reference styles superscript, `FollowedHyperlink` 800080 + single
  *   underline, `NoSpacing` suppresses doc-default spacing) — semantic
@@ -135,8 +135,8 @@ const NORMAL_PPR: ModeledParagraphProperties = {
  * Shared heading shell pPr (spec §2.5): keepNext, before 240 / after 60
  * (twentieths of a point: 12 pt / 3 pt), outlineLvl per level.
  *
- * @param {number} outlineLevel - The outline level.
- * @returns {ModeledParagraphProperties} The result.
+ * @param {number} outlineLevel - Specifies the outline level.
+ * @returns {ModeledParagraphProperties} Returns the result.
  */
 function headingPpr(outlineLevel: number): ModeledParagraphProperties {
     return {
@@ -152,10 +152,10 @@ function headingPpr(outlineLevel: number): ModeledParagraphProperties {
  * mandated on Heading 1 only; italic is carried on Heading 2 only — an
  * omitted property is `undefined`, never an explicit false).
  *
- * @param {number} size - The size.
- * @param {boolean} italic - The italic.
- * @param {boolean} kerning - The kerning.
- * @returns {ModeledRunProperties} The result.
+ * @param {number} size - Specifies the size.
+ * @param {boolean} italic - Specifies the italic.
+ * @param {boolean} kerning - Specifies the kerning.
+ * @returns {ModeledRunProperties} Returns the result.
  */
 function headingRpr(size: number, italic: boolean, kerning: boolean): ModeledRunProperties {
     return {
@@ -196,9 +196,9 @@ function headingTemplate(level: number): BuiltinStyleTemplate {
 /**
  *  Reference character style shell: superscript (spec §1.4).
  *
- * @param {string} styleId - The style id.
- * @param {string} displayName - The display name.
- * @returns {BuiltinStyleTemplate} The result.
+ * @param {string} styleId - Specifies the style id.
+ * @param {string} displayName - Specifies the display name.
+ * @returns {BuiltinStyleTemplate} Returns the result.
  */
 function referenceStyle(styleId: string, displayName: string): BuiltinStyleTemplate {
     return {
@@ -215,9 +215,9 @@ function referenceStyle(styleId: string, displayName: string): BuiltinStyleTempl
 /**
  *  Note text style shell (footnote/endnote/comment text).
  *
- * @param {string} styleId - The style id.
- * @param {string} displayName - The display name.
- * @returns {BuiltinStyleTemplate} The result.
+ * @param {string} styleId - Specifies the style id.
+ * @param {string} displayName - Specifies the display name.
+ * @returns {BuiltinStyleTemplate} Returns the result.
  */
 function noteTextStyle(styleId: string, displayName: string): BuiltinStyleTemplate {
     return {
@@ -240,9 +240,9 @@ function noteTextStyle(styleId: string, displayName: string): BuiltinStyleTempla
 }
 /**
  * Table cell margin structure shared by `TableNormal`/`TableGrid` (shipped
- * create-path evidence, `default-styles.ts`).
+ * create-path evidence, the owning module).
  *
- * @returns {OpenXmlElement[]} The result.
+ * @returns {OpenXmlElement[]} Returns the result.
  */
 function tableNormalChildren(): OpenXmlElement[] {
     const tblInd: OpenXmlElement = wmlElement('tblInd', {
@@ -260,9 +260,9 @@ function tableNormalChildren(): OpenXmlElement[] {
     return [wmlElement('tblPr', { children: [tblInd, tblCellMar] })];
 }
 /**
- *  `TableGrid` tblPr: single black sz=4 borders on all six sides (TASK-8027).
+ *  `TableGrid` tblPr: single black sz=4 borders on all six sides.
  *
- * @returns {OpenXmlElement[]} The result.
+ * @returns {OpenXmlElement[]} Returns the result.
  */
 function tableGridChildren(): OpenXmlElement[] {
     const tblInd: OpenXmlElement = wmlElement('tblInd', {
@@ -293,9 +293,9 @@ function tableGridChildren(): OpenXmlElement[] {
  * Light Shading family: subtle theme/accent header row + light band shading.
  * Color may be a fixed RGB hex or a theme color token (`accent1`…`accent6`).
  *
- * @param {string} headerColor - The header color.
- * @param {string} bandColor - The band color.
- * @returns {OpenXmlElement[]} The result.
+ * @param {string} headerColor - Specifies the header color.
+ * @param {string} bandColor - Specifies the band color.
+ * @returns {OpenXmlElement[]} Returns the result.
  */
 function lightShadingChildren(headerColor: string, bandColor: string): OpenXmlElement[] {
     const isTheme: boolean = headerColor.indexOf('accent') === 0;
@@ -372,37 +372,47 @@ function lightShadingTemplate(
 }
 
 /**
- * Public built-in paragraph style identifiers (canonical OOXML `w:styleId` values).
+ * Specifies the built-in paragraph styles.
  *
- * Prefer these constants with {@link Paragraph.applyStyle} so callers do not
- * hard-code style ids. Member values are the wire style ids (e.g. `Heading1`).
+ * Use these values with {@link Paragraph.applyStyle} instead of hard-coding style names.
  *
  * @public
  */
 export enum BuiltInStyle {
+    /** Specifies the normal style. */
     Normal = 'Normal',
+    /** Specifies the heading1 style. */
     Heading1 = 'Heading1',
+    /** Specifies the heading2 style. */
     Heading2 = 'Heading2'
 }
 
 
 /**
- * Public built-in table style identifiers (canonical OOXML `w:styleId` values).
+ * Specifies the built-in table styles.
  *
- * Prefer these constants with {@link Table.applyStyle} so callers do not hard-code
- * style ids. Member values are the wire style ids (e.g. `LightShading-Accent1`).
+ * Use these values with {@link Table.applyStyle} instead of hard-coding style names.
  *
  * @public
  */
 export enum BuiltinTableStyle {
+    /** Specifies the table normal style. */
     TableNormal = 'TableNormal',
+    /** Specifies the table grid style. */
     TableGrid = 'TableGrid',
+    /** Specifies the light shading style. */
     LightShading = 'LightShading',
+    /** Specifies the light shading accent1 style. */
     LightShadingAccent1 = 'LightShading-Accent1',
+    /** Specifies the light shading accent2 style. */
     LightShadingAccent2 = 'LightShading-Accent2',
+    /** Specifies the light shading accent3 style. */
     LightShadingAccent3 = 'LightShading-Accent3',
+    /** Specifies the light shading accent4 style. */
     LightShadingAccent4 = 'LightShading-Accent4',
+    /** Specifies the light shading accent5 style. */
     LightShadingAccent5 = 'LightShading-Accent5',
+    /** Specifies the light shading accent6 style. */
     LightShadingAccent6 = 'LightShading-Accent6'
 }
 
@@ -415,8 +425,8 @@ export enum BuiltinTableStyle {
  * `wmlElement` table payloads are frozen shallowly (element trees are
  * structurally immutable by construction and cloned on instantiation).
  *
- * @param {BuiltinStyleTemplate} template - The template.
- * @returns {BuiltinStyleTemplate} The result.
+ * @param {BuiltinStyleTemplate} template - Specifies the template.
+ * @returns {BuiltinStyleTemplate} Returns the result.
  */
 function deepFreezeTemplate(template: BuiltinStyleTemplate): BuiltinStyleTemplate {
     const queue: unknown[] = [template];
@@ -569,16 +579,18 @@ const RAW_TEMPLATES: ReadonlyArray<BuiltinStyleTemplate> = [
     {
         styleId: 'NormalWeb',
         displayName: 'Normal (Web)',
+        // eslint-disable-next-line @typescript-eslint/prefer-as-const -- `as const` needs TypeScript 3.4+; this project compiles with 3.3
         type: 'paragraph' as 'paragraph',
         basedOn: 'Normal',
         uiPriority: 99,
         isSemiHidden: true,
         unhideWhenUsed: true,
-        paragraphFormatting: { ...EMPTY_MODELED_PARAGRAPH_PROPERTIES, spacing: { before: (5), after: (5) } },
+        paragraphFormatting: { ...EMPTY_MODELED_PARAGRAPH_PROPERTIES, spacing: { before: (5), after: (5) } }
     },
     {
         styleId: 'HTMLPreformatted',
         displayName: 'HTML Preformatted',
+        // eslint-disable-next-line @typescript-eslint/prefer-as-const -- `as const` needs TypeScript 3.4+; this project compiles with 3.3
         type: 'paragraph' as 'paragraph',
         basedOn: 'Normal',
         uiPriority: 99,
@@ -591,8 +603,8 @@ const RAW_TEMPLATES: ReadonlyArray<BuiltinStyleTemplate> = [
             eastAsiaFont: 'Courier New',
             csFont: 'Courier New',
             fontSize: (10),
-            fontSizeCs: (10),
-        },
+            fontSizeCs: (10)
+        }
     },
     {
         styleId: 'BodyText',
@@ -1025,7 +1037,7 @@ const CATALOG_BY_NAME: ReadonlyMap<string, BuiltinStyleTemplate> = new Map(
     TEMPLATES.map((template: BuiltinStyleTemplate): [string, BuiltinStyleTemplate] => [normalizeStyleName(template.displayName), template])
 );
 // ---------------------------------------------------------------------------
-// Lookup API (internal — consumed by the resolver, TASK-8066)
+// Lookup API (internal — consumed by the resolver)
 // ---------------------------------------------------------------------------
 /**
  * Look up a template by canonical style ID.
@@ -1121,7 +1133,7 @@ function cloneOpenXmlElement(element: OpenXmlElement): OpenXmlElement {
  * template, the catalog, or any other instantiation.
  *
  * Dependency styles (`basedOn`/`next`/`link`) are referenced by canonical ID
- * and resolved by the resolver (TASK-8066), not here.
+ * and resolved by the resolver, not here.
  *
  * @param {BuiltinStyleTemplate} template - The template.
  * @returns {DocxStyle} The result.

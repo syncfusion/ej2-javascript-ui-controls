@@ -205,7 +205,9 @@ export class Border {
         return cur.style !== undefined ? cur.style : 'single';
     }
 
-    /** Line style. Unknown loaded values return the public default and round-trip. */
+    /**
+     * Gets or sets the line style.
+     */
     get borderType(): BorderStyle {
         const style: string = this.current().style;
         if (style === undefined) {
@@ -229,10 +231,9 @@ export class Border {
     }
 
     /**
-     * Hex RGB or `'auto'`.
-     * Setter also accepts a {@link Color} enum value and optional leading `#` on hex strings.
-     * Getter always returns the OOXML wire string.
-     * Setting color without a prior `borderType` defaults the edge to single so the edge serializes.
+     * Gets or sets the border color as a hexadecimal RGB string, 'auto', or a {@link Color} value.
+     *
+     * Setting the color on a border that has no border type applies a single line style.
      */
     get color(): string | Color {
         const c: string = this.current().color;
@@ -251,8 +252,9 @@ export class Border {
     }
 
     /**
-     * Thickness in points (public); stored as eighths of a point on the wire.
-     * Setting lineWidth without a prior `borderType` defaults the edge to single so the edge serializes.
+     * Gets or sets the border line width in points.
+     *
+     * Setting the width on a border that has no border type applies a single line style.
      */
     get lineWidth(): number {
         const size: number = this.current().size;
@@ -270,7 +272,9 @@ export class Border {
         });
     }
 
-    /** Shadow flag (`w:shadow`). */
+    /**
+     * Gets or sets the shadow flag.
+     */
     get shadow(): boolean {
         const s: boolean = this.current().shadow;
         return s !== undefined ? s : DEFAULT_SHADOW;
@@ -348,21 +352,39 @@ export class Borders {
         this.verticalBorder = new Border(host, 'insideV');
     }
 
+    /**
+     * Gets the top border.
+     */
     get top(): Border {
         return this.topBorder;
     }
+    /**
+     * Gets the bottom border.
+     */
     get bottom(): Border {
         return this.bottomBorder;
     }
+    /**
+     * Gets the left border.
+     */
     get left(): Border {
         return this.leftBorder;
     }
+    /**
+     * Gets the right border.
+     */
     get right(): Border {
         return this.rightBorder;
     }
+    /**
+     * Gets the inside horizontal border drawn between rows.
+     */
     get horizontal(): Border {
         return this.horizontalBorder;
     }
+    /**
+     * Gets the inside vertical border drawn between columns.
+     */
     get vertical(): Border {
         return this.verticalBorder;
     }
@@ -376,8 +398,7 @@ export class Borders {
     }
 
     /**
-     * Common border type across applicable edges.
-     * Mixed or absent edges return the public default (BorderStyle.None).
+     * Gets or sets the common border type across applicable edges. Mixed or absent edges return the public default (BorderStyle.None).
      */
     get borderType(): BorderStyle {
         const keys: BorderEdgeKey[] = this.aggregateKeys();
@@ -405,9 +426,7 @@ export class Borders {
     }
 
     /**
-     * Common border color across applicable edges.
-     * Mixed edges return the public default (`'auto'`).
-     * Setter accepts hex/`'auto'`, optional leading `#`, or a {@link Color} enum value.
+     * Gets or sets the common border color across applicable edges.
      */
     get color(): string | Color {
         const keys: BorderEdgeKey[] = this.aggregateKeys();
@@ -431,6 +450,9 @@ export class Borders {
         }
     }
 
+    /**
+     * Gets or sets the line width, in points, applied to all the border edges.
+     */
     get lineWidth(): number {
         const keys: BorderEdgeKey[] = this.aggregateKeys();
         let common: number | undefined;
@@ -455,8 +477,9 @@ export class Borders {
     }
 
     /**
-     * Common edge w:space (points) across applicable edges.
-     * Mixed values return the public default 0.
+     * Gets or sets the distance between the border and the content, in points.
+     *
+     * If the edges have different values, the getter returns 0.
      */
     get space(): number {
         const keys: BorderEdgeKey[] = this.aggregateKeys();
@@ -481,6 +504,9 @@ export class Borders {
         }
     }
 
+    /**
+     * Gets or sets a value indicating whether the border edges are drawn with a shadow.
+     */
     get shadow(): boolean {
         const keys: BorderEdgeKey[] = this.aggregateKeys();
         let common: boolean | undefined;

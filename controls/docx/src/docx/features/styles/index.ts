@@ -19,12 +19,13 @@ import { WordDocument, FeaturePartState } from '../document/document';
 import { FeaturePackagePart } from '../document/feature-package-part';
 import { Paragraph } from '../document/paragraph';
 import { TextRange } from '../document/text-range';
+import { Field } from '../fields/paragraph-field';
 import { elementChildren, isWml, wmlElement } from '../document/wml';
 import { partName, PartName } from '../../core/opc/part-name';
 import { PackagePart } from '../../core/opc/package';
 import { featureId, isFeatureRegistered, registerFeature, registerFeatureMaterializeHandler, registerFeaturePartHandler, visitParagraphsInDocumentOrder } from '../../core/registry/index';
 import { FeaturePartLoadContext } from '../../core/registry/part-handlers';
-import { parseXml, serializeXml, WML_TRANSITIONAL_NAMESPACE, OpenXmlChild, OpenXmlElement } from '../../core/xml/index';
+import { parseXml, serializeXml, closePartNamespaces, OpenXmlChild, OpenXmlElement, NamespaceDeclaration, OpenXmlAttribute } from '../../core/xml/index';
 import { DocDefaults, parseDocDefaults } from './doc-defaults';
 import { resolveReferencedStyle, resolveStyleForTarget, StyleLookupSurface } from './builtin-resolver';
 import { StyleCollection, StyleCollectionHost } from './style-collection';
@@ -112,6 +113,10 @@ export class StylesPart implements FeaturePackagePart, StyleLookupSurface, Style
     private readonly projectedById: Map<string, DocxStyle>;
     private readonly rootExtrasBeforeStyles: OpenXmlElement[];
     private readonly rootExtrasAfterStyles: OpenXmlElement[];
+    /** Namespace declarations from the loaded `w:styles` root (prefix bindings). */
+    private readonly rootNamespaceDeclarations: ReadonlyArray<NamespaceDeclaration>;
+    /** Root attributes that are not rewritten (`mc:Ignorable` and unknown attrs). */
+    private readonly rootAttributes: ReadonlyArray<OpenXmlAttribute>;
     private readonly pendingParagraphStyles: Set<string>;
     private readonly pendingCharacterStyles: Set<string>;
     private readonly pendingTableStyles: Set<string>;
@@ -123,6 +128,8 @@ export class StylesPart implements FeaturePackagePart, StyleLookupSurface, Style
      * @param {OpenXmlElement[]} rootExtrasBeforeStyles - The root extras before styles.
      * @param {OpenXmlElement[]} rootExtrasAfterStyles - The root extras after styles.
      * @param {boolean} dirty - The dirty.
+     * @param {ReadonlyArray<NamespaceDeclaration>} rootNamespaceDeclarations - Loaded `w:styles` xmlns map.
+     * @param {ReadonlyArray<OpenXmlAttribute>} rootAttributes - Loaded `w:styles` attributes.
      * @private
      */
     constructor(
@@ -131,7 +138,9 @@ export class StylesPart implements FeaturePackagePart, StyleLookupSurface, Style
         styles: DocxStyle[],
         rootExtrasBeforeStyles: OpenXmlElement[],
         rootExtrasAfterStyles: OpenXmlElement[],
-        dirty: boolean
+        dirty: boolean,
+        rootNamespaceDeclarations: ReadonlyArray<NamespaceDeclaration> = [],
+        rootAttributes: ReadonlyArray<OpenXmlAttribute> = []
     ) {
         this.docDefaultsValue = docDefaults;
         this.latentStylesValue = latentStyles;
@@ -144,6 +153,8 @@ export class StylesPart implements FeaturePackagePart, StyleLookupSurface, Style
         this.projectedById = new Map();
         this.rootExtrasBeforeStyles = rootExtrasBeforeStyles;
         this.rootExtrasAfterStyles = rootExtrasAfterStyles;
+        this.rootNamespaceDeclarations = rootNamespaceDeclarations;
+        this.rootAttributes = rootAttributes;
         this.pendingParagraphStyles = new Set();
         this.pendingCharacterStyles = new Set();
         this.pendingTableStyles = new Set();
@@ -276,6 +287,18 @@ export class StylesPart implements FeaturePackagePart, StyleLookupSurface, Style
      */
     get docDefaults(): DocDefaults | undefined {
         return this.docDefaultsValue;
+    }
+    /**
+     * Replaces `w:docDefaults` (used when cloning a document) and marks the part dirty.
+     * {@link DocDefaults} is immutable, so the instance may be shared.
+     *
+     * @param {DocDefaults | undefined} value - The defaults to adopt.
+     * @returns {void} Nothing is returned.
+     * @private
+     */
+    replaceDocDefaults(value: DocDefaults | undefined): void {
+        this.docDefaultsValue = value;
+        this.dirty = true;
     }
     /**
      * Latent styles (`w:latentStyles`), when present.
@@ -500,7 +523,8 @@ export class StylesPart implements FeaturePackagePart, StyleLookupSurface, Style
                     }
                 }
                 for (const inline of paragraph.items) {
-                    if (!(inline instanceof TextRange)) {
+                    // A field's result runs are visited as their own TextRanges; a field with no result has none.
+                    if (!(inline instanceof TextRange) || inline instanceof Field) {
                         continue;
                     }
                     const runStyleId: string = inline.characterFormat.characterStyle;
@@ -626,7 +650,8 @@ export class StylesPart implements FeaturePackagePart, StyleLookupSurface, Style
         }
         children.push(...this.rootExtrasAfterStyles);
         const root: OpenXmlElement = wmlElement('styles', {
-            namespaceDeclarations: [{ prefix: 'w', namespaceUri: WML_TRANSITIONAL_NAMESPACE }],
+            attributes: this.rootAttributes,
+            namespaceDeclarations: closePartNamespaces(this.rootNamespaceDeclarations, children, this.rootAttributes),
             children
         });
         return utf8.encode(serializeXml(root));
@@ -818,7 +843,9 @@ function loadStylesPart(part: PackagePart | undefined): StylesPart {
         parsed.styles,
         parsed.rootExtrasBeforeStyles,
         parsed.rootExtrasAfterStyles,
-        false
+        false,
+        root.namespaceDeclarations,
+        root.attributes
     );
 }
 let registered: boolean = false;
@@ -910,7 +937,7 @@ export function assignRunStyle(document: WordDocument, run: TextRange, styleId: 
  */
 export function resolveRunFormatting(document: WordDocument, paragraph: Paragraph, run: TextRange): ResolvedRunFormatting {
     // Package-absent Theme is materialized as a dirty default for save emit only
-    // (theme.ts). Font-slot resolution requires a package-backed Theme part; dirty
+    // (the owning module). Font-slot resolution requires a package-backed Theme part; dirty
     // defaults leave asciiTheme/hAnsiTheme slots unresolved (formatting-resolver-theme AC).
     const theme: ThemePart = themeFor(document);
     return resolveRunFormattingWithStyles(
@@ -1174,7 +1201,7 @@ Paragraph.prototype.resolveEffectiveCharacterValue = function resolveEffectiveCh
     } catch {
         // detached — fall through
     }
-    // Direct CF getters treat unset as `undefined` (DocIO-style).
+    // Direct CF getters treat unset as `undefined` .
     // Layout/effective consumers apply CHARACTER_FORMAT_DEFAULTS themselves.
     if (key === 'textColor' || key === 'textBackgroundColor' || key === 'underlineColor' || key === 'highlightColor') {
         return undefined;
@@ -1224,7 +1251,7 @@ Paragraph.prototype.resolveEffectiveParagraphValue = function resolveEffectivePa
     } catch {
         // detached
     }
-    // Direct property getters treat unset as `undefined` (DocIO-style).
+    // Direct property getters treat unset as `undefined` .
     // Layout/effective consumers apply PARAGRAPH_FORMAT_DEFAULTS themselves
     // when they need concrete booleans/numbers — do not invent them here.
     return undefined;

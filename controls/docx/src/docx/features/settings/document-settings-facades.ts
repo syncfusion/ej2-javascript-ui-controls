@@ -2,7 +2,7 @@
  * Public property facades over SettingsPart: {@link ViewSetup} and
  * {@link DocumentSettings}. Stable per-{@link WordDocument} identity via WeakMap.
  *
- * Linked from `settings/index.ts` after {@link settingsFor} is defined (avoids cycle).
+ * Linked from the owning module after {@link settingsFor} is defined (avoids cycle).
  *
  * @private
  */
@@ -105,7 +105,7 @@ function settingsFor(document: WordDocument): SettingsPartFacadeHost {
 }
 
 /**
- * Document view and zoom configuration (`w:view`, `w:zoom`).
+ * Document view and zoom configuration.
  *
  * @public
  */
@@ -217,7 +217,7 @@ export class DocumentSettings {
 
     /**
      * Gets or sets whether document background shapes are displayed
-     * (`w:displayBackgroundShape`).
+     *.
      *
      * @public
      */

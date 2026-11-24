@@ -388,11 +388,18 @@ export class WorkbookSaveClient {
                                 if (typeof cellModel.notes === 'string') {
                                     noteTextString = cellModel.notes;
                                 } else if (!isNullOrUndefined(cellModel.notes)) {
-                                    noteTextString = (cellModel.notes as any).text ? (cellModel.notes as any).text : '';
-                                    isNoteVisible = (cellModel.notes as any).isVisible ? true : false;
+                                    noteTextString = cellModel.notes.text ? cellModel.notes.text : '';
+                                    isNoteVisible = cellModel.notes.isVisible ? true : false;
                                 }
                                 if (noteTextString) {
-                                    cellWrapper.addComment({ text: noteTextString, isVisible: isNoteVisible });
+                                    let noteAuthor: string = '';
+                                    if (noteTextString.indexOf(':') > -1) {
+                                        noteAuthor = noteTextString.split(':')[0].trim();
+                                    }
+                                    if (!noteAuthor) {
+                                        noteAuthor = (this.parent as any).author || '';
+                                    }
+                                    cellWrapper.addComment({ text: noteTextString, isVisible: isNoteVisible, author: noteAuthor });
                                 }
                             }
                             if (cellModel.comment && !cellWrapper.threadedComment) {
@@ -768,7 +775,14 @@ export class WorkbookSaveClient {
                 if (!isNullOrUndefined(rowIndex) && !isNullOrUndefined(columnIndex)) {
                     const cellWrapper: XlsxCell = xlsxSheet.cell(rowIndex + 1, columnIndex + 1);
                     if (cellWrapper && noteItem.text && !cellWrapper.comment && !cellWrapper.threadedComment) {
-                        cellWrapper.addComment({ text: noteItem.text, isVisible: noteItem.isVisible ? true : false });
+                        let noteAuthor: string = '';
+                        if (noteItem.text.indexOf(':') > -1) {
+                            noteAuthor = noteItem.text.split(':')[0].trim();
+                        }
+                        if (!noteAuthor) {
+                            noteAuthor = (this.parent as any).author || '';
+                        }
+                        cellWrapper.addComment({ text: noteItem.text, isVisible: noteItem.isVisible ? true : false, author: noteAuthor });
                     }
                 }
             }

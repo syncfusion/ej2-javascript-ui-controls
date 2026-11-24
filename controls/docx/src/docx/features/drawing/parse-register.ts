@@ -14,13 +14,19 @@ import { A_NS, attributeValue, findFirstElement, preferredDrawingElement, readDo
 import { CHART_GRAPHIC_DATA_URI, CHART_GRAPHIC_DATA_URI_STRICT, DIAGRAM_GRAPHIC_DATA_URI, DIAGRAM_GRAPHIC_DATA_URI_STRICT, DRAWING, WORDML_2010_NAMESPACE, WORDPROCESSING_INK_URI } from './types';
 import { createDrawingShape, DrawingShape } from './drawing-shape';
 import { elementChildren, isElement } from './residual-utils';
+const PIC_NS: string = 'http://schemas.openxmlformats.org/drawingml/2006/picture';
 export function isInlinePictureDrawing(element: OpenXmlElement): boolean {
     if (!isWml(element, 'drawing')) {
         return false;
     }
     const inline: OpenXmlElement = findFirstElement(element, WP_NS, 'inline');
     if (inline === undefined) {
-        return false;
+        // Anchored pictures are pictures too; groups and shapes use another graphicData URI.
+        const anchor: OpenXmlElement = findFirstElement(element, WP_NS, 'anchor');
+        const graphicData: OpenXmlElement = anchor === undefined ? undefined : findFirstElement(anchor, A_NS, 'graphicData');
+        if (graphicData === undefined || attributeValue(graphicData, '', 'uri') !== PIC_NS) {
+            return false;
+        }
     }
     const blip: OpenXmlElement = findFirstElement(element, A_NS, 'blip');
     if (blip === undefined) {
@@ -207,7 +213,15 @@ export function isDrawingShapeLeaf(
  * @private
  */
 export function drawingsInParagraph(paragraph: Paragraph): ReadonlyArray<DrawingShape> {
-    return drawingShapesFromLeaves(paragraph.items.toArray());
+    const shapes: ReadonlyArray<DrawingShape> = drawingShapesFromLeaves(paragraph.items.toArray());
+    // Shapes read from a package are not bound at parse time; bind the anchoring paragraph when
+    // they are surfaced so text-box bodies can resolve their owning document.
+    for (const shape of shapes) {
+        if (shape.getAnchoringParagraph() === undefined) {
+            shape.bindAnchoringParagraph(paragraph);
+        }
+    }
+    return shapes;
 }
 /**
  * Drawing shapes in the Main Document body, in document order.

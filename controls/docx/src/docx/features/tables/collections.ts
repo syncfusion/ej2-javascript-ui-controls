@@ -1,5 +1,5 @@
 /**
- * Table row and cell collections (DocIO-aligned customer surface).
+ * Table row and cell collections.
  *
  * @public
  */
@@ -43,7 +43,7 @@ export interface TableCellCollectionHost<TCell, TTable = unknown> {
  */
 export class TableRowCollection<TRow = unknown> {
     /**
-     * Numeric indexer for {@link TableRowCollection} (IntelliSense / `rows[i]`).
+     * Gets the row at the specified zero-based index.
      *
      * @public
      */
@@ -63,10 +63,16 @@ export class TableRowCollection<TRow = unknown> {
         this.rebuildIndexProperties();
     }
 
+    /**
+     * Gets the number of rows in the collection.
+     */
     get count(): number {
         return this.host.listRows().length;
     }
 
+    /**
+     * Gets the number of rows in the collection. This is an alias of {@link count}.
+     */
     get length(): number {
         return this.count;
     }
@@ -79,10 +85,21 @@ export class TableRowCollection<TRow = unknown> {
         this.rebuildIndexProperties();
     }
 
+    /**
+     * Appends a new row to the end of the collection.
+     *
+     * @returns {TRow} Returns the added row.
+     */
     add(): TRow {
         return this.insert(this.count);
     }
 
+    /**
+     * Inserts a new row at the specified index.
+     *
+     * @param {number} index - Specifies the zero-based index at which the row is inserted.
+     * @returns {TRow} Returns the inserted row.
+     */
     insert(index: number): TRow {
         const rows: TRow[] = this.host.listRows().slice();
         if (index < 0 || index > rows.length) {
@@ -96,6 +113,12 @@ export class TableRowCollection<TRow = unknown> {
         return row;
     }
 
+    /**
+     * Removes the specified row from the collection.
+     *
+     * @param {TRow} row - Specifies the row to remove.
+     * @returns {void} Nothing is returned.
+     */
     remove(row: TRow): void {
         const rows: TRow[] = this.host.listRows();
         const at: number = rows.indexOf(row);
@@ -105,6 +128,12 @@ export class TableRowCollection<TRow = unknown> {
         this.removeAt(at);
     }
 
+    /**
+     * Removes the row at the specified index.
+     *
+     * @param {number} index - Specifies the zero-based index of the row to remove.
+     * @returns {void} Nothing is returned.
+     */
     removeAt(index: number): void {
         const rows: TRow[] = this.host.listRows().slice();
         if (index < 0 || index >= rows.length) {
@@ -118,6 +147,12 @@ export class TableRowCollection<TRow = unknown> {
         this.rebuildIndexProperties();
     }
 
+    /**
+     * Gets the row at the specified index.
+     *
+     * @param {number} index - Specifies the zero-based index of the row.
+     * @returns {TRow} Returns the row at the specified index.
+     */
     get(index: number): TRow {
         const rows: TRow[] = this.host.listRows();
         if (index < 0 || index >= rows.length) {
@@ -127,14 +162,31 @@ export class TableRowCollection<TRow = unknown> {
         return rows[index]!;
     }
 
+    /**
+     * Gets the zero-based index of the specified row.
+     *
+     * @param {TRow} row - Specifies the row to locate.
+     * @returns {number} Returns the zero-based index of the row, or `-1` when it is not in the collection.
+     */
     indexOf(row: TRow): number {
         return this.host.listRows().indexOf(row);
     }
 
+    /**
+     * Creates an array that contains the rows of the collection.
+     *
+     * @returns {TRow[]} Returns a copy of the rows as an array.
+     */
     toArray(): TRow[] {
         return this.host.listRows().slice();
     }
 
+    /**
+     * Invokes the specified callback for each row in the collection.
+     *
+     * @param {Function} fn - Specifies the callback that receives each row and its zero-based index.
+     * @returns {void} Nothing is returned.
+     */
     forEach(fn: (row: TRow, index: number) => void): void {
         const rows: TRow[] = this.host.listRows();
         for (const [i, tRow] of rows.entries()) {
@@ -145,7 +197,7 @@ export class TableRowCollection<TRow = unknown> {
     /**
      *  Enables `for (const row of table.rows)`.
      *
-     * @returns {IterableIterator<TRow>} The result.
+     * @returns {IterableIterator<TRow>} - Returns an iterator over the rows.
      */
     [Symbol.iterator](): IterableIterator<TRow> {
         return this.host.listRows().slice()[Symbol.iterator]();
@@ -191,7 +243,7 @@ export class TableRowCollection<TRow = unknown> {
  */
 export class TableCellCollection<TCell = unknown> {
     /**
-     * Numeric indexer for {@link TableCellCollection} (IntelliSense / `cells[i]`).
+     * Gets the cell at the specified zero-based index.
      *
      * @public
      */
@@ -211,10 +263,16 @@ export class TableCellCollection<TCell = unknown> {
         this.rebuildIndexProperties();
     }
 
+    /**
+     * Gets the number of cells in the collection.
+     */
     get count(): number {
         return this.host.listCells().length;
     }
 
+    /**
+     * Gets the number of cells in the collection. This is an alias of {@link count}.
+     */
     get length(): number {
         return this.count;
     }
@@ -227,10 +285,21 @@ export class TableCellCollection<TCell = unknown> {
         this.rebuildIndexProperties();
     }
 
+    /**
+     * Appends a new cell to the end of the collection.
+     *
+     * @returns {TCell} Returns the added cell.
+     */
     add(): TCell {
         return this.insert(this.count);
     }
 
+    /**
+     * Inserts a new cell at the specified index.
+     *
+     * @param {number} index - Specifies the zero-based index at which the cell is inserted.
+     * @returns {TCell} Returns the inserted cell.
+     */
     insert(index: number): TCell {
         const cells: TCell[] = this.host.listCells().slice();
         if (index < 0 || index > cells.length) {
@@ -244,6 +313,12 @@ export class TableCellCollection<TCell = unknown> {
         return cell;
     }
 
+    /**
+     * Removes the specified cell from the collection.
+     *
+     * @param {TCell} cell - Specifies the cell to remove.
+     * @returns {void} Nothing is returned.
+     */
     remove(cell: TCell): void {
         const cells: TCell[] = this.host.listCells();
         const at: number = cells.indexOf(cell);
@@ -253,6 +328,12 @@ export class TableCellCollection<TCell = unknown> {
         this.removeAt(at);
     }
 
+    /**
+     * Removes the cell at the specified index.
+     *
+     * @param {number} index - Specifies the zero-based index of the cell to remove.
+     * @returns {void} Nothing is returned.
+     */
     removeAt(index: number): void {
         const cells: TCell[] = this.host.listCells().slice();
         if (index < 0 || index >= cells.length) {
@@ -266,6 +347,12 @@ export class TableCellCollection<TCell = unknown> {
         this.rebuildIndexProperties();
     }
 
+    /**
+     * Gets the cell at the specified index.
+     *
+     * @param {number} index - Specifies the zero-based index of the cell.
+     * @returns {TCell} Returns the cell at the specified index.
+     */
     get(index: number): TCell {
         const cells: TCell[] = this.host.listCells();
         if (index < 0 || index >= cells.length) {
@@ -275,14 +362,31 @@ export class TableCellCollection<TCell = unknown> {
         return cells[index]!;
     }
 
+    /**
+     * Gets the zero-based index of the specified cell.
+     *
+     * @param {TCell} cell - Specifies the cell to locate.
+     * @returns {number} Returns the zero-based index of the cell, or `-1` when it is not in the collection.
+     */
     indexOf(cell: TCell): number {
         return this.host.listCells().indexOf(cell);
     }
 
+    /**
+     * Creates an array that contains the cells of the collection.
+     *
+     * @returns {TCell[]} Returns a copy of the cells as an array.
+     */
     toArray(): TCell[] {
         return this.host.listCells().slice();
     }
 
+    /**
+     * Invokes the specified callback for each cell in the collection.
+     *
+     * @param {Function} fn - Specifies the callback that receives each cell and its zero-based index.
+     * @returns {void} Nothing is returned.
+     */
     forEach(fn: (cell: TCell, index: number) => void): void {
         const cells: TCell[] = this.host.listCells();
         for (const [i, tCell] of cells.entries()) {
@@ -293,7 +397,7 @@ export class TableCellCollection<TCell = unknown> {
     /**
      *  Enables `for (const cell of row.cells)`.
      *
-     * @returns {IterableIterator<TCell>} The result.
+     * @returns {IterableIterator<TCell>} - Returns an iterator over the cells.
      */
     [Symbol.iterator](): IterableIterator<TCell> {
         return this.host.listCells().slice()[Symbol.iterator]();

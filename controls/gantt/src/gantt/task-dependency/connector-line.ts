@@ -588,19 +588,21 @@ export class ConnectorLine {
         let count: number = 0;
         if (this.parent.showOverAllocation && !this.parent.allowTaskbarOverlap) {
             for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
-                if (this.parent.getRowByIndex(i as number).style.display !== 'none') {
+                const rowElemP: HTMLElement | null = this.parent.getRowByIndex(i as number);
+                if (rowElemP && rowElemP.style.display !== 'none') {
                     if (count < data.parentIndex) {
                         count++;
-                        parentOverlapTopValue = parentOverlapTopValue + this.parent.getRowByIndex(i as number).offsetHeight;
+                        parentOverlapTopValue = parentOverlapTopValue + rowElemP.offsetHeight;
                     }
                 }
             }
             count = 0;
             for (let j: number = 0; j < this.parent.currentViewData.length; j++) {
-                if (this.parent.getRowByIndex(j as number).style.display !== 'none') {
+                const rowElemC: HTMLElement | null = this.parent.getRowByIndex(j as number);
+                if (rowElemC && rowElemC.style.display !== 'none') {
                     if (count < data.childIndex) {
                         count++;
-                        childOverlapTopValue = childOverlapTopValue + this.parent.getRowByIndex(j as number).offsetHeight;
+                        childOverlapTopValue = childOverlapTopValue + rowElemC.offsetHeight;
                     }
                 }
             }

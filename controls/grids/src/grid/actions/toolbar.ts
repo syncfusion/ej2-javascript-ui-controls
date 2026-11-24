@@ -7,6 +7,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { EditSettingsModel } from '../base/grid-model';
 import { templateCompiler, appendChildren, parentsUntil, addRemoveEventListener, applyBiggerTheme, isAngularMatContainer, getParsedFieldID } from '../base/util';
 import { ToolbarItems, ToolbarItem, ResponsiveToolbarAction } from '../base/enum';
+import { BatchChanges } from '../base/type';
 import { ContextMenu as Menu } from '@syncfusion/ej2-navigations';
 import { OffsetPosition, calculatePosition } from '@syncfusion/ej2-popups';
 import { SearchBox } from '../services/focus-strategy';
@@ -519,8 +520,16 @@ export class Toolbar {
         let enableItems: string[] = [];
         let disableItems: string[] = [];
         const edit: EditSettingsModel = gObj.editSettings;
-        const hasData: number = (gObj.currentViewData && gObj.currentViewData.length) ||
-            (gObj.editSettings.mode === 'Batch' && !isNullOrUndefined(gObj.editModule) && gObj.editModule.getBatchChanges()[literals.addedRecords].length);
+        const isBatchMode: boolean = edit.mode === 'Batch';
+        const batchChanges: BatchChanges = isBatchMode && !isNullOrUndefined(gObj.editModule) ?
+            gObj.editModule.getBatchChanges() as BatchChanges : {};
+        const isUndoingLastAction: boolean =  gObj.editModule && gObj.editModule.editModule && gObj.editModule.editModule['isUndoAction'] &&
+            gObj.editModule.editModule.undoStack.length <= 0;
+        const hasRecords: Function = (key: string): boolean => !isNullOrUndefined(batchChanges[`${key}`]) && batchChanges[`${key}`].length > 0;
+        const hasAddedRecords: boolean = hasRecords(literals.addedRecords);
+        const hasBatchChanges: boolean = hasAddedRecords || hasRecords(literals.changedRecords) ||
+            hasRecords(literals.deletedRecords);
+        const hasData: boolean = !!(gObj.currentViewData && gObj.currentViewData.length) || (isBatchMode && hasAddedRecords);
         const addRow: boolean = edit.showAddNewRow && !gObj.element.querySelector('.e-editedrow');
         if (edit.allowAdding) {
             enableItems.push(this.gridID + '_add');
@@ -557,13 +566,15 @@ export class Toolbar {
         else {
             disableItems.push(this.gridID + '_columnchooser');
         }
-        if (gObj.editSettings.mode === 'Batch') {
-            if (gObj.element.getElementsByClassName('e-updatedtd').length && (edit.allowAdding || edit.allowEditing)) {
-                enableItems.push(this.gridID + '_update');
-                enableItems.push(this.gridID + '_cancel');
+        if (isBatchMode) {
+            if (hasBatchChanges && (edit.allowAdding || edit.allowEditing || edit.allowDeleting)) {
+                if (isUndoingLastAction) {
+                    disableItems.push(this.gridID + '_update', this.gridID + '_cancel');
+                } else {
+                    enableItems.push(this.gridID + '_update', this.gridID + '_cancel');
+                }
             } else {
-                disableItems.push(this.gridID + '_update');
-                disableItems.push(this.gridID + '_cancel');
+                disableItems.push(this.gridID + '_update', this.gridID + '_cancel');
             }
             if (edit.enableUndoRedo) {
                 if (gObj.isUndoStackAvailable()) {

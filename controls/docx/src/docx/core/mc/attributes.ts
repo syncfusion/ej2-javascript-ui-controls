@@ -64,7 +64,7 @@ function parseProcessContent(value: string | undefined, scope: ReadonlyMap<strin
  * Read MC attributes on one element. Prefixes are resolved with the in-scope map
  * (ECMA-376-3 §7.2–§7.4). PreserveElements/PreserveAttributes are treated as
  * prefix lists when present; they are not defined in the local Part 3 5th-edition
- * text (see TASK-1007 notes).
+ * text (see notes).
  *
  * @param {OpenXmlElement} element - The element.
  * @param {ReadonlyMap<string, string>} scope - The scope.

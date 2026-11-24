@@ -2342,6 +2342,9 @@ export class FormFields {
     }
 
     private updateSameFieldsValue(event: Event): void {
+        if (this.pdfViewer.readOnlySettings.formFields) {
+            return;
+        }
         if (this.formFieldsData) {
             for (let i: number = 0; i < this.formFieldsData.length; i++) {
                 const currentField: PdfRenderedFields = this.formFieldsData[parseInt(i.toString(), 10)] as PdfRenderedFields;
@@ -2361,6 +2364,13 @@ export class FormFields {
     }
 
     private updateFormFieldsValue(event: MouseEvent | KeyboardEvent): void {
+        if (this.pdfViewer.readOnlySettings.formFields) {
+            const key: string = (event as KeyboardEvent).key;
+            if (key !== 'Tab') {
+                event.preventDefault();
+            }
+            return;
+        }
         const currentTarget: HTMLInputElement = event.target as HTMLInputElement;
         let fieldIndex: number;
         let nextFields: FormFieldModel;
@@ -2426,6 +2436,10 @@ export class FormFields {
     }
 
     private changeFormFields(event: MouseEvent): void {
+        if (this.pdfViewer.readOnlySettings.formFields) {
+            event.preventDefault();
+            return;
+        }
         const currentTarget: HTMLInputElement = event.target as HTMLInputElement;
         if (currentTarget.type === 'checkbox') {
             const data: string = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
@@ -2999,9 +3013,15 @@ export class FormFields {
         pickerBtn.addEventListener('click', (e: Event) => {
             e.preventDefault();
             e.stopPropagation();
+            if (this.pdfViewer.readOnlySettings.formFields) {
+                return;
+            }
             openPicker();
         });
         pickerBtn.addEventListener('keydown', (e: KeyboardEvent) => {
+            if (this.pdfViewer.readOnlySettings.formFields) {
+                return;
+            }
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 e.stopPropagation();
@@ -3959,7 +3979,9 @@ export class FormFields {
                 annot.bounds = {x: currentLeft * zoomvalue, y: currentTop * zoomvalue, width: currentWidth * zoomvalue,
                     height : currentHeight * zoomvalue };
                 if (this.pdfViewerBase.signatureModule) {
-                    this.pdfViewerBase.signatureModule.updateSignatureDataInSession(annot, annot.id);
+                    // The signature value already exists in the document, so rendering it must not
+                    // raise form field property change events (FormFieldChanged/DocumentChanged).
+                    this.pdfViewerBase.signatureModule.updateSignatureDataInSession(annot, annot.id, true);
                 }
             }
             const canvass: HTMLElement = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', currentPage);

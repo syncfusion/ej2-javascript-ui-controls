@@ -19,7 +19,7 @@ import { Slide } from '../../core/slideimplementation/slide';
 import { Chart } from './chart';
 import { ChartsError } from './errors';
 import { asChartSync, ChartInstance } from './resolve-chart';
-import { getCachedXlsxRoot } from './xlsx-surface';
+import { getXlsxRootRequired } from './xlsx-surface';
 import { arrayAt } from '../../core/util/es5-compat';
 /**
  * Ordered classic charts on one slide (document / shape-tree walk order).
@@ -105,8 +105,17 @@ function tryResolveChart(shape: Shape, document: Presentation): ChartInstance | 
  * @returns {*} The result.
  */
 function materializeCharts(slide: Slide, document: Presentation): ReadonlyArray<Chart> {
-    // Sync public API: require warmed xlsx root (dynamic import is async).
-    if (getCachedXlsxRoot() === undefined) {
+    // Sync public API. The xlsx root is statically imported by this module, so
+    // warm it synchronously here (getXlsxRootRequired only verifies the bound
+    // symbols and fills the cache). When the engine is genuinely unavailable
+    // (missing/incomplete xlsx install), soft-skip as before — no throw from
+    // the getter. This makes slide.charts work in any call order; an explicit
+    // ensureFeature/loadXlsxRoot warm-up is no longer required (kept for
+    // compatibility).
+    try {
+        getXlsxRootRequired();
+    }
+    catch {
         return [];
     }
     const result: Chart[] = [];

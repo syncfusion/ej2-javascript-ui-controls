@@ -862,7 +862,6 @@ export class WebMcpSpreadsheet {
         case 'getSheetInfo': return this.getSheetInfoHandler(args);
         case 'evaluateFormula': return this.handleEvaluateFormula(args);
         case 'find': return this.handleFind(args);
-        case 'undo': return this.handleUndo();
         case 'sheetList': return this.handleSheetList();
         default: {
             if (eventArgs.showConfirmationDialog) {
@@ -879,6 +878,9 @@ export class WebMcpSpreadsheet {
                                 'Acknowledge the cancellation and stop.'
                     });
                 }
+            }
+            if (baseCommand === 'undo') {
+                return this.handleUndo();
             }
             const action: AssistAction = CAPABILITY_ACTION_MAP[baseCommand as string] || 'unknown';
             const results: CommandResult[] = await this.executor.executeHandler([{ action, args }]);
@@ -1082,6 +1084,7 @@ export class WebMcpSpreadsheet {
         case 'freezePanes': return `${args.freezeType === 'Unfreeze' ? 'Unfreeze panes' : `Freeze ${args.freezeType}`}`;
         case 'insertHyperlink': return `Insert hyperlink "${args.displayText}" in ${args.range || 'active cell'}`;
         case 'save': return `Save spreadsheet as ${args.saveType || 'xlsx'}`;
+        case 'undo': return 'Undo the last action';
         default: return `Perform "${command}" action`;
         }
     }

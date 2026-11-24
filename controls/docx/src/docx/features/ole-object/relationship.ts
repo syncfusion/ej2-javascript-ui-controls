@@ -1,6 +1,6 @@
 /**
  * OLE-object relationship constant shared between the module index and the
- * package catalog (keeps `catalog.ts` import-clean of the index barrel).
+ * package catalog (keeps the owning module import-clean of the index barrel).
  *
  * Transitional relationship type for an embedded/linked OLE object part —
  * ECMA-376-1 §15.2.10 (Embedded Object Part); cited in

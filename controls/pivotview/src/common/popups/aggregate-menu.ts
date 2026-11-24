@@ -7,10 +7,12 @@ import { MenuEventArgs, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-nav
 import { OffsetPosition } from '@syncfusion/ej2-popups';
 import { ContextMenu as Menu, MenuItemModel, ContextMenuModel } from '@syncfusion/ej2-navigations';
 import { SummaryTypes } from '../../base/types';
-import { IFieldOptions, IDataOptions, FieldItemInfo, IAxisSet, PivotEngine } from '../../base/engine';
+import { IFieldOptions, IDataOptions, FieldItemInfo, IAxisSet, PivotEngine, IField } from '../../base/engine';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { MaskedTextBox } from '@syncfusion/ej2-inputs';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
+import { CheckBox } from '@syncfusion/ej2-buttons';
+import { ADJACENT_PREVIOUS, ADJACENT_NEXT, isAdjacentToken } from '../../base/adjacent-difference';
 import * as events from '../../common/base/constant';
 import { PivotUtil } from '../../base/util';
 import { AggregateTypes } from '../base/enum';
@@ -25,10 +27,13 @@ export class AggregateMenu {
     public parent: PivotView | PivotFieldList;
     /** @hidden */
     public stringAggregateTypes: AggregateTypes[] = ['Count', 'DistinctCount'];
+    /** @hidden */
+    public dateAggregateTypes: AggregateTypes[] = ['Min', 'Max', 'Count', 'DistinctCount'];
     private menuInfo: Menu[] = [];
     private parentElement: HTMLElement;
     private buttonElement: HTMLElement;
     private currentMenu: Element;
+    private activeInstanceId: string = '';
 
     /**
      * Constructor for the rener action.
@@ -53,10 +58,16 @@ export class AggregateMenu {
         this.openContextMenu(args);
     }
     private openContextMenu(args: MouseEventArgs): void {
-        const fieldName: string = (args.target as HTMLElement).parentElement.getAttribute('data-uid');
+        const selectedButton: HTMLElement = (args.target as HTMLElement).closest('.' + cls.PIVOT_BUTTON_CLASS) as HTMLElement;
+        const fieldName: string = selectedButton.getAttribute('data-uid');
         const fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(fieldName, this.parent);
-        this.buttonElement = (args.target as HTMLElement).parentElement;
-        const isStringField: number = this.parent.engineModule.fieldList[fieldName as string].type !== 'number' ? 1 : 0;
+        this.buttonElement = selectedButton;
+        this.activeInstanceId = selectedButton.getAttribute('data-instance-id') || '';
+        const fieldType: string = this.parent.engineModule.fieldList[fieldName as string].type;
+        // 0: numeric field (full summary list), 1: string/other non-date field
+        // (Count/DistinctCount), 2: date-typed field (Min/Max/Count/DistinctCount,
+        // PIVOT-MINMAX-003/008).
+        const isStringField: number = fieldType !== 'number' ? (fieldType === 'date' || fieldType === 'datetime' ? 2 : 1) : 0;
         let summaryTypes: AggregateTypes[] = [...this.getMenuItem(isStringField)];
         const eventArgs: AggregateMenuOpenEventArgs = {
             cancel: false, fieldName: fieldName, aggregateTypes: summaryTypes, displayMenuCount: 7
@@ -92,10 +103,12 @@ export class AggregateMenu {
             this.menuInfo[isStringField as number].destroy();
         }
         const checkDuplicates: AggregateTypes[] = [];
+        const allowedTypes: AggregateTypes[] = isStringField === 2 ? this.dateAggregateTypes :
+            (isStringField ? this.stringAggregateTypes : this.parent.getAllSummaryType());
         for (let i: number = 0; i < summaryTypes.length; i++) {
             const key: AggregateTypes = summaryTypes[i as number] as AggregateTypes;
             if (isStringField) {
-                if ((this.stringAggregateTypes.indexOf(key) > -1) && (checkDuplicates.indexOf(key) < 0)) {
+                if ((allowedTypes.indexOf(key) > -1) && (checkDuplicates.indexOf(key) < 0)) {
                     menuItems[isStringField as number].push(
                         { text: this.parent.localeObj.getConstant(key), id: this.parent.element.id + 'StringMenu_' + key });
                     checkDuplicates.push(key);
@@ -122,9 +135,7 @@ export class AggregateMenu {
             cssClass: this.parent.cssClass,
             beforeOpen: this.beforeMenuOpen.bind(this, isStringField),
             onClose: () => {
-                if ((select('#' + this.buttonElement.id, this.parentElement) as HTMLElement)) {
-                    (select('#' + this.buttonElement.id, this.parentElement) as HTMLElement).focus();
-                }
+                this.focusValueButton(this.activeInstanceId);
             },
             select: this.selectOptionInContextMenu.bind(this)
         };
@@ -150,7 +161,11 @@ export class AggregateMenu {
             if (this.parent.dataSourceSettings.mode === 'Server' && key === 'PercentageOfRunningTotals') {
                 continue;
             }
-            if (isStringField) {
+            if (isStringField === 2) {
+                if ((this.dateAggregateTypes.indexOf(key) > -1) && (menuItems.indexOf(key) === -1)) {
+                    menuItems.push(key);
+                }
+            } else if (isStringField) {
                 if ((this.stringAggregateTypes.indexOf(key) > -1) && (menuItems.indexOf(key) === -1)) {
                     menuItems.push(key);
                 }
@@ -233,16 +248,23 @@ export class AggregateMenu {
         let summaryType: string = (type && type !== 'MoreOption') ? type : buttonElement.getAttribute('data-type');
         let baseField: string = buttonElement.getAttribute('data-basefield');
         let baseItem: string = buttonElement.getAttribute('data-baseitem');
+        const allowCrossGroup: boolean = buttonElement.getAttribute('data-allowcrossgroup') === 'true';
         summaryType = (summaryType.toString() !== 'undefined' ? summaryType : 'Sum');
         const summaryDataSource: { [key: string]: Object }[] = [];
         const summaryItems: AggregateTypes[] = this.parent.aggregateTypes;
         const checkDuplicates: AggregateTypes[] = [];
+        // A date-typed value field offers only Min, Max, Count and DistinctCount
+        // in the Value Settings dialog too (PIVOT-MINMAX-008).
+        const fieldType: string = this.parent.engineModule.fieldList[fieldCaption as string] ?
+            this.parent.engineModule.fieldList[fieldCaption as string].type : undefined;
+        const dialogAllowed: AggregateTypes[] = (fieldType === 'date' || fieldType === 'datetime') ?
+            this.dateAggregateTypes : this.parent.getAllSummaryType();
         for (let i: number = 0; i < summaryItems.length; i++) {
             const summaryType: AggregateTypes = summaryItems[i as number] as AggregateTypes;
             if (this.parent.dataSourceSettings.mode === 'Server' && summaryType === 'PercentageOfRunningTotals') {
                 continue;
             }
-            if (this.parent.getAllSummaryType().indexOf(summaryType) > -1 && checkDuplicates.indexOf(summaryType) < 0) {
+            if (dialogAllowed.indexOf(summaryType) > -1 && checkDuplicates.indexOf(summaryType) < 0) {
                 summaryDataSource.push({
                     value: summaryType,
                     text: this.parent.localeObj.getConstant(summaryType) });
@@ -279,6 +301,12 @@ export class AggregateMenu {
             );
         }
         baseItem = (baseItem.toString() !== 'undefined' ? baseItem : fieldItemDataSource[0]);
+        const getBaseItemDataSource: (members: string[]) => { value: string; text: string }[] = (members: string[]) => {
+            return [
+                { value: ADJACENT_PREVIOUS, text: this.parent.localeObj.getConstant('previousItem') },
+                { value: ADJACENT_NEXT, text: this.parent.localeObj.getConstant('nextItem') }
+            ].concat(members.map((member: string) => ({ value: member, text: member })));
+        };
         const mainDiv: HTMLElement = createElement('div', {
             className: 'e-value-field-div-content', id: this.parentElement.id + '_field_div_content',
             attrs: { 'data-type': summaryType, 'data-caption': fieldCaption, 'data-basefield': baseField, 'data-baseitem': baseItem }
@@ -288,6 +316,7 @@ export class AggregateMenu {
         const optionWrapperDiv1: HTMLElement = createElement('div', { className: 'e-type-option-container' });
         const optionWrapperDiv2: HTMLElement = createElement('div', { className: 'e-base-field-option-container' });
         const optionWrapperDiv3: HTMLElement = createElement('div', { className: 'e-base-item-option-container' });
+        const optionWrapperDiv4: HTMLElement = createElement('div', { className: 'e-cross-group-option-container' });
         const texttitle: HTMLElement = createElement('div', { className: 'e-field-name-title' });
         texttitle.innerHTML = this.parent.localeObj.getConstant('sourceName') + '&nbsp;';
         const textContent: HTMLElement = createElement('div', { className: 'e-field-name-content' });
@@ -316,6 +345,9 @@ export class AggregateMenu {
         const dropOptionDiv1: HTMLElement = createElement('div', { id: this.parentElement.id + '_type_option' });
         const dropOptionDiv2: HTMLElement = createElement('div', { id: this.parentElement.id + '_base_field_option' });
         const dropOptionDiv3: HTMLElement = createElement('div', { id: this.parentElement.id + '_base_item_option' });
+        const crossGroupInput: HTMLInputElement = createElement('input', {
+            id: this.parentElement.id + '_cross_group_option', attrs: { 'type': 'checkbox' }
+        }) as HTMLInputElement;
         const inputField1: HTMLInputElement = createElement('input', {
             id: this.parentElement.id + 'type_input_option',
             className: 'e-caption-input-text',
@@ -331,11 +363,13 @@ export class AggregateMenu {
         optionWrapperDiv1.appendChild(dropOptionDiv1);
         optionWrapperDiv2.appendChild(dropOptionDiv2);
         optionWrapperDiv3.appendChild(dropOptionDiv3);
+        optionWrapperDiv4.appendChild(crossGroupInput);
         filterWrapperDiv1.appendChild(textWrappper);
         filterWrapperDiv1.appendChild(inputDiv1);
         filterWrapperDiv1.appendChild(optionWrapperDiv1);
         filterWrapperDiv1.appendChild(optionWrapperDiv2);
         filterWrapperDiv1.appendChild(optionWrapperDiv3);
+        filterWrapperDiv1.appendChild(optionWrapperDiv4);
         mainDiv.appendChild(filterWrapperDiv1);
         const popupInstance: AggregateMenu = this as AggregateMenu;
         const optionWrapper1: DropDownList = new DropDownList({
@@ -347,10 +381,11 @@ export class AggregateMenu {
             change: (args: ChangeEventArgs) => {
                 optionWrapper2.enabled = baseFieldTypes.indexOf(args.value as string) !== -1 ? true : false;
                 optionWrapper3.enabled = baseItemTypes.indexOf(args.value as string) !== -1 ? true : false;
-                if (optionWrapper3.enabled && (optionWrapper3.dataSource as string[]).length === 1) {
-                    optionWrapper3.dataSource = fieldItemDataSource;
+                if (optionWrapper3.enabled && (optionWrapper3.dataSource as object[]).length === 3) {
+                    optionWrapper3.dataSource = getBaseItemDataSource(fieldItemDataSource);
                     optionWrapper3.dataBind();
                 }
+                updateCrossGroup();
             }
         });
         optionWrapper1.isStringTemplate = true;
@@ -369,7 +404,7 @@ export class AggregateMenu {
                     isDateField ?  item.formattedText :
                         this.parent.engineModule.getFormattedValue(item.actualText, args.value as string).formattedText
                 );
-                optionWrapper3.dataSource = fieldItemDataSource;
+                optionWrapper3.dataSource = getBaseItemDataSource(fieldItemDataSource);
                 optionWrapper3.value = fieldItemDataSource[0];
                 optionWrapper3.filterBarPlaceholder = popupInstance.parent.localeObj.getConstant('example') + ' ' + fieldItemDataSource[0];
                 optionWrapper3['itemData'] = null;
@@ -379,18 +414,36 @@ export class AggregateMenu {
         optionWrapper2.isStringTemplate = true;
         optionWrapper2.isAngular = this.parent.isModalDialog;
         optionWrapper2.appendTo(dropOptionDiv2);
+        const updateCrossGroup: () => void = () => {
+            crossGroupWrapper.disabled = !(baseItemTypes.indexOf(optionWrapper1.value as string) !== -1 &&
+                isAdjacentToken(optionWrapper3.value as string));
+            if (crossGroupWrapper.disabled) {
+                crossGroupWrapper.checked = false;
+            }
+            // Apply now: a deferred update would run against a destroyed checkbox when the dialog closes first.
+            crossGroupWrapper.dataBind();
+        };
         const optionWrapper3: DropDownList = new DropDownList({
-            dataSource: fieldItemDataSource, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
+            dataSource: getBaseItemDataSource(fieldItemDataSource), enableRtl: this.parent.enableRtl, locale: this.parent.locale,
+            fields: { value: 'value', text: 'text' },
             value: baseItem,
             // popupWidth: 'auto',
             allowFiltering: true,
             filterBarPlaceholder: this.parent.localeObj.getConstant('example') + ' ' + fieldItemDataSource[0],
             enabled: (baseItemTypes.indexOf(summaryType) !== -1 ? true : false),
-            cssClass: cls.FILTER_OPERATOR_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%'
+            cssClass: cls.FILTER_OPERATOR_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%',
+            change: () => { updateCrossGroup(); }
         });
         optionWrapper3.isStringTemplate = true;
         optionWrapper3.isAngular = this.parent.isModalDialog;
         optionWrapper3.appendTo(dropOptionDiv3);
+        const crossGroupWrapper: CheckBox = new CheckBox({
+            label: this.parent.localeObj.getConstant('crossGroupComparison'), enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale, checked: allowCrossGroup && isAdjacentToken(baseItem),
+            disabled: !(baseItemTypes.indexOf(summaryType) !== -1 && isAdjacentToken(baseItem)),
+            cssClass: this.parent.cssClass
+        });
+        crossGroupWrapper.appendTo(crossGroupInput);
         const inputObj1: MaskedTextBox = new MaskedTextBox({
             placeholder: 'Enter field caption',
             // floatLabelType: 'Auto',
@@ -405,7 +458,7 @@ export class AggregateMenu {
     }
     private selectOptionInContextMenu(menu: MenuEventArgs): void {
         if (menu.item.text !== null) {
-            const buttonElement: HTMLElement = this.currentMenu.parentElement as HTMLElement;
+            const buttonElement: HTMLElement = this.currentMenu.closest('.' + cls.PIVOT_BUTTON_CLASS) as HTMLElement;
             const fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo((buttonElement ?
                 buttonElement.getAttribute('data-uid') : ''), this.parent);
             this.parent.actionObj.fieldInfo = fieldInfo.fieldItem;
@@ -433,14 +486,28 @@ export class AggregateMenu {
                     }
                     contentElement.setAttribute('title', captionName);
                     buttonElement.setAttribute('data-type', type as string);
+                    const instanceId: string = buttonElement.getAttribute('data-instance-id');
                     for (let vCnt: number = 0; vCnt < this.parent.dataSourceSettings.values.length; vCnt++) {
-                        if (this.parent.dataSourceSettings.values[vCnt as number].name === field) {
+                        if (instanceId ? (this.parent.dataSourceSettings.values[vCnt as number] as IFieldOptions).instanceId === instanceId
+                            : this.parent.dataSourceSettings.values[vCnt as number].name === field) {
                             const dataSourceItem: IFieldOptions =
                             extend({}, (<{ [key: string]: IFieldOptions }>valuefields[vCnt as number]).properties ?
                                 (<{ [key: string]: IFieldOptions }>valuefields[vCnt as number]).properties :
                                 valuefields[vCnt as number], null, true);
                             dataSourceItem.type = type as SummaryTypes;
-                            this.parent.engineModule.fieldList[field as string].aggregateType = type;
+                            // Preserve the value-field instance identity through the aggregation
+                            // update; the engine derives instance ids from name+type+caption when
+                            // absent, which would otherwise change the button's data-instance-id.
+                            dataSourceItem.instanceId = instanceId;
+                            if (instanceId && this.parent.dataType === 'pivot') {
+                                const instanceField: IField = (this.parent.engineModule as PivotEngine)
+                                    .getValueInstanceFieldListEntry(instanceId) as IField;
+                                if (instanceField) {
+                                    instanceField.aggregateType = type;
+                                }
+                            } else {
+                                this.parent.engineModule.fieldList[field as string].aggregateType = type;
+                            }
                             valuefields.splice(vCnt, 1, dataSourceItem);
                             this.parent.lastAggregationInfo = dataSourceItem;
                         }
@@ -448,6 +515,11 @@ export class AggregateMenu {
                     this.setAggregateActionInfo(type as SummaryTypes, field, fieldCaption);
                     this.parent.actionObj.actionName = events.fieldAggregated;
                     this.updateDataSource();
+                    // The value-field instanceId is preserved across the data source update
+                    // (cloneFieldSettings carries it through), so the id captured before the
+                    // update still identifies the updated button.
+                    this.activeInstanceId = instanceId;
+                    this.focusValueButton(instanceId);
                 }
             } catch (execption) {
                 this.parent.actionFailureMethod(execption);
@@ -479,11 +551,16 @@ export class AggregateMenu {
         const summaryInstance: DropDownList = getInstance(select('#' + this.parentElement.id + '_type_option'), DropDownList) as DropDownList;
         const baseFieldInstance: DropDownList = getInstance(select('#' + this.parentElement.id + '_base_field_option'), DropDownList) as DropDownList;
         const baseItemInstance: DropDownList = getInstance(select('#' + this.parentElement.id + '_base_item_option'), DropDownList) as DropDownList;
+        const crossGroupInstance: CheckBox = getInstance(select('#' + this.parentElement.id + '_cross_group_option'), CheckBox) as CheckBox;
+        const allowCrossGroup: boolean = !crossGroupInstance.disabled && crossGroupInstance.checked;
         const fieldName: string = dialogElement.getAttribute('data-field');
         let buttonElement: HTMLElement;
+        const selectedInstanceId: string = this.activeInstanceId;
         if (this.parentElement.querySelector('.' + cls.PIVOT_BUTTON_CLASS)) {
-            buttonElement =
-                this.parentElement.getElementsByClassName(`${cls.PIVOT_BUTTON_CLASS} ${fieldName.replace(/[^A-Z0-9]/ig, '')}`)[0] as HTMLElement;
+            buttonElement = selectedInstanceId ? this.parentElement.querySelector(
+                '.' + cls.PIVOT_BUTTON_CLASS + '[data-instance-id="' + selectedInstanceId + '"]'
+            ) as HTMLElement : this.parentElement.getElementsByClassName(
+                `${cls.PIVOT_BUTTON_CLASS} ${fieldName.replace(/[^A-Z0-9]/ig, '')}`)[0] as HTMLElement;
         }
         if (buttonElement) {
             const contentElement: HTMLElement = buttonElement.querySelector('.' + cls.PIVOT_BUTTON_CONTENT_CLASS) as HTMLElement;
@@ -498,16 +575,32 @@ export class AggregateMenu {
             buttonElement.setAttribute('data-caption', captionInstance.value);
             buttonElement.setAttribute('data-basefield', baseFieldInstance.value as string);
             buttonElement.setAttribute('data-baseitem', baseItemInstance.value as string);
+            buttonElement.setAttribute('data-allowcrossgroup', allowCrossGroup ? 'true' : 'false');
         }
-        let selectedField: IFieldOptions =
-            PivotUtil.getFieldByName(fieldName, this.parent.dataSourceSettings.values) as IFieldOptions;
-        selectedField = (<{ [key: string]: Object }>selectedField).properties ?
-            (<{ [key: string]: Object }>selectedField).properties : selectedField;
+        let selectedField: IFieldOptions = selectedInstanceId ?
+            this.parent.dataSourceSettings.values.filter((val: IFieldOptions) => val.instanceId === selectedInstanceId)[0] as IFieldOptions
+            : PivotUtil.getFieldByName(fieldName, this.parent.dataSourceSettings.values) as IFieldOptions;
+        if (!selectedField) {
+            selectedField = PivotUtil.getFieldByName(fieldName, this.parent.dataSourceSettings.values) as IFieldOptions;
+        }
+        if (!selectedField) {
+            this.parent.actionFailureMethod(new Error('Unable to find the value field "' + fieldName + '" in the data source settings.'));
+            return;
+        }
+        const fieldProperties: { [key: string]: Object } = selectedField as { [key: string]: Object };
+        selectedField = fieldProperties.properties ? fieldProperties.properties as IFieldOptions : selectedField;
         selectedField.caption = captionInstance.value;
         selectedField.type = summaryInstance.value as SummaryTypes;
         selectedField.baseField = baseFieldInstance.value as string;
         selectedField.baseItem = baseItemInstance.value as string;
-        this.parent.engineModule.fieldList[fieldName as string].aggregateType = selectedField.type;
+        selectedField.allowCrossGroupCalculation = allowCrossGroup;
+        // When the same field is added multiple times to the values axis, the
+        // shared field-level aggregate type must not change; only the selected
+        // instance's aggregation is updated.
+        if (!selectedInstanceId || !this.parent.dataSourceSettings.values.some((val: IFieldOptions) =>
+            val !== selectedField && val.name === selectedField.name)) {
+            this.parent.engineModule.fieldList[fieldName as string].aggregateType = selectedField.type;
+        }
         valueDialog.close();
         // this.parent.axisFieldModule.render();
         this.parent.lastAggregationInfo = selectedField;
@@ -525,11 +618,25 @@ export class AggregateMenu {
             }
         }
         this.updateDataSource(true);
+        this.focusValueButton(selectedInstanceId);
+    }
+
+    private focusValueButton(instanceId: string): void {
+        if (!instanceId || !this.parentElement) {
+            return;
+        }
+        const focus: () => void = () => {
+            const button: HTMLElement = this.parentElement.querySelector(
+                '.' + cls.PIVOT_BUTTON_CLASS + '[data-instance-id="' + instanceId + '"]'
+            ) as HTMLElement;
+            if (button) {
+                button.focus();
+            }
+        };
+        setTimeout(focus);
     }
     private removeDialog(): void {
-        if (this.buttonElement && select('#' + this.buttonElement.id, this.parentElement)) {
-            (select('#' + this.buttonElement.id, this.parentElement) as HTMLElement).focus();
-        }
+        this.focusValueButton(this.activeInstanceId);
         const element: HTMLElement = select('#' + this.parentElement.id + '_ValueDialog', document);
         const valueDialog: Dialog = element ? getInstance(element, Dialog) as Dialog : null;
         if (valueDialog && !valueDialog.isDestroyed) { valueDialog.destroy(); }

@@ -174,6 +174,8 @@ export class AnnotationToolbar {
     private isFreeTextBtnVisible: boolean = false;
     private isCalloutBtnVisible: boolean = false;
     private isMobileCalloutEnabled: boolean = false;
+    private isFreehandHighlightVisible: boolean = false;
+    private isLinkBtnVisible: boolean = false;
     private isCalibrateBtnVisible: boolean = false;
     private isStrokeColorToolVisible: boolean = false;
     private isThicknessToolVisible: boolean = false;
@@ -5274,6 +5276,7 @@ export class AnnotationToolbar {
                     const snapshot: { thickness: number; opacity: number; subject: string; strokeColor: string; } | null =
                         inkModule && inkModule.userInkSettingsBeforeFreehand;
                     this.pdfViewer.inkAnnotationSettings.enableInkHighlight = false;
+                    this.pdfViewer.inkAnnotationSettings.subject = 'Ink';
                     if (snapshot) {
                         this.pdfViewer.inkAnnotationSettings.thickness   = snapshot.thickness;
                         this.pdfViewer.inkAnnotationSettings.opacity     = snapshot.opacity;
@@ -5999,6 +6002,20 @@ export class AnnotationToolbar {
                 const commentPanelIndex: number = this.getIndexByClassName('e-pv-comment-panel-icon-container');
                 this.showCommentPanelTool(false, commentPanelIndex, commentPanelIndex);
             }
+            if (annotationToolbarItems.indexOf('FreehandHighlightTool') !== -1) {
+                const freehandHighlightIndex: number = this.getIndexByClassName('e-pv-annotation-freehand-highlight-container');
+                this.showFreehandHighlightTool(true, freehandHighlightIndex, freehandHighlightIndex);
+            } else {
+                const freehandHighlightIndex: number = this.getIndexByClassName('e-pv-annotation-freehand-highlight-container');
+                this.showFreehandHighlightTool(false, freehandHighlightIndex, freehandHighlightIndex);
+            }
+            if (annotationToolbarItems.indexOf('LinkTool') !== -1) {
+                const linkIndex: number = this.getIndexByClassName('e-pv-annotation-link-container');
+                this.showLinkAnnotationTool(true, linkIndex, linkIndex);
+            } else {
+                const linkIndex: number = this.getIndexByClassName('e-pv-annotation-link-container');
+                this.showLinkAnnotationTool(false, linkIndex, linkIndex);
+            }
             this.showInkAnnotationTool();
             this.showSeparator();
             // Safety net: ensure the Freehand Highlight container is visible when
@@ -6114,14 +6131,19 @@ export class AnnotationToolbar {
                 const inkIndex: number = this.getIndexByClassName('e-pv-annotation-ink-container');
                 this.showInkTool(false, inkIndex, inkIndex);
             }
-            // R-1 / R-10: same pattern as the desktop showInkAnnotationTool —
-            // visibility is gated only on list membership; enable/disable is
-            // handled in updateToolbarItems() via enableItems() on
-            // freehandHighlightItem. The previous showInkTool(false, ...) call
-            // was the source of the e-hidden class on the container.
             if (annotationToolbarItems.indexOf('FreehandHighlightTool') !== -1) {
                 const freehandHighlightIndex: number = this.getIndexByClassName('e-pv-annotation-freehand-highlight-container');
-                this.showInkTool(true, freehandHighlightIndex, freehandHighlightIndex);
+                this.showFreehandHighlightTool(true, freehandHighlightIndex, freehandHighlightIndex);
+            } else {
+                const freehandHighlightIndex: number = this.getIndexByClassName('e-pv-annotation-freehand-highlight-container');
+                this.showFreehandHighlightTool(false, freehandHighlightIndex, freehandHighlightIndex);
+            }
+            if (annotationToolbarItems.indexOf('LinkTool') !== -1) {
+                const linkIndex: number = this.getIndexByClassName('e-pv-annotation-link-container');
+                this.showLinkAnnotationTool(true, linkIndex, linkIndex);
+            } else {
+                const linkIndex: number = this.getIndexByClassName('e-pv-annotation-link-container');
+                this.showLinkAnnotationTool(false, linkIndex, linkIndex);
             }
             this.showEraserEditTool(false, eraserIndex, eraserIndex);
             this.showSeparatorInMobile();
@@ -6197,24 +6219,6 @@ export class AnnotationToolbar {
         } else {
             const inkIndex: number = this.getIndexByClassName('e-pv-annotation-ink-container');
             this.showInkTool(false, inkIndex, inkIndex);
-        }
-        // R-1 / R-10: The Freehand Highlight slot follows the InkAnnotationTool
-        // pattern — its visibility is gated only on list membership, not on
-        // enableFreehandHighlight. The enable/disable state is handled separately
-        // in updateToolbarItems() via enableItems() on freehandHighlightItem, which
-        // mirrors the existing inkAnnotationItem branch one line above.
-        //
-        // The previous implementation also called showInkTool(false, ...) when
-        // enableFreehandHighlight was false. That call set isInkBtnVisible = false
-        // which then caused the downstream showSeparatorInMobile() to hide the
-        // Freehand Highlight container by index (inkIndex + 1 now points to the
-        // new slot after the insertion between the Ink item and its separator).
-        // This is why the reviewer found that commenting out the block made the
-        // feature work — the showInkTool(false, ...) call was the source of the
-        // e-hidden class on the container.
-        if (this.pdfViewer.toolbarSettings.annotationToolbarItems.indexOf('FreehandHighlightTool') !== -1) {
-            const freehandHighlightIndex: number = this.getIndexByClassName('e-pv-annotation-freehand-highlight-container');
-            this.showInkTool(true, freehandHighlightIndex, freehandHighlightIndex);
         }
     }
 
@@ -6338,6 +6342,7 @@ export class AnnotationToolbar {
             'FreeTextAnnotationTool',
             'CalloutAnnotationTool',
             'StampAnnotationTool',
+            'LinkTool',
             'HandWrittenSignatureTool',
             'InkAnnotationTool',
             'FreehandHighlightTool',
@@ -6352,6 +6357,7 @@ export class AnnotationToolbar {
             'FreeTextAnnotationTool',
             'CalloutAnnotationTool',
             'StampAnnotationTool',
+            'LinkTool',
             'HandWrittenSignatureTool',
             'InkAnnotationTool',
             'FreehandHighlightTool',
@@ -6365,6 +6371,7 @@ export class AnnotationToolbar {
             'FreeTextAnnotationTool',
             'CalloutAnnotationTool',
             'StampAnnotationTool',
+            'LinkTool',
             'HandWrittenSignatureTool',
             'InkAnnotationTool',
             'FreehandHighlightTool',
@@ -6377,6 +6384,7 @@ export class AnnotationToolbar {
         return this.hasAny(items, [
             'CalloutAnnotationTool',
             'StampAnnotationTool',
+            'LinkTool',
             'HandWrittenSignatureTool',
             'InkAnnotationTool',
             'FreehandHighlightTool',
@@ -6387,6 +6395,7 @@ export class AnnotationToolbar {
     private isshowStampSeparator(): boolean {
         const items: any = this.pdfViewer.toolbarSettings.annotationToolbarItems as string[];
         return this.hasAny(items, [
+            'LinkTool',
             'HandWrittenSignatureTool',
             'InkAnnotationTool', 'FreehandHighlightTool', 'AnnotationDeleteTool'
         ]);
@@ -6442,6 +6451,16 @@ export class AnnotationToolbar {
 
     private showCalloutAnnotationTool(isShow: boolean, startIndex: number, endIndex: number): void {
         this.isCalloutBtnVisible = isShow;
+        this.applyHideToToolbar(isShow, startIndex, endIndex);
+    }
+
+    private showFreehandHighlightTool(isShow: boolean, startIndex: number, endIndex: number): void {
+        this.isFreehandHighlightVisible = isShow;
+        this.applyHideToToolbar(isShow, startIndex, endIndex);
+    }
+
+    private showLinkAnnotationTool(isShow: boolean, startIndex: number, endIndex: number): void {
+        this.isLinkBtnVisible = isShow;
         this.applyHideToToolbar(isShow, startIndex, endIndex);
     }
 
@@ -7098,7 +7117,9 @@ export class AnnotationToolbar {
             'FontStylesAnnotationTool',
             'FontAlignAnnotationTool',
             'FontColorAnnotationTool',
-            'CommentPanelTool'
+            'CommentPanelTool',
+            'FreehandHighlightTool',
+            'LinkTool'
         ];
     }
 

@@ -139,6 +139,7 @@ export * from './pdf/core/import-export/xml-document';
 export * from './pdf/core/import-export/xml-writer';
 export * from './pdf/core/layers/layer-collection';
 export * from './pdf/core/layers/layer';
+export * from './pdf/core/layers/layer-radio-group';
 export * from './pdf/core/list/pdf-list-item';
 export * from './pdf/core/list/pdf-list';
 export * from './pdf/core/security/encryptor';

@@ -2,7 +2,36 @@
 
 ## [Unreleased]
 
+## 35.2.13 (2026-11-24)
+
+### PowerPoint
+
+#### Bug Fixes
+
+- Enhanced Table, Notes, and Chart APIs for add, edit and remove functions.
+
+#### Features
+
+- Added Sections support in the JavaScript PowerPoint library, enabling developers to create, retrieve, rename, reorder, and remove presentation sections, as well as assign slides to sections.
+- Added support to Find and FindAll operations, enabling precise text segment identification and providing the foundation for advanced text editing features such as Replace and Highlight.
+- Provided support for Highlight color font property.
+
 ## 35.2.12 (2026-11-18)
+
+### PowerPoint
+
+#### Bug Fixes
+
+- Resolved chart series data formula corruption issue that occurred while adding a series in existing chart element.
+- Added synchronous support for chart feature integration, enabling chart processing without asynchronous workflow.
+- Introduced collection APIs for Table, Image, and Chart elements, allowing users to retrieve and process these presentation objects from loaded PowerPoint documents.
+- Improved chart handling by enabling chart creation from Excel-based data sources, ensuring accurate chart generation from workbook content.
+
+#### Features
+
+- Added licensing watermark support, ensuring appropriate licensing validation and watermark rendering in applicable scenarios.
+
+## 35.1.46 (2026-11-11)
 
 ### PowerPoint
 
@@ -13,6 +42,7 @@
 #### Features
 
 - Provided Hyperlink support such as Webpage link, File link, Email or another Slide as target in JavaScript PowerPoint library.
+- Added PowerPoint section support: create, rename, reorder, and remove sections, assign slides, and round-trip `p14:sectionLst`.
 - Added List support including Numbered, Bulleted, Picture, and Multilevel List types.
 
 ## 35.1.43
@@ -37,6 +67,11 @@
 - Implemented PowerPoint Notes support in the EJ2 PowerPoint Library.
 - Added Built-in Table Styles support for tables in the EJ2 PowerPoint Library.
 
+### Gradient fills
+
+- Add gradient parsing, symbolic theme inheritance, authoring and package preservation APIs for supported backgrounds, shapes, text, groups and tables.
+- Transport canonical table-cell text/style and active text-color context through worker snapshots without resolving source colors back into XML.
+- Keep chart/diagram platform limitations and Strict SDK/profile qualification explicit; no full optional-module publication claim.
 
 ## 35.1.37
 

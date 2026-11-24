@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 35.2.13 (2026-11-24)
+
+### TextBox
+
+#### Bug Fixes
+
+- `#I889589` - Fixed an issue where input components could throw a null reference exception during initialization or dynamic DOM updates when dependent elements were not available at the time of execution.
+
 ## 35.2.12 (2026-11-18)
 
 ### TextBox

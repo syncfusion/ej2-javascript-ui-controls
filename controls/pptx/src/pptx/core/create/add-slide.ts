@@ -19,6 +19,7 @@ import { walkSlideShapeTree } from '../shapes/walk';
 import { LayoutSlide } from '../slideimplementation/layoutslide';
 import { MasterSlide } from '../slideimplementation/masterslide';
 import { Slide } from '../slideimplementation/slide';
+import { PresentationError } from '../errors';
 import { loadMasterColorMap, parseSlideColorMapOverride, SlideColorMapOverride } from '../theme/load-color-map';
 import { effectiveColorMap } from '../theme/resolve-color';
 import { parseXml, serializeXml, OoxmlAttribute, OoxmlElement } from '../xml/index';
@@ -70,7 +71,10 @@ export interface AddSlideOptions {
  * @param {AddSlideOptions} options - Optional {@link AddSlideOptions.layout} selection.
  * @returns {Slide} The new {@link Slide}.
  */
-export function addSlideToPresentation(pkg: OpcPackage, model: PresentationModel, options: AddSlideOptions = {}): Slide {
+export function addSlideToPresentation(pkg: OpcPackage, model: PresentationModel, options: AddSlideOptions | Slide = {}): Slide {
+    if (options instanceof Slide) {
+        return importSlide(pkg, model, options);
+    }
     const layoutType: SlideLayoutTypeValue = resolveLayoutType(options.layout);
     const nextCount: number = model.slides.length + 1;
     if (nextCount > pkg.limits.slideCount) {
@@ -155,6 +159,116 @@ export function addSlideToPresentation(pkg: OpcPackage, model: PresentationModel
     model.slides.push(slide);
     return slide;
 }
+/**
+ * Appends a detached slide copy as a new slide part.
+ *
+ * @param {OpcPackage} pkg - Destination package.
+ * @param {PresentationModel} model - Destination model.
+ * @param {Slide} source - Detached slide, such as one from {@link Section.clone}.
+ * @returns {Slide} The imported slide.
+ */
+function importSlide(pkg: OpcPackage, model: PresentationModel, source: Slide): Slide {
+    if (model.slides.indexOf(source) >= 0) {
+        throw new PresentationError('model/invalid-argument', 'Slide is already in this presentation.');
+    }
+    const nextCount: number = model.slides.length + 1;
+    if (nextCount > pkg.limits.slideCount) {
+        throw new PackageLimitError('slideCount', { partName: model.presentationPartName, actual: nextCount });
+    }
+    const sourceLayout: string | undefined = source.getLayoutPartName();
+    const layoutPartName: string = sourceLayout === undefined
+        ? fallbackLayoutPartName(model)
+        : sourceLayout;
+    if (!model.layoutsByPartName.has(layoutPartName)) {
+        throw new PresentationError('model/invalid-argument', `Layout '${layoutPartName}' is not in this presentation.`);
+    }
+    const slideId: string = allocateNextSlideId(model.slides);
+    const partName: string = allocateNextSlidePartName(pkg);
+    const relationshipId: string = allocateNextRelationshipId(((function (): PackageRelationship[] {
+        const __rels: Array<PackageRelationship> | undefined = pkg.partRelationships.get(model.presentationPartName);
+        return __rels != null ? __rels : [];
+    })()));
+    const slideRoot: OoxmlElement = parseXml(serializeXml(source.getRoot()), { limits: pkg.limits, partName });
+    pkg.contentTypes.overrides.set(partName, SLIDE_CONTENT_TYPE);
+    pkg.partRelationships.set(partName, [{
+        id: 'rId1',
+        type: SLIDE_LAYOUT_REL_TYPE,
+        target: relativeTarget(partName, layoutPartName),
+        targetMode: 'Internal',
+        targetPartName: layoutPartName
+    }]);
+    const existingPresentationRels: PackageRelationship[] = ((function (): PackageRelationship[] {
+        const __rels: Array<PackageRelationship> | undefined = pkg.partRelationships.get(model.presentationPartName);
+        return __rels != null ? __rels.slice() : [];
+    })());
+    pkg.partRelationships.set(model.presentationPartName, existingPresentationRels.concat([{
+        id: relationshipId,
+        type: SLIDE_REL_TYPE,
+        target: relativeTarget(model.presentationPartName, partName),
+        targetMode: 'Internal',
+        targetPartName: partName
+    }]));
+    pkg.parts.set(partName, {
+        name: partName,
+        contentType: SLIDE_CONTENT_TYPE,
+        data: encoder.encode(serializeXml(slideRoot))
+    });
+    const layoutSlide: LayoutSlide = model.layoutsByPartName.get(layoutPartName);
+    const masterColorMap: ColorMapping = loadMasterColorMap(pkg);
+    const layoutOverride: ColorMapping = layoutSlide == null ? undefined : layoutSlide.colorMapOverride;
+    const slideOverride: SlideColorMapOverride = parseSlideColorMapOverride(slideRoot, partName);
+    const baseMap: ColorMapping = (layoutOverride !== null && layoutOverride !== undefined ? layoutOverride : masterColorMap);
+    const slideMap: ColorMapping = baseMap === undefined ? undefined : effectiveColorMap(baseMap, slideOverride);
+    const masterPlaceholders: MasterPlaceholderData = loadMasterPlaceholderData(pkg);
+    const slide: Slide = new Slide({
+        partName,
+        slideId,
+        relationshipId,
+        root: slideRoot,
+        limits: pkg.limits,
+        layoutPartName,
+        ...(slideMap === undefined ? {} : { effectiveColorMap: slideMap })
+    });
+    const layoutPlaceholderShapes: ReadonlyArray<Shape> = layoutSlide == null
+        ? loadLayoutPlaceholderShapes(pkg, layoutPartName)
+        : layoutSlide.placeholderShapes;
+    slide.attachPlaceholderIndexes(layoutPlaceholderShapes, masterPlaceholders == null ? undefined : masterPlaceholders.shapes);
+    slide.attachInheritanceSources({
+        masterTxStyles: masterPlaceholders == null ? undefined : masterPlaceholders.txStyles,
+        defaultTextStyle: findDefaultTextStyle(model.root)
+    });
+    slide.attachMediaAccess(createPictureMediaAccess(pkg, partName));
+    slide.attachLayoutMap(model.layoutsByPartName as Map<string, LayoutSlide>);
+    slide.attachPartRelationships(((function (): PackageRelationship[] {
+        const __rels: Array<PackageRelationship> | undefined = pkg.partRelationships.get(partName);
+        return __rels != null ? __rels : [];
+    })()));
+    model.slides.push(slide);
+    return slide;
+}
+
+/**
+ * Layout used when an imported slide has no layout of its own.
+ *
+ * @param {PresentationModel} model - Destination model.
+ * @returns {string} Layout part name.
+ */
+function fallbackLayoutPartName(model: PresentationModel): string {
+    const first: Slide = arrayAt(model.slides, 0);
+    const firstLayout: string | undefined = first === undefined ? undefined : first.getLayoutPartName();
+    if (firstLayout !== undefined && model.layoutsByPartName.has(firstLayout)) {
+        return firstLayout;
+    }
+    const names: string[] = [];
+    model.layoutsByPartName.forEach(function (_layout: LayoutSlide, name: string): void {
+        names.push(name);
+    });
+    if (names.length === 0) {
+        throw new PresentationError('model/invalid-argument', 'Presentation has no slide layout to host an imported slide.');
+    }
+    return arrayAt(names, 0);
+}
+
 /**
  *
  * @param {string | undefined} layout - The layout value.

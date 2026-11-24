@@ -341,11 +341,17 @@ function buildPayload(state: ClipboardState, ranges: ReadonlyArray<Range>): Clip
         }
         const range: Range | undefined = ranges.find((candidate: Range): boolean =>
             intersects(candidate, entry.value.element));
-        if (range) {
-            const payload: ClipboardPayload = paragraphPayload([entry.value], range);
-            blocks.push({ shapeId: entry.value.model.shapeId, plain: payload.plain, html: payload.html });
+        const shapeId: string = entry.value.model.shapeId;
+        const group: ParagraphEntry[] = [];
+        while (index < selected.length && selected[index].kind === 'paragraph' &&
+            (selected[index] as { kind: 'paragraph'; value: ParagraphEntry }).value.model.shapeId === shapeId) {
+            group.push((selected[index] as { kind: 'paragraph'; value: ParagraphEntry }).value);
+            index++;
         }
-        index++;
+        if (range) {
+            const payload: ClipboardPayload = paragraphPayload(group, range);
+            blocks.push({ shapeId, plain: payload.plain, html: payload.html });
+        }
     }
     if (blocks.length === 0) { return undefined; }
     const plain: string[] = [];
@@ -361,23 +367,50 @@ function paragraphPayload(entries: ReadonlyArray<ParagraphEntry>, range: Range):
     const plainParts: string[] = [];
     const htmlParts: string[] = [];
     let lastShape: string | undefined;
+    // Open lists, outermost first. The `<li>` of every open level stays open so deeper lists nest inside it.
+    const stack: Array<{ tag: string; level: number }> = [];
+    let stackRtl: boolean = false;
+    const closeTo: (depth: number) => void = (depth: number): void => {
+        while (stack.length > depth) {
+            const top: { tag: string; level: number } | undefined = stack.pop();
+            if (top) { htmlParts.push('</li></' + top.tag + '>'); }
+        }
+    };
     entries.forEach((entry: ParagraphEntry): void => {
         if (lastShape !== undefined && lastShape !== entry.model.shapeId) {
             plainParts.push('');
         }
         const content: ClipboardPayload = selectedParagraph(entry, range);
-        const prefix: string = listPrefix(entry.model);
-        plainParts.push(prefix + content.plain);
-        const direction: string = entry.model.rightToLeft ? ' dir="rtl"' : '';
-        if (entry.model.listKind === 'bullet') {
-            htmlParts.push('<ul' + direction + '><li>' + content.html + '</li></ul>');
-        } else if (entry.model.listKind === 'number') {
-            htmlParts.push('<ol' + direction + '><li>' + content.html + '</li></ol>');
+        const empty: boolean = content.plain.trim().length === 0;
+        // An empty list paragraph is a spacer: no marker text and no empty bullet.
+        plainParts.push((empty ? '' : listPrefix(entry.model)) + content.plain);
+        const rtl: boolean = !!entry.model.rightToLeft;
+        const direction: string = rtl ? ' dir="rtl"' : '';
+        const kind: string = entry.model.listKind;
+        const level: number = entry.model.level;
+        if (kind === 'none' || empty) {
+            closeTo(0);
+            htmlParts.push('<p' + direction + '>' + (empty ? '&nbsp;' : content.html) + '</p>');
         } else {
-            htmlParts.push('<p' + direction + '>' + content.html + '</p>');
+            const tag: string = kind === 'bullet' ? 'ul' : 'ol';
+            if (stack.length > 0 && stackRtl !== rtl) { closeTo(0); }
+            while (stack.length > 0 && stack[stack.length - 1].level > level) { closeTo(stack.length - 1); }
+            const top: { tag: string; level: number } | undefined = stack[stack.length - 1];
+            if (top && top.level === level && top.tag !== tag) { closeTo(stack.length - 1); }
+            const current: { tag: string; level: number } | undefined = stack[stack.length - 1];
+            if (current && current.level === level) {
+                htmlParts.push('</li><li>' + content.html);
+            } else {
+                const start: number = parseInt(entry.model.markerText, 10);
+                const startAttr: string = tag === 'ol' && start > 1 ? ' start="' + start + '"' : '';
+                htmlParts.push('<' + tag + direction + startAttr + '><li>' + content.html);
+                stack.push({ tag, level });
+                stackRtl = rtl;
+            }
         }
         lastShape = entry.model.shapeId;
     });
+    closeTo(0);
     return { plain: plainParts.join('\n'), html: htmlParts.join('') };
 }
 

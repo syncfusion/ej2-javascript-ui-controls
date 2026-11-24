@@ -15,17 +15,16 @@ import { forEachMathFunction, seedMathDefaults } from './math-defaults';
 const MATH_PREFIX: string = 'm';
 
 /**
- * Native math paragraph item (DocIO `WMath`), stored directly in `Paragraph.items`.
+ * Represents an equation in a paragraph.
  *
- * Exposes the live `ej2-office-common` {@link OfficeMathParagraph} model through
- * {@link Math.mathParagraph}; math runs are native document {@link TextRange}s and
- * control properties are native {@link CharacterFormat}s. Inline equations serialize as
- * `m:oMath`, display equations as `m:oMathPara`.
+ * The equation content is available through {@link Math.mathParagraph}.
  *
  * @public
  */
 export class Math extends ParagraphItem {
-    /** Live equation model. Edits are serialized directly on save. */
+    /**
+     * Gets the math paragraph.
+     */
     readonly mathParagraph: OfficeMathParagraph;
 
     private inlineValue: boolean;
@@ -34,9 +33,10 @@ export class Math extends ParagraphItem {
 
     /**
      * Creates an empty math item; the first equation is created on demand.
+     * Initializes a new instance of the Math class.
      *
-     * @param {boolean} isInline - True for inline `m:oMath`, false for display `m:oMathPara`.
-     * @param {OfficeMathParagraph} mathParagraph - The math paragraph.
+     * @param {boolean} isInline - Specifies whether the equation is inline. The default value is true.
+     * @param {OfficeMathParagraph} mathParagraph - Specifies the equation content.
      */
     constructor(isInline: boolean = true, mathParagraph?: OfficeMathParagraph) {
         super();
@@ -47,7 +47,9 @@ export class Math extends ParagraphItem {
         }
     }
 
-    /** True for inline `m:oMath`, false for display `m:oMathPara`. */
+    /**
+     * Gets a value indicating whether the equation is inline (true) or displayed on its own line (false).
+     */
     get isInline(): boolean {
         return this.inlineValue;
     }
@@ -58,24 +60,26 @@ export class Math extends ParagraphItem {
     }
 
     /**
-     *  Switches this item to inline (`m:oMath`) representation.
+     * Changes the equation to an inline equation.
      *
-     * @returns {void} Nothing is returned.
+     * @returns {void}
      */
     changeToInline(): void {
         this.isInline = true;
     }
 
     /**
-     *  Switches this item to display (`m:oMathPara`) representation.
+     * Changes the equation to a display equation.
      *
-     * @returns {void} Nothing is returned.
+     * @returns {void}
      */
     changeToDisplay(): void {
         this.isInline = false;
     }
 
-    /** First equation of the item; creates one when none exists. */
+    /**
+     * Gets the first equation of the item; creates one when none exists.
+     */
     get equation(): OfficeMath {
         const maths: OfficeMathCollection = this.mathParagraph.maths;
         return maths.count > 0 ? maths.toArray()[0]! : maths.add();

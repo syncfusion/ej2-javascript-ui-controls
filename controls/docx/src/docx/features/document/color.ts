@@ -1,153 +1,291 @@
 import { objectEntries, ownGet } from '../../core/compat/object-compat';
 /**
- * Named document colors used by character, paragraph, border, and fill APIs.
- *
- * Public surface is the enum; DOCX wire values are hex (`RRGGBB`), `auto`,
- * or format-specific names (for example `ST_HighlightColor`).
+ * Specifies the named colors used by character, paragraph, border, and fill formatting.
  *
  * @public
  */
 export enum Color {
+    /** Specifies the transparent color. */
     Transparent = 0,
+    /** Specifies the alice blue color. */
     AliceBlue,
+    /** Specifies the antique white color. */
     AntiqueWhite,
+    /** Specifies the aqua color. */
     Aqua,
+    /** Specifies the aquamarine color. */
     Aquamarine,
+    /** Specifies the azure color. */
     Azure,
+    /** Specifies the beige color. */
     Beige,
+    /** Specifies the bisque color. */
     Bisque,
+    /** Specifies the black color. */
     Black,
+    /** Specifies the blanched almond color. */
     BlanchedAlmond,
+    /** Specifies the blue color. */
     Blue,
+    /** Specifies the blue violet color. */
     BlueViolet,
+    /** Specifies the brown color. */
     Brown,
+    /** Specifies the burly wood color. */
     BurlyWood,
+    /** Specifies the cadet blue color. */
     CadetBlue,
+    /** Specifies the chartreuse color. */
     Chartreuse,
+    /** Specifies the chocolate color. */
     Chocolate,
+    /** Specifies the coral color. */
     Coral,
+    /** Specifies the cornflower blue color. */
     CornflowerBlue,
+    /** Specifies the cornsilk color. */
     Cornsilk,
+    /** Specifies the crimson color. */
     Crimson,
+    /** Specifies the cyan color. */
     Cyan,
+    /** Specifies the dark blue color. */
     DarkBlue,
+    /** Specifies the dark cyan color. */
     DarkCyan,
+    /** Specifies the dark goldenrod color. */
     DarkGoldenrod,
+    /** Specifies the dark gray color. */
     DarkGray,
+    /** Specifies the dark green color. */
     DarkGreen,
+    /** Specifies the dark khaki color. */
     DarkKhaki,
+    /** Specifies the dark magenta color. */
     DarkMagenta,
+    /** Specifies the dark olive green color. */
     DarkOliveGreen,
+    /** Specifies the dark orange color. */
     DarkOrange,
+    /** Specifies the dark orchid color. */
     DarkOrchid,
+    /** Specifies the dark red color. */
     DarkRed,
+    /** Specifies the dark salmon color. */
     DarkSalmon,
+    /** Specifies the dark sea green color. */
     DarkSeaGreen,
+    /** Specifies the dark slate blue color. */
     DarkSlateBlue,
+    /** Specifies the dark slate gray color. */
     DarkSlateGray,
+    /** Specifies the dark turquoise color. */
     DarkTurquoise,
+    /** Specifies the dark violet color. */
     DarkViolet,
+    /** Specifies the deep pink color. */
     DeepPink,
+    /** Specifies the deep sky blue color. */
     DeepSkyBlue,
+    /** Specifies the dim gray color. */
     DimGray,
+    /** Specifies the dodger blue color. */
     DodgerBlue,
+    /** Specifies the firebrick color. */
     Firebrick,
+    /** Specifies the floral white color. */
     FloralWhite,
+    /** Specifies the forest green color. */
     ForestGreen,
+    /** Specifies the fuchsia color. */
     Fuchsia,
+    /** Specifies the gainsboro color. */
     Gainsboro,
+    /** Specifies the ghost white color. */
     GhostWhite,
+    /** Specifies the gold color. */
     Gold,
+    /** Specifies the goldenrod color. */
     Goldenrod,
+    /** Specifies the gray color. */
     Gray,
+    /** Specifies the green color. */
     Green,
+    /** Specifies the green yellow color. */
     GreenYellow,
+    /** Specifies the honeydew color. */
     Honeydew,
+    /** Specifies the hot pink color. */
     HotPink,
+    /** Specifies the indian red color. */
     IndianRed,
+    /** Specifies the indigo color. */
     Indigo,
+    /** Specifies the ivory color. */
     Ivory,
+    /** Specifies the khaki color. */
     Khaki,
+    /** Specifies the lavender color. */
     Lavender,
+    /** Specifies the lavender blush color. */
     LavenderBlush,
+    /** Specifies the lawn green color. */
     LawnGreen,
+    /** Specifies the lemon chiffon color. */
     LemonChiffon,
+    /** Specifies the light blue color. */
     LightBlue,
+    /** Specifies the light coral color. */
     LightCoral,
+    /** Specifies the light cyan color. */
     LightCyan,
+    /** Specifies the light goldenrod yellow color. */
     LightGoldenrodYellow,
+    /** Specifies the light green color. */
     LightGreen,
+    /** Specifies the light gray color. */
     LightGray,
+    /** Specifies the light pink color. */
     LightPink,
+    /** Specifies the light salmon color. */
     LightSalmon,
+    /** Specifies the light sea green color. */
     LightSeaGreen,
+    /** Specifies the light sky blue color. */
     LightSkyBlue,
+    /** Specifies the light slate gray color. */
     LightSlateGray,
+    /** Specifies the light steel blue color. */
     LightSteelBlue,
+    /** Specifies the light yellow color. */
     LightYellow,
+    /** Specifies the lime color. */
     Lime,
+    /** Specifies the lime green color. */
     LimeGreen,
+    /** Specifies the linen color. */
     Linen,
+    /** Specifies the magenta color. */
     Magenta,
+    /** Specifies the maroon color. */
     Maroon,
+    /** Specifies the medium aquamarine color. */
     MediumAquamarine,
+    /** Specifies the medium blue color. */
     MediumBlue,
+    /** Specifies the medium orchid color. */
     MediumOrchid,
+    /** Specifies the medium purple color. */
     MediumPurple,
+    /** Specifies the medium sea green color. */
     MediumSeaGreen,
+    /** Specifies the medium slate blue color. */
     MediumSlateBlue,
+    /** Specifies the medium spring green color. */
     MediumSpringGreen,
+    /** Specifies the medium turquoise color. */
     MediumTurquoise,
+    /** Specifies the medium violet red color. */
     MediumVioletRed,
+    /** Specifies the midnight blue color. */
     MidnightBlue,
+    /** Specifies the mint cream color. */
     MintCream,
+    /** Specifies the misty rose color. */
     MistyRose,
+    /** Specifies the moccasin color. */
     Moccasin,
+    /** Specifies the navajo white color. */
     NavajoWhite,
+    /** Specifies the navy color. */
     Navy,
+    /** Specifies the old lace color. */
     OldLace,
+    /** Specifies the olive color. */
     Olive,
+    /** Specifies the olive drab color. */
     OliveDrab,
+    /** Specifies the orange color. */
     Orange,
+    /** Specifies the orange red color. */
     OrangeRed,
+    /** Specifies the orchid color. */
     Orchid,
+    /** Specifies the pale goldenrod color. */
     PaleGoldenrod,
+    /** Specifies the pale green color. */
     PaleGreen,
+    /** Specifies the pale turquoise color. */
     PaleTurquoise,
+    /** Specifies the pale violet red color. */
     PaleVioletRed,
+    /** Specifies the papaya whip color. */
     PapayaWhip,
+    /** Specifies the peach puff color. */
     PeachPuff,
+    /** Specifies the peru color. */
     Peru,
+    /** Specifies the pink color. */
     Pink,
+    /** Specifies the plum color. */
     Plum,
+    /** Specifies the powder blue color. */
     PowderBlue,
+    /** Specifies the purple color. */
     Purple,
+    /** Specifies the red color. */
     Red,
+    /** Specifies the rosy brown color. */
     RosyBrown,
+    /** Specifies the royal blue color. */
     RoyalBlue,
+    /** Specifies the saddle brown color. */
     SaddleBrown,
+    /** Specifies the salmon color. */
     Salmon,
+    /** Specifies the sandy brown color. */
     SandyBrown,
+    /** Specifies the sea green color. */
     SeaGreen,
+    /** Specifies the sea shell color. */
     SeaShell,
+    /** Specifies the sienna color. */
     Sienna,
+    /** Specifies the silver color. */
     Silver,
+    /** Specifies the sky blue color. */
     SkyBlue,
+    /** Specifies the slate blue color. */
     SlateBlue,
+    /** Specifies the slate gray color. */
     SlateGray,
+    /** Specifies the snow color. */
     Snow,
+    /** Specifies the spring green color. */
     SpringGreen,
+    /** Specifies the steel blue color. */
     SteelBlue,
+    /** Specifies the tan color. */
     Tan,
+    /** Specifies the teal color. */
     Teal,
+    /** Specifies the thistle color. */
     Thistle,
+    /** Specifies the tomato color. */
     Tomato,
+    /** Specifies the turquoise color. */
     Turquoise,
+    /** Specifies the violet color. */
     Violet,
+    /** Specifies the wheat color. */
     Wheat,
+    /** Specifies the white color. */
     White,
+    /** Specifies the white smoke color. */
     WhiteSmoke,
+    /** Specifies the yellow color. */
     Yellow,
+    /** Specifies the yellow green color. */
     YellowGreen,
 }
 

@@ -90,7 +90,8 @@ export class TaskbarEditDraw {
         if (rowIndex < 0) {
             return null;
         } else if (!this.parent.enableVirtualization) {
-            return this.parent.getRowByIndex(rowIndex) as HTMLElement;
+            // T-18: null-guard — row may be off-screen in DOM virt mode; return null if so.
+            return (this.parent.getRowByIndex(rowIndex) as HTMLElement) || null;
         } else {
             const rows: NodeListOf<Element> = this.parent.ganttChartModule.getChartRows();
             for (let i: number = 0; i < rows.length; i++) {

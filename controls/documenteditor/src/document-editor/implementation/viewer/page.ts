@@ -1037,7 +1037,7 @@ export abstract class BlockWidget extends Widget {
         }
         return hierarchicalIndex;
     }
-    public abstract getMinimumAndMaximumWordWidth(minimumWordWidth: number, maximumWordWidth: number): WidthInfo;
+    public abstract getMinimumAndMaximumWordWidth(minimumWordWidth: number, maximumWordWidth: number, maxParaWidth?: number): WidthInfo;
 
     public abstract clone(): BlockWidget;
 
@@ -1127,7 +1127,7 @@ export abstract class BlockWidget extends Widget {
  * @private
  */
 export class FootNoteWidget extends BlockContainer {
-    public getMinimumAndMaximumWordWidth(minimumWordWidth: number, maximumWordWidth: number): WidthInfo {
+    public getMinimumAndMaximumWordWidth(minimumWordWidth: number, maximumWordWidth: number, maxParaWidth: number = 0): WidthInfo {
         throw new Error('Method not implemented.');
     }
     /**
@@ -1429,9 +1429,10 @@ export class ParagraphWidget extends BlockWidget {
     public getTableCellWidget(point: Point): TableCellWidget {
         return undefined;
     }
-    public getMinimumAndMaximumWordWidth(minimumWordWidth: number, maximumWordWidth: number): WidthInfo {
+    public getMinimumAndMaximumWordWidth(minimumWordWidth: number, maximumWordWidth: number, maxParaWidth: number = 0): WidthInfo {
         minimumWordWidth = HelperMethods.convertPointToPixel(minimumWordWidth);
         maximumWordWidth = HelperMethods.convertPointToPixel(maximumWordWidth);
+        maxParaWidth = HelperMethods.convertPointToPixel(maxParaWidth);
         if (this.childWidgets.length > 0) {
             let element: ElementBox = (this.childWidgets[0] as LineWidget).children[0] as ElementBox;
             let text: string = '';
@@ -1467,7 +1468,10 @@ export class ParagraphWidget extends BlockWidget {
             if (this.containerWidget instanceof TableCellWidget && this.containerWidget.ownerTable && (this.containerWidget.ownerTable.tableFormat.preferredWidthType === 'Auto' || (this.containerWidget.ownerTable.tableFormat.preferredWidthType === "Point" && this.containerWidget.ownerTable.tableFormat.preferredWidth === 0))) {
                 isAutoWidth = true;
             }
-            if (this.containerWidget instanceof TableCellWidget && this.containerWidget.ownerTable && !this.containerWidget.ownerTable.isInsideTable && this.containerWidget.ownerTable.tableFormat.allowAutoFit && this.containerWidget.ownerTable.tableFormat.preferredWidthType === 'Percent' ) {
+            if (this.containerWidget instanceof TableCellWidget && this.containerWidget.ownerTable && !this.containerWidget.ownerTable.isInsideTable && this.containerWidget.ownerTable.tableFormat.allowAutoFit
+                && (this.containerWidget.ownerTable.tableFormat.preferredWidthType === 'Percent'
+                    // As in DocIO, words are split only at spaces and hyphens for an auto table whose cells have percentage preferred width.
+                    || (this.containerWidget.ownerTable.tableFormat.preferredWidthType === 'Auto' && this.containerWidget.cellFormat.preferredWidthType === 'Percent'))) {
                 isAllowAutoFit = true;
             }
             //Word split
@@ -1481,6 +1485,7 @@ export class ParagraphWidget extends BlockWidget {
                     texts.push({ value: word, index: pos });
                 }
             } while (this.bodyWidget.page.documentHelper.textHelper.position < text.length);
+            let widestWord: number = 0;
             for (let i: number = 0; i < texts.length; i++) {
                 let match: string = texts[i].value;
                 let position: number = texts[i].index;
@@ -1516,6 +1521,9 @@ export class ParagraphWidget extends BlockWidget {
                     if (minimumWordWidth === 0 || width > minimumWordWidth) {
                         minimumWordWidth = width;
                     }
+                    if (width > widestWord) {
+                        widestWord = width;
+                    }
                 }
             }
             // Check the image widths present in the paragraph. Consider the maximum image width as minimum word width.
@@ -1526,9 +1534,21 @@ export class ParagraphWidget extends BlockWidget {
             if (minimumWordWidth === 0 || imageWidth > minimumWordWidth) {
                 minimumWordWidth = imageWidth;
             }
-            let maximum: number = this.measureParagraph();
-            if (maximumWordWidth === 0 || maximum > maximumWordWidth) {
-                maximumWordWidth = maximum;
+            // Maximum word width is the widest word (or image) of the paragraph, including the paragraph indents, as in DocIO.
+            if (imageWidth > widestWord) {
+                widestWord = imageWidth;
+            }
+            if (widestWord > 0) {
+                const leftIndentValue: number = this.leftIndent > 0 ? (this.paragraphFormat.firstLineIndent < 0 ? this.leftIndent + this.paragraphFormat.firstLineIndent : this.leftIndent) : 0;
+                widestWord += leftIndentValue + (this.rightIndent > 0 ? this.rightIndent : 0);
+            }
+            if (widestWord > maximumWordWidth) {
+                maximumWordWidth = widestWord;
+            }
+            // Maximum paragraph width is the complete unwrapped content width (including indents) of the widest paragraph.
+            const maximum: number = this.measureParagraph();
+            if (maximum > maxParaWidth) {
+                maxParaWidth = maximum;
             }
         }
         let leftIndent: number = 0;
@@ -1541,7 +1561,8 @@ export class ParagraphWidget extends BlockWidget {
         }
         return {
             'maximumWordWidth': HelperMethods.convertPixelToPoint(maximumWordWidth),
-            'minimumWordWidth': HelperMethods.convertPixelToPoint(minimumWordWidth) + leftIndent
+            'minimumWordWidth': HelperMethods.convertPixelToPoint(minimumWordWidth) + leftIndent,
+            'maxParaWidth': HelperMethods.convertPixelToPoint(maxParaWidth)
         };
     }
     private measureParagraph(): number {
@@ -2473,6 +2494,7 @@ export class TableWidget extends BlockWidget {
             }
             for (let j: number = 0; j < row.childWidgets.length; j++) {
                 let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                let trailingSpannedWidth: number = 0;
                 for (let k: number = 0; k < spannedCells.length; k++) {
                     if (spannedCells[k].columnIndex < columnSpan) {
                         continue;
@@ -2486,7 +2508,8 @@ export class TableWidget extends BlockWidget {
                             if (j === row.childWidgets.length - 1 && row.rowFormat.gridAfter > 0) {
                                 this.updateValidPreferredWidth(spannedCells[k]);
                                 cellWidth = this.getCellWidth(spannedCells[k].cellFormat.preferredWidth, spannedCells[k].cellFormat.preferredWidthType, tableWidth, null);
-                                currOffset += cellWidth;
+                                // This spanned cell lies after the current (last) cell, so its width is added once the current cell is processed.
+                                trailingSpannedWidth += cellWidth;
                             }
                         }
                     } else {
@@ -2534,6 +2557,14 @@ export class TableWidget extends BlockWidget {
                 if (tempGrid.indexOf(offset) < 0) {
                     tempGrid.push(offset);
                     tempSpanDecimal.push(currOffset);
+                }
+                if (trailingSpannedWidth > 0) {
+                    currOffset += trailingSpannedWidth;
+                    const spannedOffset: number = parseFloat(currOffset.toFixed(2));
+                    if (tempGrid.indexOf(spannedOffset) < 0) {
+                        tempGrid.push(spannedOffset);
+                        tempSpanDecimal.push(currOffset);
+                    }
                 }
 
                 if (j === row.childWidgets.length - 1 && rowFormat.gridAfter > 0) {
@@ -2594,7 +2625,7 @@ export class TableWidget extends BlockWidget {
     /**
      * @private
      */
-    public getMinimumAndMaximumWordWidth(minimumWordWidth: number, maximumWordWidth: number): WidthInfo {
+    public getMinimumAndMaximumWordWidth(minimumWordWidth: number, maximumWordWidth: number, maxParaWidth: number = 0): WidthInfo {
         this.checkTableColumns();
         let isAllColumnHasPointWidth: boolean = this.tableHolder.isAllColumnHasPointWidthType();
         let tableWidth: number = isAllColumnHasPointWidth ? this.tableHolder.getTotalWidth(0) : this.tableHolder.getTotalWidth(1);
@@ -2607,7 +2638,11 @@ export class TableWidget extends BlockWidget {
         if (tableWidth > maximumWordWidth) {
             maximumWordWidth = tableWidth;
         }
-        return { 'minimumWordWidth': minimumWordWidth, 'maximumWordWidth': maximumWordWidth };
+        const tableParaWidth: number = isAllColumnHasPointWidth ? this.tableHolder.getTotalWidth(0) : this.tableHolder.getTotalWidth(4);
+        if (tableParaWidth > maxParaWidth) {
+            maxParaWidth = tableParaWidth;
+        }
+        return { 'minimumWordWidth': minimumWordWidth, 'maximumWordWidth': maximumWordWidth, 'maxParaWidth': maxParaWidth };
     }
     /**
      * @private
@@ -2834,6 +2869,7 @@ export class TableWidget extends BlockWidget {
                 if (j === row.childWidgets.length - 1 && rowFormat.gridAfterWidth > 0) {
                     cellWidth = this.getCellWidth(rowFormat.gridAfterWidth, 'Point', tableWidth, null);
                     sizeInfo.minimumWordWidth = sizeInfo.maximumWordWidth = sizeInfo.minimumWidth = cellWidth;
+                    sizeInfo.maxParaWidth = 0;
                     this.tableHolder.addColumns(columnSpan, columnSpan += rowFormat.gridAfter, cellWidth, sizeInfo, offset += cellWidth, 'Point', isAutoWidth);
                 }
             }
@@ -2849,7 +2885,10 @@ export class TableWidget extends BlockWidget {
             this.isDefaultFormatUpdated = true;
         }
         this.tableHolder.validateColumnWidths();
-        if (isAutoFit) {
+        if (isAutoFit && this.isAutoTableCellPctWidthExceedsHundred(isAutoWidth, hasSpannedCells, containerWidth)) {
+            // Auto table whose cell percentage widths exceed 100 percent in every row is sized by its content, as per MS Word behavior.
+            this.tableHolder.resizeColumnsToWidestParaWidth();
+        } else if (isAutoFit) {
             // Fits the column width automatically based on contents.
             this.tableHolder.autoFitColumn(containerWidth, tableWidth, isAutoWidth, this.isInsideTable, isAutoFit, hasSpannedCells, this.bodyWidget.page.viewer.clientArea.width, this.leftIndent + this.rightIndent, pageContainerWidth, this.tableFormat.preferredWidthType, gridBeforeWidth);
         } else {
@@ -2867,6 +2906,35 @@ export class TableWidget extends BlockWidget {
         this.setWidthToCells(tableWidth, isAutoWidth);
     }
 
+    /**
+     * Checks whether the auto table has only percentage cell preferred widths, which total more than 100 percent in every row,
+     * and its content fits within the container width.
+     */
+    private isAutoTableCellPctWidthExceedsHundred(isAutoWidth: boolean, hasSpannedCells: boolean, containerWidth: number): boolean {
+        const columnCount: number = this.tableHolder.columns.length;
+        if (this.isInsideTable || hasSpannedCells || !isAutoWidth || this.tableFormat.preferredWidthType !== 'Auto'
+            || this.tableFormat.preferredWidth !== 0 || columnCount === 0 || this.tableHolder.getTotalWidth(2) >= containerWidth) {
+            return false;
+        }
+        for (let i: number = 0; i < this.childWidgets.length; i++) {
+            const row: TableRowWidget = this.childWidgets[i] as TableRowWidget;
+            if (row.rowFormat.gridBefore > 0 || row.rowFormat.gridAfter > 0 || row.childWidgets.length !== columnCount) {
+                return false;
+            }
+            let totalPercentage: number = 0;
+            for (let j: number = 0; j < row.childWidgets.length; j++) {
+                const cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                if (cell.cellFormat.preferredWidthType !== 'Percent' || cell.childWidgets.some((block: Widget) => block instanceof TableWidget)) {
+                    return false;
+                }
+                totalPercentage += cell.cellFormat.preferredWidth;
+            }
+            if (totalPercentage <= 100) {
+                return false;
+            }
+        }
+        return true;
+    }
     /**
      * @private
      */
@@ -3705,8 +3773,8 @@ export class TableRowWidget extends BlockWidget {
     /**
      * @private
      */
-    public getMinimumAndMaximumWordWidth(minimumWordWidth: number, maximumWordWidth: number): WidthInfo {
-        return { 'minimumWordWidth': minimumWordWidth, 'maximumWordWidth': maximumWordWidth };
+    public getMinimumAndMaximumWordWidth(minimumWordWidth: number, maximumWordWidth: number, maxParaWidth: number = 0): WidthInfo {
+        return { 'minimumWordWidth': minimumWordWidth, 'maximumWordWidth': maximumWordWidth, 'maxParaWidth': maxParaWidth };
     }
     /**
      * @private
@@ -4264,6 +4332,7 @@ export class TableCellWidget extends BlockWidget {
                 let size: WidthInfo = this.getMinimumAndMaximumWordWidth(0, 0);
                 this.sizeInfo.minimumWordWidth = size.minimumWordWidth + this.sizeInfo.minimumWidth;
                 this.sizeInfo.maximumWordWidth = size.maximumWordWidth + this.sizeInfo.minimumWidth;
+                this.sizeInfo.maxParaWidth = size.maxParaWidth + this.sizeInfo.minimumWidth;
                 if (this.cellFormat.preferredWidthType === 'Point' && this.cellFormat.preferredWidth > 0 && this.sizeInfo.minimumWordWidth > this.cellFormat.preferredWidth && this.childWidgets.some((block: Widget) => block instanceof TableWidget) && HelperMethods.round(size.minimumWordWidth + this.leftMargin + this.rightMargin, 2) === HelperMethods.round(this.cellFormat.preferredWidth, 2)) { 
                     this.sizeInfo.minimumWordWidth -= this.getLeftBorderWidth() + this.getRightBorderWidth();
                 }
@@ -4281,6 +4350,7 @@ export class TableCellWidget extends BlockWidget {
         sizeInfo.minimumWidth = this.sizeInfo.minimumWidth;
         sizeInfo.minimumWordWidth = this.sizeInfo.minimumWordWidth;
         sizeInfo.maximumWordWidth = this.sizeInfo.maximumWordWidth;
+        sizeInfo.maxParaWidth = this.sizeInfo.maxParaWidth;
         return sizeInfo;
     }
     /**
@@ -4786,14 +4856,15 @@ export class TableCellWidget extends BlockWidget {
     /**
      * @private
      */
-    public getMinimumAndMaximumWordWidth(minimumWordWidth: number, maximumWordWidth: number): WidthInfo {
+    public getMinimumAndMaximumWordWidth(minimumWordWidth: number, maximumWordWidth: number, maxParaWidth: number = 0): WidthInfo {
         for (let i: number = 0; i < this.childWidgets.length; i++) {
             let block: BlockWidget = this.childWidgets[i] as BlockWidget;
-            let widthInfo: WidthInfo = block.getMinimumAndMaximumWordWidth(minimumWordWidth, maximumWordWidth);
+            let widthInfo: WidthInfo = block.getMinimumAndMaximumWordWidth(minimumWordWidth, maximumWordWidth, maxParaWidth);
             minimumWordWidth = widthInfo.minimumWordWidth;
             maximumWordWidth = widthInfo.maximumWordWidth;
+            maxParaWidth = widthInfo.maxParaWidth;
         }
-        return { 'minimumWordWidth': minimumWordWidth, 'maximumWordWidth': maximumWordWidth };
+        return { 'minimumWordWidth': minimumWordWidth, 'maximumWordWidth': maximumWordWidth, 'maxParaWidth': maxParaWidth };
     }
     /**
      * @private
@@ -10639,10 +10710,12 @@ export class WTableHolder {
         }
         let precedingMinWordWidth: number = 0;
         let precedingMaxWordWidth: number = 0;
+        let precedingMaxParaWidth: number = 0;
         if (gridSpan > 1) {
             for (let c: number = currentColumnIndex; c < columnSpan - 1; c++) {
                 precedingMinWordWidth += this.columns[c].minimumWordWidth;
                 precedingMaxWordWidth += this.columns[c].maximumWordWidth;
+                precedingMaxParaWidth += this.columns[c].maxParaWidth;
             }
         }
         // Sets minimum word width for cell with one span, because content from spanned cells are not consider as minimum word of the column
@@ -10652,6 +10725,10 @@ export class WTableHolder {
         // Sets maximum word width for cell with one span, because content from spanned cells are not consider as maximum word of the column
         if (isSpannedCell && (sizeInfo.maximumWordWidth - precedingMaxWordWidth) > this.columns[columnSpan - 1].maximumWordWidth) {
             this.columns[columnSpan - 1].maximumWordWidth = sizeInfo.maximumWordWidth - precedingMaxWordWidth;
+        }
+        // Maximum paragraph width follows the same spanned cell handling as the maximum word width.
+        if (isSpannedCell && (sizeInfo.maxParaWidth - precedingMaxParaWidth) > this.columns[columnSpan - 1].maxParaWidth) {
+            this.columns[columnSpan - 1].maxParaWidth = sizeInfo.maxParaWidth - precedingMaxParaWidth;
         }
         if (sizeInfo.minimumWidth > this.columns[columnSpan - 1].minimumWidth) {
             this.columns[columnSpan - 1].minimumWidth = sizeInfo.minimumWidth;
@@ -10670,7 +10747,7 @@ export class WTableHolder {
             let column: WColumn = this.columns[i];
             width += type === 0 ? column.preferredWidth :
                 type === 1 ? column.minimumWordWidth :
-                    type === 2 ? column.maximumWordWidth : column.minimumWidth;
+                    type === 2 ? column.maximumWordWidth : type === 4 ? column.maxParaWidth : column.minimumWidth;
         }
         return width;
     }
@@ -10733,6 +10810,13 @@ export class WTableHolder {
         let isTableHasPercentWidth: boolean = !isAuto && tablePreferredWidthType === 'Percent';
         let minWidthExceedCellWidth = 0;
         let columnIndexCollection: number[] = [];
+        // The general auto fit layout sizes the columns by the complete (unwrapped) content width of the column,
+        // so the maximum paragraph width is considered when it is greater than the maximum word width.
+        for (let i: number = 0; i < this.columns.length; i++) {
+            if (this.columns[i].maxParaWidth > this.columns[i].maximumWordWidth) {
+                this.columns[i].maximumWordWidth = this.columns[i].maxParaWidth;
+            }
+        }
         let totalColumnsPreferredWidth: number = this.getTotalWidth(0);
         let isTableHasPointWidth: boolean = !isAuto && tablePreferredWidthType === "Point" && isAllColumnPointWidth && !hasSpannedCells && HelperMethods.round(preferredTableWidth, 2) < HelperMethods.round(totalColumnsPreferredWidth, 2);
         for (let i: number = 0; i < this.columns.length; i++) {
@@ -11007,6 +11091,32 @@ export class WTableHolder {
 
     }
     /**
+     * Sizes every column to its maximum word width, then expands the column having the widest paragraph
+     * so that the table width equals that paragraph width, as per MS Word behavior.
+     * @private
+     */
+    public resizeColumnsToWidestParaWidth(): void {
+        let widestColumn: WColumn = this.columns[0];
+        for (let i: number = 0; i < this.columns.length; i++) {
+            const column: WColumn = this.columns[i];
+            column.preferredWidth = column.maximumWordWidth;
+            if (column.maxParaWidth > widestColumn.maxParaWidth) {
+                widestColumn = column;
+            }
+        }
+        let otherColumnsWidth: number = 0;
+        for (let i: number = 0; i < this.columns.length; i++) {
+            if (this.columns[i] !== widestColumn) {
+                otherColumnsWidth += this.columns[i].preferredWidth;
+            }
+        }
+        const remainingWidth: number = widestColumn.maxParaWidth - otherColumnsWidth;
+        if (remainingWidth > widestColumn.preferredWidth) {
+            widestColumn.preferredWidth = remainingWidth;
+        }
+        this.tableWidth = this.getTotalWidth(0);
+    }
+    /**
      * @private
      */
     public getValidColumnIndex(index: number): number {
@@ -11175,6 +11285,10 @@ export class WColumn {
     /**
      * @private
      */
+    public maxParaWidth: number = 0;
+    /**
+     * @private
+     */
     public minimumWidth: number = 0;
     /**
      * @private
@@ -11212,6 +11326,10 @@ export class ColumnSizeInfo {
      * @private
      */
     public maximumWordWidth: number = 0;
+    /**
+     * @private
+     */
+    public maxParaWidth: number = 0;
     /**
      * @private
      */

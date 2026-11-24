@@ -69,6 +69,7 @@ interface ThemeMetadata {
     readonly fontScheme: ThemeFontScheme | undefined;
 }
 /** Theme font slot (`ST_Theme`, ECMA-376-1 §17.18.96).
+ *
  * @private
  */
 export type ThemeFontSlot = 'majorEastAsia' | 'majorBidi' | 'majorAscii' | 'majorHAnsi' | 'minorEastAsia' | 'minorBidi' | 'minorAscii' | 'minorHAnsi';
@@ -219,6 +220,7 @@ function parseThemeMetadataFromBytes(bytes: Uint8Array): ThemeMetadata | undefin
  * materializes a Word-proven default Office Theme (`dirty = true`) so save emits
  * `/word/theme/theme1.xml`. Existing package bytes are preserved when `dirty` is
  * false. Full typed theme editors remain out of scope (ADR D13).
+ *
  * @private
  */
 export class ThemePart implements FeaturePackagePart {

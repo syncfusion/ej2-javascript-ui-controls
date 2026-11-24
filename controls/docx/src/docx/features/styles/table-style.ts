@@ -89,20 +89,35 @@ import { DocxStyle, parseDocxStyle } from './style';
 import { Style } from './style-base';
 import { OpenXmlAttribute } from '../../core/xml/model';
 
-/** Conditional formatting type tokens (`w:tblStylePr/@w:type`). */
+/**
+ * Conditional formatting type tokens.
+ */
 export enum ConditionalFormattingType {
+    /** Specifies the whole table type. */
     WholeTable = 'wholeTable',
+    /** Specifies the first row type. */
     FirstRow = 'firstRow',
+    /** Specifies the last row type. */
     LastRow = 'lastRow',
+    /** Specifies the first column type. */
     FirstColumn = 'firstColumn',
+    /** Specifies the last column type. */
     LastColumn = 'lastColumn',
+    /** Specifies the odd column band type. */
     OddColumnBand = 'band1Vert',
+    /** Specifies the even column band type. */
     EvenColumnBand = 'band2Vert',
+    /** Specifies the odd row band type. */
     OddRowBand = 'band1Horz',
+    /** Specifies the even row band type. */
     EvenRowBand = 'band2Horz',
+    /** Specifies the top left cell type. */
     TopLeftCell = 'nwCell',
+    /** Specifies the top right cell type. */
     TopRightCell = 'neCell',
+    /** Specifies the bottom left cell type. */
     BottomLeftCell = 'swCell',
+    /** Specifies the bottom right cell type. */
     BottomRightCell = 'seCell'
 }
 
@@ -130,6 +145,7 @@ function isConditionalType(value: string): value is ConditionalFormattingType {
 /**
  * OOXML `w:style` (table) property-group order after metadata:
  * pPr → rPr → tblPr → trPr → tcPr → tblStylePr*.
+ *
  * @private
  */
 const TABLE_STYLE_PROP_RANK: { [name: string]: number } = {
@@ -143,6 +159,7 @@ const TABLE_STYLE_PROP_RANK: { [name: string]: number } = {
 
 /**
  * OOXML `w:tblStylePr` child order: pPr → rPr → tblPr → trPr → tcPr.
+ *
  * @private
  */
 const TBL_STYLE_PR_CHILD_RANK: { [name: string]: number } = {
@@ -316,7 +333,7 @@ function attrLocal(el: OpenXmlElement, localName: string): string | undefined {
 }
 
 /**
- * Base table properties on a table style (`w:tblPr` under `w:style`).
+ * Base table properties on a table style.
  *
  * @public
  */
@@ -342,6 +359,9 @@ export class TableStyleTableProperties {
         this.owner.writeBaseChild('tblPr', next);
     }
 
+    /**
+     * Gets the borders of the table style.
+     */
     get borders(): Borders {
         if (this.bordersInstance === undefined) {
             const host: BorderBagHost = {
@@ -374,6 +394,9 @@ export class TableStyleTableProperties {
         return this.bordersInstance;
     }
 
+    /**
+     * Gets or sets the spacing, in points, between the cells of the table style.
+     */
     get cellSpacing(): number | undefined {
         const pr: OpenXmlElement = this.readTblPr();
         return pr !== undefined ? readTableCellSpacing(pr) : undefined;
@@ -383,6 +406,9 @@ export class TableStyleTableProperties {
         this.writeTblPr(writeTableCellSpacing(pr, value));
     }
 
+    /**
+     * Gets or sets the left indent, in points, of the table style.
+     */
     get leftIndent(): number | undefined {
         const pr: OpenXmlElement = this.readTblPr();
         return pr !== undefined ? readTableIndent(pr) : undefined;
@@ -392,6 +418,9 @@ export class TableStyleTableProperties {
         this.writeTblPr(writeTableIndent(pr, value));
     }
 
+    /**
+     * Gets the default cell paddings of the table style.
+     */
     get paddings(): Paddings {
         if (this.paddingsInstance === undefined) {
             const host: PaddingsHost = {
@@ -458,9 +487,7 @@ export class TableStyleTableProperties {
     }
 
     /**
-     * Rows per horizontal band on the table style (`w:tblStyleRowBandSize/@w:val`).
-     * Styles.xml only; does not write document-body tblPr. Absent → `undefined`.
-     * Non-finite values throw `RangeError`.
+     * Gets or sets the rows per horizontal band on the table style.
      *
      * @public
      */
@@ -481,9 +508,7 @@ export class TableStyleTableProperties {
     }
 
     /**
-     * Columns per vertical band on the table style (`w:tblStyleColBandSize/@w:val`).
-     * Styles.xml only; does not write document-body tblPr. Absent → `undefined`.
-     * Non-finite values throw `RangeError`.
+     * Gets or sets the columns per vertical band on the table style.
      *
      * @public
      */
@@ -703,7 +728,7 @@ export class TableStyleCellProperties {
             this.writeTcPr(writeCellShading(pr, empty ? undefined : next));
             return;
         }
-        // DocIO direct-format bag: clear + auto + fill (same shape as CellFormat.backColor).
+        // Word direct-format bag: clear + auto + fill (same shape as CellFormat.backColor).
         const pattern: string =
             current !== undefined &&
             current.pattern !== undefined &&
@@ -780,7 +805,7 @@ export class TableStyleCellProperties {
 }
 
 /**
- * One conditional formatting block (`w:tblStylePr`).
+ * One conditional formatting block.
  *
  * @public
  */
@@ -809,10 +834,16 @@ implements CharacterFormatHost, ParagraphFormatHost
         this.element = element;
     }
 
+    /**
+     * Gets the table region (for example, first row or odd banded columns) to which this conditional formatting applies.
+     */
     get conditionalFormattingType(): ConditionalFormattingType {
         return this.typeValue;
     }
 
+    /**
+     * Gets the character formatting applied to the table region.
+     */
     get characterFormat(): CharacterFormat {
         if (this.characterFormatInstance === undefined) {
             this.characterFormatInstance = new CharacterFormat(this);
@@ -824,6 +855,9 @@ implements CharacterFormatHost, ParagraphFormatHost
         return this.characterFormatInstance;
     }
 
+    /**
+     * Gets the paragraph formatting applied to the table region.
+     */
     get paragraphFormat(): ParagraphFormat {
         if (this.paragraphFormatInstance === undefined) {
             this.paragraphFormatInstance = new ParagraphFormat(this);
@@ -835,6 +869,9 @@ implements CharacterFormatHost, ParagraphFormatHost
         return this.paragraphFormatInstance;
     }
 
+    /**
+     * Gets the row properties applied to the table region.
+     */
     get rowProperties(): TableStyleRowProperties {
         if (this.rowPropertiesInstance === undefined) {
             this.rowPropertiesInstance = new TableStyleRowProperties(this, true);
@@ -842,6 +879,9 @@ implements CharacterFormatHost, ParagraphFormatHost
         return this.rowPropertiesInstance;
     }
 
+    /**
+     * Gets the cell properties applied to the table region.
+     */
     get cellProperties(): TableStyleCellProperties {
         if (this.cellPropertiesInstance === undefined) {
             this.cellPropertiesInstance = new TableStyleCellProperties(this, true);
@@ -849,7 +889,9 @@ implements CharacterFormatHost, ParagraphFormatHost
         return this.cellPropertiesInstance;
     }
 
-    /** Conditional table properties (`w:tblPr` inside tblStylePr). */
+    /**
+     * Gets the conditional table properties.
+     */
     get tableProperties(): TableStyleTablePropertiesBridge {
         if (this.tablePropertiesInstance === undefined) {
             this.tablePropertiesInstance = new TableStyleTablePropertiesBridge(this);
@@ -1106,7 +1148,7 @@ export class ConditionalFormattingStyleCollection {
 }
 
 /**
- * Live table style (`w:style` type=table).
+ * Live table style.
  *
  * @public
  */
@@ -1144,7 +1186,7 @@ export class TableStyle extends Style implements CharacterFormatHost, ParagraphF
     }
 
     /**
-     * Style-level paragraph formatting (`w:pPr`). Stable facade identity.
+     * Gets the paragraph formatting of the style.
      *
      * @public
      */
@@ -1152,6 +1194,9 @@ export class TableStyle extends Style implements CharacterFormatHost, ParagraphF
         return this.paragraphFormatValue;
     }
 
+    /**
+     * Gets the table properties of the table style.
+     */
     get tableProperties(): TableStyleTableProperties {
         if (this.tablePropertiesInstance === undefined) {
             this.tablePropertiesInstance = new TableStyleTableProperties(this);
@@ -1159,6 +1204,9 @@ export class TableStyle extends Style implements CharacterFormatHost, ParagraphF
         return this.tablePropertiesInstance;
     }
 
+    /**
+     * Gets the row properties of the table style.
+     */
     get rowProperties(): TableStyleRowProperties {
         if (this.rowPropertiesInstance === undefined) {
             this.rowPropertiesInstance = new TableStyleRowProperties(this, false);
@@ -1166,6 +1214,9 @@ export class TableStyle extends Style implements CharacterFormatHost, ParagraphF
         return this.rowPropertiesInstance;
     }
 
+    /**
+     * Gets the cell properties of the table style.
+     */
     get cellProperties(): TableStyleCellProperties {
         if (this.cellPropertiesInstance === undefined) {
             this.cellPropertiesInstance = new TableStyleCellProperties(this, false);
@@ -1174,7 +1225,7 @@ export class TableStyle extends Style implements CharacterFormatHost, ParagraphF
     }
 
     /**
-     * Conditional table formatting styles (`w:tblStylePr`).
+     * Gets the conditional table formatting styles.
      *
      * @public
      */
@@ -1354,6 +1405,9 @@ export class TableStyle extends Style implements CharacterFormatHost, ParagraphF
      * @returns {ConditionalFormattingStyle} The result.
      */
     addConditionalElement(
+        /**
+         * Gets or sets the type.
+         */
         type: ConditionalFormattingType,
         el: OpenXmlElement
     ): ConditionalFormattingStyle {

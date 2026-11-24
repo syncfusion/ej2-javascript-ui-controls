@@ -7,6 +7,10 @@ import { AddShapeOptions } from './add-shape';
 import { AutoShapeTypeValue } from './auto-shape-type';
 import { AddPictureOptions } from '../pictures/add-picture';
 import { Picture } from '../pictures/picture';
+import { AddChartOptions } from '../../features/charts/add-chart';
+import { Chart } from '../../features/charts/chart';
+import { AddTableOptions } from '../../features/tables/add-table';
+import { Table } from '../../features/tables/table';
 /**
  * Ordered shapes from a slide `p:spTree` walk with append API.
  *
@@ -109,6 +113,38 @@ export type ShapeCollection = ReadonlyArray<Shape> & {
      */
     addPicture(options: AddPictureOptions): Picture;
     /**
+     * Inserts a classic DrawingML chart graphic frame on this slide.
+     *
+     * @param options - {@link OfficeChartType}, optional bounds / name / Excel source.
+     * @returns Bound {@link Chart} handle after parts and relationships are written.
+     *
+     * @throws {Error} The chart type is ChartEx/unknown, limits are exceeded, or the xlsx root is missing.
+     *
+     * @remarks
+     * Synchronous; `Presentation.save()` remains the package await. Allocates one
+     * new `cNvPr/@id`, never renumbers existing ids.
+     *
+     * @example
+     * ```ts
+     * const chart = slide.shapes.addChart({ type: OfficeChartType.ColumnClustered });
+     * ```
+     */
+    addChart(options: AddChartOptions): Chart;
+    /**
+     * Appends an inline DrawingML table graphic frame and returns a live {@link Table}.
+     *
+     * @param options - Required `rows` / `columns`; optional `bounds`, widths, style, `title`.
+     * @returns Bound table handle (synchronous).
+     *
+     * @throws {Error} Invalid rows / columns / style options, or `shapesPerSlide` is exceeded.
+     *
+     * @example
+     * ```ts
+     * const table = slide.shapes.addTable({ rows: 2, columns: 2, bounds: { x: 20, y: 20, width: 100, height: 100 }, title: 'Table' });
+     * ```
+     */
+    addTable(options: AddTableOptions): Table;
+    /**
      * Removes a picture from this slide’s shape tree and GCs unused image media.
      *
      * @param picture - Handle from {@link ShapeCollection.addPicture} or
@@ -164,6 +200,8 @@ export interface ShapeCollectionMutators {
     readonly addTextBox: (options?: AddTextBoxOptions) => Shape;
     readonly addShape: (type: AutoShapeTypeValue, bounds: ShapeBounds, options?: AddShapeOptions) => Shape;
     readonly addPicture: (options: AddPictureOptions) => Picture;
+    readonly addChart: (options: AddChartOptions) => Chart;
+    readonly addTable: (options: AddTableOptions) => Table;
     readonly removePicture: (picture: Picture) => void;
     readonly remove: (shape: Shape) => void;
 }
@@ -201,9 +239,12 @@ export function bindShapeCollection(getShapes: () => ReadonlyArray<Shape>, mutat
         options?: AddShapeOptions
     ): Shape => mutators.addShape(type, bounds, options);
     const addPicture: (options: AddPictureOptions) => Picture = (options: AddPictureOptions): Picture => mutators.addPicture(options);
+    const addChart: (options: AddChartOptions) => Chart = (options: AddChartOptions): Chart => mutators.addChart(options);
+    const addTable: (options: AddTableOptions) => Table = (options: AddTableOptions): Table => mutators.addTable(options);
     const removePicture: (picture: Picture) => void = (picture: Picture): void => mutators.removePicture(picture);
     const remove: (shape: Shape) => void = (shape: Shape): void => mutators.remove(shape);
-    return new Proxy({} as ShapeCollection, {
+    const target: Shape[] = [];
+    return new Proxy(target as unknown as ShapeCollection, {
         /**
          *
          * @param {ShapeCollection} _target - The _target value.
@@ -222,6 +263,12 @@ export function bindShapeCollection(getShapes: () => ReadonlyArray<Shape>, mutat
             }
             if (prop === 'addPicture') {
                 return addPicture;
+            }
+            if (prop === 'addChart') {
+                return addChart;
+            }
+            if (prop === 'addTable') {
+                return addTable;
             }
             if (prop === 'removePicture') {
                 return removePicture;
@@ -258,6 +305,8 @@ export function bindShapeCollection(getShapes: () => ReadonlyArray<Shape>, mutat
                 prop === 'addTextBox' ||
                 prop === 'addShape' ||
                 prop === 'addPicture' ||
+                prop === 'addChart' ||
+                prop === 'addTable' ||
                 prop === 'removePicture' ||
                 prop === 'remove') {
                 return true;
@@ -271,6 +320,7 @@ export function bindShapeCollection(getShapes: () => ReadonlyArray<Shape>, mutat
          */
         ownKeys(_target: ShapeCollection): Array<string | symbol> {
             void _target;
+            target.length = getShapes().length;
             const keys: Array<string | symbol> = Reflect.ownKeys(getShapes()).filter(
                 (k: string | symbol): k is string | symbol => typeof k === 'string' || typeof k === 'symbol'
             );
@@ -287,6 +337,12 @@ export function bindShapeCollection(getShapes: () => ReadonlyArray<Shape>, mutat
             if (!arrayIncludes(keys, 'addPicture')) {
                 extra.push('addPicture');
             }
+            if (!arrayIncludes(keys, 'addChart')) {
+                extra.push('addChart');
+            }
+            if (!arrayIncludes(keys, 'addTable')) {
+                extra.push('addTable');
+            }
             if (!arrayIncludes(keys, 'removePicture')) {
                 extra.push('removePicture');
             }
@@ -302,6 +358,11 @@ export function bindShapeCollection(getShapes: () => ReadonlyArray<Shape>, mutat
          * @returns {TypedPropertyDescriptor<any>} The result.
          */
         getOwnPropertyDescriptor(_target: ShapeCollection, prop: string | symbol): PropertyDescriptor | undefined {
+            if (prop === 'length') {
+                const length: number = getShapes().length;
+                target.length = length;
+                return { value: length, writable: true, enumerable: false, configurable: false };
+            }
             if (prop === 'getById') {
                 return {
                     configurable: true,
@@ -333,6 +394,12 @@ export function bindShapeCollection(getShapes: () => ReadonlyArray<Shape>, mutat
                     writable: false,
                     value: addPicture
                 };
+            }
+            if (prop === 'addChart') {
+                return { configurable: true, enumerable: false, writable: false, value: addChart };
+            }
+            if (prop === 'addTable') {
+                return { configurable: true, enumerable: false, writable: false, value: addTable };
             }
             if (prop === 'removePicture') {
                 return {

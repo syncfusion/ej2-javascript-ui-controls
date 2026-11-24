@@ -6,8 +6,8 @@
  * @private
  */
 
-import { _HTMLElement } from '../html-parser/dom-node.js';
-import { SelectorInfo, isClassSelector, getClassName } from './css-selector-parser.js';
+import { _HTMLElement } from '../html-parser/dom-node';
+import { SelectorInfo, isClassSelector, getClassName } from './css-selector-parser';
 
 /**
  * Represents a matched class and its corresponding CSS rules.
@@ -27,9 +27,9 @@ export interface MatchedClassSelector {
  * Currently supports class selectors only. Element and ID selectors
  * can be added in future enhancements.
  *
- * @param element - The HTML element to check
- * @param selector - The selector to match
- * @returns true if the selector matches the element
+ * @param {_HTMLElement} element - The HTML element to check
+ * @param {SelectorInfo} selector - The selector to match
+ * @returns {boolean} true if the selector matches the element
  * @private
  */
 export function matchesSelector(element: _HTMLElement, selector: SelectorInfo): boolean {
@@ -38,7 +38,7 @@ export function matchesSelector(element: _HTMLElement, selector: SelectorInfo): 
         return false;
     }
 
-    const className = getClassName(selector);
+    const className: string = getClassName(selector);
     if (!className) {
         return false;
     }
@@ -49,21 +49,21 @@ export function matchesSelector(element: _HTMLElement, selector: SelectorInfo): 
 /**
  * Checks if an element has a specific class.
  *
- * @param element - The HTML element to check
- * @param className - The class name to look for (without dot)
- * @returns true if the element has this class
+ * @param {_HTMLElement} element - The HTML element to check
+ * @param {string} className - The class name to look for (without dot)
+ * @returns {boolean} true if the element has this class
  * @private
  */
 export function elementHasClass(element: _HTMLElement, className: string): boolean {
     // Get the class attribute
-    const classAttr = element._attributes.get('class');
+    const classAttr: string = element._attributes.get('class');
 
     if (!classAttr) {
         return false;
     }
 
     // Split by whitespace and check
-    const classes = classAttr.split(/\s+/).filter((c) => c.length > 0);
+    const classes: string[] = classAttr.split(/\s+/).filter((c: string) => c.length > 0);
 
     return classes.indexOf(className) !== -1;
 }
@@ -71,12 +71,12 @@ export function elementHasClass(element: _HTMLElement, className: string): boole
 /**
  * Gets all classes from an element.
  *
- * @param element - The HTML element
- * @returns Array of class names
+ * @param {_HTMLElement} element - The HTML element
+ * @returns {string[]} Array of class names
  * @private
  */
 export function getElementClasses(element: _HTMLElement): string[] {
-    const classAttr = element._attributes.get('class');
+    const classAttr: string = element._attributes.get('class');
 
     if (!classAttr) {
         return [];
@@ -84,15 +84,15 @@ export function getElementClasses(element: _HTMLElement): string[] {
 
     return classAttr
         .split(/\s+/)
-        .filter((c) => c.length > 0);
+        .filter((c: string) => c.length > 0);
 }
 
 /**
  * Finds all matching selectors for an element from a list of rules.
  *
- * @param element - The HTML element
- * @param selectors - Array of selector info objects with their declarations
- * @returns Array of matching selectors with their declarations
+ * @param {_HTMLElement} element - The HTML element
+ * @param {Object} selectors - Array of selector info objects with their declarations
+ * @returns {MatchedClassSelector[]} Array of matching selectors with their declarations
  * @private
  */
 export function findMatchingSelectors(
@@ -100,14 +100,14 @@ export function findMatchingSelectors(
     selectors: Array<{ selector: SelectorInfo; declarations: Record<string, string> }>
 ): MatchedClassSelector[] {
     const matched: MatchedClassSelector[] = [];
-    const elementClasses = getElementClasses(element);
+    const elementClasses: string[] = getElementClasses(element);
 
     for (const rule of selectors) {
         if (!isClassSelector(rule.selector)) {
             continue;
         }
 
-        const className = getClassName(rule.selector);
+        const className: string = getClassName(rule.selector);
         if (!className) {
             continue;
         }
@@ -128,8 +128,8 @@ export function findMatchingSelectors(
  *
  * Later selectors override earlier ones (respecting cascade order).
  *
- * @param matchedSelectors - Array of matched selectors
- * @returns Merged declarations
+ * @param {MatchedClassSelector[]} matchedSelectors - Array of matched selectors
+ * @returns {Record<string, string>} Merged declarations
  * @private
  */
 export function mergeMatchedDeclarations(

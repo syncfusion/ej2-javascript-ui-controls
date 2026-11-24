@@ -3,6 +3,7 @@
  */
 import { addSlideToPresentation, bindSlideCollection, buildCreatePackage, AddSlideOptions, SlideCollection } from '../create/index';
 import { flushPresentationModel, loadPresentationModel, PresentationModel } from '../presentation/load';
+import { PresentationError } from '../errors';
 import { removeSlideAtIndex, removeSlideFromPresentation } from '../slides/remove-slide';
 import { MasterSlide } from '../slideimplementation/masterslide';
 import { Slide } from '../slideimplementation/slide';
@@ -15,6 +16,8 @@ import { TextFindMatch } from '../text/find/text-find-match';
 import { DIGITAL_SIGNATURE_ORIGIN_PART_NAME, DIGITAL_SIGNATURE_ORIGIN_REL_TYPE, VBA_PROJECT_REL_TYPE } from './constants';
 import { ensureContentTypesForParts, serializeContentTypes, ContentTypesModel } from './content-types';
 import { createHostPartRelationshipAccess, HostPartRelationshipAccess } from './host-part-relationship-access';
+import { validateLicense } from '@syncfusion/ej2-base';
+import { addWaterMark } from './watermark';
 import { openPresentationPackage, OpenPresentationOptions } from './open';
 import { OpcPackage, PackagePart } from './package-model';
 import { createPackagePartAccess, PackagePartAccess } from './package-part-access';
@@ -39,6 +42,7 @@ import { BuiltInProperties } from '../properties/builtin-set';
 import { CustomProperties } from '../properties/custom-set';
 import { LayoutSlide } from '../presentation';
 import { PresentationSection } from '../presentation/presentation-section';
+import { SectionCollection } from '../presentation/section-collection';
 
 const DIGITAL_SIGNATURE_MUTATION_WARNING: string = '[@syncfusion/ej2-pptx] Warning: This presentation has digital signatures. Mutations invalidate signatures.\n' +
     'Call removeDigitalSignatures() before mutating if you wish to produce a clean file.';
@@ -91,6 +95,8 @@ export class Presentation {
     private readonly themePart: ThemePart | undefined;
     /** @internal */
     private readonly slideCollection: SlideCollection;
+    /** @internal */
+    private readonly sectionCollection: SectionCollection;
     /** @internal */
     private readonly builtIn: BuiltInProperties;
     private readonly custom: CustomProperties;
@@ -156,18 +162,25 @@ export class Presentation {
         }
         this.builtIn = new BuiltInProperties(pkg);
         this.custom = new CustomProperties(pkg);
-        this.slideCollection = bindSlideCollection(() => this.model.slides, (options?: AddSlideOptions) => {
+        this.sectionCollection = new SectionCollection(this.model.sectionStore);
+        this.model.sectionStore.attachAddSlide((options?: AddSlideOptions): Slide => this.slides.add(options));
+        this.slideCollection = bindSlideCollection(() => this.model.slides, (options?: AddSlideOptions | Slide) => {
             this.warnSignatureOnce();
-            const slide: Slide = addSlideToPresentation(this.pkg, this.model, options);
+            const slide: Slide = addSlideToPresentation(this.pkg, this.model, options === undefined ? {} : options);
             slide.attachOnMutate(onMutate);
             slide.attachSiblingSlides(siblingSlides);
             slide.attachPresentation(this);
             return slide;
         }, (slide: Slide) => {
             this.warnSignatureOnce();
+            this.model.sectionStore.forgetSlide(slide);
             removeSlideFromPresentation(this.pkg, this.model, slide);
         }, (index: number) => {
             this.warnSignatureOnce();
+            const removed: Slide = arrayAt(this.model.slides, index);
+            if (removed !== undefined) {
+                this.model.sectionStore.forgetSlide(removed);
+            }
             removeSlideAtIndex(this.pkg, this.model, index);
         });
     }
@@ -238,6 +251,21 @@ export class Presentation {
      */
     get slides(): SlideCollection {
         return this.slideCollection;
+    }
+    /**
+     * Assigns a slide of this presentation to the section at `sectionIndex`.
+     *
+     * @internal Called by {@link Slide.moveToSection}.
+     * @param {Slide} slide - Slide owned by this presentation.
+     * @param {number} sectionIndex - Destination section index.
+     * @returns {void} Nothing.
+     */
+    moveSlideToSection(slide: Slide, sectionIndex: number): void {
+        if (this.model.slides.indexOf(slide) < 0) {
+            throw new PresentationError('model/invalid-argument', 'Slide is not a member of this presentation.');
+        }
+        this.warnSignatureOnce();
+        this.model.sectionStore.moveSlideToSection(slide, sectionIndex);
     }
     /**
      * Presentation slide width in typographic points.
@@ -369,23 +397,42 @@ export class Presentation {
      * Whether the presentation contains section definitions (`p14:sectionLst`).
      *
      * @remarks Sections are a Microsoft extension stored under `<p:extLst>` of the presentation root (`ppt/presentation.xml`). They are
-     * preserved on load and save regardless of this property. Returns `true` when a `p:ext` child contains a `p14:sectionLst` element.
-     * Phase 4 is **preserve-only**: there is no API to create, modify, or delete sections, and slide reorder does not update section
-     * membership (open decision B). Citation: MS-PPTX §2.2.5 / §2.3.1.25; namespace
+     * preserved on load and save. Returns `true` when a `p:ext` child contains a `p14:sectionLst` element, including after
+     * {@link Presentation.sections} creates one. Citation: MS-PPTX §2.2.5 / §2.3.1.25; namespace
      * `http://schemas.microsoft.com/office/powerpoint/2010/main`; extension URI `{521415D9-36F7-43E2-AB2F-B90AF26B5E84}`.
      * @returns {boolean} The result.
      */
     get hasSections(): boolean {
-        return this.model.hasSections;
+        return this.model.hasSections || this.model.sectionStore.count > 0;
     }
     /**
-     * Presentation sections in authored order with membership resolved to slide indexes.
+     * Presentation sections in authored order.
      *
-     * @remarks This is a read-only view. Unknown extension markup and authored
-     * slide identifiers remain untouched in the package for round-trip.
-     * @returns {ReadonlyArray<PresentationSection>} Section records.
+     * @remarks Create, rename, reorder, and remove sections here. A slide belongs to
+     * at most one section. Removing a section does not delete its slides. An
+     * unmodified loaded `p14:sectionLst` is written back unchanged. Loaded membership
+     * indexes remain on {@link Presentation.sectionRecords}.
+     *
+     * Citation: MS-PPTX §2.2.5 / §2.3.1.25 / §2.3.3.24–27.
+     * @returns {SectionCollection} Live section collection.
+     *
+     * @example
+     * ```ts
+     * const section = presentation.sections.add();
+     * section.name = 'SectionDemo';
+     * section.addSlide(SlideLayoutType.Blank);
+     * ```
      */
-    get sections(): ReadonlyArray<PresentationSection> {
+    get sections(): SectionCollection {
+        return this.sectionCollection;
+    }
+    /**
+     * Loaded section membership resolved to presentation-order slide indexes.
+     *
+     * @remarks Snapshot taken at open. Live membership is {@link Presentation.sections}.
+     * @returns {ReadonlyArray<PresentationSection>} Section records from load.
+     */
+    get sectionRecords(): ReadonlyArray<PresentationSection> {
         return this.model.sections;
     }
     /**
@@ -568,12 +615,40 @@ export class Presentation {
         if (typeof fileName === 'string' && fileName.trim().length === 0) {
             throw new TypeError('fileName must be a non-empty path');
         }
+        this.applySaveTimeLicenseWatermark();
         const bytes: Uint8Array = this.serializePackageBytes();
         if (typeof fileName === 'string') {
             Save.save(fileName, new Blob([bytes], { type: PRESENTATION_MIME_TYPE }));
         } else {
             return bytes;
         }
+    }
+    /**
+     * Save-time license watermark gate (Syncfusion Presentation parity).
+     *
+     * @remarks
+     * Mirrors the .NET Presentation `SaveAsStream` workflow: when the existing
+     * `validateLicense('pptx')` check (from `@syncfusion/ej2-base`) reports an
+     * unlicensed save, {@link addWaterMark} injects the trial watermark before
+     * serialization. Licensed saves leave slide/master markup untouched. The
+     * check never throws and never blocks a save. Applied once per `save()` /
+     * `save(fileName)` call (both forms share this path — EJ2 has no separate
+     * `saveAsStream`).
+     *
+     * @internal
+     * @returns {void} Nothing.
+     */
+    private applySaveTimeLicenseWatermark(): void {
+        let unlicensed: boolean = false;
+        try {
+            unlicensed = validateLicense('pptx') === false;
+        } catch (error) {
+            unlicensed = false;
+        }
+        if (!unlicensed) {
+            return;
+        }
+        addWaterMark(this);
     }
     /**
      * Builds OPC ZIP bytes from the live package model (shared by both `save` forms).

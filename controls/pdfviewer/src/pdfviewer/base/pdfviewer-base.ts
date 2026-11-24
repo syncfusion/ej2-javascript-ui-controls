@@ -4995,6 +4995,9 @@ export class PdfViewerBase {
      * @returns {void}
      */
     public showAnnotationPropertiesToolbar(isEnable: boolean): void {
+        if (this.pdfViewer.readOnlySettings.annotations && isEnable) {
+            return;
+        }
         if (this.pdfViewer.selectedItems.annotations.length > 0 && this.pdfViewer.toolbar &&
             this.pdfViewer.toolbar.annotationToolbarModule) {
             if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Stamp' ||
@@ -6742,7 +6745,8 @@ export class PdfViewerBase {
             if ((this.pdfViewer.selectedItems ||
                 (this.pdfViewer.annotation &&
                      this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation)) &&
-                      !this.pdfViewer.annotationSettings.isLock) {
+                      !this.pdfViewer.annotationSettings.isLock &&
+                          !this.pdfViewer.readOnlySettings.annotations) {
                 const currentAnnotation: any = this.pdfViewer.selectedItems.annotations[0];
                 if (this.pdfViewer.selectedItems.annotations.length !== 0 &&
                      !(currentAnnotation.annotationSettings.isLock || currentAnnotation.isLock)) {
@@ -6800,7 +6804,8 @@ export class PdfViewerBase {
                         if (comments) {
                             comments.firstChild.click();
                         }
-                        if (!annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation.annotationSettings.isLock) {
+                        if (!annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation.annotationSettings.isLock &&
+                            !this.pdfViewer.readOnlySettings.annotations) {
                             this.pdfViewer.annotationModule.stickyNotesAnnotationModule.
                                 showCommentsPanelForAnnotation(annotation.annotName,
                                                                this.pdfViewer.annotationModule.textMarkupAnnotationModule.
@@ -7375,7 +7380,8 @@ export class PdfViewerBase {
                     elmtPosition.x = this.pdfViewer.selectedItems.annotations[0].bounds.x;
                     elmtPosition.y = this.pdfViewer.selectedItems.annotations[0].bounds.y;
                     this.pdfViewer.annotation.inputElementModule.editLabel(elmtPosition, this.pdfViewer.selectedItems.annotations[0]);
-                } else if (this.pdfViewer.enableCommentPanel && this.pdfViewer.annotationModule && this.pdfViewer.enableDesktopMode) {
+                } else if (this.pdfViewer.enableCommentPanel && this.pdfViewer.annotationModule &&
+                    this.pdfViewer.enableDesktopMode && !this.pdfViewer.readOnlySettings.annotations) {
                     this.isDoubleTapInProgress = true;
                     if (typeof this.pdfViewer.annotationModule.showCommentsPanel === 'function') {
                         if (!this.pdfViewer.isAnnotationToolbarVisible) {
@@ -7408,7 +7414,8 @@ export class PdfViewerBase {
             else if (this.pdfViewer.annotation && this.pdfViewer.annotationModule &&
             this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
                 this.isDoubleTapInProgress = true;
-                if (this.pdfViewer.enableCommentPanel && this.pdfViewer.annotationModule && this.pdfViewer.enableDesktopMode) {
+                if (this.pdfViewer.enableCommentPanel && this.pdfViewer.annotationModule &&
+                    this.pdfViewer.enableDesktopMode && !this.pdfViewer.readOnlySettings.annotations) {
                     if (typeof this.pdfViewer.annotationModule.showCommentsPanel === 'function') {
                         if (!this.pdfViewer.isAnnotationToolbarVisible) {
                             this.pdfViewer.toolbarModule.annotationToolbarModule.
@@ -13793,6 +13800,11 @@ export class PdfViewerBase {
                 let target: Element | HTMLElement | null = document.getElementById(currentObject.id);
                 target = target ? target : (document.getElementById(currentObject.id + '_content_html_element') ? document.getElementById(currentObject.id + '_content_html_element').children[0].children[0] : null);
                 if (target) {
+                    if (this.pdfViewer.readOnlySettings.formFields) {
+                        evt.preventDefault();
+                        evt.stopPropagation();
+                        return;
+                    }
                     this.currentTarget = target;
                     this.pdfViewer.fireFormFieldClickEvent('formFieldClicked', field as unknown as FormFieldModel, false, (evt as any).button === 0);
                 }

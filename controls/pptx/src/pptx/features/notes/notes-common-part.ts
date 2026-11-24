@@ -133,6 +133,12 @@ export class NotesCommonPart {
                     onMutate
                 });
             },
+            addChart: (): never => {
+                throw new Error('Notes slide shapes do not support addChart. Use Slide.shapes.addChart() on a slide.');
+            },
+            addTable: (): never => {
+                throw new Error('Notes slide shapes do not support addTable. Use Slide.shapes.addTable() on a slide.');
+            },
             removePicture: (picture: Picture): void => {
                 if (media.write === undefined) {
                     throw new InvalidPackageError('Picture remove requires package write access on the notes part',

@@ -32,10 +32,10 @@ import { Table } from './table';
 import { OoxmlElement } from '../../core/xml/dom';
 import { SecurityLimits } from '../../core/security/limits';
 /**
- * Options for {@link addTable} / `slide.addTable`.
+ * Options for {@link addTable} / `slide.shapes.addTable`.
  *
  * @remarks
- * Locked TASK-1080. Both `rows` and `columns` required (integer ≥ 1). `xfrm` is
+ * Locked TASK-1080. Both `rows` and `columns` required (integer ≥ 1). `bounds` is
  * the existing points-based {@link ShapeBounds} used by shapes/charts
  * (`x`/`y`/`width`/`height`).
  *
@@ -50,7 +50,7 @@ export interface AddTableOptions {
      * Frame transform in **points** (`a:off` / `a:ext` via seed `p:xfrm` EMU).
      * When omitted, uses {@link DEFAULT_TABLE_BOUNDS} (SF-cited extents).
      */
-    readonly xfrm?: ShapeBounds;
+    readonly bounds?: ShapeBounds;
     /**
      * Per-row heights in **points** (written as `a:tr/@h` EMU). Omitted or empty
      * → equal-split of frame height. When set with length > 0, length must equal
@@ -76,7 +76,7 @@ export interface AddTableOptions {
      */
     readonly builtInStyle?: BuiltInTableStyle;
     /** `cNvPr/@name`. @defaultValue `"Table"` */
-    readonly name?: string;
+    readonly title?: string;
 }
 /**
  * Appends an inline table graphic frame under the slide `p:spTree`.
@@ -112,8 +112,8 @@ export function addTable(slide: Slide, options: AddTableOptions): Table {
         });
     }
     const id: string = allocateNextDrawingElementId(root);
-    const name: string = (options.name !== null && options.name !== undefined ? options.name : DEFAULT_TABLE_NAME);
-    const bounds: ShapeBounds = (options.xfrm !== null && options.xfrm !== undefined ? options.xfrm : DEFAULT_TABLE_BOUNDS);
+    const name: string = (options.title !== null && options.title !== undefined ? options.title : DEFAULT_TABLE_NAME);
+    const bounds: ShapeBounds = (options.bounds !== null && options.bounds !== undefined ? options.bounds : DEFAULT_TABLE_BOUNDS);
     const frame: OoxmlElement = buildTableGraphicFrame({
         id,
         name,
@@ -150,8 +150,8 @@ function validateAddTableOptions(options: AddTableOptions, partOpts: {
     if (!Number.isInteger(options.columns) || options.columns < 1) {
         throw new TablesError('addTable columns must be an integer >= 1', partOpts);
     }
-    if (options.xfrm !== undefined) {
-        validateBounds(options.xfrm, partOpts);
+    if (options.bounds !== undefined) {
+        validateBounds(options.bounds, partOpts);
     }
     if (options.rowHeights !== undefined && options.rowHeights.length > 0) {
         validatePositivePointsArray(options.rowHeights, options.rows, 'rowHeights', partOpts);
@@ -159,7 +159,7 @@ function validateAddTableOptions(options: AddTableOptions, partOpts: {
     if (options.columnWidths !== undefined && options.columnWidths.length > 0) {
         validatePositivePointsArray(options.columnWidths, options.columns, 'columnWidths', partOpts);
     }
-    if (options.name !== undefined && typeof options.name !== 'string') {
+    if (options.title !== undefined && typeof options.title !== 'string') {
         throw new TablesError('addTable name must be a string when provided', partOpts);
     }
     if (options.tableStyleId !== undefined && typeof options.tableStyleId !== 'string') {
@@ -210,26 +210,26 @@ function validateBounds(bounds: ShapeBounds, partOpts: {
         const key: string = arrayAt(labels, i);
         const raw: string | number | undefined = objectGet<string | number>(bounds, String(key));
         if (typeof raw !== 'number' && typeof raw !== 'string') {
-            throw new TablesError(`addTable xfrm.${String(key)} must be a number or decimal string`, partOpts);
+            throw new TablesError(`addTable bounds.${String(key)} must be a number or decimal string`, partOpts);
         }
         if (typeof raw === 'number') {
             if (!Number.isFinite(raw)) {
-                throw new TablesError(`addTable xfrm.${String(key)} must be a finite number of points`, partOpts);
+                throw new TablesError(`addTable bounds.${String(key)} must be a finite number of points`, partOpts);
             }
             if ((key === 'width' || key === 'height') && raw <= 0) {
-                throw new TablesError(`addTable xfrm.${String(key)} must be a positive number of points`, partOpts);
+                throw new TablesError(`addTable bounds.${String(key)} must be a positive number of points`, partOpts);
             }
         }
         else {
             const n: number = Number(raw);
             if (!Number.isFinite(n)) {
-                throw new TablesError(`addTable xfrm.${String(key)} must be a finite EMU decimal string`, partOpts);
+                throw new TablesError(`addTable bounds.${String(key)} must be a finite EMU decimal string`, partOpts);
             }
             if ((key === 'width' || key === 'height') && (!Number.isInteger(n) || n < 1)) {
-                throw new TablesError(`addTable xfrm.${String(key)} EMU string must be an integer >= 1`, partOpts);
+                throw new TablesError(`addTable bounds.${String(key)} EMU string must be an integer >= 1`, partOpts);
             }
             if ((key === 'x' || key === 'y') && !Number.isInteger(n)) {
-                throw new TablesError(`addTable xfrm.${String(key)} EMU string must be an integer`, partOpts);
+                throw new TablesError(`addTable bounds.${String(key)} EMU string must be an integer`, partOpts);
             }
         }
 

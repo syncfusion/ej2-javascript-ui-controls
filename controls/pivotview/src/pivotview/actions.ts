@@ -8,3 +8,4 @@ export * from './actions/virtualscroll';
 export * from './actions/drill-through';
 export * from './actions/pager';
 export * from './actions/webmcp-adapter';
+export * from './actions/flat-layout';

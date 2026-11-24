@@ -15,17 +15,17 @@ import { Color, colorFromWire, colorToHexWire } from '../document/color';
 import { WordDocument } from '../document/document';
 import { ParagraphStyle } from '../styles/style-base';
 import { ParagraphAlignment } from '../document/alignment';
-import { BorderStyle, ParagraphBorderFace, ParagraphFormat } from '../document/paragraph-format';
+import { BorderStyle, ParagraphBorderFace, ParagraphBordersFace, ParagraphFormat } from '../document/paragraph-format';
 import { UnderlineStyle } from '../document/underline-style';
 import { SubSuperScript } from '../document/sub-super-script';
-import { CharacterFormat } from '../document/character-format';
+import { CharacterFormat, CharacterFormatSnapshot } from '../document/character-format';
 
 /**
  * Returns `value` unless it is undefined/null, otherwise `fallback`.
  * Replaces the `??` operator, which the project's TypeScript version cannot parse.
  */
 function coalesce<T>(value: T | undefined | null, fallback: T): T;
-function coalesce<T>(value: T | undefined | null, fallback: T | undefined): T | undefined;
+// eslint-disable-next-line no-redeclare
 function coalesce<T>(value: T | undefined | null, fallback: T | undefined): T | undefined {
     return value !== undefined && value !== null ? value : fallback;
 }
@@ -37,15 +37,15 @@ function coalesce<T>(value: T | undefined | null, fallback: T | undefined): T | 
  * - Class selector: "title" → "User_defined_title"
  * - ID selector: "CSS_title" → "CSS_title" (already prefixed)
  *
- * @param cssClassName - The CSS class name or selector ID (e.g., "title", "my-class", "CSS_title")
- * @returns Style ID in format "User_defined_<normalized_name>" or "CSS_<normalized_name>"
+ * @param {string} cssClassName - The CSS class name or selector ID (e.g., "title", "my-class", "CSS_title")
+ * @returns {string} Style ID in format "User_defined_<normalized_name>" or "CSS_<normalized_name>"
  * @private
  */
 export function createStyleIdFromClassName(cssClassName: string): string {
     // If already prefixed with CSS_, preserve it and normalize the rest
     if (cssClassName.startsWith('CSS_')) {
-        const suffix = cssClassName.substring(4); // Remove "CSS_" prefix
-        const normalized = suffix
+        const suffix: string = cssClassName.substring(4); // Remove "CSS_" prefix
+        const normalized: string = suffix
             .toLowerCase()
             .replace(/[^a-z0-9]+/g, '_')
             .replace(/^_|_$/g, '');
@@ -65,8 +65,8 @@ export function createStyleIdFromClassName(cssClassName: string): string {
  * - RGB colors (rgb(255, 0, 0))
  * - Returns hex string (RRGGBB format, no #) for use with colorFromWire
  *
- * @param colorValue - CSS color value
- * @returns Hex color string (RRGGBB, no #) or undefined if invalid
+ * @param {string} colorValue - CSS color value
+ * @returns {string | undefined} Hex color string (RRGGBB, no #) or undefined if invalid
  * @private
  */
 export function parseColorValue(colorValue: string): string | undefined {
@@ -93,16 +93,18 @@ export function parseColorValue(colorValue: string): string | undefined {
         purple: '800080',
         cyan: '00FFFF',
         magenta: 'FF00FF',
-        brown: 'A52A2A',
+        brown: 'A52A2A'
     };
 
+    // eslint-disable-next-line security/detect-object-injection
     if (namedColors[colorValue]) {
+        // eslint-disable-next-line security/detect-object-injection
         return namedColors[colorValue];
     }
 
     // Hex colors
     if (colorValue.startsWith('#')) {
-        const hex = colorValue.substring(1);
+        const hex: string = colorValue.substring(1);
         if (hex.length === 6 || hex.length === 3) {
             try {
                 if (hex.length === 3) {
@@ -118,11 +120,11 @@ export function parseColorValue(colorValue: string): string | undefined {
     }
 
     // RGB colors rgb(r, g, b)
-    const rgbMatch = colorValue.match(/rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/);
+    const rgbMatch: RegExpMatchArray = colorValue.match(/rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/);
     if (rgbMatch) {
-        const r = parseInt(rgbMatch[1], 10);
-        const g = parseInt(rgbMatch[2], 10);
-        const b = parseInt(rgbMatch[3], 10);
+        const r: number = parseInt(rgbMatch[1], 10);
+        const g: number = parseInt(rgbMatch[2], 10);
+        const b: number = parseInt(rgbMatch[3], 10);
         if (r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255) {
             let rHex: string = r.toString(16).toUpperCase();
             let gHex: string = g.toString(16).toUpperCase();
@@ -143,8 +145,8 @@ export function parseColorValue(colorValue: string): string | undefined {
  * Supports: px, pt, em, rem, %
  * Conversion: px→pt (×0.75), em→pt (×12), rem→pt (×12), %→pt (×0.12)
  *
- * @param sizeValue - CSS font-size value (e.g., "16px", "12pt", "1.5em")
- * @returns Size in points, or undefined if invalid
+ * @param {string} sizeValue - CSS font-size value (e.g., "16px", "12pt", "1.5em")
+ * @returns {number | undefined} Size in points, or undefined if invalid
  * @private
  */
 export function parseFontSize(sizeValue: string): number | undefined {
@@ -156,13 +158,13 @@ export function parseFontSize(sizeValue: string): number | undefined {
 
     // Points
     if (sizeValue.endsWith('pt')) {
-        const pts = parseFloat(sizeValue.substring(0, sizeValue.length - 2));
+        const pts: number = parseFloat(sizeValue.substring(0, sizeValue.length - 2));
         return !isNaN(pts) && pts > 0 ? pts : undefined;
     }
 
     // Pixels (convert to points: 1px ≈ 0.75pt)
     if (sizeValue.endsWith('px')) {
-        const px = parseFloat(sizeValue.substring(0, sizeValue.length - 2));
+        const px: number = parseFloat(sizeValue.substring(0, sizeValue.length - 2));
         if (!isNaN(px) && px > 0) {
             return Math.round(px * 0.75 * 10) / 10;
         }
@@ -171,7 +173,7 @@ export function parseFontSize(sizeValue: string): number | undefined {
 
     // EM (1em = 12pt default)
     if (sizeValue.endsWith('em')) {
-        const em = parseFloat(sizeValue.substring(0, sizeValue.length - 2));
+        const em: number = parseFloat(sizeValue.substring(0, sizeValue.length - 2));
         if (!isNaN(em) && em > 0) {
             return Math.round(em * 12 * 10) / 10;
         }
@@ -180,7 +182,7 @@ export function parseFontSize(sizeValue: string): number | undefined {
 
     // REM (same as em for root)
     if (sizeValue.endsWith('rem')) {
-        const rem = parseFloat(sizeValue.substring(0, sizeValue.length - 3));
+        const rem: number = parseFloat(sizeValue.substring(0, sizeValue.length - 3));
         if (!isNaN(rem) && rem > 0) {
             return Math.round(rem * 12 * 10) / 10;
         }
@@ -189,7 +191,7 @@ export function parseFontSize(sizeValue: string): number | undefined {
 
     // Percentage (100% = 12pt)
     if (sizeValue.endsWith('%')) {
-        const pct = parseFloat(sizeValue.substring(0, sizeValue.length - 1));
+        const pct: number = parseFloat(sizeValue.substring(0, sizeValue.length - 1));
         if (!isNaN(pct) && pct > 0) {
             return Math.round((pct / 100) * 12 * 10) / 10;
         }
@@ -197,7 +199,7 @@ export function parseFontSize(sizeValue: string): number | undefined {
     }
 
     // Unitless (treat as pixels)
-    const num = parseFloat(sizeValue);
+    const num: number = parseFloat(sizeValue);
     return !isNaN(num) && num > 0 ? Math.round(num * 0.75 * 10) / 10 : undefined;
 }
 
@@ -229,8 +231,9 @@ export function parseFontSize(sizeValue: string): number | undefined {
  * - `display: none` → hidden; `visibility: hidden` → webHidden; `textShadow` → shadow
  * - `textEmphasisStyle` → emphasisMark
  *
- * @param style - The ParagraphStyle to configure
- * @param declarations - CSS declarations as key-value pairs (camelCase keys)
+ * @param {ParagraphStyle} style - The ParagraphStyle to configure
+ * @param {Record<string, string>} declarations - CSS declarations as key-value pairs (camelCase keys)
+ * @returns {void}
  * @private
  */
 export function applyDeclarationsToStyle(
@@ -244,8 +247,10 @@ export function applyDeclarationsToStyle(
     const cFormat: CharacterFormat = style.characterFormat;
     const d: Record<string, string> = {};
     for (const key of Object.keys(declarations)) {
-        const v = declarations[key];
+        // eslint-disable-next-line security/detect-object-injection
+        const v: string = declarations[key];
         if (typeof v === 'string' && v.trim() !== '') {
+            // eslint-disable-next-line security/detect-object-injection
             d[key] = v.trim().toLowerCase();
         }
     }
@@ -270,7 +275,7 @@ const BORDER_STYLE_MAP: Record<string, BorderStyle> = {
     groove: 'threeDEngrave',
     ridge: 'threeDEmboss',
     inset: 'inset',
-    outset: 'outset',
+    outset: 'outset'
 };
 
 interface ParsedBorder {
@@ -282,20 +287,20 @@ interface ParsedBorder {
 export function applyParagraphDeclarations(pFormat: ParagraphFormat, d: Record<string, string>): void {
     // Alignment
     switch (d.textAlign) {
-        case 'left':
-        case 'start':
-            pFormat.horizontalAlignment = ParagraphAlignment.Left;
-            break;
-        case 'center':
-            pFormat.horizontalAlignment = ParagraphAlignment.Center;
-            break;
-        case 'right':
-        case 'end':
-            pFormat.horizontalAlignment = ParagraphAlignment.Right;
-            break;
-        case 'justify':
-            pFormat.horizontalAlignment = ParagraphAlignment.Justify;
-            break;
+    case 'left':
+    case 'start':
+        pFormat.horizontalAlignment = ParagraphAlignment.Left;
+        break;
+    case 'center':
+        pFormat.horizontalAlignment = ParagraphAlignment.Center;
+        break;
+    case 'right':
+    case 'end':
+        pFormat.horizontalAlignment = ParagraphAlignment.Right;
+        break;
+    case 'justify':
+        pFormat.horizontalAlignment = ParagraphAlignment.Justify;
+        break;
     }
 
     if (d.direction === 'rtl') {
@@ -305,49 +310,49 @@ export function applyParagraphDeclarations(pFormat: ParagraphFormat, d: Record<s
     }
 
     // Background shading
-    const bg = coalesce(parseCssHex(d.backgroundColor), d.background ? firstHex(d.background) : undefined);
+    const bg: string = coalesce(parseCssHex(d.backgroundColor), d.background ? firstHex(d.background) : undefined);
     if (bg !== undefined) {
         pFormat.backColor = bg;
     }
 
     // Indents and spacing (points)
-    const mBox = parseBox(d.margin);
-    const left = coalesce(parseLengthPoints(d.marginLeft, true), mBox ? mBox.left : undefined);
+    const mBox: { top?: number; right?: number; bottom?: number; left?: number; } = parseBox(d.margin);
+    const left: number = coalesce(parseLengthPoints(d.marginLeft, true), mBox ? mBox.left : undefined);
     if (left !== undefined) {
         pFormat.leftIndent = left;
     }
-    const right = coalesce(parseLengthPoints(d.marginRight, true), mBox ? mBox.right : undefined);
+    const right: number = coalesce(parseLengthPoints(d.marginRight, true), mBox ? mBox.right : undefined);
     if (right !== undefined) {
         pFormat.rightIndent = right;
     }
-    const before = coalesce(parseLengthPoints(d.marginTop || d.marginTopPx, false), mBox ? mBox.top : undefined);
+    const before: number = coalesce(parseLengthPoints(d.marginTop || d.marginTopPx, false), mBox ? mBox.top : undefined);
     if (before !== undefined) {
         pFormat.beforeSpacing = before;
     }
-    const after = coalesce(parseLengthPoints(d.marginBottom || d.marginBottomPx, false), mBox ? mBox.bottom : undefined);
+    const after: number = coalesce(parseLengthPoints(d.marginBottom || d.marginBottomPx, false), mBox ? mBox.bottom : undefined);
     if (after !== undefined) {
         pFormat.afterSpacing = after;
     }
-    const indent = parseLengthPoints(d.textIndent, true);
+    const indent: number = parseLengthPoints(d.textIndent, true);
     if (indent !== undefined) {
         pFormat.firstLineIndent = indent;
     }
 
     // Line height
     if (d.lineHeight && d.lineHeight !== 'normal') {
-        const lh = d.lineHeight;
+        const lh: string = d.lineHeight;
         if (/^\d*\.?\d+$/.test(lh)) {
-            const n = parseFloat(lh);
+            const n: number = parseFloat(lh);
             if (n >= 0 && n <= 100) {
                 pFormat.lineSpacingCount = n;
             }
         } else if (lh.endsWith('%')) {
-            const n = parseFloat(lh) / 100;
+            const n: number = parseFloat(lh) / 100;
             if (!isNaN(n) && n >= 0 && n <= 100) {
                 pFormat.lineSpacingCount = n;
             }
         } else {
-            const pts = parseLengthPoints(lh, false);
+            const pts: number = parseLengthPoints(lh, false);
             if (pts !== undefined && pts >= 0.7) {
                 pFormat.lineSpacingRule = 'exact';
                 pFormat.lineSpacing = pts;
@@ -356,13 +361,13 @@ export function applyParagraphDeclarations(pFormat: ParagraphFormat, d: Record<s
     }
 
     // Pagination
-    const breakBefore = d.pageBreakBefore || d.breakBefore;
+    const breakBefore: string = d.pageBreakBefore || d.breakBefore;
     if (breakBefore === 'always' || breakBefore === 'page') {
         pFormat.pageBreakBefore = true;
     } else if (breakBefore === 'auto' || breakBefore === 'avoid') {
         pFormat.pageBreakBefore = false;
     }
-    const breakAfter = d.pageBreakAfter || d.breakAfter;
+    const breakAfter: string = d.pageBreakAfter || d.breakAfter;
     if (breakAfter === 'always' || breakAfter === 'page') {
         pFormat.pageBreakAfter = true;
     } else if (breakAfter === 'auto') {
@@ -370,13 +375,13 @@ export function applyParagraphDeclarations(pFormat: ParagraphFormat, d: Record<s
     } else if (breakAfter === 'avoid') {
         pFormat.keepFollow = true;
     }
-    const breakInside = d.pageBreakInside || d.breakInside;
+    const breakInside: string = d.pageBreakInside || d.breakInside;
     if (breakInside === 'avoid') {
         pFormat.keepLines = true;
     } else if (breakInside === 'auto') {
         pFormat.keepLines = false;
     }
-    const widows = d.widows || d.orphans;
+    const widows: string = d.widows || d.orphans;
     if (widows && /^\d+$/.test(widows)) {
         pFormat.widowControl = parseInt(widows, 10) > 1;
     }
@@ -387,7 +392,7 @@ export function applyParagraphDeclarations(pFormat: ParagraphFormat, d: Record<s
     } else if (d.hyphens === 'manual' || d.hyphens === 'auto') {
         pFormat.suppressAutoHyphens = false;
     }
-    const wrap = d.overflowWrap || d.wordWrap;
+    const wrap: string = d.overflowWrap || d.wordWrap;
     if (wrap === 'break-word' || wrap === 'anywhere') {
         pFormat.wordWrap = true;
     } else if (wrap === 'normal') {
@@ -405,8 +410,10 @@ export function applyParagraphDeclarations(pFormat: ParagraphFormat, d: Record<s
 }
 
 function applyBorderDeclarations(pFormat: ParagraphFormat, d: Record<string, string>): void {
-    const borders = pFormat.borders;
-    const apply = function (edge: ParagraphBorderFace, parsed: ParsedBorder): void {
+    const borders: ParagraphBordersFace = pFormat.borders;
+    const apply: (edge: ParagraphBorderFace, parsed: ParsedBorder) => void = function (
+        edge: ParagraphBorderFace, parsed: ParsedBorder
+    ): void {
         if (parsed.style !== undefined) {
             edge.borderType = parsed.style;
         }
@@ -420,12 +427,12 @@ function applyBorderDeclarations(pFormat: ParagraphFormat, d: Record<string, str
             edge.lineWidth = parsed.width;
         }
     };
-    const pBox = parseBox(d.padding);
+    const pBox: { top?: number; right?: number; bottom?: number; left?: number; } = parseBox(d.padding);
     const padKeys: Record<string, number | undefined> = {
         borderTop: coalesce(parseLengthPoints(d.paddingTop, false), pBox ? pBox.top : undefined),
         borderRight: coalesce(parseLengthPoints(d.paddingRight, false), pBox ? pBox.right : undefined),
         borderBottom: coalesce(parseLengthPoints(d.paddingBottom, false), pBox ? pBox.bottom : undefined),
-        borderLeft: coalesce(parseLengthPoints(d.paddingLeft, false), pBox ? pBox.left : undefined),
+        borderLeft: coalesce(parseLengthPoints(d.paddingLeft, false), pBox ? pBox.left : undefined)
     };
 
     // Whole-border shorthand and longhands (outer four edges)
@@ -443,21 +450,23 @@ function applyBorderDeclarations(pFormat: ParagraphFormat, d: Record<string, str
         ['borderTop', borders.top],
         ['borderRight', borders.right],
         ['borderBottom', borders.bottom],
-        ['borderLeft', borders.left],
+        ['borderLeft', borders.left]
     ];
     for (const [key, face] of edges) {
-        const own = d[key] ? parseBorderShorthand(d[key]) : {};
+        // eslint-disable-next-line security/detect-object-injection
+        const own: ParsedBorder = d[key] ? parseBorderShorthand(d[key]) : {};
         const merged: ParsedBorder = {
             style: coalesce(own.style, all.style),
             color: coalesce(own.color, all.color),
-            width: coalesce(own.width, all.width),
+            width: coalesce(own.width, all.width)
         };
         // A width/color without a style should still produce a visible border.
         if (merged.style === undefined && (own.width !== undefined || own.color !== undefined || d.border)) {
             merged.style = 'single';
         }
         apply(face, merged);
-        const pad = padKeys[key];
+        // eslint-disable-next-line security/detect-object-injection
+        const pad: number = padKeys[key];
         if (pad !== undefined && merged.style !== undefined && merged.style !== 'none') {
             face.space = Math.min(31, Math.round(pad));
         }
@@ -465,16 +474,19 @@ function applyBorderDeclarations(pFormat: ParagraphFormat, d: Record<string, str
 }
 
 function parseBorderWidth(token: string): number | undefined {
+    // eslint-disable-next-line security/detect-possible-timing-attacks
     if (token === 'thin') {
         return 0.75;
     }
+    // eslint-disable-next-line security/detect-possible-timing-attacks
     if (token === 'medium') {
         return 2.25;
     }
+    // eslint-disable-next-line security/detect-possible-timing-attacks
     if (token === 'thick') {
         return 3.75;
     }
-    const pts = parseLengthPoints(token, false);
+    const pts: number = parseLengthPoints(token, false);
     if (pts === undefined) {
         return undefined;
     }
@@ -484,18 +496,20 @@ function parseBorderWidth(token: string): number | undefined {
 
 function parseBorderShorthand(value: string): ParsedBorder {
     const result: ParsedBorder = {};
-    const tokens = value.replace(/\s*,\s*/g, ',').split(/\s+(?![^(]*\))/);
+    const tokens: string[] = value.replace(/\s*,\s*/g, ',').split(/\s+(?![^(]*\))/);
     for (const token of tokens) {
+        // eslint-disable-next-line security/detect-object-injection
         if (BORDER_STYLE_MAP[token] !== undefined) {
+            // eslint-disable-next-line security/detect-object-injection
             result.style = BORDER_STYLE_MAP[token];
             continue;
         }
-        const width = parseBorderWidth(token);
+        const width: number = parseBorderWidth(token);
         if (width !== undefined) {
             result.width = width;
             continue;
         }
-        const color = parseCssHex(token);
+        const color: string = parseCssHex(token);
         if (color !== undefined) {
             result.color = color;
         }
@@ -510,19 +524,19 @@ export function applyCharacterDeclarations(
 ): void {
     // Font
     if (d.fontFamily) {
-        const first = (rawFontFamily !== undefined && rawFontFamily !== null ? rawFontFamily : d.fontFamily).split(',')[0].trim().replace(/^['"]|['"]$/g, '');
+        const first: string = (rawFontFamily !== undefined && rawFontFamily !== null ? rawFontFamily : d.fontFamily).split(',')[0].trim().replace(/^['"]|['"]$/g, '');
         if (first) {
             cFormat.fontName = first;
         }
     }
     if (d.fontSize) {
-        const size = parseFontSize(d.fontSize);
+        const size: number = parseFontSize(d.fontSize);
         if (size !== undefined && size <= 1638) {
             cFormat.fontSize = size;
         }
     }
     if (d.fontWeight) {
-        const w = d.fontWeight;
+        const w: string = d.fontWeight;
         if (w === 'bold' || w === 'bolder' || (/^\d+$/.test(w) && parseInt(w, 10) >= 600)) {
             cFormat.bold = true;
         } else if (w === 'normal' || w === 'lighter' || /^\d+$/.test(w)) {
@@ -550,20 +564,20 @@ export function applyCharacterDeclarations(
     applyTextDecoration(cFormat, d);
 
     // Run background (w:shd) and border (w:bdr)
-    const runBg = coalesce(parseCssHex(d.backgroundColor), d.background ? firstHex(d.background) : undefined);
+    const runBg: string = coalesce(parseCssHex(d.backgroundColor), d.background ? firstHex(d.background) : undefined);
     if (runBg !== undefined) {
-        const snap = cFormat.snapshot();
+        const snap: CharacterFormatSnapshot = cFormat.snapshot();
         snap.shadingValue = { pattern: 'clear', fill: runBg };
         cFormat.hydrate(snap);
     }
-    const runBorder = d.border ? parseBorderShorthand(d.border) : undefined;
+    const runBorder: ParsedBorder = d.border ? parseBorderShorthand(d.border) : undefined;
     if (runBorder !== undefined && runBorder.style !== undefined && runBorder.style !== 'none') {
-        const snap = cFormat.snapshot();
+        const snap: CharacterFormatSnapshot = cFormat.snapshot();
         snap.borderValue = {
             style: runBorder.style,
             color: coalesce(runBorder.color, 'auto'),
             size: Math.round(coalesce(runBorder.width, 0.75) * 8),
-            space: 0,
+            space: 0
         };
         cFormat.hydrate(snap);
     }
@@ -578,19 +592,19 @@ export function applyCharacterDeclarations(
 
     // Spacing and position
     if (d.letterSpacing) {
-        const spacing = d.letterSpacing === 'normal' ? 0 : parseLengthPoints(d.letterSpacing, true);
+        const spacing: number = d.letterSpacing === 'normal' ? 0 : parseLengthPoints(d.letterSpacing, true);
         if (spacing !== undefined) {
             cFormat.characterSpacing = spacing;
         }
     }
     if (!d.letterSpacing && d.wordSpacing) {
-        const ws = parseLengthPoints(d.wordSpacing, true);
+        const ws: number = parseLengthPoints(d.wordSpacing, true);
         if (ws !== undefined) {
             cFormat.characterSpacing = ws;
         }
     }
     if (d.verticalAlign) {
-        const va = d.verticalAlign;
+        const va: string = d.verticalAlign;
         if (va === 'sub' || va === 'subscript') {
             cFormat.subSuperScript = SubSuperScript.SubScript;
         } else if (va === 'super' || va === 'superscript') {
@@ -598,7 +612,7 @@ export function applyCharacterDeclarations(
         } else if (va === 'baseline') {
             cFormat.subSuperScript = SubSuperScript.None;
         } else {
-            const raise = parseLengthPoints(va, true);
+            const raise: number = parseLengthPoints(va, true);
             if (raise !== undefined) {
                 cFormat.position = raise;
             }
@@ -618,7 +632,7 @@ export function applyCharacterDeclarations(
         cFormat.shadow = d.textShadow !== 'none';
     }
     if (d.textEmphasisStyle) {
-        const e = d.textEmphasisStyle;
+        const e: string = d.textEmphasisStyle;
         if (e === 'none') {
             cFormat.emphasisMark = 'none';
         } else if (e.includes('dot')) {
@@ -632,7 +646,7 @@ export function applyCharacterDeclarations(
 }
 
 function applyTextDecoration(cFormat: CharacterFormat, d: Record<string, string>): void {
-    const line = d.textDecorationLine || d.textDecoration;
+    const line: string = d.textDecorationLine || d.textDecoration;
     if (!line) {
         return;
     }
@@ -643,8 +657,8 @@ function applyTextDecoration(cFormat: CharacterFormat, d: Record<string, string>
         return;
     }
     // Decoration style keyword may sit in the shorthand or in the longhand.
-    const styleText = d.textDecorationStyle || d.textDecoration || '';
-    const hasStyle = function (kw: string): boolean {
+    const styleText: string = d.textDecorationStyle || d.textDecoration || '';
+    const hasStyle: (kw: string) => boolean = function (kw: string): boolean {
         return styleText.split(/\s+/).indexOf(kw) !== -1;
     };
     if (line.includes('underline')) {
@@ -659,7 +673,7 @@ function applyTextDecoration(cFormat: CharacterFormat, d: Record<string, string>
         } else {
             cFormat.underlineStyle = UnderlineStyle.Single;
         }
-        const uc = coalesce(parseCssHex(d.textDecorationColor), d.textDecoration ? firstHex(d.textDecoration) : undefined);
+        const uc: string = coalesce(parseCssHex(d.textDecorationColor), d.textDecoration ? firstHex(d.textDecoration) : undefined);
         setCharacterColor(cFormat, 'underlineColorValue', uc);
     }
     if (line.includes('line-through')) {
@@ -671,28 +685,38 @@ function applyTextDecoration(cFormat: CharacterFormat, d: Record<string, string>
     }
 }
 
-/** Parses a CSS color to an RRGGBB hex string (named, hex, rgb()). */
+/**
+ * Parses a CSS color to an RRGGBB hex string (named, hex, rgb()).
+ *
+ * @param {string | undefined} value - The value.
+ * @returns {string | undefined} The result of the operation.
+ */
 export function parseCssHex(value: string | undefined): string | undefined {
     if (!value) {
         return undefined;
     }
-    const hex = parseColorValue(value);
+    const hex: string = parseColorValue(value);
     if (hex !== undefined) {
         return hex;
     }
     // Remaining CSS color names (pink, teal, ...) resolve via the Color enum.
-    const named = /^[a-z]+$/i.test(value.trim()) ? colorFromWire(value.trim()) : undefined;
+    const named: Color = /^[a-z]+$/i.test(value.trim()) ? colorFromWire(value.trim()) : undefined;
     if (named === undefined || named === Color.Transparent) {
         return undefined;
     }
-    const wire = colorToHexWire(named);
+    const wire: string = colorToHexWire(named);
     return wire.length > 0 ? wire : undefined;
 }
 
-/** Returns the first color token found in a multi-token value (e.g. `background`). */
+/**
+ * Returns the first color token found in a multi-token value (e.g. `background`).
+ *
+ * @param {string} value - The value.
+ * @returns {string | undefined} The result of the operation.
+ */
 function firstHex(value: string): string | undefined {
     for (const token of value.split(/\s+(?![^(]*\))/)) {
-        const hex = parseCssHex(token);
+        const hex: string = parseCssHex(token);
         if (hex !== undefined) {
             return hex;
         }
@@ -700,22 +724,27 @@ function firstHex(value: string): string | undefined {
     return undefined;
 }
 
-/** Expands a 1-4 value CSS box shorthand (margin/padding) to points. */
+/**
+ * Expands a 1-4 value CSS box shorthand (margin/padding) to points.
+ *
+ * @param {string | undefined} value - The value.
+ * @returns {Object} The result of the operation.
+ */
 function parseBox(value: string | undefined):
 { top?: number; right?: number; bottom?: number; left?: number } | undefined {
     if (!value) {
         return undefined;
     }
-    const t = value.split(/\s+/).map(function (v) {
+    const t: number[] = value.split(/\s+/).map(function (v: string): number {
         return parseLengthPoints(v, true);
     });
     if (t.length === 0 || t.length > 4) {
         return undefined;
     }
-    const top = t[0];
-    const right = t.length > 1 ? t[1] : top;
-    const bottom = t.length > 2 ? t[2] : top;
-    const left = t.length > 3 ? t[3] : right;
+    const top: number = t[0];
+    const right: number = t.length > 1 ? t[1] : top;
+    const bottom: number = t.length > 2 ? t[2] : top;
+    const left: number = t.length > 3 ? t[3] : right;
     return { top, right, bottom, left };
 }
 
@@ -723,6 +752,11 @@ function parseBox(value: string | undefined):
  * Sets an arbitrary RGB colour on a run format. The public setters only take
  * the {@link Color} enum, so colours outside it are written through the
  * snapshot to keep the exact RGB value.
+ *
+ * @param {CharacterFormat} cFormat - The c format.
+ * @param {string} field - The field.
+ * @param {string | undefined} hex - The hex.
+ * @returns {void}
  */
 function setCharacterColor(
     cFormat: CharacterFormat,
@@ -732,7 +766,8 @@ function setCharacterColor(
     if (hex === undefined) {
         return;
     }
-    const snap = cFormat.snapshot();
+    const snap: CharacterFormatSnapshot = cFormat.snapshot();
+    // eslint-disable-next-line security/detect-object-injection
     snap[field] = hex;
     if (field === 'textColorValue') {
         snap.textColorTheme = undefined;
@@ -744,21 +779,24 @@ function setCharacterColor(
  * Parses a CSS length to points. Returns undefined when invalid or outside
  * the ±1584 pt range accepted by the format setters.
  *
+ * @param {string | undefined} value - The value.
+ * @param {boolean} allowNegative - The allow negative.
+ * @returns {number | undefined} The result of the operation.
  * @private
  */
 function parseLengthPoints(value: string | undefined, allowNegative: boolean): number | undefined {
     if (!value) {
         return undefined;
     }
-    const m = value.trim().toLowerCase().match(/^(-?\d*\.?\d+)(px|pt|in|cm|mm|pc|em|rem)?$/);
+    const m: RegExpMatchArray = value.trim().toLowerCase().match(/^(-?\d*\.?\d+)(px|pt|in|cm|mm|pc|em|rem)?$/);
     if (!m) {
         return undefined;
     }
-    const n = parseFloat(m[1]);
+    const n: number = parseFloat(m[1]);
     const factors: Record<string, number> = {
-        px: 0.75, pt: 1, in: 72, cm: 72 / 2.54, mm: 72 / 25.4, pc: 12, em: 12, rem: 12,
+        px: 0.75, pt: 1, in: 72, cm: 72 / 2.54, mm: 72 / 25.4, pc: 12, em: 12, rem: 12
     };
-    const pts = Math.round(n * (m[2] !== undefined ? factors[m[2]] : 0.75) * 20) / 20;
+    const pts: number = Math.round(n * (m[2] !== undefined ? factors[m[2]] : 0.75) * 20) / 20;
     if (isNaN(pts) || (!allowNegative && pts < 0) || Math.abs(pts) > 1584) {
         return undefined;
     }
@@ -780,7 +818,7 @@ export class CSSStyleCache {
     /**
      * Create a new CSS style cache.
      *
-     * @param document - The WordDocument to create styles in
+     * @param {WordDocument} document - The WordDocument to create styles in
      * @private
      */
     constructor(document: WordDocument) {
@@ -793,13 +831,13 @@ export class CSSStyleCache {
      * Returns cached style if already created, otherwise creates new style,
      * applies declarations, caches it, and returns it.
      *
-     * @param cssClassName - The CSS class name (e.g., "title")
-     * @param declarations - CSS property declarations (camelCase keys)
-     * @returns The created or cached ParagraphStyle
+     * @param {string} cssClassName - The CSS class name (e.g., "title")
+     * @param {Record<string, string>} declarations - CSS property declarations (camelCase keys)
+     * @returns {ParagraphStyle} The created or cached ParagraphStyle
      * @private
      */
     getOrCreateStyle(cssClassName: string, declarations: Record<string, string>): ParagraphStyle {
-        const styleId = createStyleIdFromClassName(cssClassName);
+        const styleId: string = createStyleIdFromClassName(cssClassName);
 
         // Return cached style if exists
         if (this.styleMap.has(styleId)) {
@@ -807,7 +845,7 @@ export class CSSStyleCache {
         }
 
         // Check if style already exists in document.styles
-        const existingStyle = this.document.styles.getParagraphStyle(styleId);
+        const existingStyle: ParagraphStyle = this.document.styles.getParagraphStyle(styleId);
         if (existingStyle) {
             this.styleMap.set(styleId, existingStyle);
             return existingStyle;
@@ -815,15 +853,15 @@ export class CSSStyleCache {
 
         // Create new style
         try {
-            const style = this.document.styles.addParagraphStyle(styleId);
+            const style: ParagraphStyle = this.document.styles.addParagraphStyle(styleId);
             applyDeclarationsToStyle(style, declarations);
             this.styleMap.set(styleId, style);
             return style;
         } catch (ex) {
-             const error = ex as Error;
+            const error: Error = ex as Error;
             // If error is due to style already existing, retrieve and cache it
             if (error && error.message && error.message.includes('already exists')) {
-                const existingStyle = this.document.styles.getParagraphStyle(styleId);
+                const existingStyle: ParagraphStyle = this.document.styles.getParagraphStyle(styleId);
                 if (existingStyle) {
                     this.styleMap.set(styleId, existingStyle);
                     return existingStyle;
@@ -832,13 +870,13 @@ export class CSSStyleCache {
             console.error(`Error creating paragraph style for class "${cssClassName}":`, error);
             // Fallback: try to get or create a minimal style without formatting
             try {
-                const existingOrNew = this.document.styles.getParagraphStyle(styleId);
+                const existingOrNew: ParagraphStyle = this.document.styles.getParagraphStyle(styleId);
                 if (existingOrNew) {
                     this.styleMap.set(styleId, existingOrNew);
                     return existingOrNew;
                 }
                 // Last resort: create minimal style
-                const style = this.document.styles.addParagraphStyle(styleId);
+                const style: ParagraphStyle = this.document.styles.addParagraphStyle(styleId);
                 this.styleMap.set(styleId, style);
                 return style;
             } catch (fallbackError) {
@@ -851,12 +889,12 @@ export class CSSStyleCache {
     /**
      * Check if a style has been created for a CSS class.
      *
-     * @param cssClassName - The CSS class name
-     * @returns True if style exists in cache or document
+     * @param {string} cssClassName - The CSS class name
+     * @returns {boolean} True if style exists in cache or document
      * @private
      */
     hasStyle(cssClassName: string): boolean {
-        const styleId = createStyleIdFromClassName(cssClassName);
+        const styleId: string = createStyleIdFromClassName(cssClassName);
         return (
             this.styleMap.has(styleId) || this.document.styles.hasStyle(styleId)
         );
@@ -865,12 +903,12 @@ export class CSSStyleCache {
     /**
      * Get a previously created style.
      *
-     * @param cssClassName - The CSS class name
-     * @returns The ParagraphStyle or undefined if not created
+     * @param {string} cssClassName - The CSS class name
+     * @returns {ParagraphStyle | undefined} The ParagraphStyle or undefined if not created
      * @private
      */
     getStyle(cssClassName: string): ParagraphStyle | undefined {
-        const styleId = createStyleIdFromClassName(cssClassName);
+        const styleId: string = createStyleIdFromClassName(cssClassName);
         if (this.styleMap.has(styleId)) {
             return this.styleMap.get(styleId);
         }
@@ -880,6 +918,7 @@ export class CSSStyleCache {
     /**
      * Clear all cached styles.
      *
+     * @returns {void}
      * @private
      */
     clear(): void {

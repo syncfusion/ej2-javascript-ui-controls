@@ -16,7 +16,7 @@
 import { PML_NS } from '../presentation/constants';
 import { OoxmlElement } from '../xml/index';
 import { DML_NS } from './constants';
-import { findChild, getAttr } from './dom-utils';
+import { asMutable, findChild, getAttr } from './dom-utils';
 import { ShapeElementKind } from './shape';
 /**
  * Locates the kind-specific non-visual container under a shape-tree element.
@@ -125,4 +125,36 @@ function nvContainerLocalName(kind: ShapeElementKind): string {
         return _exhaustive;
     }
     }
+}
+/**
+ * Writes (or, for an empty value, removes) one unprefixed `cNvPr` attribute (`title` / `descr`).
+ * Other attributes, hyperlink children and `@id` are left untouched.
+ *
+ * @internal
+ * @param {OoxmlElement} shapeElement - The shapeElement value.
+ * @param {ShapeElementKind} elementKind - The elementKind value.
+ * @param {string} localName - `title` or `descr`.
+ * @param {string} value - New value; empty removes the attribute.
+ * @returns {boolean} True when the DOM changed; false when there is no `cNvPr` or nothing changed.
+ */
+export function writeCNvPrAttr(shapeElement: OoxmlElement, elementKind: ShapeElementKind, localName: string, value: string): boolean {
+    const cNvPr: OoxmlElement = findCNvPr(shapeElement, elementKind);
+    if (cNvPr === undefined) {
+        return false;
+    }
+    const current: string | undefined = getAttr(cNvPr, '', localName);
+    const rest: OoxmlElement['attributes'] = cNvPr.attributes.filter((a: OoxmlElement['attributes'][number]): boolean =>
+        !(a.namespaceUri === '' && a.localName === localName));
+    if (value.length === 0) {
+        if (current === undefined) {
+            return false;
+        }
+        asMutable(cNvPr).attributes = rest;
+        return true;
+    }
+    if (current === value) {
+        return false;
+    }
+    asMutable(cNvPr).attributes = [...rest, { namespaceUri: '', localName, value }];
+    return true;
 }

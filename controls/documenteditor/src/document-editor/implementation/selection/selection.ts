@@ -1496,12 +1496,26 @@ export class Selection {
             selectionWidgetCollection.push(selectionWidget);
         }
     }
+    /**
+     * The hidden paragraph shares its line with the next paragraph, so its after-spacing would highlight the next
+     * paragraph's line. The after-spacing is included only when the hidden paragraph is the last one in the selection.
+     */
+    private getHighlightHeight(lineWidget: LineWidget): number {
+        const paragraph: ParagraphWidget = lineWidget.paragraph;
+        if (lineWidget.isLastLine() && lineWidget.margin.bottom > 0 && this.documentHelper.layout.isMergedWithNextParagraph(paragraph)) {
+            const lastPosition: TextPosition = this.isForward ? this.end : this.start;
+            if (lastPosition.paragraph !== paragraph) {
+                return Math.max(0, lineWidget.height - lineWidget.margin.bottom);
+            }
+        }
+        return lineWidget.height;
+    }
 
     private renderHighlight(page: Page, lineWidget: LineWidget, selectionWidget: SelectionWidgetInfo[], top: number, floatingItems: ShapeBase[]): void {
         const documentHelper: DocumentHelper = this.owner.documentHelper;
         const pageTop: number = this.getPageTop(page);
         const pageLeft: number = page.boundingRectangle.x;
-        const height: number = lineWidget.height;
+        const height: number = this.getHighlightHeight(lineWidget);
         if (this.viewer.containerTop <= pageTop
             || pageTop < this.viewer.containerTop + documentHelper.selectionCanvas.height) {
             const zoomFactor: number = documentHelper.zoomFactor;
@@ -6170,11 +6184,11 @@ export class Selection {
             }
         } else {
             if (!isNullOrUndefined(startLineWidget)) {
-                let x: number = startLineWidget.paragraph.x;
+                let x: number = this.getLineX(startLineWidget);
                 if (paragraph !== startLineWidget.paragraph) {
                     paragraph = startLineWidget.paragraph;
                 }
-                let width: number = this.getWidth(startLineWidget, true) - (left - startLineWidget.paragraph.x);
+                let width: number = this.getWidth(startLineWidget, true) - (left - this.getLineX(startLineWidget));
                 // Handled the  highlighting approach as genric for normal and rtl text.
                 if (paragraph.bidi || (startElement instanceof TextElementBox && startElement.isRightToLeft)) {
                     let right: number = 0;
@@ -6207,7 +6221,7 @@ export class Selection {
                                 // The paragraph mark will be at the left most end.
                                 left = this.getLineStartLeft(startLineWidget) - paragraphMarkWidth;
                             } else { // The paragraph mark will at right most end.
-                                left = elementIsRTL ? startLineWidget.paragraph.x + this.getWidth(startLineWidget, false) : right;
+                                left = elementIsRTL ? this.getLineX(startLineWidget) + this.getWidth(startLineWidget, false) : right;
                             }
                             this.createHighlightBorder(startLineWidget, paragraphMarkWidth, left, top, true, contentControl);
                         }
@@ -6910,6 +6924,7 @@ export class Selection {
         let lineWidget: LineWidget = undefined;
         if (widget.childWidgets.length > 0) {
             lineWidget = widget.childWidgets[widget.childWidgets.length - 1] as LineWidget;
+            left = this.getLineX(lineWidget);
             if (widget.paragraphFormat.bidi) {
                 left = this.getLeft(lineWidget);
             } else {
@@ -7406,6 +7421,14 @@ export class Selection {
                         }
                     }
                     if (childWidget instanceof ParagraphWidget) {
+                        // A paragraph continuing on the line of a preceding hidden paragraph starts at a shifted x position.
+                        const previousWidget: Widget = childWidget.previousWidget as Widget;
+                        if (!childWidget.previousSplitWidget && previousWidget instanceof ParagraphWidget
+                            && this.documentHelper.layout.isMergedWithNextParagraph(previousWidget)
+                            && point.y <= this.getTop(childWidget.firstChild as LineWidget) + (childWidget.firstChild as LineWidget).height
+                            && point.x < this.getLeft(childWidget.firstChild as LineWidget)) {
+                            return this.getLineWidgetParaWidget(previousWidget, point);
+                        }
                         // if ((childWidget as Widget).x <= point.x
                         // && ((childWidget as Widget).x + (childWidget as Widget).width) >= point.x) {
                         return this.getLineWidgetParaWidget((childWidget as ParagraphWidget), point);
@@ -7550,7 +7573,7 @@ export class Selection {
                     return;
                 }
             } else {
-                width = this.getWidth(line, true) - (left - widget.x);
+                width = this.getWidth(line, true) - (left - this.getLineX(line));
                 // Highlight the paragrph mark for Bidi paragrph.
                 if (widget.bidi && line.isLastLine()) {
                     left -= this.documentHelper.textHelper.getParagraphMarkSize(widget.characterFormat).Width;
@@ -7840,7 +7863,7 @@ export class Selection {
     public updateTextPositionIn(widget: LineWidget, inline: ElementBox, index: number, caretPosition: Point, includeParagraphMark: boolean): TextPositionInfo {
         let isImageSelected: boolean = false;
         let top: number = this.getTop(widget);
-        let left: number = widget.paragraph.x;
+        let left: number = this.getLineX(widget);
         let elementValues: FirstElementInfo = this.getFirstElement(widget, left);
         let element: ElementBox = (!isNullOrUndefined(elementValues) ? elementValues.element : undefined) as ElementBox;
         let isRtlText: boolean = false;
@@ -8170,12 +8193,28 @@ export class Selection {
         return length;
     }
     /**
+     * Gets the x position at which the line is rendered.
+     * Only the first line of a paragraph laid out after a merged hidden paragraph is shifted;
+     * the remaining lines start at the paragraph's own left edge.
+     *
+     * @private
+     */
+    public getLineX(widget: LineWidget): number {
+        const paragraph: ParagraphWidget = widget.paragraph;
+        const previousPara: Widget = paragraph.previousWidget;
+        if (!widget.isFirstLine() && isNullOrUndefined(paragraph.previousSplitWidget) && previousPara instanceof ParagraphWidget
+            && this.documentHelper.layout.isMergedWithNextParagraph(previousPara)) {
+            return this.documentHelper.layout.getParagraphBaseX(paragraph);
+        }
+        return paragraph.x;
+    }
+    /**
      * Get Line widget left
      *
      * @private
      */
     public getLeft(widget: LineWidget): number {
-        let left: number = widget.paragraph.x;
+        let left: number = this.getLineX(widget);
         const paragraphFormat: WParagraphFormat = widget.paragraph.paragraphFormat;
         if (this.isParagraphFirstLine(widget) && !paragraphFormat.bidi && !(paragraphFormat.textAlignment === 'Right')) {
             left += HelperMethods.convertPointToPixel(paragraphFormat.firstLineIndent);
@@ -8324,7 +8363,7 @@ export class Selection {
      * @private
      */
     public getLeftInternal(widget: LineWidget, elementBox: ElementBox, index: number, skipPadding?: boolean): number {
-        let left: number = widget.paragraph.x;
+        let left: number = this.getLineX(widget);
         let paraFormat: WParagraphFormat = widget.paragraph.paragraphFormat;
         if (this.isParagraphFirstLine(widget) && !paraFormat.bidi) {
 
@@ -8432,7 +8471,7 @@ export class Selection {
      * @private
      */
     public getLineStartLeft(widget: LineWidget): number {
-        let left: number = widget.paragraph.x;
+        let left: number = this.getLineX(widget);
         let paragraphFormat: WParagraphFormat = widget.paragraph.paragraphFormat;
         if (this.isParagraphFirstLine(widget) && !paragraphFormat.bidi) {
             left += HelperMethods.convertPointToPixel(paragraphFormat.firstLineIndent);
@@ -10597,7 +10636,7 @@ export class Selection {
             || cursorPosition.x < lineStartLeft || cursorPosition.x > lineStartLeft + widget.paragraph.width + leftIndent + rightIndent) {
             return undefined;
         }
-        let left: number = widget.paragraph.x;
+        let left: number = this.getLineX(widget);
         let elementValues: FirstElementInfo = this.getFirstElement(widget, left);
         left = elementValues.left;
         let element: ElementBox = elementValues.element;
@@ -10653,7 +10692,7 @@ export class Selection {
             || position.x > lineStartInLeft + lineWidget.paragraph.width) {
             return undefined;
         }
-        let leftLength: number = lineWidget.paragraph.x;
+        let leftLength: number = this.getLineX(lineWidget);
         let elementValues: FirstElementInfo = this.getFirstElement(lineWidget, leftLength);
         leftLength = elementValues.left;
         let element: ElementBox = elementValues.element;
@@ -11473,6 +11512,11 @@ export class Selection {
                     this.documentHelper.editableDiv.style.left = left + "px";
                     this.documentHelper.editableDiv.style.top = top + "px";
                 }
+        }
+        const pastePosition: TextPosition = !isNullOrUndefined(this.owner.editorModule) ? this.owner.editorModule.positionForPasteIcon : undefined;
+        if (!isNullOrUndefined(pastePosition) && (isNullOrUndefined(pastePosition.paragraph) || isNullOrUndefined(pastePosition.paragraph.containerWidget))) {
+            // The paragraph was detached by a re-layout (for example header/footer), so the paste icon position is stale.
+            this.owner.editorModule.positionForPasteIcon = undefined;
         }
         if (!isNullOrUndefined(this.owner.editorModule) && !isNullOrUndefined(this.owner.editorModule.positionForPasteIcon)) {
             let page: Page = (this.owner.editorModule.positionForPasteIcon.paragraph.containerWidget as BlockContainer).page;

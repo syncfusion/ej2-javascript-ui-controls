@@ -7,9 +7,8 @@ import { Paragraph } from '../document/paragraph';
 import {
     FeatureInlineParagraphItem,
     ParagraphItem,
-    Run,
-    serializeRun,
-    TextRange
+    TextRange,
+    serializeTextRange
 } from '../document/text-range';
 import { elementChildren, isWml, wmlAttr, wmlElement } from '../document/wml';
 import { featureId, registerFeature, registerFeatureBlockHandler, registerFeatureInlineHandler, visitParagraphsInDocumentOrder } from '../../core/registry/index';
@@ -18,6 +17,7 @@ import { OpenXmlAttribute, OpenXmlElement } from '../../core/xml/index';
 import { FeatureId } from '../../core/registry/feature-registry';
 const REVISIONS: FeatureId = featureId('revisions');
 /** Track-change wrapper local names modeled by this module.
+ *
  * @private
  */
 export type TrackChangeKind = 'ins' | 'del' | 'moveFrom' | 'moveTo';
@@ -27,6 +27,7 @@ export type TrackChangeKind = 'ins' | 'del' | 'moveFrom' | 'moveTo';
  * Maps ECMA-376 run/block track-change locals (`w:ins` / `w:del` / move wrappers).
  * Property-level format revisions (`w:rPrChange`, `w:pPrChange`, …) are not modeled —
  * they remain opaque; do not invent a `formatChange` product type without schema wiring.
+ *
  * @private
  */
 export type RevisionType = 'insertion' | 'deletion' | 'moveFrom' | 'moveTo';
@@ -38,6 +39,7 @@ const TRACK_CHANGE_LOCAL_NAMES: ReadonlyArray<TrackChangeKind> = [
     'moveTo'
 ];
 /** Move range marker kinds.
+ *
  * @private
  */
 export type MoveRangeKind = 'moveFrom' | 'moveTo';
@@ -113,6 +115,7 @@ function trackChangeAttributes(changeId: number, author: string, date: string | 
 }
 /**
  * Run- or block-level track change wrapper (`w:ins`, `w:del`, `w:moveFrom`, `w:moveTo`).
+ *
  * @private
  */
 export class RunTrackChange implements FeatureInline, FeatureBlock {
@@ -181,7 +184,7 @@ export class RunTrackChange implements FeatureInline, FeatureBlock {
         const children: OpenXmlElement[] = [];
         for (const item of this.items) {
             if (item.type === 'textRange') {
-                children.push(serializeRun(item.run));
+                children.push(serializeTextRange(item.run));
             }
             else {
                 children.push(item.xml);
@@ -198,6 +201,7 @@ export class RunTrackChange implements FeatureInline, FeatureBlock {
  *
  * Exposes author/date/type/text and readonly nested runs without duplicating state.
  * Accept/reject is intentionally not part of this MVP.
+ *
  * @private
  */
 export class RevisionRange {

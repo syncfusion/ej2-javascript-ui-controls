@@ -1,6 +1,6 @@
 import { BodyItem, isParagraphBodyItem } from './body-item';
 import { isTableBlock } from '../tables/index';
-import { isBlockContentControl } from '../content-controls/index';
+import { InlineContentControl, isBlockContentControl } from '../content-controls/index';
 import {
     Break,
     CarriageReturn,
@@ -158,6 +158,9 @@ export function paragraphElementTypeOf(item: ParagraphItem): ParagraphElementTyp
     if (item instanceof OpaqueParagraphItem || item instanceof OpaqueRunItem) {
         return 'opaque';
     }
+    if (item instanceof InlineContentControl) {
+        return 'inlineContentControl';
+    }
     for (const classifier of paragraphElementClassifiers) {
         const hit: ParagraphElementType = classifier(item);
         if (hit !== undefined) {
@@ -181,9 +184,6 @@ export function paragraphElementTypeOf(item: ParagraphItem): ParagraphElementTyp
         }
         if (key === 'drawing') {
             return 'shape';
-        }
-        if (key === 'content-controls') {
-            return 'inlineContentControl';
         }
         if (key === 'comments') {
             return 'comment';

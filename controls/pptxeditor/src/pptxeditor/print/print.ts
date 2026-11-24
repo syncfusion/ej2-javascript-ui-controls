@@ -196,7 +196,9 @@ export class Print {
         const css: string = '@page{margin:0;size:' + width + 'px ' + height + 'px;}'
             + 'html,body{margin:0;padding:0;background:#fff;}'
             + '.ej2-pptx-print-page{width:' + width + 'px;height:' + height + 'px;}'
-            + '*{-webkit-print-color-adjust:exact;print-color-adjust:exact;}';
+            + '*{-webkit-print-color-adjust:exact;print-color-adjust:exact;}'
+            // Host print rules such as `a[href]:after{content:" (" attr(href) ")"}` would append the link target.
+            + '.ej2-pptx-print-page a::before,.ej2-pptx-print-page a::after{content:none !important;}';
         const body: string = pages
             .map((html: string): string => '<div class="ej2-pptx-print-page">' + html + '</div>').join('');
         target.document.open();

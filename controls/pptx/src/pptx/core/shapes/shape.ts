@@ -30,7 +30,7 @@ import { ConnectorEnds, DirectGeometry, GeometryKind } from './connector-geometr
 import { DirectFill, DirectLine, ResolvedFill, ShapeStyleRefs } from './fill-line-types';
 import { readConnectorEndsFromElement, readDirectGeometryFromElement, readGeometryKindFromElement } from './read-connector-geometry';
 import { findShapeSpPr, readDirectFill, readDirectLine, readShapeStyleRefs, readUseBgFill, resolveFillView } from './read-fill-line';
-import { readCNvPrDescr, readCNvPrHidden, readCNvPrTitle } from './read-cnvpr';
+import { readCNvPrDescr, readCNvPrHidden, readCNvPrTitle, writeCNvPrAttr } from './read-cnvpr';
 import { listDirectShapeChildren, ShapeWalkContext } from './walk';
 import { ParagraphCollection } from '../text/paragraph-collection';
 import { OoxmlAttribute, OoxmlText } from '../xml/dom';
@@ -172,7 +172,7 @@ export class Shape {
      */
     adopt(source: Shape): void {
         this.element = source.element;
-        this.partName = source.partName;
+        this._partName = source._partName;
         this.limits = source.limits;
         this._id = source._id;
         this._name = source._name;
@@ -184,8 +184,9 @@ export class Shape {
         this.hostRoot = source.hostRoot;
         this.groupAncestors = source.groupAncestors;
     }
-    private element: OoxmlElement;  
-    private partName: string | undefined;
+    private element: OoxmlElement;
+    /** Frame part name; underscored so subclasses can re-expose a same-named getter (charts). */
+    private _partName: string | undefined;
     private limits: SecurityLimits;
     private _id: string;
     private _name: string;
@@ -230,7 +231,7 @@ export class Shape {
         this._id = id;
         this._name = name;
         this.limits = limits;
-        this.partName = partName;
+        this._partName = partName;
         this.media = media;
         this.groupDepth = groupDepth;
         this.onMutate = onMutate;
@@ -263,6 +264,32 @@ export class Shape {
      */
     get title(): string | undefined {
         return readCNvPrTitle(this.element, this._elementKind);
+    }
+    /**
+     * Sets `cNvPr/@title` (accessibility title). An empty string removes the attribute.
+     *
+     * @remarks Only the `title` attribute is written; `@id`, `@name`, `descr`, hyperlinks and unknown XML are preserved.
+     * @param {string} value - New title.
+     */
+    set title(value: string) {
+        if (writeCNvPrAttr(this.element, this._elementKind, 'title', String(value)) && this.onMutate) { this.onMutate(); }
+    }
+    /**
+     * Alt-text description (`cNvPr/@descr`); same value as {@link Shape.descr}.
+     *
+     * @remarks Returns `undefined` when absent (no empty value is invented). Additive alias; {@link Shape.descr} is unchanged.
+     * @returns {string | undefined} The result.
+     */
+    get description(): string | undefined {
+        return readCNvPrDescr(this.element, this._elementKind);
+    }
+    /**
+     * Sets `cNvPr/@descr` (alt text). An empty string removes the attribute.
+     *
+     * @param {string} value - New description.
+     */
+    set description(value: string) {
+        if (writeCNvPrAttr(this.element, this._elementKind, 'descr', String(value)) && this.onMutate) { this.onMutate(); }
     }
     /**
      * Authored `cNvPr/@descr` when present; otherwise `undefined`.
@@ -317,7 +344,7 @@ export class Shape {
         const ctx: ShapeWalkContext = {
             limits: this.limits,
             groupAncestors: this.groupAncestors.concat([this.element]),
-            ...partNameOptions(this.partName),
+            ...partNameOptions(this._partName),
             ...(this.media === undefined ? {} : { media: this.media }),
             ...(this.onMutate === undefined ? {} : { onMutate: this.onMutate }),
             ...(this.hostRoot === undefined ? {} : { hostRoot: this.hostRoot })
@@ -359,8 +386,8 @@ export class Shape {
         if (this.hostRoot !== undefined) {
             mutation.hostRoot = this.hostRoot;
         }
-        if (this.partName !== undefined) {
-            mutation.partName = this.partName;
+        if (this._partName !== undefined) {
+            mutation.partName = this._partName;
         }
         if (this.onMutate !== undefined) {
             mutation.onMutate = this.onMutate;
@@ -399,7 +426,7 @@ export class Shape {
         if (txBody === undefined) {
             return undefined;
         }
-        return new TextBody(txBody, this.limits, this.partName, this.onMutate, this.media);
+        return new TextBody(txBody, this.limits, this._partName, this.onMutate, this.media);
     }
     /**
      * Alias of {@link Shape.textBody} (Syncfusion Presentation-style name).
@@ -429,9 +456,9 @@ export class Shape {
      * @throws Invalid gradient or unsupported/malformed outline host.
      */
     setOutlineGradientFill(options: GradientFillOptions): void {
-        const ns: string = outlineNamespace(this.element, this.partName);
-        const fill: OoxmlElement = buildGradientFill(options, ns, this.partName);
-        if (commitOutlineFill(this.element, fill, this.partName) && this.onMutate) { this.onMutate(); }
+        const ns: string = outlineNamespace(this.element, this._partName);
+        const fill: OoxmlElement = buildGradientFill(options, ns, this._partName);
+        if (commitOutlineFill(this.element, fill, this._partName) && this.onMutate) { this.onMutate(); }
     }
     /**
      * Resets the direct outline fill while retaining other line properties.
@@ -439,7 +466,7 @@ export class Shape {
      * @returns {void} Missing fill is a no-op.
      */
     clearOutlineFill(): void {
-        if (commitOutlineFill(this.element, undefined, this.partName) && this.onMutate) { this.onMutate(); }
+        if (commitOutlineFill(this.element, undefined, this._partName) && this.onMutate) { this.onMutate(); }
     }
     /**
      * Opens a selective stop session on the existing direct outline gradient.
@@ -448,12 +475,12 @@ export class Shape {
      * @throws Missing direct gradient or unsupported outline host.
      */
     editOutlineGradientFill(): GradientStopEditor {
-        const ns: string = outlineNamespace(this.element, this.partName);
+        const ns: string = outlineNamespace(this.element, this._partName);
         return new GradientStopEditor((): OoxmlElement | undefined => {
             const properties: OoxmlElement | undefined = findShapeSpPr(this.element);
             const line: OoxmlElement | undefined = properties === undefined ? undefined : findChild(properties, ns, 'ln');
             return line === undefined ? undefined : findChild(line, ns, 'gradFill');
-        }, this.partName, (): void => { if (this.onMutate) { this.onMutate(); } });
+        }, this._partName, (): void => { if (this.onMutate) { this.onMutate(); } });
     }
     /**
      * Replaces the direct shape fill with a validated gradient, preserving theme references.
@@ -471,9 +498,9 @@ export class Shape {
      * ], shade: { kind: 'linear', angle: 45 } });
      */
     setGradientFill(options: GradientFillOptions): void {
-        const ns: string = shapeFillNamespace(this.element, this.partName);
-        const fill: OoxmlElement = buildGradientFill(options, ns, this.partName);
-        if (commitShapeFill(this.element, this.partName, fill) && this.onMutate) { this.onMutate(); }
+        const ns: string = shapeFillNamespace(this.element, this._partName);
+        const fill: OoxmlElement = buildGradientFill(options, ns, this._partName);
+        if (commitShapeFill(this.element, this._partName, fill) && this.onMutate) { this.onMutate(); }
     }
     /**
      * Opens a selective stop editor for this shape's existing direct gradient.
@@ -484,12 +511,12 @@ export class Shape {
      * @throws Missing direct gradient, unsupported host or useBgFill enabled.
      */
     editGradientFill(): GradientStopEditor {
-        const ns: string = shapeFillNamespace(this.element, this.partName);
-        if (this.useBgFill) { throw new GradientFillError(this.partName, 'fill.stops.useBgFill'); }
+        const ns: string = shapeFillNamespace(this.element, this._partName);
+        if (this.useBgFill) { throw new GradientFillError(this._partName, 'fill.stops.useBgFill'); }
         return new GradientStopEditor((): OoxmlElement | undefined => {
             const properties: OoxmlElement | undefined = findShapeSpPr(this.element);
             return properties === undefined || this.useBgFill ? undefined : findChild(properties, ns, 'gradFill');
-        }, this.partName, (): void => { if (this.onMutate) { this.onMutate(); } });
+        }, this._partName, (): void => { if (this.onMutate) { this.onMutate(); } });
     }
 
     /**
@@ -500,9 +527,9 @@ export class Shape {
      * @throws Invalid target or color property.
      */
     setSolidFill(color: ColorValue): void {
-        const ns: string = shapeFillNamespace(this.element, this.partName);
-        const fill: OoxmlElement = buildSolidFill(color, ns, this.partName);
-        if (commitShapeFill(this.element, this.partName, fill) && this.onMutate) { this.onMutate(); }
+        const ns: string = shapeFillNamespace(this.element, this._partName);
+        const fill: OoxmlElement = buildSolidFill(color, ns, this._partName);
+        if (commitShapeFill(this.element, this._partName, fill) && this.onMutate) { this.onMutate(); }
     }
     /**
      * References the enclosing group paint without copying its colors or geometry.
@@ -511,9 +538,9 @@ export class Shape {
      * @throws Unsupported or malformed target.
      */
     setGroupFill(): void {
-        const ns: string = shapeFillNamespace(this.element, this.partName);
+        const ns: string = shapeFillNamespace(this.element, this._partName);
         const fill: OoxmlElement = { kind: 'element', namespaceUri: ns, localName: 'grpFill', attributes: [], children: [], prefixHint: 'a' };
-        if (commitShapeFill(this.element, this.partName, fill) && this.onMutate) { this.onMutate(); }
+        if (commitShapeFill(this.element, this._partName, fill) && this.onMutate) { this.onMutate(); }
     }
     /**
      * Writes explicit noFill, suppressing inherited paint.
@@ -521,9 +548,9 @@ export class Shape {
      * @returns {void} Mutates a supported fill host.
      */
     setNoFill(): void {
-        const ns: string = shapeFillNamespace(this.element, this.partName);
+        const ns: string = shapeFillNamespace(this.element, this._partName);
         const fill: OoxmlElement = { kind: 'element', namespaceUri: ns, localName: 'noFill', attributes: [], children: [], prefixHint: 'a' };
-        if (commitShapeFill(this.element, this.partName, fill) && this.onMutate) { this.onMutate(); }
+        if (commitShapeFill(this.element, this._partName, fill) && this.onMutate) { this.onMutate(); }
     }
     /**
      * Removes only the direct fill choice to restore inheritance. A missing fill is a no-op.
@@ -532,7 +559,7 @@ export class Shape {
      * @throws Unsupported or malformed target.
      */
     clearFill(): void {
-        if (commitShapeFill(this.element, this.partName, undefined) && this.onMutate) { this.onMutate(); }
+        if (commitShapeFill(this.element, this._partName, undefined) && this.onMutate) { this.onMutate(); }
     }
 
     /**
@@ -585,7 +612,7 @@ export class Shape {
      * @throws {GradientFillError} Invalid boolean, malformed or unsupported host.
      */
     setUseBackgroundFill(value: boolean | undefined): void {
-        if (writeUseBackgroundFill(this.element, this.partName, value) && this.onMutate) { this.onMutate(); }
+        if (writeUseBackgroundFill(this.element, this._partName, value) && this.onMutate) { this.onMutate(); }
     }
     /**
      * View-only effective fill: direct `spPr` fill wins; else `style/fillRef` as a ref.
@@ -640,7 +667,7 @@ export class Shape {
     requireTextBody(): TextBody {
         const frame: TextBody = this.textBody;
         if (frame === undefined) {
-            throw new ShapeTextError(`Shape id "${this._id}" has no text body (txBody); cannot edit text`, partNameOptions(this.partName));
+            throw new ShapeTextError(`Shape id "${this._id}" has no text body (txBody); cannot edit text`, partNameOptions(this._partName));
         }
         return frame;
     }
@@ -737,7 +764,7 @@ export class Shape {
      * @internal
      */
     protected get boundPartName(): string | undefined {
-        return this.partName;
+        return this._partName;
     } 
     /**
      * Security limits bound when this shape was walked (optional feature modules).
@@ -755,7 +782,7 @@ export class Shape {
      * @returns {string | undefined} The result.
      */
     getPartName(): string | undefined {
-        return this.partName;
+        return this._partName;
     }
     /**
      * Slide root bound when this shape was walked.

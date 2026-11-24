@@ -98,7 +98,7 @@ export class StyleCollection implements StyleOwner, Iterable<Style> {
     }
 
     /**
-     * Number of styles in document order.
+     * Gets the number of styles in document order.
      *
      * @public
      */
@@ -110,8 +110,8 @@ export class StyleCollection implements StyleOwner, Iterable<Style> {
     /**
      * Style at zero-based index, or `undefined` when out of range.
      *
-     * @param {number} index - The index.
-     * @returns {Style | undefined} The result.
+     * @returns {Style | undefined} - Returns the Style, or undefined.
+     * @param {number} index - Specifies the index.
      * @public
      */
     itemAt(index: number): Style | undefined {
@@ -136,10 +136,10 @@ export class StyleCollection implements StyleOwner, Iterable<Style> {
     }
 
     /**
-     * Look up any style by `w:styleId`.
+     * Gets a style by its identifier.
      *
-     * @param {string} styleId - The style id.
-     * @returns {Style | undefined} The result.
+     * @returns {Style | undefined} - Returns the style by its identifier.
+     * @param {string} styleId - Specifies the style id.
      * @public
      */
     getStyle(styleId: string): Style | undefined {
@@ -147,10 +147,10 @@ export class StyleCollection implements StyleOwner, Iterable<Style> {
     }
 
     /**
-     * Look up any style by `w:styleId` (alias of {@link getStyle}).
+     * Finds a style by its identifier.
      *
-     * @param {string} styleId - The style id.
-     * @returns {Style | undefined} The result.
+     * @returns {Style | undefined} - Returns the style by its identifier.
+     * @param {string} styleId - Specifies the style id.
      * @public
      */
     findById(styleId: string): Style | undefined {
@@ -160,8 +160,8 @@ export class StyleCollection implements StyleOwner, Iterable<Style> {
     /**
      * Look up a paragraph style by id.
      *
-     * @param {string} styleId - The style id.
-     * @returns {ParagraphStyle | undefined} The result.
+     * @returns {ParagraphStyle | undefined} - Returns the ParagraphStyle, or undefined.
+     * @param {string} styleId - Specifies the style id.
      * @public
      */
     getParagraphStyle(styleId: string): ParagraphStyle | undefined {
@@ -175,8 +175,8 @@ export class StyleCollection implements StyleOwner, Iterable<Style> {
     /**
      * Look up a character style by id.
      *
-     * @param {string} styleId - The style id.
-     * @returns {CharacterStyle | undefined} The result.
+     * @returns {CharacterStyle | undefined} - Returns the CharacterStyle, or undefined.
+     * @param {string} styleId - Specifies the style id.
      * @public
      */
     getCharacterStyle(styleId: string): CharacterStyle | undefined {
@@ -190,8 +190,8 @@ export class StyleCollection implements StyleOwner, Iterable<Style> {
     /**
      * Look up a table style by id.
      *
-     * @param {string} styleId - The style id.
-     * @returns {TableStyle | undefined} The result.
+     * @returns {TableStyle | undefined} - Returns the TableStyle, or undefined.
+     * @param {string} styleId - Specifies the style id.
      * @public
      */
     getTableStyle(styleId: string): TableStyle | undefined {
@@ -205,8 +205,8 @@ export class StyleCollection implements StyleOwner, Iterable<Style> {
     /**
      * Find a style whose display name matches `name` (normalized).
      *
-     * @param {string} name - The name.
-     * @returns {Style | undefined} The result.
+     * @returns {Style | undefined} - Returns the Style, or undefined.
+     * @param {string} name - Specifies the name.
      * @public
      */
     findByName(name: string): Style | undefined {
@@ -225,8 +225,8 @@ export class StyleCollection implements StyleOwner, Iterable<Style> {
     /**
      * Whether a style id exists (including pending ensure).
      *
-     * @param {string} styleId - The style id.
-     * @returns {boolean} The result.
+     * @returns {boolean} - Returns the result.
+     * @param {string} styleId - Specifies the style id.
      * @public
      */
     hasStyle(styleId: string): boolean {
@@ -242,8 +242,8 @@ export class StyleCollection implements StyleOwner, Iterable<Style> {
      * Create and add a paragraph style with the given id.
      * Throws when the id is empty or already present.
      *
-     * @param {string} styleId - The style id.
-     * @returns {ParagraphStyle} The result.
+     * @returns {ParagraphStyle} - Returns the ParagraphStyle.
+     * @param {string} styleId - Specifies the style id.
      * @public
      */
     addParagraphStyle(styleId: string): ParagraphStyle {
@@ -256,8 +256,8 @@ export class StyleCollection implements StyleOwner, Iterable<Style> {
     /**
      * Create and add a character style with the given id.
      *
-     * @param {string} styleId - The style id.
-     * @returns {CharacterStyle} The result.
+     * @returns {CharacterStyle} - Returns the CharacterStyle.
+     * @param {string} styleId - Specifies the style id.
      * @public
      */
     addCharacterStyle(styleId: string): CharacterStyle {
@@ -270,8 +270,8 @@ export class StyleCollection implements StyleOwner, Iterable<Style> {
     /**
      * Create a custom table style and add it to this collection.
      *
-     * @param {string} name - The name.
-     * @returns {TableStyle} The result.
+     * @returns {TableStyle} - Returns the TableStyle.
+     * @param {string} name - Specifies the name.
      * @public
      */
     addTableStyle(name: string): TableStyle {
@@ -295,8 +295,8 @@ export class StyleCollection implements StyleOwner, Iterable<Style> {
      * Ensure a paragraph style exists (built-in catalog or minimal stub).
      * Returns the live style.
      *
-     * @param {string} styleId - The style id.
-     * @returns {ParagraphStyle} The result.
+     * @returns {ParagraphStyle} - Returns the ParagraphStyle.
+     * @param {string} styleId - Specifies the style id.
      * @public
      */
     ensureParagraphStyle(styleId: string): ParagraphStyle {
@@ -319,8 +319,8 @@ export class StyleCollection implements StyleOwner, Iterable<Style> {
     /**
      * Ensure a character style exists (built-in catalog or minimal stub).
      *
-     * @param {string} styleId - The style id.
-     * @returns {CharacterStyle} The result.
+     * @returns {CharacterStyle} - Returns the CharacterStyle.
+     * @param {string} styleId - Specifies the style id.
      * @public
      */
     ensureCharacterStyle(styleId: string): CharacterStyle {
@@ -343,8 +343,8 @@ export class StyleCollection implements StyleOwner, Iterable<Style> {
     /**
      * Ensure a table style exists (built-in catalog or minimal stub).
      *
-     * @param {string} styleId - The style id.
-     * @returns {TableStyle} The result.
+     * @returns {TableStyle} - Returns the TableStyle.
+     * @param {string} styleId - Specifies the style id.
      * @public
      */
     ensureTableStyle(styleId: string): TableStyle {

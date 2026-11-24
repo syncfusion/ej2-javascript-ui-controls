@@ -49,7 +49,8 @@ export type TextPartCollection = ReadonlyArray<TextPart> & {
  */
 export function createTextPartCollection(getParts: () => ReadonlyArray<TextPart>,
                                          addPart: (textPart: TextPart) => TextPart): TextPartCollection {
-    return new Proxy([] as unknown as TextPartCollection, {
+    const target: TextPart[] = [];
+    return new Proxy(target as unknown as TextPartCollection, {
         /**
          *
          * @param {TextPartCollection} _target - The _target value.
@@ -102,6 +103,7 @@ export function createTextPartCollection(getParts: () => ReadonlyArray<TextPart>
          * @returns {*} The result.
          */
         ownKeys() : Array<string | symbol> {
+            target.length = getParts().length;
             return Reflect.ownKeys(getParts()).filter(
                 (key: string | number | symbol): key is string | symbol => typeof key !== 'number'
             );
@@ -113,6 +115,11 @@ export function createTextPartCollection(getParts: () => ReadonlyArray<TextPart>
          * @returns {*} The result.
          */
         getOwnPropertyDescriptor(_target: TextPartCollection, prop: string | symbol): PropertyDescriptor | undefined {
+            if (prop === 'length') {
+                const length: number = getParts().length;
+                target.length = length;
+                return { value: length, writable: true, enumerable: false, configurable: false };
+            }
             const parts: ReadonlyArray<TextPart> = getParts();
             const descriptor: TypedPropertyDescriptor<unknown> = Reflect.getOwnPropertyDescriptor(parts, prop);
             if (descriptor === undefined) {

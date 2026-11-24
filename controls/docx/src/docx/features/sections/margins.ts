@@ -1,7 +1,7 @@
 import { validateSectionLength } from './section-validation';
 
 /**
- * Live page margins for a section (`CT_PageMar` left/top/right/bottom).
+ * Live page margins for a section.
  *
  * Header distance, footer distance, and gutter remain internal on PageSetup
  * and are not part of this public surface.
@@ -29,8 +29,7 @@ export class Margins {
     }
 
     /**
-     * When all four sides share one value, returns that value; otherwise the
-     * left margin (DocIO-style convenience read).
+     * Gets or sets the all.
      */
     get all(): number {
         if (
@@ -51,6 +50,9 @@ export class Margins {
         this.bottomValue = next;
     }
 
+    /**
+     * Gets or sets the left margin, in points.
+     */
     get left(): number {
         return this.leftValue;
     }
@@ -59,6 +61,9 @@ export class Margins {
         this.leftValue = validateSectionLength(value, 'margins.left');
     }
 
+    /**
+     * Gets or sets the top margin, in points.
+     */
     get top(): number {
         return this.topValue;
     }
@@ -67,6 +72,9 @@ export class Margins {
         this.topValue = validateSectionLength(value, 'margins.top');
     }
 
+    /**
+     * Gets or sets the right margin, in points.
+     */
     get right(): number {
         return this.rightValue;
     }
@@ -75,6 +83,9 @@ export class Margins {
         this.rightValue = validateSectionLength(value, 'margins.right');
     }
 
+    /**
+     * Gets or sets the bottom margin, in points.
+     */
     get bottom(): number {
         return this.bottomValue;
     }

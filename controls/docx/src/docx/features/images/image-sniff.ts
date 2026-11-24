@@ -1,10 +1,17 @@
 /**
- * @public PNG media type (ECMA-376-1 §15.2.14). */
+ * PNG media type (ECMA-376-1 §15.2.14).
+ *
+ * @public
+ */
 export const PNG_CONTENT_TYPE: string = 'image/png';
 /**
- * @public JPEG media type (ECMA-376-1 §15.2.14). */
+ * JPEG media type (ECMA-376-1 §15.2.14).
+ *
+ * @public
+ */
 export const JPEG_CONTENT_TYPE: string = 'image/jpeg';
 /** Supported image content types for create/replace.
+ *
  * @public
  */
 export type ImageType = typeof PNG_CONTENT_TYPE | typeof JPEG_CONTENT_TYPE;

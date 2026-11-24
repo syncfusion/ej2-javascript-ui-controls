@@ -1,6 +1,8 @@
 import { OfficeMathRunElement, OfficeRun } from '@syncfusion/ej2-office-common';
 import { DetachedObjectError } from '../../core/errors/docx-error';
 import { Paragraph } from './paragraph';
+import { EntityType } from './entity-type';
+import { FeatureInline } from './feature-inline';
 
 /**
  * Owner that validates {@link ParagraphItem} attachment for mutation.
@@ -15,6 +17,9 @@ export interface ParagraphItemOwner {
     /**
      * Assert that `target` is still attached to this owner and that the owner
      * itself is mutable. Throws {@link DetachedObjectError} otherwise.
+     *
+     * @param {ParagraphItem} target - Specifies the target.
+     * @returns {void}
      */
     assertAttachedItem(target: ParagraphItem): void;
 }
@@ -38,11 +43,13 @@ export abstract class ParagraphItem implements OfficeRun{
     /**
      * Document context for never-attached authoring (`new TextRange(document)`).
      * Cleared only when the item is removed after having been attached.
+     *
      * @private
      */
     private documentContextValue: unknown | undefined;
     /**
      * True once this item has been attached at least once and later detached.
+     *
      * @private
      */
     private wasRemovedValue: boolean;
@@ -78,10 +85,11 @@ export abstract class ParagraphItem implements OfficeRun{
 
     /**
      * Owning paragraph when attached; `undefined` when detached.
-     * 
+     *
      * Most paragraph items are owned directly by a Paragraph. This property
      * provides convenient access to the containing paragraph for formatting and manipulation.
-     * 
+     *
+     * @returns {Paragraph | undefined} The containing {@link Paragraph}, or undefined when detached.
      * @example
      * ```ts
      * // Access paragraph format from a bookmark marker
@@ -89,7 +97,6 @@ export abstract class ParagraphItem implements OfficeRun{
      * start.ownerParagraph.paragraphFormat.backColor = Color.AliceBlue;
      * ```
      *
-     * @returns The containing {@link Paragraph}, or undefined when detached.
      * @public
      */
     get ownerParagraph(): Paragraph | undefined {
@@ -188,4 +195,18 @@ export abstract class ParagraphItem implements OfficeRun{
         }
         throw new DetachedObjectError('This paragraph item is no longer attached');
     }
+}
+
+/**
+ * True when a feature inline is itself a modeled {@link ParagraphItem} that is
+ * stored directly in a paragraph (no {@link FeatureInlineParagraphItem} wrapper).
+ * Currently only inline content controls qualify.
+ *
+ * @param {unknown} value - The candidate feature inline.
+ * @returns {boolean} `true` when `value` is stored directly as a paragraph item.
+ * @private
+ */
+export function isDirectInlineFeatureItem(value: unknown): value is ParagraphItem & FeatureInline {
+    return value instanceof ParagraphItem
+        && (value as unknown as { entityType?: unknown }).entityType === EntityType.InlineContentControl;
 }

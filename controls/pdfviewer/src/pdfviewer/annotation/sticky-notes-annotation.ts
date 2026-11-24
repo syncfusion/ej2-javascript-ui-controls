@@ -338,7 +338,9 @@ export class StickyNotesAnnotation {
                 };
             } else {
                 annotationName = this.pdfViewer.annotation.createGUID();
-                commentsDivid = proxy.addComments('sticky', pageIndex + 1);
+                if (!this.pdfViewer.readOnlySettings.comments) {
+                    commentsDivid = proxy.addComments('sticky', pageIndex + 1);
+                }
                 if (commentsDivid) {
                     const commentElement: HTMLElement = (this.pdfViewer.element as HTMLElement).querySelector('[id="' + commentsDivid + '"]');
                     if (commentElement) {
@@ -1454,7 +1456,17 @@ export class StickyNotesAnnotation {
                 },
                 submitOnEnter: true,
                 enableHtmlSanitizer: this.pdfViewer.enableHtmlSanitizer,
-                enableHtmlParse: this.pdfViewer.enableHtmlSanitizer
+                enableHtmlParse: this.pdfViewer.enableHtmlSanitizer,
+                actionBegin: (args: any): void => {
+                    if (this.pdfViewer.readOnlySettings.comments || this.pdfViewer.readOnlySettings.annotations) {
+                        args.cancel = true;
+                    }
+                },
+                beginEdit: (): void => {
+                    if (this.pdfViewer.readOnlySettings.comments || this.pdfViewer.readOnlySettings.annotations) {
+                        editObj.enableEditMode = false;
+                    }
+                }
             });
             if (data && (!isNullOrUndefined(data.Note) || !isNullOrUndefined(data.Text))) {
                 editObj.created = function (): void {
@@ -1462,10 +1474,20 @@ export class StickyNotesAnnotation {
                         editObj.element.querySelector('.e-editable-value').innerText = !isNullOrUndefined(data.Note) ? data.Note : !isNullOrUndefined(data.Text) ? data.Text : '' ;
                     });
                 };
+                const syncEditorValue: () => void = editObj.beginEdit;
                 editObj.beginEdit = function (): void {
+                    if (syncEditorValue) {
+                        syncEditorValue();
+                    }
                     editObj.value = editObj.valueEle.textContent;
+                    if (editObj.pdfViewerCommentsReadOnlyGuard && editObj.pdfViewerCommentsReadOnlyGuard()) {
+                        editObj.enableEditMode = false;
+                    }
                 };
             }
+            editObj.pdfViewerCommentsReadOnlyGuard = (): boolean => {
+                return this.pdfViewer.readOnlySettings.comments || this.pdfViewer.readOnlySettings.annotations;
+            };
             editObj.appendTo(commentTextBox);
             const textBox: any = (this.pdfViewer.element as HTMLElement).querySelectorAll('.e-editable-inline');
             for (let j: number = 0; j < textBox.length; j++) {
@@ -1492,7 +1514,10 @@ export class StickyNotesAnnotation {
                 }
             }
             const commentPanel: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
-            if (!data && type !== 'freeText' && !(type === 'shape_measure' && commentPanel.style.display === 'block') && !lockState) {
+            if (this.pdfViewer.readOnlySettings.comments || this.pdfViewer.readOnlySettings.annotations) {
+                editObj.disabled = true;
+                editObj.dataBind();
+            } else if (!data && type !== 'freeText' && !(type === 'shape_measure' && commentPanel.style.display === 'block') && !lockState) {
                 editObj.enableEditMode = true;
             }
             if (editObj.enableEditMode && type === 'ink') {
@@ -1501,6 +1526,13 @@ export class StickyNotesAnnotation {
             this.getButtonState(editObj, commentTextBox);
             editObj.actionSuccess = this.createCommentDiv.bind(this, editObj);
             commentDiv.appendChild(commentTextBox);
+            if (this.pdfViewer.readOnlySettings.comments || this.pdfViewer.readOnlySettings.annotations) {
+                commentTextBox.addEventListener('dblclick', (event: Event): void => {
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    editObj.enableEditMode = false;
+                }, true);
+            }
             if (data) {
                 editObj.value = !isNullOrUndefined(data.Note) ? data.Note : !isNullOrUndefined(data.Text) ? data.Text : '' ;
                 const isCommentLocked: boolean = this.checkIslockProperty(data);
@@ -1545,7 +1577,14 @@ export class StickyNotesAnnotation {
             commentDiv.addEventListener('mouseleave', this.commentDivMouseLeave.bind(this));
             commentDiv.addEventListener('mouseout', this.commentDivMouseLeave.bind(this));
             commentDiv.addEventListener('focusout', this.commentDivMouseLeave.bind(this));
-            commentTextBox.addEventListener('dblclick', this.openEditorElement.bind(this));
+            commentTextBox.addEventListener('dblclick', (event: Event): void => {
+                if (this.pdfViewer.readOnlySettings.comments || this.pdfViewer.readOnlySettings.annotations) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    return;
+                }
+                this.openEditorElement(event);
+            });
             commentTextBox.addEventListener('focusin', this.commentDivFocus.bind(this));
             return (this.commentsContainer.id);
         }
@@ -1614,6 +1653,9 @@ export class StickyNotesAnnotation {
      * @returns {void}
      */
     public createCommentDiv(args: any): void {
+        if (this.pdfViewer.readOnlySettings.comments || this.pdfViewer.readOnlySettings.annotations) {
+            return;
+        }
         let commentsContainer: HTMLElement;
         let titleContainer: HTMLElement;
         const newCommentDiv: any = createElement('div', { id: this.pdfViewer.element.id + '_newcommentdiv_' + this.commentsCount + '_' + this.commentsreplyCount, className: 'e-pv-new-comments-div' });
@@ -1831,6 +1873,9 @@ export class StickyNotesAnnotation {
      * @returns {void}
      */
     public saveCommentDiv(args: any, comment: any): void {
+        if (this.pdfViewer.readOnlySettings.annotations || this.pdfViewer.readOnlySettings.comments) {
+            return;
+        }
         let commentsContainer: HTMLElement;
         let annotationAuthor: string;
         let lastElement: any;
@@ -2107,8 +2152,28 @@ export class StickyNotesAnnotation {
             },
             submitOnEnter: true,
             enableHtmlSanitizer: this.pdfViewer.enableHtmlSanitizer,
-            enableHtmlParse: this.pdfViewer.enableHtmlSanitizer
+            enableHtmlParse: this.pdfViewer.enableHtmlSanitizer,
+            actionBegin: (args: any): void => {
+                if (this.pdfViewer.readOnlySettings.comments || this.pdfViewer.readOnlySettings.annotations) {
+                    args.cancel = true;
+                }
+            }
         });
+        editObj.pdfViewerCommentsReadOnlyGuard = (): boolean => {
+            return this.pdfViewer.readOnlySettings.comments || this.pdfViewer.readOnlySettings.annotations;
+        };
+        const syncContainerEditorValue: () => void = editObj.beginEdit;
+        editObj.beginEdit = (): void => {
+            if (syncContainerEditorValue) {
+                syncContainerEditorValue();
+            }
+            if (editObj.pdfViewerCommentsReadOnlyGuard()) {
+                editObj.enableEditMode = false;
+            }
+        };
+        if (this.pdfViewer.readOnlySettings.comments || this.pdfViewer.readOnlySettings.annotations) {
+            editObj.disabled = true;
+        }
         editObj.appendTo(commentTextBox);
         const textBox: any = (this.pdfViewer.element as HTMLElement).querySelectorAll('.e-editable-inline');
         for (let j: number = 0; j < textBox.length; j++) {
@@ -2125,6 +2190,13 @@ export class StickyNotesAnnotation {
         });
         editObj.actionSuccess = this.createCommentDiv.bind(this, editObj);
         commentDiv.appendChild(commentTextBox);
+        if (this.pdfViewer.readOnlySettings.comments || this.pdfViewer.readOnlySettings.annotations) {
+            commentTextBox.addEventListener('dblclick', (event: Event): void => {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                editObj.enableEditMode = false;
+            }, true);
+        }
         if (data) {
             editObj.value = data.note;
             const state: string = data.state ? data.state : data.review && data.review.state ? data.review.state : null;
@@ -2160,11 +2232,28 @@ export class StickyNotesAnnotation {
         commentDiv.addEventListener('mouseleave', this.commentDivMouseLeave.bind(this));
         commentDiv.addEventListener('mouseout', this.commentDivMouseLeave.bind(this));
         commentDiv.addEventListener('focusout', this.commentDivMouseLeave.bind(this));
-        commentTextBox.addEventListener('dblclick', this.openEditorElement.bind(this));
+        commentTextBox.addEventListener('dblclick', (event: Event): void => {
+            if (this.pdfViewer.readOnlySettings.comments || this.pdfViewer.readOnlySettings.annotations) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+            }
+            this.openEditorElement(event);
+        });
         return (this.commentsContainer.id);
     }
 
     private modifyProperty(args: any): void {
+        if (this.pdfViewer.readOnlySettings.comments || this.pdfViewer.readOnlySettings.annotations) {
+            if (args.cancel !== undefined) {
+                args.cancel = true;
+            }
+            if (args.element && args.element.ej2_instances && args.element.ej2_instances[0] && args.prevValue !== undefined) {
+                args.element.ej2_instances[0].value = args.prevValue;
+                args.element.ej2_instances[0].enableEditMode = false;
+            }
+            return;
+        }
         if (args.value === args.prevValue) {
             return;
         }
@@ -2577,7 +2666,7 @@ export class StickyNotesAnnotation {
                 }
             }
         }
-        const isCommentLocked: boolean = this.checkIslockProperty(contextActiveDiv);
+        const isCommentLocked: boolean = this.checkIslockProperty(contextActiveDiv) || this.pdfViewer.readOnlySettings.comments;
         if (isCommentLocked) {
             this.commentMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Edit')], false);
             this.commentMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Delete Context')], false);
@@ -2593,6 +2682,9 @@ export class StickyNotesAnnotation {
      * @returns {void}
      */
     public commentMenuItemSelect(args: any): void {
+        if (this.pdfViewer.readOnlySettings.annotations || this.pdfViewer.readOnlySettings.comments) {
+            return;
+        }
         let contextActiveDiv: any;
         const contextDiv: any = (this.pdfViewer.element as HTMLElement).querySelectorAll('.e-pv-more-options-button');
         if (contextDiv) {
@@ -2735,6 +2827,13 @@ export class StickyNotesAnnotation {
     }
 
     private openTextEditor(event: any): void {
+        if (this.pdfViewer.readOnlySettings.comments || this.pdfViewer.readOnlySettings.annotations) {
+            if (event && event.preventDefault) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            return;
+        }
         const commentShow: any = (this.pdfViewer.element as HTMLElement).querySelectorAll('.e-pv-new-comments-div');
         for (let i: number = 0; i < commentShow.length; i++) {
             commentShow[parseInt(i.toString(), 10)].style.display = 'none';
@@ -2760,6 +2859,9 @@ export class StickyNotesAnnotation {
      * @returns {boolean} - boolean
      */
     public checkIslockProperty(commentEvent: any): boolean {
+        if (this.pdfViewer.readOnlySettings.annotations || this.pdfViewer.readOnlySettings.comments) {
+            return true;
+        }
         const annotCollection: any = this.pdfViewer.annotationCollection;
         let annotation: any;
         if (commentEvent.IsCommentLock) {
@@ -2806,6 +2908,16 @@ export class StickyNotesAnnotation {
     }
 
     private openEditorElement(event: any): void {
+        if (this.pdfViewer.readOnlySettings.comments || this.pdfViewer.readOnlySettings.annotations) {
+            if (event && event.preventDefault) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            if (event && event.currentTarget && event.currentTarget.ej2_instances) {
+                event.currentTarget.ej2_instances[0].enableEditMode = false;
+            }
+            return;
+        }
         const commentShow: any = document.querySelectorAll('.e-pv-new-comments-div');
         for (let i: number = 0; i < commentShow.length; i++) {
             commentShow[parseInt(i.toString(), 10)].style.display = 'none';
@@ -2833,7 +2945,7 @@ export class StickyNotesAnnotation {
     private commentsDivClickEvent(event: any): void {
         const annotation: any = this.findAnnotationObject(event.currentTarget.parentElement.id);
         const isLocked: boolean = !isNullOrUndefined(annotation) ? (annotation.annotationSettings.isLock || annotation.isLock) : false;
-        if (!isLocked) {
+        if (!isLocked && !this.pdfViewer.readOnlySettings.annotations && !this.pdfViewer.readOnlySettings.comments) {
             let isCommentsSelect: boolean = false;
             if (event.clientX === 0 && event.clientY === 0) {
                 this.isSetAnnotationType = true;
@@ -2868,14 +2980,15 @@ export class StickyNotesAnnotation {
             const authorCompareSubject: string = annotation && annotation.subject ? annotation.subject : '';
             const effectiveViewerAuthor: string = this.updatedAuthor(
                 authorCompareType, authorCompareSubType, currentAnnotAuthor, authorCompareSubject);
-            const isAuthorMismatch: boolean = !!annotation && (effectiveViewerAuthor !== currentAnnotAuthor);
+            const isAuthorMismatch: boolean = !!annotation && (effectiveViewerAuthor !== currentAnnotAuthor) &&
+                !this.pdfViewer.readOnlySettings.comments;
             const commentShow: any = document.querySelectorAll('.e-pv-new-comments-div');
             for (let i: number = 0; i < commentShow.length; i++) {
                 commentShow[parseInt(i.toString(), 10)].style.display = 'none';
             }
             const editElement: any = commentsContainerEl.lastChild;
             const commentsElement: any = commentsContainerEl;
-            if (editElement && !isAuthorMismatch) {
+            if (editElement && !isAuthorMismatch && !this.pdfViewer.readOnlySettings.comments) {
                 editElement.style.display = 'block';
                 const acMode: string = this.pdfViewer.enableAutoComplete ? 'on' : 'off';
                 const editInputs: NodeListOf<HTMLElement> = editElement.querySelectorAll('input.e-input, textarea.e-input');
@@ -2918,7 +3031,8 @@ export class StickyNotesAnnotation {
                 && lastChildEl.classList.contains('e-pv-new-comments-div')) {
                 lastChildEl.style.display = 'block';
             }
-            if (commentsContainerEl.childElementCount === 1 && !isAuthorMismatch) {
+            if (commentsContainerEl.childElementCount === 1 && !isAuthorMismatch && !this.pdfViewer.readOnlySettings.comments
+                && !this.pdfViewer.readOnlySettings.annotations) {
                 if (!this.pdfViewer.enableShapeLabel) {
                     event.currentTarget.childNodes[1].ej2_instances[0].enableEditMode = true;
                     event.currentTarget.childNodes[1].ej2_instances[0].dataBind();
@@ -2963,6 +3077,13 @@ export class StickyNotesAnnotation {
     }
 
     private commentsDivDoubleClickEvent(event: any): void {
+        if (this.pdfViewer.readOnlySettings.comments || this.pdfViewer.readOnlySettings.annotations) {
+            if (event && event.preventDefault) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            return;
+        }
         const commentShow: any = document.querySelectorAll('.e-pv-new-comments-div');
         for (let i: number = 0; i < commentShow.length; i++) {
             commentShow[parseInt(i.toString(), 10)].style.display = 'none';
@@ -3102,6 +3223,9 @@ export class StickyNotesAnnotation {
      */
     public addComments(annotationType: string, pageNumber: number, annotationSubType?: string,
                        isCloudShape?: boolean, subject?: string): string {
+        if (this.pdfViewer.readOnlySettings.comments) {
+            return null;
+        }
         let commentsDivid: string;
         const accordion: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_accordionContainer' + pageNumber);
         if (accordion) {
@@ -3127,7 +3251,7 @@ export class StickyNotesAnnotation {
         const cmpEffectiveAuthor: string = this.updatedAuthor(cmpType, cmpSubType, cmpAuthor, cmpSubject);
         const isAuthorMismatchSelect: boolean = !!annotObj && (cmpEffectiveAuthor !== cmpAuthor);
         // When the isLock is set to true, it comes and checks whether the allowedInteractions is select and set the isLock to false, In that case if enters the condition and makes the comment panel to editable mode. So, have removed the condition in openEditorElement, commentsDivClickEvent, openTextEditor,commentAnnotationSelect methods. (Task id: 835410)
-        if (!isLocked) {
+        if (!isLocked && !this.pdfViewer.readOnlySettings.annotations && !this.pdfViewer.readOnlySettings.comments) {
             if (element.classList.contains('e-pv-comments-border')) {
                 const commentsDiv: any = (this.pdfViewer.element as HTMLElement).querySelectorAll('.e-pv-comments-div');
                 for (let j: number = 0; j < commentsDiv.length; j++) {
@@ -3190,7 +3314,7 @@ export class StickyNotesAnnotation {
                 for (let j: number = 0; j < commentTextBox.length; j++) {
                     commentTextBox[parseInt(j.toString(), 10)].style.display = 'none';
                 }
-                if (commentsDiv) {
+                if (commentsDiv && !this.pdfViewer.readOnlySettings.comments) {
                     const currentTextBox: any = commentsDiv.querySelector('.e-pv-new-comments-div');
                     if (currentTextBox) {
                         currentTextBox.style.display = 'block';
@@ -3223,7 +3347,7 @@ export class StickyNotesAnnotation {
                     }
                 }
                 this.isSetAnnotationType = false;
-                if (event.currentTarget.childElementCount === 1) {
+                if (event.currentTarget.childElementCount === 1 && !this.pdfViewer.readOnlySettings.comments) {
                     const activeEditorElement: HTMLElement = event.currentTarget.childNodes[0].childNodes[1] as HTMLElement;
                     const activeEditor: InPlaceEditor = (activeEditorElement as DomElements).ej2_instances[0] as InPlaceEditor;
                     activeEditor.enableEditMode = true;
@@ -3376,6 +3500,9 @@ export class StickyNotesAnnotation {
                         }
                         this.pdfViewer.clearSelection(pageNumber - 1);
                         if (type === 'textMarkup') {
+                            if (this.pdfViewer.readOnlySettings.annotations) {
+                                return;
+                            }
                             this.pdfViewer.annotationModule.textMarkupAnnotationModule.
                                 clearCurrentAnnotationSelection(pageNumber - 1, true);
                             const canvasId: string = annotation && annotation.textMarkupAnnotationType === 'Highlight' ?
@@ -3655,6 +3782,17 @@ export class StickyNotesAnnotation {
     }
 
     private modifyCommentsProperty(text: string, annotName: string, parentElement: string, previousValue?: any, newAuthor?: string): void {
+        if (this.pdfViewer.readOnlySettings.annotations || this.pdfViewer.readOnlySettings.comments) {
+            const editorHost: HTMLElement = document.getElementById(annotName);
+            const editor: any = editorHost && editorHost.querySelector && editorHost.querySelector('.e-pv-comment-textbox');
+            if (editor && editor.ej2_instances && editor.ej2_instances[0]) {
+                editor.ej2_instances[0].enableEditMode = false;
+                if (previousValue !== undefined) {
+                    editor.ej2_instances[0].value = previousValue;
+                }
+            }
+            return;
+        }
         let currentAnnotation: any;
         if (this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
             currentAnnotation = this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation;
@@ -3814,6 +3952,9 @@ export class StickyNotesAnnotation {
     }
 
     private modifyStatusProperty(text: string, statusElement: any): void {
+        if (this.pdfViewer.readOnlySettings.comments || this.pdfViewer.readOnlySettings.annotations) {
+            return;
+        }
         let currentAnnotation: any;
         let commentsDiv: HTMLElement = null;
         let pageNumber: number;
@@ -3913,6 +4054,9 @@ export class StickyNotesAnnotation {
      * @returns {void}
      */
     public modifyCommentDeleteProperty(commentsElement: any, replyElement: any): void {
+        if (this.pdfViewer.readOnlySettings.comments || this.pdfViewer.readOnlySettings.annotations) {
+            return;
+        }
         const commentsParentElement: any = document.getElementById(commentsElement.id);
         const annotationData: any = this.getAnnotationById(commentsElement);
         if (commentsParentElement && annotationData) {

@@ -2,7 +2,7 @@ import { ColorPicker as ColorPickerComponent, OpenEventArgs } from '@syncfusion/
 import { ColorPickerEventArgs, ModeSwitchEventArgs, PaletteTileEventArgs } from '@syncfusion/ej2-inputs';
 import { addClass, L10n } from '@syncfusion/ej2-base';
 import { Spreadsheet } from '../base/index';
-import { spreadsheetDestroyed, fontColor, fillColor, beforeRibbonCreate, locale, focus, editOperation } from '../common/index';
+import { spreadsheetDestroyed, fontColor, fillColor, beforeRibbonCreate, locale, focus, editOperation, getUpdateUsingRaf } from '../common/index';
 import { setCellFormat, SetCellFormatArgs } from '../../workbook/common/index';
 /**
  * `Color Picker` module is used to handle ColorPicker functionality.
@@ -94,6 +94,8 @@ export class ColorPicker {
         const localeText: string = this.parent.serviceLocator.getService<L10n>(locale).getConstant(name);
         if (isCreated) {
             ele.parentElement.querySelector('.e-dropdown-btn').setAttribute('aria-label', localeText);
+        } else {
+            focus(this.parent.element);
         }
         const primaryBtn: HTMLElement = ele.parentElement.querySelector('.e-split-colorpicker');
         primaryBtn.setAttribute('aria-label', `${localeText} ${color}`);

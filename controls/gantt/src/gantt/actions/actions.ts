@@ -17,6 +17,7 @@ export * from './context-menu';
 export * from './excel-export';
 export * from './column-menu';
 export * from './rowdragdrop';
+export * from './dom-virtualization';
 export * from './pdf-export';
 export * from './virtual-scroll';
 export * from './freeze-column';

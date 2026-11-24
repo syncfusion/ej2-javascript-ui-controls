@@ -45,3 +45,5 @@ export * from './actions/dom-virtualization';
 export * from './actions/formula';
 export * from './actions/formula-edit';
 export * from './actions/webmcp-adapter';
+export * from './actions/highlight';
+export * from './actions/status-bar';

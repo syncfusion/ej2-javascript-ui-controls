@@ -18,7 +18,7 @@ import { PdfPopupAnnotationCollection } from './annotation-collection';
 import { _PdfPaddings } from './pdf-paddings';
 import { PdfForm } from '../form/form';
 import { PdfLayer } from '../layers/layer';
-import { PdfLayerCollection } from '../layers/layer-collection';
+import { PdfLayerCollection, PdfLayerGroup } from '../layers/layer-collection';
 import { _ContentParser, _PdfRecord } from '../content-parser';
 import { _XfdfDocument } from './../import-export/xfdf-document';
 import { _JsonDocument } from './../import-export/json-document';
@@ -1739,6 +1739,22 @@ export abstract class PdfAnnotation {
      */
     abstract _doPostProcess(isFlatten?: boolean): void;
     /**
+     * Returns true when the appearance stream has no /Matrix or an explicit identity /Matrix [1 0 0 1 0 0].
+     * ISO 32000-1 8.10.1 and 12.5.5: an omitted Matrix defaults to the identity, so both must be treated alike.
+     *
+     * @private
+     * @param {_PdfDictionary} dictionary Appearance stream dictionary.
+     * @returns {boolean} True when the effective matrix is the identity.
+     */
+    _isMatrixAbsentOrIdentity(dictionary: _PdfDictionary): boolean {
+        if (!dictionary || !dictionary.has('Matrix')) {
+            return true;
+        }
+        const matrix: number[] = dictionary.getArray('Matrix');
+        return !!matrix && matrix.length === 6 && matrix[0] === 1 && matrix[1] === 0 && matrix[2] === 0 &&
+            matrix[3] === 1 && matrix[4] === 0 && matrix[5] === 0;
+    }
+    /**
      * Validates the transformation matrix for the annotations appearance stream.
      * When no template is provided, checks for identity rotation and flags location
      * displacement when applicable.
@@ -2015,7 +2031,7 @@ export abstract class PdfAnnotation {
                     }
                 }
             }
-            if (!template._content.dictionary.has('Matrix') && template._content.dictionary.has('BBox')) {
+            if (this._isMatrixAbsentOrIdentity(template._content.dictionary) && template._content.dictionary.has('BBox')) {
                 const box: number[] = template._content.dictionary.getArray('BBox');
                 bounds.x -= box[0];
                 bounds.y += box[1];
@@ -2992,24 +3008,28 @@ export abstract class PdfAnnotation {
             values = this._prepareOpenArrow(isBegin, axisPoint, angle, length);
             path = new PdfPath();
             path._pen = pen;
-            path.addLine({x: values.startPoint.x, y: -values.startPoint.y}, {x: values.first.x, y: -values.first.y});
-            path.addLine({x: values.startPoint.x, y: -values.startPoint.y}, {x: values.second.x, y: -values.second.y});
+            path._points = [{x: values.second.x, y: -values.second.y}, {x: values.startPoint.x, y: -values.startPoint.y},
+                {x: values.first.x, y: -values.first.y}];
+            path._pathTypes = [0, 1, 1];
             graphics._stateControl(pen, null, null);
             graphics._buildUpPath(path._points, path._pathTypes);
             graphics._drawGraphicsPath(pen, null, path._fillMode, false);
             break;
         case PdfLineEndingStyle.closedArrow:
             values = this._prepareClosedArrow(isBegin, axisPoint, angle, length);
-            graphics.drawPolygon([{x: values.startPoint.x, y: -values.startPoint.y},
-                {x: values.first.x, y: -values.first.y}, {x: values.second.x,
-                    y: -values.second.y}], pen, brush);
+            graphics.drawPolygon(isBegin ?
+                [{x: values.second.x, y: -values.second.y}, {x: values.startPoint.x, y: -values.startPoint.y},
+                    {x: values.first.x, y: -values.first.y}] :
+                [{x: values.first.x, y: -values.first.y}, {x: values.startPoint.x, y: -values.startPoint.y},
+                    {x: values.second.x, y: -values.second.y}], pen, brush);
             break;
         case PdfLineEndingStyle.rOpenArrow:
             values = this._prepareReverseOpenArrow(isBegin, axisPoint, angle, length);
             path = new PdfPath();
             path._pen = pen;
-            path.addLine({x: values.startPoint.x, y: -values.startPoint.y}, {x: values.first.x, y: -values.first.y});
-            path.addLine({x: values.startPoint.x, y: -values.startPoint.y}, {x: values.second.x, y: -values.second.y});
+            path._points = [{x: values.second.x, y: -values.second.y}, {x: values.startPoint.x, y: -values.startPoint.y},
+                {x: values.first.x, y: -values.first.y}];
+            path._pathTypes = [0, 1, 1];
             graphics._stateControl(pen, null, null);
             graphics._buildUpPath(path._points, path._pathTypes);
             graphics._drawGraphicsPath(pen, null, path._fillMode, false);
@@ -3022,8 +3042,7 @@ export abstract class PdfAnnotation {
             break;
         case PdfLineEndingStyle.slash:
             values = this._prepareSlash(axisPoint, angle, length);
-            graphics.drawLine(pen, {x: axisPoint.x, y: -axisPoint.y}, {x: values.first.x, y: -values.first.y});
-            graphics.drawLine(pen, {x: axisPoint.x, y: -axisPoint.y}, {x: values.second.x, y: -values.second.y});
+            graphics.drawLine(pen, {x: values.second.x, y: -values.second.y}, {x: values.first.x, y: -values.first.y});
             break;
         case PdfLineEndingStyle.diamond:
             values = this._prepareDiamond(axisPoint, length);
@@ -3889,14 +3908,20 @@ export abstract class PdfAnnotation {
         page: PdfPage
     ): void {
         for (let i: number = 0; i < layerCollection.count; i++) {
-            const reference: _PdfReference = layerCollection.at(i)._referenceHolder;
+            const item: PdfLayer | PdfLayerGroup = layerCollection.at(i);
+            if (item._isGroup) {
+                this._isMatched(item as PdfLayerGroup, expectedReference, page);
+                continue;
+            }
+            const layerItem: PdfLayer = item as PdfLayer;
+            const reference: _PdfReference = layerItem._referenceHolder;
             if (reference && reference === expectedReference) {
-                if (layerCollection.at(i).name) {
-                    this._layer = layerCollection.at(i);
+                if (layerItem.name) {
+                    this._layer = layerItem;
                     break;
                 }
-            } else if (layerCollection.at(i).layers && layerCollection.at(i).layers.count > 0) {
-                this._isMatched(layerCollection.at(i).layers, expectedReference, page);
+            } else if (layerItem.layers && layerItem.layers.count > 0) {
+                this._isMatched(layerItem.layers, expectedReference, page);
             }
         }
     }
@@ -5340,13 +5365,21 @@ export class PdfLineAnnotation extends PdfComment {
                 this._drawLineStyle(startPoint, endPoint, graphics, angle, borderPen, backBrush, this.lineEndingStyle, this.border.width);
                 const leaderExt: number = (typeof this.leaderExt !== 'undefined' ? this._leaderExt : 0);
                 const beginLineExt: Point = this._getAxisValue(startPoint, (lineAngle + 90), leaderExt);
-                graphics.drawLine(borderPen, {x: startPoint.x, y: -startPoint.y}, {x: beginLineExt.x, y: -beginLineExt.y});
+                if (leaderExt !== 0) {
+                    graphics.drawLine(borderPen, {x: startPoint.x, y: -startPoint.y}, {x: beginLineExt.x, y: -beginLineExt.y});
+                }
                 const endLineExt: Point = this._getAxisValue(endPoint, (lineAngle + 90), leaderExt);
-                graphics.drawLine(borderPen, {x: endPoint.x, y: -endPoint.y}, {x: endLineExt.x, y: -endLineExt.y});
+                if (leaderExt !== 0) {
+                    graphics.drawLine(borderPen, {x: endPoint.x, y: -endPoint.y}, {x: endLineExt.x, y: -endLineExt.y});
+                }
                 const beginLeaderLine: Point = this._getAxisValue(startPoint, (lineAngle - 90), leaderLine);
-                graphics.drawLine(borderPen, {x: startPoint.x, y: -startPoint.y}, {x: beginLeaderLine.x, y: -beginLeaderLine.y});
+                if (leaderLine !== 0) {
+                    graphics.drawLine(borderPen, {x: startPoint.x, y: -startPoint.y}, {x: beginLeaderLine.x, y: -beginLeaderLine.y});
+                }
                 const endLeaderLine: Point = this._getAxisValue(endPoint, (lineAngle - 90), leaderLine);
-                graphics.drawLine(borderPen, {x: endPoint.x, y: -endPoint.y}, {x: endLeaderLine.x, y: -endLeaderLine.y});
+                if (leaderLine !== 0) {
+                    graphics.drawLine(borderPen, {x: endPoint.x, y: -endPoint.y}, {x: endLeaderLine.x, y: -endLeaderLine.y});
+                }
                 const midpoint: number = lineDistance / 2;
                 const centerPoint: Point = this._getAxisValue(startPoint, angle, midpoint);
                 let captionPosition: Point;
@@ -5748,13 +5781,21 @@ export class PdfLineAnnotation extends PdfComment {
                 this._drawLineStyle(startPoint, endPoint, graphics, angle, pen, brush, this.lineEndingStyle, this.border.width);
                 const leaderExt: number = (typeof this.leaderExt !== 'undefined' ? this._leaderExt : 0);
                 const beginLineExt: Point = this._getAxisValue(startPoint, (lineAngle + 90), leaderExt);
-                graphics.drawLine(pen, {x: startPoint.x, y: -startPoint.y}, {x: beginLineExt.x, y: -beginLineExt.y});
+                if (leaderExt !== 0) {
+                    graphics.drawLine(pen, {x: startPoint.x, y: -startPoint.y}, {x: beginLineExt.x, y: -beginLineExt.y});
+                }
                 const endLineExt: Point = this._getAxisValue(endPoint, (lineAngle + 90), leaderExt);
-                graphics.drawLine(pen, {x: endPoint.x, y: -endPoint.y}, {x: endLineExt.x, y: -endLineExt.y});
+                if (leaderExt !== 0) {
+                    graphics.drawLine(pen, {x: endPoint.x, y: -endPoint.y}, {x: endLineExt.x, y: -endLineExt.y});
+                }
                 const beginLeaderLine: Point = this._getAxisValue(startPoint, (lineAngle - 90), leaderLine);
-                graphics.drawLine(pen, {x: startPoint.x, y: -startPoint.y}, {x: beginLeaderLine.x, y: -beginLeaderLine.y});
+                if (leaderLine !== 0) {
+                    graphics.drawLine(pen, {x: startPoint.x, y: -startPoint.y}, {x: beginLeaderLine.x, y: -beginLeaderLine.y});
+                }
                 const endLeaderLine: Point = this._getAxisValue(endPoint, (lineAngle - 90), leaderLine);
-                graphics.drawLine(pen, {x: endPoint.x, y: -endPoint.y}, {x: endLeaderLine.x, y: -endLeaderLine.y});
+                if (leaderLine !== 0) {
+                    graphics.drawLine(pen, {x: endPoint.x, y: -endPoint.y}, {x: endLeaderLine.x, y: -endLeaderLine.y});
+                }
                 const midpoint: number = lineDistance / 2;
                 const centerPoint: Point = this._getAxisValue(startPoint, angle, midpoint);
                 let captionPosition: Point;
@@ -5772,12 +5813,12 @@ export class PdfLineAnnotation extends PdfComment {
                         captionPosition = this._getAxisValue(centerPoint, (angle + 90), (height / 2));
                     }
                 }
-                graphics.translateTransform({x: captionPosition.x, y: -captionPosition.y});
-                graphics.rotateTransform(-angle);
                 if (this.caption.cap) {
+                    graphics.translateTransform({x: captionPosition.x, y: -captionPosition.y});
+                    graphics.rotateTransform(-angle);
                     graphics.drawString(this.text, font, {x: (-lineWidth / 2), y: 0, width: 0, height: 0}, null, parameter.foreBrush);
+                    graphics.restore();
                 }
-                graphics.restore();
             }
         }
         const rectangleBounds: number[] = _fromRectangle({ x: bounds[0], y: bounds[1], width: bounds[2], height: bounds[3] });
@@ -6425,7 +6466,7 @@ export class PdfCircleAnnotation extends PdfComment {
                 y: rect[1] + width,
                 width: rect[2] - borderWidth,
                 height: rect[3] - borderWidth},
-                                 parameter.borderPen);
+                                 parameter.borderPen, parameter.backBrush);
             if (this._measureType === PdfCircleMeasurementType.diameter) {
                 graphics.save();
                 graphics.translateTransform({x: nativeRectangle[0], y: -nativeRectangle[1]});
@@ -7346,7 +7387,8 @@ export class PdfSquareAnnotation extends PdfComment {
                 y: rect[1] + width,
                 width: rect[2] - borderWidth,
                 height: rect[3] - borderWidth},
-                                   new PdfPen(this.color, this.border.width));
+                                   new PdfPen(this.color, this.border.width),
+                                   parameter.backBrush);
             graphics.save();
             graphics.translateTransform({x: nativeRectangle[0], y: - nativeRectangle[1]});
             const x: number = (nativeRectangle[2] / 2) - (fontsize.width / 2);
@@ -8179,7 +8221,7 @@ export class PdfPolygonAnnotation extends PdfComment {
         if (isFlatten) {
             if (this._appearanceTemplate) {
                 const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
-                if (!this._appearanceTemplate._content.dictionary.has('Matrix')) {
+                if (this._isMatrixAbsentOrIdentity(this._appearanceTemplate._content.dictionary)) {
                     const box: number[] = this._appearanceTemplate._content.dictionary.getArray('BBox');
                     if (box && box.length >= 2) {
                         this._appearanceTemplate._content.dictionary.update('Matrix', [1, 0, 0, 1, -box[0], -box[1]]);
@@ -8864,7 +8906,7 @@ export class PdfPolyLineAnnotation extends PdfComment {
         if (isFlatten) {
             if (this._appearanceTemplate) {
                 const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
-                if (!this._appearanceTemplate._content.dictionary.has('Matrix')) {
+                if (this._isMatrixAbsentOrIdentity(this._appearanceTemplate._content.dictionary)) {
                     const box: number[] = this._appearanceTemplate._content.dictionary.getArray('BBox');
                     if (box) {
                         this._appearanceTemplate._content.dictionary.update('Matrix', [1, 0, 0, 1, -box[0], -box[1]]);
@@ -9002,6 +9044,7 @@ export class PdfPolyLineAnnotation extends PdfComment {
                         if (this.endLineStyle === PdfLineEndingStyle.closedArrow || this.endLineStyle === PdfLineEndingStyle.openArrow) {
                             endPoint1 = this._getAxisValue(endPoint, angles.endAngle, -this.border.width);
                             path._points[path._points.length - 1].x = endPoint1.x;
+                            path._points[path._points.length - 1].y = -endPoint1.y;
                         }
                         graphics.drawPath(path, borderPen);
                         if (this.beginLineStyle !== PdfLineEndingStyle.none) {
@@ -9071,6 +9114,7 @@ export class PdfPolyLineAnnotation extends PdfComment {
             if (this.endLineStyle === PdfLineEndingStyle.closedArrow || this.endLineStyle === PdfLineEndingStyle.openArrow) {
                 newEnd = this._getAxisValue(endPoint, angles.endAngle, -this.border.width);
                 path._points[path._points.length - 1].x = newEnd.x;
+                path._points[path._points.length - 1].y = -newEnd.y;
             }
             let beginLineStyleBounds: {x: number, y: number, width: number, height: number};
             if (this.beginLineStyle !== PdfLineEndingStyle.none) {
@@ -9451,7 +9495,7 @@ export class PdfAngleMeasurementAnnotation extends PdfComment {
         if (isFlatten) {
             if (this._appearanceTemplate) {
                 const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
-                if (!this._appearanceTemplate._content.dictionary.has('Matrix')) {
+                if (this._isMatrixAbsentOrIdentity(this._appearanceTemplate._content.dictionary)) {
                     const box: number[] = this._appearanceTemplate._content.dictionary.getArray('BBox');
                     if (box) {
                         this._appearanceTemplate._content.dictionary.update('Matrix', [1, 0, 0, 1, -box[0], -box[1]]);
@@ -18444,7 +18488,7 @@ export class PdfRedactionAnnotation extends PdfComment {
             }
             if (isFlatten && this._appearanceTemplate) {
                 const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
-                if (!this._appearanceTemplate._content.dictionary.has('Matrix')) {
+                if (this._isMatrixAbsentOrIdentity(this._appearanceTemplate._content.dictionary)) {
                     const box: number[] = this._appearanceTemplate._content.dictionary.getArray('BBox');
                     if (box) {
                         this._appearanceTemplate._content.dictionary.update('Matrix', [1, 0, 0, 1, -box[0], -box[1]]);
@@ -28606,7 +28650,7 @@ export class PdfWidgetAnnotation extends PdfAnnotation {
                 }
                 if (form && form._dictionary.has('DR')) {
                     const resources: _PdfDictionary = form._dictionary.get('DR');
-                    if (resources.has('Font')) {
+                    if (resources instanceof _PdfDictionary && resources.has('Font')) {
                         const fonts: _PdfDictionary = resources.get('Font');
                         if (fonts.has(fontData.name)) {
                             const fontDictionary: _PdfDictionary = fonts.get(fontData.name);
@@ -28820,7 +28864,8 @@ export class PdfWidgetAnnotation extends PdfAnnotation {
             let resource: _PdfDictionary;
             if (document) {
                 if (document.form._dictionary.has('DR')) {
-                    resource = document.form._dictionary.get('DR');
+                    const existingDR: _PdfDictionary = document.form._dictionary.get('DR');
+                    resource = existingDR instanceof _PdfDictionary ? existingDR : new _PdfDictionary(this._crossReference);
                 } else {
                     resource = new _PdfDictionary(this._crossReference);
                 }

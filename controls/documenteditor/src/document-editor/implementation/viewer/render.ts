@@ -1027,7 +1027,8 @@ private calculatePathBounds(data: string): Rect {
         if (widget.containerWidget instanceof BodyWidget && (widget.containerWidget as BodyWidget).sectionFormat.columns.length > 1) {
             isMultiColumn = true;
         }
-        let top: number = isMultiColumn ? widget.y : page.viewer.clientArea.y;
+        // In multi-column layout, the table is already positioned below the repeated header area, so the header starts at the top of the owning column.
+        let top: number = isMultiColumn ? (widget.containerWidget as BodyWidget).y : page.viewer.clientArea.y;
         let parentTable: TableWidget = header.ownerTable.getSplitWidgets()[0] as TableWidget;
         if (parentTable.childWidgets.length === 0) {
             return;
@@ -1059,6 +1060,26 @@ private calculatePathBounds(data: string): Rect {
             page.documentHelper.layout.updateChildLocationForTable(top, widget, undefined, false, isMultiColumn);
         }
     }
+    private updateClonedRowLocation(page: Page, clonedRow: TableRowWidget, top: number, isMultiColumn: boolean): void {
+    const previousX: number[] = [];
+    for (let i: number = 0; i < clonedRow.childWidgets.length; i++) {
+        previousX.push((clonedRow.childWidgets[i] as TableCellWidget).x);
+    }
+    page.documentHelper.layout.updateChildLocationForRow(top, clonedRow, undefined, false, isMultiColumn);
+    if (!isMultiColumn || clonedRow.childWidgets.length === 0) {
+        return;
+    }
+    // In multi-column layout, the cloned header cells are moved to the column of the current page.
+    // The cells keep their left margin offset from the row, and their content moves along with them.
+    const offset: number = clonedRow.x + (clonedRow.childWidgets[0] as TableCellWidget).margin.left - previousX[0];
+    for (let i: number = 0; i < clonedRow.childWidgets.length; i++) {
+        const cell: TableCellWidget = clonedRow.childWidgets[i] as TableCellWidget;
+        cell.x = previousX[i] + offset;
+        for (let j: number = 0; j < cell.childWidgets.length; j++) {
+            page.documentHelper.layout.shiftXPosition(cell.childWidgets[j] as Widget, offset);
+        }
+    }
+}
     private updateTableHeaderRows(headerRow: TableRowWidget, clonedTable: TableWidget, page: Page, top: number, left: number, isMultiColumn: boolean): void {
         let table: TableWidget = headerRow.ownerTable;
         let rowSpan: number = 1;
@@ -1072,7 +1093,7 @@ private calculatePathBounds(data: string): Rect {
                 clonedTable.childWidgets.push(clonedRow);
                 clonedRow.containerWidget = clonedTable;
                 page.viewer.updateClientAreaLocation(clonedRow, new Rect(left, top, clonedRow.width, clonedRow.height));
-                page.documentHelper.layout.updateChildLocationForRow(top, clonedRow, undefined, false, isMultiColumn);
+                this.updateClonedRowLocation(page, clonedRow, top, isMultiColumn);
                 top += clonedRow.height;
                 if (row == headerRow) {
                     for (let j: number = 0; j < headerRow.childWidgets.length; j++) {
@@ -1090,7 +1111,7 @@ private calculatePathBounds(data: string): Rect {
                                 clonedTable.childWidgets.push(clonedRow);
                                 clonedRow.containerWidget = clonedTable;
                                 page.viewer.updateClientAreaLocation(clonedRow, new Rect(left, top, clonedRow.width, clonedRow.height));
-                                page.documentHelper.layout.updateChildLocationForRow(top, clonedRow, undefined, false, isMultiColumn);
+                                this.updateClonedRowLocation(page, clonedRow, top, isMultiColumn);
                                 top += clonedRow.height;
                             }
                         }
@@ -1130,7 +1151,10 @@ private calculatePathBounds(data: string): Rect {
         }
         for (let i: number = 0; i < paraWidget.childWidgets.length; i++) {
             let widget: LineWidget = paraWidget.childWidgets[i] as LineWidget;
-            top += widget.marginTop;            
+            top += widget.marginTop;
+            if (!widget.isFirstLine() && paraWidget.previousRenderedWidget && paraWidget.previousRenderedWidget instanceof ParagraphWidget && this.documentHelper.layout.isMergedWithNextParagraph(paraWidget.previousRenderedWidget as ParagraphWidget)) {
+                left = page.viewer.clientArea.x;
+            }
             this.renderLine(widget, page, left, top);
             top += widget.height;
         }

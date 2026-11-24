@@ -344,7 +344,7 @@ export function createMinimalNumberingLevel(ilvl: number, format: 'bullet' | 'de
 }
 /**
  * Bullet character, font name, and format token at a given 0-based position in the
- * three-slot repeating pattern used by DocIO `WListLevel.CreateDefBulletLvl`.
+ * three-slot repeating pattern follows the standard behaviour.
  */
 const BULLET_PATTERN: ReadonlyArray<{
     readonly lvlText: string;
@@ -356,7 +356,7 @@ const BULLET_PATTERN: ReadonlyArray<{
 ];
 /**
  * Number format and justification at a given 0-based position in the three-slot
- * repeating pattern used by DocIO `WListLevel.CreateDefNumberLvl`.
+ * repeating pattern follows the standard behaviour.
  */
 const NUMBER_PATTERN: ReadonlyArray<{
     readonly numFmt: string;
@@ -369,7 +369,7 @@ const NUMBER_PATTERN: ReadonlyArray<{
 /**
  * Build one `w:lvl` for a default nine-level bullet abstract numbering definition.
  *
- * DocIO formula (points → twips): `left = (ilvl + 1) * 36 pt * 20 = (ilvl + 1) * 720`;
+ * Word formula (points → twips): `left = (ilvl + 1) * 36 pt * 20 = (ilvl + 1) * 720`;
  * `hanging = 18 pt * 20 = 360` for all levels.
  *
  * @param {number} ilvl - The ilvl.
@@ -417,7 +417,7 @@ export function createDefaultBulletLevel(ilvl: number): NumberingLevel {
 /**
  * Build one `w:lvl` for a default nine-level numbered abstract numbering definition.
  *
- * Level text token: `%<N>.` where N = ilvl + 1 (1-based, matches DocIO `%N<suffix>`).
+ * Level text token: `%<N>.` where N = ilvl + 1 (1-based, matches Word `%N<suffix>`).
  *
  * @param {number} ilvl - The ilvl.
  * @returns {NumberingLevel} The result.
@@ -454,10 +454,13 @@ export function createDefaultNumberedLevel(ilvl: number): NumberingLevel {
  * HTML <ol> level: decimal at every level, matching browser rendering of nested
  * ordered lists (1. / 1.1-style nesting keeps plain numbers at each level).
  *
+ * @param {number} ilvl - The ilvl.
+ * @param {string} numFmt - The num fmt.
+ * @returns {NumberingLevel} The result of the operation.
  * @private
  */
 export function createHtmlDecimalLevel(ilvl: number, numFmt: string = 'decimal'): NumberingLevel {
-    const leftTwips = (ilvl + 1) * 720;
+    const leftTwips: number = (ilvl + 1) * 720;
     return new NumberingLevel({
         ilvl,
         start: 1,
@@ -470,12 +473,12 @@ export function createHtmlDecimalLevel(ilvl: number, numFmt: string = 'decimal')
                     wmlElement('ind', {
                         attributes: [
                             wmlAttr('left', String(leftTwips)),
-                            wmlAttr('hanging', '360'),
-                        ],
-                    }),
-                ],
-            }),
-        ],
+                            wmlAttr('hanging', '360')
+                        ]
+                    })
+                ]
+            })
+        ]
     });
 }
 

@@ -18,8 +18,13 @@ export const OFFICE_DOCUMENT_RELATIONSHIP_TYPE: string = 'http://schemas.openxml
  * Accepted on load; never rewritten to Transitional on save.
  */
 export const STRICT_OFFICE_DOCUMENT_RELATIONSHIP_TYPE: string = 'http://purl.oclc.org/ooxml/officeDocument/relationships/officeDocument';
+/**
+ * * `External`
+ */
 export enum TargetMode {
+    /** Specifies the internal mode. */
     Internal = 'Internal',
+    /** Specifies the external mode. */
     External = 'External'
 }
 export interface OpcRelationship {

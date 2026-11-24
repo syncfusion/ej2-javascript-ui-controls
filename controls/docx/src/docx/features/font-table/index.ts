@@ -16,7 +16,7 @@ export * from './font-table';
 import { WordDocument } from '../document/document';
 import { FontSubstitutionTableImpl, FontSubstitutionTable } from './font-substitution-table';
 import { fontTableFor, registerFontTableFeature, FontTablePart } from './font-table';
-/** Stable `WordDocument` → substitution table identity (TASK-8066). */
+/** Stable `WordDocument` → substitution table identity. */
 const substitutionTables: WeakMap<WordDocument, FontSubstitutionTable> = new WeakMap<WordDocument, FontSubstitutionTable>();
 /**
  * WordDocument-owned font substitution dictionary for `document`.

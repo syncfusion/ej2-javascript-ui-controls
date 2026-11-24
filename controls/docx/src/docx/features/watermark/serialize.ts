@@ -1,11 +1,11 @@
 /**
- * Dirty watermark header rewrite (TASK-8062).
+ * Dirty watermark header rewrite.
  *
  * Materializes logical watermark state into section headers on save.
  * Picture media + header-local image relationships are staged as a
  * {@link FeaturePackageLevelPart} applied after header multi-part writes.
  *
- * Canonical emit: `docs/specs/watermark-basic.md`. Washout tokens from
+ * Canonical emit: the format specification. Washout tokens from
  * PictureWatermark.docx fixture: `gain="19661f"` `blacklevel="22938f"`.
  *
  * @packageDocumentation
@@ -14,7 +14,7 @@ import { sha256Hex } from '../../core/compat/sha256';
 import { WordDocument, FeaturePartState } from '../document/document';
 import { FeaturePackageLevelPart } from '../document/feature-package-level-part';
 import { BlockContent, Paragraph } from '../document/paragraph';
-import { OpaqueParagraphItem, OpaqueRunItem, ParagraphItem, ConcreteParagraphItem } from '../document/text-range';
+import { OpaqueParagraphItem, OpaqueRunItem, ParagraphItem } from '../document/text-range';
 import { elementChildren, isWml, wmlElement } from '../document/wml';
 import { DocxError } from '../../core/errors/docx-error';
 import { objectEntries } from '../../core/compat/object-compat';
@@ -455,7 +455,7 @@ function isWatermarkOnlyParagraph(paragraph: Paragraph): boolean {
     if (content.length === 0) {
         return true;
     }
-    return content.every((inline: ConcreteParagraphItem) => isWatermarkOpaqueInline(inline));
+    return content.every((inline: ParagraphItem) => isWatermarkOpaqueInline(inline));
 }
 /** Minimal header entry surface used by strip/GC (avoids exporting HF LoadedPart). */
 interface HeaderBodyEntry {
@@ -505,12 +505,12 @@ function stripEntryWatermarkLeaves(entry: HeaderBodyEntry): boolean {
                 listLevelValue: number;
                 numPrExtra: OpenXmlElement[];
                 sectionBreakSectPr: OpenXmlElement;
-                items: ConcreteParagraphItem[];
+                items: ParagraphItem[];
                 paragraphFormat: ParagraphFormatSnapshot;
                 breakCharacterFormat: CharacterFormatSnapshot;
             } = paragraph.snapshot();
-            const filteredItems: ConcreteParagraphItem[] = snap.items.filter(
-                (inline: ConcreteParagraphItem) => !isWatermarkOpaqueInline(inline)
+            const filteredItems: ParagraphItem[] = snap.items.filter(
+                (inline: ParagraphItem) => !isWatermarkOpaqueInline(inline)
             );
             if (filteredItems.length !== snap.items.length) {
                 paragraph.hydrate({ ...snap, items: filteredItems });

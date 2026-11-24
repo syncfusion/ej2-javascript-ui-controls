@@ -54,53 +54,56 @@ export const DEFAULT_DECRYPT_SECURITY_LIMITS: DecryptSecurityLimits = Object.fre
  * @param {Partial<DecryptSecurityLimits> | undefined} overrides - The overrides.
  * @returns {DecryptSecurityLimits} The result.
  */
-export function resolveDecryptLimits(
-    overrides?: Partial<DecryptSecurityLimits>
-): DecryptSecurityLimits {
+export function resolveDecryptLimits(overrides?: Partial<DecryptSecurityLimits>): DecryptSecurityLimits {
     if (overrides === undefined) {
         return DEFAULT_DECRYPT_SECURITY_LIMITS;
     }
-    const xmlNestingDepth: number =
-    (overrides.xmlNestingDepth != null ? overrides.xmlNestingDepth : DEFAULT_DECRYPT_SECURITY_LIMITS.xmlNestingDepth);
-    const xmlAttributesPerElement: number =
-    (overrides.xmlAttributesPerElement != null
-        ? overrides.xmlAttributesPerElement
-        : DEFAULT_DECRYPT_SECURITY_LIMITS.xmlAttributesPerElement);
-    const textNodeLengthBytes: number =
-    (overrides.textNodeLengthBytes != null ? overrides.textNodeLengthBytes : DEFAULT_DECRYPT_SECURITY_LIMITS.textNodeLengthBytes);
-    const resolved: DecryptSecurityLimits = {
-        totalUncompressedBytes:
-      (overrides.totalUncompressedBytes != null
-          ? overrides.totalUncompressedBytes
-          : DEFAULT_DECRYPT_SECURITY_LIMITS.totalUncompressedBytes),
-        singlePartUncompressedBytes:
-      (overrides.singlePartUncompressedBytes != null
-          ? overrides.singlePartUncompressedBytes
-          : DEFAULT_DECRYPT_SECURITY_LIMITS.singlePartUncompressedBytes),
-        ...(xmlNestingDepth === undefined ? {} : { xmlNestingDepth }),
-        ...(xmlAttributesPerElement === undefined ? {} : { xmlAttributesPerElement }),
-        ...(textNodeLengthBytes === undefined ? {} : { textNodeLengthBytes })
-    };
-    return Object.freeze(resolved);
+    const d: DecryptSecurityLimits = DEFAULT_DECRYPT_SECURITY_LIMITS;
+    return Object.freeze({
+        totalUncompressedBytes: overrides.totalUncompressedBytes != null ? overrides.totalUncompressedBytes : d.totalUncompressedBytes,
+        singlePartUncompressedBytes: overrides.singlePartUncompressedBytes != null
+            ? overrides.singlePartUncompressedBytes : d.singlePartUncompressedBytes,
+        xmlNestingDepth: overrides.xmlNestingDepth != null ? overrides.xmlNestingDepth : d.xmlNestingDepth,
+        xmlAttributesPerElement: overrides.xmlAttributesPerElement != null
+            ? overrides.xmlAttributesPerElement : d.xmlAttributesPerElement,
+        textNodeLengthBytes: overrides.textNodeLengthBytes != null ? overrides.textNodeLengthBytes : d.textNodeLengthBytes
+    });
 }
 
-export class PackageLimitError extends Error {
-    /** Name of the limit field that was exceeded. */
-    readonly limit: keyof DecryptSecurityLimits | string;
-    /** Offending part name when applicable. */
-    readonly partName: string | undefined;
-    /** Observed value when known. */
-    readonly actual: number | undefined;
+/** Stable machine-readable codes carried by every encryption error. */
+export type EncryptionErrorCode =
+    'INVALID_PASSWORD' | 'UNSUPPORTED_ENCRYPTION' | 'INVALID_PACKAGE' | 'PACKAGE_LIMIT' | 'INVALID_ARGUMENT';
 
-    constructor(
-        limit: keyof DecryptSecurityLimits | string,
-        options: SecurityErrorOptions = {}
-    ) {
+/** Optional metadata for encryption errors. */
+export interface EncryptionErrorOptions {
+    readonly cause?: unknown;
+    readonly partName?: string;
+}
+
+/**
+ * A package security limit was exceeded (decrypted size, XML guards, spin count).
+ *
+ * @public
+ */
+export class PackageLimitError extends Error {
+    public readonly code: EncryptionErrorCode;
+    public readonly limit: keyof DecryptSecurityLimits | string;
+    public readonly partName: string | undefined;
+    public readonly actual: number | undefined;
+
+    /**
+     * Creates an instance.
+     *
+     * @param {string} limit - Name of the exceeded limit.
+     * @param {SecurityErrorOptions} options - Optional part name and actual value.
+     */
+    public constructor(limit: keyof DecryptSecurityLimits | string, options: SecurityErrorOptions = {}) {
         const partSuffix: string = options.partName === undefined ? '' : ` (part: ${options.partName})`;
         const actualSuffix: string =
-      options.actual === undefined ? '' : `; actual value: ${String(options.actual)}`;
+            options.actual === undefined ? '' : `; actual value: ${String(options.actual)}`;
         super(`Package security limit exceeded: ${limit}${partSuffix}${actualSuffix}`);
         this.name = 'PackageLimitError';
+        this.code = 'PACKAGE_LIMIT';
         this.limit = limit;
         this.partName = options.partName;
         this.actual = options.actual;
@@ -110,34 +113,96 @@ export class PackageLimitError extends Error {
 }
 
 /**
- * Raised when the package is encrypted and cannot be opened as supplied.
+ * The encrypted container or its data is malformed, truncated, or failed its integrity check.
+ *
+ * @public
  */
 export class EncryptedPackageError extends Error {
-    constructor(message: string) {
+    public readonly code: EncryptionErrorCode;
+    public readonly cause: unknown;
+    public readonly partName: string | undefined;
+
+    /**
+     * Creates an instance.
+     *
+     * @param {string} message - The message.
+     * @param {EncryptionErrorOptions} options - Optional cause and part name.
+     */
+    public constructor(message: string, options: EncryptionErrorOptions = {}) {
         super(message);
         this.name = 'EncryptedPackageError';
+        this.code = 'INVALID_PACKAGE';
+        this.cause = options.cause;
+        this.partName = options.partName;
         Object.setPrototypeOf(this, new.target.prototype);
     }
 }
 
 /**
- * Raised when a consumer-supplied password fails OFFCRYPTO verification.
+ * The password is missing or wrong, or is not acceptable for encryption.
+ *
+ * @public
  */
 export class InvalidPasswordError extends Error {
-    constructor(message: string = 'Invalid password') {
+    public readonly code: EncryptionErrorCode;
+    public readonly cause: unknown;
+
+    /**
+     * Creates an instance.
+     *
+     * @param {string} message - The message.
+     * @param {EncryptionErrorOptions} options - Optional cause.
+     */
+    public constructor(message: string = 'Invalid password', options: EncryptionErrorOptions = {}) {
         super(message);
         this.name = 'InvalidPasswordError';
+        this.code = 'INVALID_PASSWORD';
+        this.cause = options.cause;
         Object.setPrototypeOf(this, new.target.prototype);
     }
 }
 
 /**
- * Raised when the package uses a recognized encryption method this build does not decrypt.
+ * The encryption scheme, algorithm, or container is not supported, or no secure random source exists.
+ *
+ * @public
  */
 export class UnsupportedEncryptionError extends Error {
-    constructor(message: string = 'Unsupported encryption method') {
+    public readonly code: EncryptionErrorCode;
+    public readonly cause: unknown;
+
+    /**
+     * Creates an instance.
+     *
+     * @param {string} message - The message.
+     * @param {EncryptionErrorOptions} options - Optional cause.
+     */
+    public constructor(message: string = 'Unsupported encryption method', options: EncryptionErrorOptions = {}) {
         super(message);
         this.name = 'UnsupportedEncryptionError';
+        this.code = 'UNSUPPORTED_ENCRYPTION';
+        this.cause = options.cause;
+        Object.setPrototypeOf(this, new.target.prototype);
+    }
+}
+
+/**
+ * A caller-supplied argument (for example a non-string password) is invalid.
+ *
+ * @public
+ */
+export class EncryptionArgumentError extends Error {
+    public readonly code: EncryptionErrorCode;
+
+    /**
+     * Creates an instance.
+     *
+     * @param {string} message - The message.
+     */
+    public constructor(message: string) {
+        super(message);
+        this.name = 'EncryptionArgumentError';
+        this.code = 'INVALID_ARGUMENT';
         Object.setPrototypeOf(this, new.target.prototype);
     }
 }

@@ -218,6 +218,9 @@ export class SlideShow implements SlideShowModule, SlideShowNavigationHost {
             this.stopPresentation();
         } else if (this.index >= this.parent.slideCount - 1) {
             this.showEndScreen();
+            if (this.presenter) {
+                this.presenter.update();
+            }
         } else {
             this.goToSlide(this.index + 1);
         }
@@ -238,6 +241,9 @@ export class SlideShow implements SlideShowModule, SlideShowNavigationHost {
                 this.renderer.show(this.index);
             }
             this.refreshControls();
+            if (this.presenter) {
+                this.presenter.update();
+            }
             return;
         }
         this.goToSlide(this.index - 1);
@@ -343,6 +349,7 @@ export class SlideShow implements SlideShowModule, SlideShowNavigationHost {
             goTo: (i: number): void => this.goToSlide(i),
             getNotes: (i: number): string => this.resolvePresenterNotes(i),
             getNotesSnapshot: (i: number): NotesSnapshot | undefined => (this.notesProvider ? undefined : this.notesSnapshots.get(i)),
+            isEndScreen: (): boolean => !!(this.endScreen && !this.endScreen.hidden),
             close: (): void => this.endPresenterView(),
             getTitle: (): string => this.parent.fileName || this.text('Presentation'),
             getLocale: (): string => this.parent.locale

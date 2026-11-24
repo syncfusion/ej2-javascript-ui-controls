@@ -2,7 +2,7 @@ import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty
 import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, SquigglySettingsModel, StrikethroughSettingsModel, LineSettingsModel, AnnotationDrawingOptionsModel, ArrowSettingsModel, RectangleSettingsModel, RedactionSettingsModel, PdfAnnotationSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, PageInfoModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel, SignatureFieldSettingsModel, InitialFieldSettingsModel, SignatureIndicatorSettingsModel, TextFieldSettingsModel, PasswordFieldSettingsModel, CheckBoxFieldSettingsModel, RadioButtonFieldSettingsModel, DropdownFieldSettingsModel, ListBoxFieldSettingsModel, ButtonFieldSettingsModel, GoToActionModel, ItemModel, SignatureDialogSettingsModel, PageOrganizerSettingsModel, CustomStampTextModel, WebLinkSettingsModel, DocumentLinkSettingsModel, CloudSettingsModel, ActionModel, CalloutSettingsModel, BarcodeFieldSettingsModel, JavaScriptActionModel} from './pdfviewer-model';
 import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType, SanitizeHtmlHelper, initializeTelemetry, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { ToolbarSettingsModel, ShapeLabelSettingsModel, KeyGestureModel, KeyboardCommandModel, CommandManagerModel, PdfViewerWebMcpSettingsModel } from './pdfviewer-model';
-import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampModel, CustomToolbarItemModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel, TileRenderingSettingsModel, ScrollSettingsModel, FormFieldModel, InkAnnotationSettingsModel, ActionsSettingsModel } from './pdfviewer-model';
+import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampModel, CustomToolbarItemModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel, TileRenderingSettingsModel, ScrollSettingsModel, ReadOnlySettingsModel, FormFieldModel, InkAnnotationSettingsModel, ActionsSettingsModel } from './pdfviewer-model';
 import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs, TextSelection, BookmarkView, ThumbnailView, LinkAnnotation, Navigation, Magnification, Toolbar, AnnotationToolbar, ToolbarItem, PdfRenderer, Annotation, CustomContextMenuSelectEventArgs, CustomContextMenuBeforeOpenEventArgs, IAnnotationPoint, IPoint, IPageAnnotations, PdfViewerBase, PdfiumRunner, TextMarkupAnnotation, ShapeAnnotation, MeasureAnnotation, PageRenderer, ThumbnailClickEventArgs, PageOrganizer, Print, CalibrationUnit, FormDesigner, FormFields, AccessibilityTags, TextSearch, SemanticTextComparison, SyncManager, UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs, PageRenderInitiateEventArgs, AjaxRequestSuccessEventArgs, PageRenderCompleteEventArgs, PageOrganizerSaveAsEventArgs, PageOrganizerSavedEventArgs, PageOrganizerZoomChangedEventArgs, AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationChangedEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs, ButtonFieldClickEventArgs, FormFieldChangedEventArgs, TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs, RGBA, WebMcpPdfViewer } from './index';
 import { RedactionToolbar } from './toolbar/redaction-toolbar';
 import { FormDesignerToolbar } from './toolbar/formdesigner-toolbar';
@@ -6398,6 +6398,51 @@ export class ScrollSettings extends ChildProperty<ScrollSettings> {
     public delayPageRequestTimeOnScroll: number;
 }
 /**
+ * The `ReadOnlySettings` module is used to provide the read only settings of the PDF viewer.
+ *
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the read only settings.
+ *  viewer.readOnlySettings = {
+ *      annotations: true,
+ *      formFields: true,
+ *      comments: true
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ *
+ */
+export class ReadOnlySettings extends ChildProperty<ReadOnlySettings> {
+    /**
+     * When true, existing annotations stay visible but cannot be added, edited, moved, resized, or deleted.
+     * Annotation comments are also read-only. Form filling is not affected.
+     *
+     * @default false
+     */
+    @Property(false)
+    public annotations: boolean;
+    /**
+     * When true, form field values cannot be changed and Form Designer create, property edit, move, resize, and delete are blocked.
+     * Existing field values stay visible. Annotation editing and comments are not affected.
+     *
+     * @default false
+     */
+    @Property(false)
+    public formFields: boolean;
+    /**
+     * When true, comments cannot be added, edited, replied to, resolved, or deleted.
+     * Viewing, expanding or collapsing, and navigating to comments stay available.
+     * Annotation geometry and form fields are not affected.
+     *
+     * @default false
+     */
+    @Property(false)
+    public comments: boolean;
+}
+/**
  * The `FormField` is used to store the form fields of PDF document.
  */
 export class FormField extends ChildProperty<FormField> {
@@ -9770,7 +9815,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      */
 
-    @Property({ showTooltip: true, toolbarItems: ['OpenOption', 'UndoRedoTool', 'PageNavigationTool', 'MagnificationTool', 'PanTool', 'SelectionTool', 'CommentTool', 'SubmitForm', 'AnnotationEditTool', 'FormDesignerEditTool', 'FreeTextAnnotationOption', 'InkAnnotationOption', 'ShapeAnnotationOption', 'StampAnnotation', 'SignatureOption', 'SearchOption', 'PrintOption', 'DownloadOption'], annotationToolbarItems: ['HighlightTool', 'UnderlineTool', 'StrikethroughTool', 'SquigglyTool', 'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool', 'StampAnnotationTool', 'HandWrittenSignatureTool', 'InkAnnotationTool', 'InkEraserTool', 'ShapeTool', 'CalibrateTool', 'StrokeColorEditTool', 'ThicknessEditTool', 'FreeTextAnnotationTool', 'CalloutAnnotationTool', 'FontFamilyAnnotationTool', 'FontSizeAnnotationTool', 'FontStylesAnnotationTool', 'FontAlignAnnotationTool', 'FontColorAnnotationTool', 'BorderStyleAnnotationTool', 'StartArrowAnnotationTool', 'CommentPanelTool'], formDesignerToolbarItems: ['TextboxTool', 'PasswordTool', 'CheckBoxTool', 'RadioButtonTool', 'BarcodeTool', 'DropdownTool', 'ListboxTool', 'DateTimeTool', 'DrawSignatureTool', 'ButtonTool', 'DeleteTool'], redactionToolbarItems: ['MarkForRedaction', 'RedactPages', 'RedactionPanel', 'Redact', 'RemoveAnnotation', 'CommentPanel', 'Close'] })
+    @Property({ showTooltip: true, toolbarItems: ['OpenOption', 'UndoRedoTool', 'PageNavigationTool', 'MagnificationTool', 'PanTool', 'SelectionTool', 'CommentTool', 'SubmitForm', 'AnnotationEditTool', 'FormDesignerEditTool', 'FreeTextAnnotationOption', 'InkAnnotationOption', 'ShapeAnnotationOption', 'StampAnnotation', 'SignatureOption', 'SearchOption', 'PrintOption', 'DownloadOption'], annotationToolbarItems: ['HighlightTool', 'UnderlineTool', 'StrikethroughTool', 'SquigglyTool', 'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool', 'StampAnnotationTool', 'HandWrittenSignatureTool', 'InkAnnotationTool', 'InkEraserTool', 'ShapeTool', 'CalibrateTool', 'StrokeColorEditTool', 'ThicknessEditTool', 'FreeTextAnnotationTool', 'CalloutAnnotationTool', 'FreehandHighlightTool', 'LinkTool', 'FontFamilyAnnotationTool', 'FontSizeAnnotationTool', 'FontStylesAnnotationTool', 'FontAlignAnnotationTool', 'FontColorAnnotationTool', 'BorderStyleAnnotationTool', 'StartArrowAnnotationTool', 'CommentPanelTool'], formDesignerToolbarItems: ['TextboxTool', 'PasswordTool', 'CheckBoxTool', 'RadioButtonTool', 'BarcodeTool', 'DropdownTool', 'ListboxTool', 'DateTimeTool', 'DrawSignatureTool', 'ButtonTool', 'DeleteTool'], redactionToolbarItems: ['MarkForRedaction', 'RedactPages', 'RedactionPanel', 'Redact', 'RemoveAnnotation', 'CommentPanel', 'Close'] })
     public toolbarSettings: ToolbarSettingsModel;
 
     /**
@@ -10204,6 +10249,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Property({ delayPageRequestTimeOnScroll: 100 })
     public scrollSettings: ScrollSettingsModel;
+
+    /**
+     * Defines the read only settings.
+     *
+     * @default { annotations: false, formFields: false, comments: false }
+     */
+    @Property({ annotations: false, formFields: false, comments: false })
+    public readOnlySettings: ReadOnlySettingsModel;
 
     /**
      * Get or set the text field settings.
@@ -12527,6 +12580,74 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     this.toolbarModule.enableToolbarItem(['FormDesignerEditTool'], newProp.enableFormDesignerToolbar);
                 }
                 break;
+            case 'readOnlySettings':
+                if (newProp.readOnlySettings) {
+                    if (!isNullOrUndefined(newProp.readOnlySettings.annotations)) {
+                        if (newProp.readOnlySettings.annotations) {
+                            if (this.annotationModule) {
+                                this.annotationModule.clearSelection();
+                                this.annotationModule.setAnnotationMode('None');
+                            }
+                            if (this.toolbarModule) {
+                                if (this.isAnnotationToolbarVisible) {
+                                    this.toolbarModule.showAnnotationToolbar(false);
+                                }
+                                this.toolbarModule.enableToolbarItem(['AnnotationEditTool'], false);
+                                this.toolbarModule.enableToolbarItem(['CommentTool'], false);
+                            }
+                        } else if (this.enableAnnotation && this.toolbarModule) {
+                            this.toolbarModule.enableToolbarItem(['AnnotationEditTool'], true);
+                            if (this.enableStickyNotesAnnotation && !this.readOnlySettings.comments) {
+                                this.toolbarModule.enableToolbarItem(['CommentTool'], true);
+                            }
+                        }
+                    }
+                    if (!isNullOrUndefined(newProp.readOnlySettings.formFields)) {
+                        if (newProp.readOnlySettings.formFields) {
+                            const formFieldHelper: HTMLElement = document.getElementById('FormField_helper_html_element');
+                            if (formFieldHelper) {
+                                formFieldHelper.remove();
+                            }
+                            if (this.toolbarModule) {
+                                if (this.isFormDesignerToolbarVisible && this.toolbarModule.formDesignerToolbarModule) {
+                                    this.isFormDesignerToolbarVisible = false;
+                                    this.toolbarModule.formDesignerToolbarModule.
+                                        showFormDesignerToolbar(this.toolbarModule.formDesignerItem);
+                                }
+                                this.toolbarModule.enableToolbarItem(['FormDesignerEditTool'], false);
+                            }
+                        } else if (this.enableFormDesigner && this.formDesignerModule && this.toolbarModule) {
+                            this.toolbarModule.enableToolbarItem(['FormDesignerEditTool'], true);
+                        }
+                    }
+                    if (!isNullOrUndefined(newProp.readOnlySettings.comments)) {
+                        if (this.toolbarModule) {
+                            const enableCommentTool: boolean = !newProp.readOnlySettings.comments && this.enableStickyNotesAnnotation &&
+                                !this.readOnlySettings.annotations;
+                            this.toolbarModule.enableToolbarItem(['CommentTool'], enableCommentTool);
+                        }
+                        if (this.annotationModule && this.annotationModule.stickyNotesAnnotationModule &&
+                            newProp.readOnlySettings.comments) {
+                            const composers: NodeListOf<HTMLElement> = this.element.querySelectorAll('.e-pv-new-comments-div');
+                            for (let i: number = 0; i < composers.length; i++) {
+                                composers[parseInt(i.toString(), 10)].style.display = 'none';
+                            }
+                            const commentEditors: NodeListOf<HTMLElement> = this.element.querySelectorAll('.e-pv-comment-textbox');
+                            for (let i: number = 0; i < commentEditors.length; i++) {
+                                const editor: any = (commentEditors[parseInt(i.toString(), 10)] as any).ej2_instances;
+                                if (editor && editor[0] && editor[0].enableEditMode) {
+                                    editor[0].enableEditMode = false;
+                                    editor[0].dataBind();
+                                }
+                            }
+                            this.element.querySelectorAll('.e-pv-comments-border')
+                                .forEach((element: HTMLElement) => element.classList.remove('e-pv-comments-border'));
+                            this.element.querySelectorAll('.e-pv-more-options-button')
+                                .forEach((element: HTMLElement) => ((element as HTMLElement).style.visibility = 'hidden'));
+                        }
+                    }
+                }
+                break;
             case 'enableAnnotation':
                 if (newProp.enableAnnotation) {
                     this.applySavedAnnotationState();
@@ -14295,7 +14416,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @returns {void}
      */
     public updateFormFieldsValue(fieldValue: any): void {
-
+        if (this.readOnlySettings.formFields) {
+            return;
+        }
         let target: any = document.getElementById(fieldValue.id);
         let isformDesignerModuleListBox: boolean = false;
         if (target) {
@@ -14498,6 +14621,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @returns {void}
      */
     public updateFormFieldValue(fieldValue: FormFieldModel): void {
+        if (this.readOnlySettings.formFields) {
+            return;
+        }
         let target: any = document.getElementById(fieldValue.id);
         let isformDesignerModuleListBox: boolean = false;
         if (target) {
@@ -15448,6 +15574,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         } else {
             this.triggerEvent('formFieldClick', eventArgs);
         }
+        if (this.readOnlySettings.formFields) {
+            return eventArgs;
+        }
         if (field.type === 'SignatureField' || field.type === 'InitialField') {
             if (field.type === 'InitialField')
             {this.viewerBase.isInitialField = true; }
@@ -15461,7 +15590,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             const formFieldCollectionsValue: FormFieldModel[] =
             this.formFieldCollections.filter(function (item: FormFieldModel): boolean { return item.id === field.id; });
             if (formFieldCollectionsValue) {
-                const readOnly: boolean = formFieldCollectionsValue[0].isReadOnly;
+                const readOnly: boolean = formFieldCollectionsValue[0].isReadOnly || this.readOnlySettings.formFields;
                 if ((!readOnly) && !eventArgs.cancel && target && !(target as unknown as { disabled: boolean; }).disabled && target.classList.contains('e-pdfviewer-signatureformfields') && (isLeftClick || isNullOrUndefined(isLeftClick))) {
                     this.viewerBase.signatureModule.showSignatureDialog(true);
                 }
@@ -16952,6 +17081,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @returns {boolean} - return boolean
      */
     public scaleSelectedItems(sx: number, sy: number, pivot: PointModel): boolean {
+        if (this.readOnlySettings.formFields && this.selectedItems.formFields && this.selectedItems.formFields.length > 0) {
+            return false;
+        }
         return this.drawing.scaleSelectedItems(sx, sy, pivot);
     }
 
@@ -17108,6 +17240,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @returns {boolean} - returns boolean value
      */
     public rotate(angle: number, currentSelector?: AnnotationSelectorSettingsModel): boolean {
+        if (this.readOnlySettings.annotations && this.selectedItems.annotations && this.selectedItems.annotations.length > 0) {
+            return false;
+        }
+        if (this.readOnlySettings.formFields && this.selectedItems.formFields && this.selectedItems.formFields.length > 0) {
+            return false;
+        }
         return this.drawing.rotate(this.selectedItems, angle, null, currentSelector);
     }
 
@@ -17117,6 +17255,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @returns {void}
      */
     public paste(obj?: PdfAnnotationBaseModel[]): void {
+        if (this.readOnlySettings.annotations && this.annotation && this.annotation.isShapeCopied &&
+            !(this.formDesigner && this.formDesigner.isShapeCopied && this.designerMode &&
+                this.selectedItems.formFields && this.selectedItems.formFields.length > 0)) {
+            return;
+        }
+        if (this.readOnlySettings.formFields && this.formDesigner && this.formDesigner.isShapeCopied) {
+            return;
+        }
         let index: number;
         if (this.viewerBase.activeElements.activePageID) {
             index = this.viewerBase.activeElements.activePageID;
@@ -17164,6 +17310,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @returns {void}
      */
     public cut(): void {
+        if (this.readOnlySettings.annotations && this.annotation) {
+            return;
+        }
+        if (this.readOnlySettings.formFields && this.formDesigner && this.designerMode &&
+            this.selectedItems.formFields && this.selectedItems.formFields.length > 0) {
+            return;
+        }
         let index: number;
         if (this.viewerBase.activeElements.activePageID) {
             index = this.viewerBase.activeElements.activePageID;

@@ -1,5 +1,5 @@
 /**
- * `wps:spPr` fill/line/geometry codec (TASK-8048).
+ * `wps:spPr` fill/line/geometry codec.
  *
  * Schema cites (transitional `dml-main.xsd`; ECMA-376-1 §20.1):
  * - `CT_ShapeProperties` sequence: `a:xfrm`, `EG_Geometry` (`custGeom` |
@@ -39,32 +39,41 @@ import { OpenXmlChild } from '../../core/xml/model';
  * @public
  */
 /**
- * DrawingML line dash style for public LineFormat APIs.
- *
- * Preset members match `ST_PresetLineDashVal` / `a:prstDash/@val` wire tokens.
- * `Unknown` is model-only (custom dash, residual, or unrecognized). Never
- * serialize `Unknown` as `a:prstDash/@val`.
+ * Specifies the dash style of a line.
  *
  * @public
  */
 export enum LineDashing {
+    /** Specifies the solid dashing. */
     Solid = 'solid',
+    /** Specifies the dot dashing. */
     Dot = 'dot',
+    /** Specifies the dash dashing. */
     Dash = 'dash',
+    /** Specifies the large dash dashing. */
     LargeDash = 'lgDash',
+    /** Specifies the dash dot dashing. */
     DashDot = 'dashDot',
+    /** Specifies the large dash dot dashing. */
     LargeDashDot = 'lgDashDot',
+    /** Specifies the large dash dot dot dashing. */
     LargeDashDotDot = 'lgDashDotDot',
+    /** Specifies the system dash dashing. */
     SystemDash = 'sysDash',
+    /** Specifies the system dot dashing. */
     SystemDot = 'sysDot',
+    /** Specifies the system dash dot dashing. */
     SystemDashDot = 'sysDashDot',
+    /** Specifies the system dash dot dot dashing. */
     SystemDashDotDot = 'sysDashDotDot',
+    /** Specifies the unknown dashing. */
     Unknown = 'unknown'
 }
 
 
 /**
  * Closed set of public LineDashing values.
+ *
  * @public
  */
 export const LINE_DASHING_VALUES: ReadonlyArray<LineDashing> = enumValues<LineDashing>(LineDashing);
@@ -106,7 +115,7 @@ function isPresetLineDashWire(value: string): boolean {
 }
 
 /**
- * Specifies how open line ends are capped (`ST_LineCap` / `a:ln/@cap`).
+ * Specifies how open line ends are capped.
  *
  * Prefer these constants over raw strings when setting line cap style.
  *
@@ -115,16 +124,19 @@ function isPresetLineDashWire(value: string): boolean {
 export enum LineCap {
     /**
      * Round cap at each open end of the stroke.
+     *
      * @public
      */
     Round = 'rnd',
     /**
      * Square cap extending half the line width past each open end.
+     *
      * @public
      */
     Square = 'sq',
     /**
      * Flat cap that ends exactly at the line endpoint.
+     *
      * @public
      */
     Flat = 'flat'
@@ -133,13 +145,14 @@ export enum LineCap {
 
 /**
  * Closed set of `ST_LineCap` wire tokens.
+ *
  * @public
  */
 export const LINE_CAP_VALUES: ReadonlyArray<LineCap> = enumValues<LineCap>(LineCap);
 
 /**
  * Specifies the arrowhead shape drawn at the beginning or end of a line
- * (`ST_LineEndType` / `a:headEnd|a:tailEnd/@type`).
+ *.
  *
  * Prefer these constants over raw strings when setting line end type.
  *
@@ -148,31 +161,37 @@ export const LINE_CAP_VALUES: ReadonlyArray<LineCap> = enumValues<LineCap>(LineC
 export enum LineEndType {
     /**
      * No arrowhead at the line end.
+     *
      * @public
      */
     None = 'none',
     /**
-     * Filled triangular arrowhead.
+     * Specifies a filled triangular arrowhead.
+     *
      * @public
      */
     Triangle = 'triangle',
     /**
-     * Stealth (indented) arrowhead.
+     * Specifies a stealth (indented) arrowhead.
+     *
      * @public
      */
     Stealth = 'stealth',
     /**
      * Diamond-shaped line end marker.
+     *
      * @public
      */
     Diamond = 'diamond',
     /**
      * Oval line end marker.
+     *
      * @public
      */
     Oval = 'oval',
     /**
-     * Open arrowhead.
+     * Specifies an open arrowhead.
+     *
      * @public
      */
     Arrow = 'arrow'
@@ -181,24 +200,27 @@ export enum LineEndType {
 
 /**
  * Closed set of `ST_LineEndType` wire tokens.
+ *
  * @public
  */
 export const LINE_END_TYPE_VALUES: ReadonlyArray<LineEndType> = enumValues<LineEndType>(LineEndType);
 
 /**
  * DrawingML arrow end size tokens (`ST_LineEndWidth` / `ST_LineEndLength`).
+ *
  * @public
  */
 export const LINE_END_SIZE_VALUES: ReadonlyArray<'sm' | 'med' | 'lg'> = ['sm', 'med', 'lg'] as ReadonlyArray<'sm' | 'med' | 'lg'>;
 
 /**
  * DrawingML arrow end size (`sm` | `med` | `lg`).
+ *
  * @public
  */
 export type LineEndSize = (typeof LINE_END_SIZE_VALUES)[number];
 
 /**
- * Shape line fill kind discriminant (`EG_LineFillProperties` MVP).
+ * Shape line fill kind discriminant.
  *
  * Members are model tokens (not a single XSD enum). Prefer these constants
  * over raw strings when authoring {@link ShapeLine}.
@@ -206,9 +228,13 @@ export type LineEndSize = (typeof LINE_END_SIZE_VALUES)[number];
  * @public
  */
 export enum ShapeLineKind {
+    /** Specifies the solid kind. */
     Solid = 'solid',
+    /** Specifies the none kind. */
     None = 'none',
+    /** Specifies the theme kind. */
     Theme = 'theme',
+    /** Specifies the unknown kind. */
     Unknown = 'unknown'
 }
 
@@ -250,25 +276,22 @@ export function isLineEndSize(value: string): value is LineEndSize {
     return LINE_END_SIZE_SET.has(value);
 }
 /**
- * Shape fill model (`EG_FillProperties` MVP subset).
+ * Represents the fill of a shape.
  *
- * Discriminated by `kind`:
- * - `solid` — explicit `a:solidFill` with six-digit sRGB
- * - `none` — `a:noFill`
- * - `theme` — theme reference only (`wps:style` / non-sRGB color choice); not resolved
- * - `pattern` — residual `a:pattFill` (preset token when present)
- * - `unknown` — other residual fill kinds (`gradFill`, `blipFill`, `grpFill`, …)
- *
- * Only `solid` and `none` are authorable on {@link ShapeOptions.fill}.
+ * Only solid and none fills can be set through {@link ShapeOptions.fill}.
  *
  * @public
  */
 export type ShapeFill = {
+    /**
+     * Gets the kind of the fill. Always `solid` for a solid fill.
+     */
     readonly kind: 'solid';
     readonly srgb: string;
     /**
      * DrawingML `a:alpha/@val` (0…100000 = 0%…100% opacity).
      * Omitted means fully opaque.
+     *
      * @private
      */
     readonly alpha?: number | undefined;
@@ -283,21 +306,15 @@ export type ShapeFill = {
     readonly kind: 'unknown';
 };
 /**
- * Shape line model (`CT_LineProperties` MVP subset).
+ * Represents the outline of a shape.
  *
- * Discriminated by {@link ShapeLine.kind}. Only `solid` and `none` are
- * authorable on {@link ShapeOptions.line}. Theme and unknown paths preserve
- * residual markup without inventing colors or dash styles.
- *
- * Arrow begin/end types map to `a:headEnd`/`a:tailEnd` (`ST_LineEndType`).
- * Dash maps to `a:prstDash` (`ST_LineDashingVal`); custom dash stays residual.
+ * Only solid and none lines can be set through {@link ShapeOptions.line}.
  *
  * @public
  */
 export interface ShapeLine {
     /**
-     * Line fill kind (`solid` | `none` | `theme` | `unknown`).
-     * Prefer {@link ShapeLineKind} constants when authoring.
+     * Gets the kind of the line, such as solid or none.
      */
     readonly kind: ShapeLineKind;
     /**
@@ -306,24 +323,39 @@ export interface ShapeLine {
      * @private
      */
     readonly widthEmu: Emus | undefined;
-    /** `a:ln/a:solidFill/a:srgbClr/@val` when line is solid (six hex digits). */
+    /**
+     * Gets the srgb color.
+     */
     readonly srgbColor: string | undefined;
     /**
      * DrawingML `a:alpha/@val` under line solid fill (0…100000 opacity).
+     *
      * @private
      */
     readonly alpha: number | undefined;
-    /** `a:ln/a:prstDash/@val` (`ST_LineDashingVal`). Prefer {@link LineDashing}. */
+    /**
+     * Gets the dash pattern of the line.
+     */
     readonly dash: LineDashing | undefined;
-    /** `a:ln/@cap` (`ST_LineCap`). Prefer {@link LineCap}. */
+    /**
+     * Gets the cap style at the ends of the line.
+     */
     readonly cap: LineCap | undefined;
-    /** `a:ln/a:headEnd/@type` (`ST_LineEndType`). Prefer {@link LineEndType}. */
+    /**
+     * Gets the begin arrow type.
+     */
     readonly beginArrowType: LineEndType | undefined;
-    /** `a:ln/a:headEnd/@w` (`ST_LineEndWidth`). */
+    /**
+     * Gets the begin arrow size.
+     */
     readonly beginArrowSize: LineEndSize | undefined;
-    /** `a:ln/a:tailEnd/@type` (`ST_LineEndType`). Prefer {@link LineEndType}. */
+    /**
+     * Gets the end arrow type.
+     */
     readonly endArrowType: LineEndType | undefined;
-    /** `a:ln/a:tailEnd/@w` (and length when paired; see OOXML mapping). */
+    /**
+     * Gets the end arrow size.
+     */
     readonly endArrowSize: LineEndSize | undefined;
     /**
      * True when residual line markup is present (`a:custDash`, unmodeled join, …)
@@ -374,10 +406,10 @@ export function findSpPrElement(root: OpenXmlElement, namespaceUri: string, loca
  * Local to this module so residual dual-AC hosts can be searched without a
  * circular import on host-codec `findFirstElement`.
  *
- * @param {OpenXmlElement} root - The root.
- * @param {string} namespaceUri - The namespace uri.
- * @param {string} localName - The local name.
- * @returns {OpenXmlElement | undefined} The result.
+ * @param {OpenXmlElement} root - Specifies the root.
+ * @param {string} namespaceUri - Specifies the namespace uri.
+ * @param {string} localName - Specifies the local name.
+ * @returns {OpenXmlElement | undefined} Returns the result.
  */
 function findDeepElement(root: OpenXmlElement, namespaceUri: string, localName: string): OpenXmlElement | undefined {
     if (isElement(root, namespaceUri, localName)) {
@@ -763,31 +795,43 @@ export function buildLineElement(line: {
 }
 
 /**
- * Compound line style for shape outlines (public model).
- * Single is the only modeled style in the current codec; other values stay residual-safe.
+ * Specifies the compound line style of a shape outline.
+ *
  * @public
  */
 export enum LineStyle {
+    /** Specifies the single style. */
     Single = 'single'
 }
 /**
- * Arrowhead style at a line end. Maps 1:1 to DrawingML `ST_LineEndType`.
+ * Specifies the arrowhead style at the end of a line.
+ *
  * @public
  */
 export enum ArrowheadStyle {
+    /** Specifies the none style. */
     None = 'none',
+    /** Specifies the triangle style. */
     Triangle = 'triangle',
+    /** Specifies the stealth style. */
     Stealth = 'stealth',
+    /** Specifies the diamond style. */
     Diamond = 'diamond',
+    /** Specifies the oval style. */
     Oval = 'oval',
+    /** Specifies the arrow style. */
     Arrow = 'arrow'
 }
 /**
- * Arrowhead size (`ST_LineEndWidth` / `ST_LineEndLength`).
+ * Arrowhead size.
+ *
  * @public
  */
 export enum ArrowheadSize {
+    /** Specifies the small size. */
     Small = 'sm',
+    /** Specifies the medium size. */
     Medium = 'med',
+    /** Specifies the large size. */
     Large = 'lg'
 }

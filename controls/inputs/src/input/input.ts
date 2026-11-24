@@ -72,9 +72,13 @@ export namespace Input {
         const observer: MutationObserver = new MutationObserver(() => {
             if (!document.documentElement.contains(container)) {
                 window.removeEventListener('resize', resizeHandler);
-                resizeHandlers.delete(element);
+                if (!isNullOrUndefined(resizeHandlers)) {
+                    resizeHandlers.delete(element);
+                }
                 observer.disconnect();
-                mutationObservers.delete(element);
+                if (!isNullOrUndefined(mutationObservers)) {
+                    mutationObservers.delete(element);
+                }
             }
         });
         let host: HTMLElement = parent;

@@ -235,6 +235,16 @@ export class Column {
     public allowFormula: boolean;
 
     /**
+     * If `enableHighlightOnDataChange` is set to false, then it disables highlighting for a particular column,
+     * overriding the grid-level setting. Manual highlighting via flashCells() is not affected.
+     * By default, column uses the grid-level setting.
+     *
+     * @default null
+     */
+    public enableHighlightOnDataChange: boolean | null;
+
+
+    /**
      * The CSS styles and attributes of the content cells of a particular column can be customized.
      *
      * {% codeBlock src="grid/custom-attribute-api/index.ts" %}{% endcodeBlock %}
@@ -1031,6 +1041,15 @@ export interface ColumnModel {
      * @default false
      */
     allowFormula?: boolean;
+
+    /**
+     * If `enableHighlightOnDataChange` is set to false, then it disables highlighting for a particular column,
+     * overriding the grid-level setting. Manual highlighting via flashCells() is not affected.
+     * By default, column uses the grid-level setting.
+     *
+     * @default null
+     */
+    enableHighlightOnDataChange?: boolean | null;
 
     /**
      * If `allowGrouping` set to false, then it disables grouping of a particular column.

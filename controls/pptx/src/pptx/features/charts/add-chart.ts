@@ -38,7 +38,8 @@ import { arrayAt } from '../../core/util/es5-compat';
 import { coordinateToEmuString } from '../../core/util/length-units';
 import { OoxmlAttribute, OoxmlElement } from '../../core/xml/index';
 import { Chart } from './chart';
-import { isChartExTypeKey, isClassicChartType, ClassicChartTypeKey } from './classic-chart-types';
+import { isChartExTypeKey, isClassicChartType } from './classic-chart-types';
+import { OfficeChartType } from './office-chart-type';
 import { CHART_CONTENT_TYPE, CHART_RELATIONSHIP_TYPE, DRAWINGML_CHART_URI, EMBEDDED_PACKAGE_RELATIONSHIP_TYPE } from './constants';
 import { ChartsError, partNameOptions } from './errors';
 import { openNestedXlsxPackageSync } from './nested-package-security';
@@ -50,6 +51,7 @@ import { readEmbeddingCellSheet } from './xlsx-value-reader';
 import { getXlsxChartHostApi, HostChart, HostWorkbook, HostWorksheet, XlsxChartHostApi, ChartPartExport } from './xlsx-chart-api';
 import { getXlsxRootRequired, Ej2XlsxRootModule } from './xlsx-surface';
 import { stringIncludes } from '../../core/util/es5-compat';
+import { markSeedPlaceholder } from './chart-data-api';
 import { Presentation } from '../../core/package/presentation';
 import { SecurityLimits } from '../../core/security/limits';
 const utf8: TextEncoder = new TextEncoder();
@@ -111,36 +113,46 @@ export type AddChartFromExcelSource = {
     /** Sheet tab name or 0-based index. Default: first worksheet. */
     readonly sheet?: string | number;
     /**
-     * Inclusive A1 range covering categories (left column) and values (right
-     * column), e.g. `A2:B4`. Single-area only; no sheet! prefix. Default
+     * Inclusive single-area A1 range covering categories (left column) and
+     * one or more value columns (one series per column), e.g. `A2:B4` or
+     * `A1:C6`. No sheet! prefix, no multi-area. Default
      * {@link DEFAULT_FROM_EXCEL_RANGE}.
      */
     readonly range?: string;
+    /**
+     * Whether the first row of `range` holds series names (one per value
+     * column). Default `undefined` — **auto-detected**: a first row whose
+     * value cells are all text/empty with at least one non-empty text cell
+     * and a data row below is treated as the header (same default as .NET
+     * Presentation chart authoring). Pass `false` to force the first row to
+     * be data.
+     */
+    readonly hasHeader?: boolean;
 } | {
     readonly workbook: HostWorkbook;
     readonly data?: never;
     readonly sheet?: string | number;
     readonly range?: string;
+    readonly hasHeader?: boolean;
 };
 /**
- * Options for {@link addChart}.
+ * Options for {@link addChart} / `slide.shapes.addChart`.
  *
  * @public
  */
 export interface AddChartOptions {
     /**
-     * Classic catalog key (xlsx `ChartType` property name, e.g. `ColumnClustered`).
+     * Classic chart type (e.g. `OfficeChartType.ColumnClustered`).
      *
      * @remarks
-     * ChartEx keys and unknown strings throw {@link Error}.
+     * Values outside {@link OfficeChartType} (ChartEx or unknown) throw {@link Error}.
+     * Optional: when omitted the chart is created (and saved) as `OfficeChartType.ColumnClustered`.
      */
-    readonly type: ClassicChartTypeKey | string;
+    readonly type?: OfficeChartType;
     /**
-     * Frame position and size in **points** (written as EMU `p:xfrm` under `graphicFrame`).
-     *
-     * @defaultValue DEFAULT_CHART_BOUNDS
+     * Frame position and size in **points** (written as EMU `p:xfrm` under `graphicFrame`). Required.
      */
-    readonly bounds?: ShapeBounds;
+    readonly bounds: ShapeBounds;
     /**
      * `cNvPr/@name` for the graphic frame.
      *
@@ -166,7 +178,10 @@ export interface AddChartOptions {
  * @returns {*} Bound {@link Chart} for the new graphic frame.
  */
 export function addChart(slide: Slide, options: AddChartOptions): Chart {
-    const typeKey: string = options.type;
+    if (options.bounds === undefined || options.bounds === null) {
+        throw new ChartsError('addChart requires options.bounds (x, y, width, height in points)', partNameOptions(slide.partName));
+    }
+    const typeKey: string = options.type !== undefined && options.type !== null ? options.type : OfficeChartType.ColumnClustered;
     if (isChartExTypeKey(typeKey)) {
         throw new ChartsError(`ChartEx type "${typeKey}" is not authorable; classic catalog only (TASK-1069)`,
                               partNameOptions(slide.partName));
@@ -314,7 +329,7 @@ export function addChart(slide: Slide, options: AddChartOptions): Chart {
     access.replaceRelationships(slide.partName, mergedSlideRels);
     const id: string = allocateNextDrawingElementId(root);
     const name: string = (options.name !== null && options.name !== undefined ? options.name : DEFAULT_CHART_NAME);
-    const bounds: ShapeBounds = (options.bounds !== null && options.bounds !== undefined ? options.bounds : DEFAULT_CHART_BOUNDS);
+    const bounds: ShapeBounds = options.bounds;
     const frame: OoxmlElement = buildChartGraphicFrame({
         id,
         name,
@@ -331,6 +346,9 @@ export function addChart(slide: Slide, options: AddChartOptions): Chart {
         throw new ChartsError('Failed to bind newly added chart graphicFrame', partNameOptions(slide.partName));
     }
     const handle: Chart = new Chart(shape, instance, document);
+    if (options.from === undefined) {
+        markSeedPlaceholder(hostChart);
+    }
     const localSheet: ChartCellSheet = new ChartCellSheet(sheetName);
     copyHostSheetValues(built.sheet, localSheet);
     handle.attachAuthoringSession({
@@ -425,10 +443,16 @@ function buildFromExcelHostChart(api: XlsxChartHostApi, engineType: string, from
     }
     const sourceSheet: HostWorksheet = resolveSourceSheet(sourceWb, from.sheet, slidePartName);
     const rangeText: string = (from.range !== null && from.range !== undefined ? from.range : DEFAULT_FROM_EXCEL_RANGE);
+    const hasHeader: boolean | undefined = from.hasHeader;
     // Read values from the consumer sheet; discard consumer A1 addresses for the
-    // embedding (subset uses a normalized A/B layout so formulas match the XLSX
+    // embedding (subset uses a normalized A..N layout so formulas match the XLSX
     // we actually store — docs honesty: not a full consumer-package copy).
-    const { rows } = readTwoColumnSeries(sourceSheet, rangeText, slidePartName);
+    // First column is categories; every remaining column is one value series.
+    const parsed: ParsedFromExcelSeries = readFromExcelSeries(sourceSheet, rangeText, hasHeader, slidePartName);
+    const categories: ReadonlyArray<string | number | boolean | Date | null | undefined> = parsed.categories;
+    const seriesNames: ReadonlyArray<string | undefined> = parsed.seriesNames;
+    const seriesColumns: ReadonlyArray<ReadonlyArray<string | number | boolean | Date | null | undefined>> =
+        parsed.seriesColumns;
     // Subset embedding: new minimal workbook with copied values only.
     const embedWb: HostWorkbook = api.createWorkbook();
     const embedSheet: HostWorksheet = embedWb.worksheets[0];
@@ -436,22 +460,42 @@ function buildFromExcelHostChart(api: XlsxChartHostApi, engineType: string, from
         throw new ChartsError('Subset workbook has no worksheets', partNameOptions(slidePartName));
     }
     embedSheet.getCell('A1').value = 'Category';
-    embedSheet.getCell('B1').value = 'Value';
-    for (let i: number = 0; i < rows.length; i += 1) {
-        const row: SeriesRow | undefined = arrayAt(rows, i);
-        if (row === undefined) {
-            continue;
-        }
-        const a1: string = `A${String(i + 2)}`;
-        const b1: string = `B${String(i + 2)}`;
-        embedSheet.getCell(a1).value = row.category;
-        embedSheet.getCell(b1).value = row.value;
+    for (let s: number = 0; s < seriesColumns.length; s += 1) {
+        const colLetter: string = columnIndexToLetters(s + 1);
+        const name: string | undefined = arrayAt(seriesNames, s);
+        embedSheet.getCell(`${colLetter}1`).value = (name !== undefined ? name : `Series ${String(s + 1)}`);
     }
-    const lastDataRow: number = rows.length + 1;
+    for (let i: number = 0; i < categories.length; i += 1) {
+        embedSheet.getCell(`A${String(i + 2)}`).value = arrayAt(categories, i);
+        for (let s: number = 0; s < seriesColumns.length; s += 1) {
+            const colLetter: string = columnIndexToLetters(s + 1);
+            const v: string | number | boolean | Date | null | undefined = arrayAt(arrayAt(seriesColumns, s), i);
+            if (v !== undefined) {
+                embedSheet.getCell(`${colLetter}${String(i + 2)}`).value = v;
+            }
+        }
+    }
+    const lastDataRow: number = categories.length + 1;
     const embedCategoryRange: string = `A2:A${String(lastDataRow)}`;
-    const embedValueRange: string = `B2:B${String(lastDataRow)}`;
     // Host chart lives on the subset sheet so c:f / cached points match embedding.
-    const hostChart: HostChart = embedSheet.addChart(engineType, 0, 2, 10, 10, embedCategoryRange, embedValueRange);
+    // First series via addChart; additional series via host addSeries.
+    const firstValueRange: string = `B2:B${String(lastDataRow)}`;
+    const hostChart: HostChart = embedSheet.addChart(engineType, 0, 2, 10, 10, embedCategoryRange, firstValueRange);
+    // Host addChart does not title the first series from the header cell — set it.
+    const firstSeries: HostChart['series'][number] | undefined = arrayAt(hostChart.series, 0);
+    const firstName: string | undefined = arrayAt(seriesNames, 0);
+    if (firstSeries !== undefined && firstName !== undefined) {
+        firstSeries.title = firstName;
+    }
+    for (let s: number = 1; s < seriesColumns.length; s += 1) {
+        const colLetter: string = columnIndexToLetters(s + 1);
+        const title: string | undefined = arrayAt(seriesNames, s);
+        hostChart.addSeries({
+            ...(title !== undefined ? { title } : {}),
+            categoryLabels: embedCategoryRange,
+            values: `${colLetter}2:${colLetter}${String(lastDataRow)}`
+        });
+    }
     const local: ChartCellSheet = new ChartCellSheet(embedSheet.name);
     copyHostSheetValues(embedSheet, local);
     const xlsxBytes: Uint8Array = writeChartEmbeddingXlsx({
@@ -584,26 +628,36 @@ function resolveSourceSheet(wb: HostWorkbook, sheet: string | number | undefined
         throw new ChartsError(`from.sheet could not be resolved: ${detail}`, partNameOptions(slidePartName));
     }
 }
-interface SeriesRow {
-    readonly category: string | number | boolean | Date | null | undefined;
-    readonly value: string | number | boolean | Date | null | undefined;
-}
-interface ParsedTwoColumnSeries {
+interface ParsedFromExcelSeries {
     readonly categoryRange: string;
     readonly valueRange: string;
-    readonly rows: ReadonlyArray<SeriesRow>;
+    /** Data rows: category cell values in range order. */
+    readonly categories: ReadonlyArray<string | number | boolean | Date | null | undefined>;
+    /** One value-column per series, aligned with `categories`. */
+    readonly seriesColumns: ReadonlyArray<ReadonlyArray<string | number | boolean | Date | null | undefined>>;
+    /** Series display names when hasHeader; empty otherwise. */
+    readonly seriesNames: ReadonlyArray<string | undefined>;
 }
 /**
- * Parse a single-area A1 range into left-column categories + right-column values.
+ * Parse a single-area A1 range into left-column categories + per-column values.
  *
- * @remarks Requires exactly two columns. Sheet-qualified refs (`Sheet1!A1:B3`) and multi-area unions are refused. Citations: Excel A1
+ * @remarks First column is categories; every remaining column is one value
+ * series (multi-series pivot layouts like `A1:C6`). Sheet-qualified refs
+ * (`Sheet1!A1:B3`) and multi-area unions are refused. The first range row is
+ * treated as a series-name header when `hasHeader` is `true`, refused when
+ * `false`, and **auto-detected** when `undefined` (default): a header row is a
+ * row whose value-column cells are all text (or empty) with at least one
+ * non-empty text cell and at least one data row below — the same first-row
+ * convention as .NET Presentation chart authoring. Citations: Excel A1
  * addressing used by ej2-xlsx `addChart`.
  * @param {HostWorksheet} sheet - The sheet value.
  * @param {string} rangeText - The rangeText value.
+ * @param {boolean | undefined} hasHeader - Explicit header flag; auto-detect when undefined.
  * @param {string} slidePartName - The slidePartName value.
- * @returns {ParsedTwoColumnSeries} The result.
+ * @returns {ParsedFromExcelSeries} The result.
  */
-function readTwoColumnSeries(sheet: HostWorksheet, rangeText: string, slidePartName: string): ParsedTwoColumnSeries {
+function readFromExcelSeries(sheet: HostWorksheet, rangeText: string, hasHeader: boolean | undefined,
+                             slidePartName: string): ParsedFromExcelSeries {
     const trimmed: string = rangeText.trim();
     if (trimmed.length === 0) {
         throw new ChartsError('from.range must be a non-empty A1 range', partNameOptions(slidePartName));
@@ -622,37 +676,100 @@ function readTwoColumnSeries(sheet: HostWorksheet, rangeText: string, slidePartN
     const col1: number = Math.max(start.col, end.col);
     const row0: number = Math.min(start.row, end.row);
     const row1: number = Math.max(start.row, end.row);
-    if (col1 - col0 !== 1) {
-        throw new ChartsError(`from.range "${trimmed}" must span exactly two columns (categories + values)`,
+    if (col1 - col0 < 1) {
+        throw new ChartsError(`from.range "${trimmed}" must span at least two columns (categories + values)`,
                               partNameOptions(slidePartName));
     }
     if (row1 < row0) {
         throw new ChartsError(`from.range "${trimmed}" has an empty row span`, partNameOptions(slidePartName));
     }
-    const catColLetter: string = columnIndexToLetters(col0);
-    const valColLetter: string = columnIndexToLetters(col1);
-    const categoryRange: string = `${catColLetter}${String(row0)}:${catColLetter}${String(row1)}`;
-    const valueRange: string = `${valColLetter}${String(row0)}:${valColLetter}${String(row1)}`;
-    const rows: SeriesRow[] = [];
-    for (let r: number = row0; r <= row1; r += 1) {
-        const catAddr: string = `${catColLetter}${String(r)}`;
-        const valAddr: string = `${valColLetter}${String(r)}`;
-        let category: SeriesRow['category'];
-        let value: SeriesRow['value'];
-        try {
-            category = sheet.getCell(catAddr).value;
-            value = sheet.getCell(valAddr).value;
-        }
-        catch (err) {
-            const msg: string = err instanceof Error ? err.message : String(err);
-            throw new ChartsError(`Failed to read cells for from.range "${trimmed}": ${msg}`, partNameOptions(slidePartName));
-        }
-        rows.push({ category, value });
+    // Resolve the effective header flag (explicit wins; auto-detect by default).
+    let header: boolean;
+    if (hasHeader !== undefined) {
+        header = hasHeader;
     }
-    if (rows.length === 0) {
+    else {
+        header = row1 > row0 && looksLikeHeaderRow(sheet, col0, col1, row0, trimmed, slidePartName);
+    }
+    const dataRow0: number = header ? row0 + 1 : row0;
+    if (header && dataRow0 > row1) {
+        throw new ChartsError(`from.range "${trimmed}" with hasHeader leaves no data rows`, partNameOptions(slidePartName));
+    }
+    const categoryRange: string = `${columnIndexToLetters(col0)}${String(dataRow0)}:${columnIndexToLetters(col0)}${String(row1)}`;
+    const valueRange: string = `${columnIndexToLetters(col0 + 1)}${String(dataRow0)}:${columnIndexToLetters(col1)}${String(row1)}`;
+    // Header names (one per value column) when header, else none.
+    const seriesNames: Array<string | undefined> = [];
+    if (header) {
+        for (let c: number = col0 + 1; c <= col1; c += 1) {
+            const addr: string = `${columnIndexToLetters(c)}${String(row0)}`;
+            const v: string | number | boolean | Date | null | undefined = safeCellValue(sheet, addr, trimmed, slidePartName);
+            seriesNames.push(typeof v === 'string' ? v : undefined);
+        }
+    }
+    const categories: Array<string | number | boolean | Date | null | undefined> = [];
+    for (let r: number = dataRow0; r <= row1; r += 1) {
+        categories.push(safeCellValue(sheet, `${columnIndexToLetters(col0)}${String(r)}`, trimmed, slidePartName));
+    }
+    const seriesColumns: Array<ReadonlyArray<string | number | boolean | Date | null | undefined>> = [];
+    for (let c: number = col0 + 1; c <= col1; c += 1) {
+        const colValues: Array<string | number | boolean | Date | null | undefined> = [];
+        for (let r: number = dataRow0; r <= row1; r += 1) {
+            colValues.push(safeCellValue(sheet, `${columnIndexToLetters(c)}${String(r)}`, trimmed, slidePartName));
+        }
+        seriesColumns.push(colValues);
+    }
+    if (categories.length === 0) {
         throw new ChartsError(`from.range "${trimmed}" produced no series rows`, partNameOptions(slidePartName));
     }
-    return { categoryRange, valueRange, rows };
+    return { categoryRange, valueRange, categories, seriesColumns, seriesNames };
+}
+/**
+ * Heuristic first-row header detection matching the .NET Presentation default:
+ * a row is a series-name header when every value-column cell is text or empty
+ * (no numbers/dates), at least one is non-empty text, and at least one more
+ * row follows in the range.
+ *
+ * @param {HostWorksheet} sheet - The sheet value.
+ * @param {number} col0 - Category column (0-based).
+ * @param {number} col1 - Last value column (0-based).
+ * @param {number} row0 - Candidate header row (1-based).
+ * @param {string} rangeText - Original range text for the error message.
+ * @param {string} slidePartName - The slidePartName value.
+ * @returns {boolean} True when the row looks like a series-name header.
+ */
+function looksLikeHeaderRow(sheet: HostWorksheet, col0: number, col1: number, row0: number,
+                            rangeText: string, slidePartName: string): boolean {
+    let anyText: boolean = false;
+    for (let c: number = col0 + 1; c <= col1; c += 1) {
+        const v: string | number | boolean | Date | null | undefined =
+            safeCellValue(sheet, `${columnIndexToLetters(c)}${String(row0)}`, rangeText, slidePartName);
+        if (typeof v === 'number' || typeof v === 'boolean' || v instanceof Date) {
+            return false;
+        }
+        if (typeof v === 'string' && v.length > 0) {
+            anyText = true;
+        }
+    }
+    return anyText;
+}
+/**
+ * Reads one cell value from the source sheet with a typed wrap on host errors.
+ *
+ * @param {HostWorksheet} sheet - The sheet value.
+ * @param {string} address - A1 address.
+ * @param {string} rangeText - Original range text for the error message.
+ * @param {string} slidePartName - The slidePartName value.
+ * @returns {string | number | boolean | Date | null | undefined} The cell value.
+ */
+function safeCellValue(sheet: HostWorksheet, address: string, rangeText: string,
+                       slidePartName: string): string | number | boolean | Date | null | undefined {
+    try {
+        return sheet.getCell(address).value;
+    }
+    catch (err) {
+        const msg: string = err instanceof Error ? err.message : String(err);
+        throw new ChartsError(`Failed to read cells for from.range "${rangeText}": ${msg}`, partNameOptions(slidePartName));
+    }
 }
 /**
  *

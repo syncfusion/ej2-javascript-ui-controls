@@ -412,6 +412,7 @@ export class Ribbon {
                 click: () => {
                     btn.setAttribute('aria-label', l10n.getConstant('Paste'));
                     this.parent.notify(paste, { isAction: true, isInternal: true });
+                    this.focusSheet();
                 },
                 beforeOpen: (args: MenuEventArgs) => {
                     args.element.setAttribute('aria-label', l10n.getConstant('Paste'));
@@ -504,6 +505,7 @@ export class Ribbon {
                         tooltipText: l10n.getConstant('SwitchRowColumn'),
                         id: id + 'switch_row_column_chart', click: (): void => {
                             this.parent.notify(chartDesignTab, { switchRowColumn: true, triggerEvent: true });
+                            this.focusSheet();
                         }
                     },
                     { type: 'Separator' },
@@ -2023,6 +2025,13 @@ export class Ribbon {
         return btnObj.element;
     }
     private pendingNoteFocus: boolean = false;
+    private focusSheet(): void {
+        getUpdateUsingRaf((): void => {
+            if (this.parent && !this.parent.isEdit && !this.parent.element.querySelector('.e-dialog.e-popup-open')) {
+                focus(this.parent.element);
+            }
+        });
+    }
     private notesDDB(id: string): Element {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         this.notesDdb = new DropDownButton({
@@ -2248,6 +2257,7 @@ export class Ribbon {
                 args.element.setAttribute('aria-label', l10n.getConstant('MergeCells'));
                 if (args.element.classList.contains('e-active')) {
                     this.unMerge();
+                    this.focusSheet();
                 } else {
                     this.merge(`${this.parent.element.id}_merge_all`);
                 }
@@ -2616,6 +2626,7 @@ export class Ribbon {
         if (!eventArgs.cancel && value !== eventArgs.style[`${key}`]) {
             this.refreshToggleBtn(getCellIndexes(this.parent.getActiveSheet().activeCell));
         }
+        this.focusSheet();
     }
 
     private getCellStyleValue(cssProp: string, indexes: number[]): string {
@@ -3267,6 +3278,7 @@ export class Ribbon {
                     cancel: false
                 };
                 this.parent.notify(completeAction, { eventArgs: evtHArgs, action: 'headers' });
+                this.focusSheet();
                 if (evtHArgs.cancel) { return; }
                 this.parent.setSheetPropertyOnMute(sheet, 'showHeaders', !sheet.showHeaders);
                 (this.parent.serviceLocator.getService('sheet') as IRenderer).showHideHeaders();
@@ -3279,6 +3291,7 @@ export class Ribbon {
                     cancel: false
                 };
                 this.parent.notify(completeAction, { eventArgs: evtglArgs, action: 'gridLines' });
+                this.focusSheet();
                 if (evtglArgs.cancel) { return; }
                 this.parent.setSheetPropertyOnMute(sheet, 'showGridLines', !sheet.showGridLines);
                 this.toggleRibbonItems({ props: 'GridLines', activeTab: this.ribbon.selectedTab });
@@ -3288,9 +3301,11 @@ export class Ribbon {
                 break;
             case parentId + '_undo':
                 this.parent.notify(performUndoRedo, { isUndo: true });
+                this.focusSheet();
                 break;
             case parentId + '_redo':
                 this.parent.notify(performUndoRedo, { isUndo: false });
+                this.focusSheet();
                 break;
             case parentId + '_freezepanes':
                 indexes = getCellIndexes(sheet.topLeftCell);
@@ -3317,6 +3332,7 @@ export class Ribbon {
                         }
                         this.toggleRibbonItems({ props: 'Protectworkbook', activeTab: this.ribbon.selectedTab });
                         this.parent.notify(completeAction, { action: 'protectWorkbook', eventArgs: { isProtected: false } });
+                        this.focusSheet();
                     }
                     else if (this.parent.element.querySelector('.e-add-sheet-tab').classList.contains('e-disabled')) {
                         this.toggleRibbonItems({ props: 'Protectworkbook', activeTab: this.ribbon.selectedTab });
@@ -3328,6 +3344,9 @@ export class Ribbon {
                 break;
             }
             this.parent.notify(ribbonClick, args);
+            if (args.item.id === `${parentId}_wrap`) {
+                this.focusSheet();
+            }
         }
     }
 

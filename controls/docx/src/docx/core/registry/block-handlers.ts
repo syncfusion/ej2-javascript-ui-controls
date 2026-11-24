@@ -4,7 +4,9 @@ import { FeatureId } from './feature-registry';
 import { FeatureBlock } from '../../features/document/feature-block';
 import { BlockContent, Paragraph } from '../../features/document/paragraph';
 import { OpenXmlElement } from '../xml/index';
-/** @public */
+/**
+ * @public
+ */
 export interface BodyBlockParseContext {
     assertAttachedParagraph(target: Paragraph): void;
     owningDocument(): WordDocument;

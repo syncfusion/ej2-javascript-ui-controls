@@ -3,7 +3,8 @@ import { TextRange } from '../document/text-range';
 
 import { effectiveBold, effectiveItalic, EMPTY_MODELED_RUN_PROPERTIES, mergeModeledRunProperties, parseDirectRunFontProperties, ModeledRunProperties } from './run-properties';
 import { ThemeFontSlot, ThemePart } from './theme';
-import { CharacterFormat } from '../document/character-format';
+import { CharacterFormat, CharacterFormatSnapshot } from '../document/character-format';
+import { halfPointsToPoint } from '../document/length';
 /**
  * Effective run formatting after document defaults, paragraph style, character
  * style inheritance, and direct run properties.
@@ -25,12 +26,15 @@ export interface StyleFormatAccess {
 }
 function directRunProperties(run: TextRange): ModeledRunProperties {
     const cf: CharacterFormat = run.characterFormat;
+    // Only the run's own (direct) values may override the cascade. The public getters fall back to
+    // defaults, which would otherwise mask docDefaults and style values.
+    const direct: CharacterFormatSnapshot = cf.snapshot();
     return {
         ...EMPTY_MODELED_RUN_PROPERTIES,
         bold: cf.bold,
         italic: cf.italic,
-        fontSize: cf.fontSize,
-        kerning: cf.kerning,
+        fontSize: direct.fontSizeValue === undefined ? undefined : halfPointsToPoint(direct.fontSizeValue as number),
+        kerning: direct.kerningValue === undefined ? undefined : cf.kerning,
         ...parseDirectRunFontProperties(run)
     };
 }

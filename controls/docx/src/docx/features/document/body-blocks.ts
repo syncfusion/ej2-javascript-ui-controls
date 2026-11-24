@@ -131,10 +131,10 @@ export function serializeBodyBlocks(blocks: ReadonlyArray<BlockContent>): OpenXm
                 }
             }
 
-            // DocIO pageBreakAfter: emit a separate page-break paragraph after
+            // Word pageBreakAfter: emit a separate page-break paragraph after
             // content — never invent w:pageBreakAfter on pPr, and never put the
             // break run inside the content paragraph.
-            // Citation: ECMA-376-1 §17.3.3.1 w:br; docs/specs/paragraph-formatting.md.
+            // Citation: ECMA-376-1 §17.3.3.1 w:br; the format specification
             if (shouldEmitPageBreakAfterParagraph(block.paragraph)) {
                 out.push(createPageBreakAfterParagraphElement());
             }

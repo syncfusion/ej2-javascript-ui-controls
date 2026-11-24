@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## 35.2.13 (2026-11-24)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I888633` - Fixed an issue where the Update and Cancel toolbar buttons became disabled during batch editing.
+- `#I888553` - Fixed an issue where command columns remained in edit state after the data source was updated during inline editing with infinite scrolling enabled.
+- `#I886868` - Fixed an issue where pressing the `Enter` key submitted the form when using an `editTemplate`.
+
+#### Features
+
+- Added support for highlighting matching search values within Grid cells and navigating between search results.
+- Added cell and row flash highlighting for data updates, with configurable animations.
+- Added a configurable Status Bar with built-in summary panels, custom templates and real-time updates for row counts, selections and aggregates.
+- Added the `allowTextSelection` property as an additional option to enable native text selection and copying within Grid cells.
+- Added Default and Immediate search modes, where Immediate mode shows search results while typing without pressing the `Enter` key.
+- Added keyboard support for resizing columns directly from a focused header cell.
+
 ## 35.2.12 (2026-11-18)
 
 ### Grid

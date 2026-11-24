@@ -122,6 +122,8 @@ export class Layout {
     public isEndnoteContentChanged: boolean = false;
     private keepWithNext: boolean = false;
     private effectiveJustifyWidth: number = 0;
+    private mergedParagraph: ParagraphWidget;
+    private mergedParagraphOffset: number = 0;
     private is2013Justification: boolean = false;
     private nextElementToLayout: ElementBox = undefined;
     private endNoteHeight: number = 0;
@@ -2335,6 +2337,14 @@ export class Layout {
         paragraph.x = 0;
         paragraph.textWrapWidth = false;
         this.addParagraphWidget(this.viewer.clientActiveArea, paragraph);
+        const previousPara: ParagraphWidget = paragraph.previousWidget as ParagraphWidget;
+        if (lineIndex === 0 && previousPara instanceof ParagraphWidget && this.isMergedWithNextParagraph(previousPara)) {
+            const offset: number = Math.max(0, this.getMergedParagraphOffset(paragraph));
+            paragraph.x += offset;
+            this.mergedParagraph = paragraph;
+            this.mergedParagraphOffset = offset;
+            this.viewer.updateClientWidth(-offset);
+        }
         let isListLayout: boolean = true;
         const isFirstElmIsparagraph: boolean = this.isFirstElementWithPageBreak(paragraph);
         if (!isFirstElmIsparagraph) {
@@ -2346,6 +2356,11 @@ export class Layout {
         const finalizeParagraph = (): BlockWidget => {
             this.normalizeBookmarkEndForParagraph(paragraph);
             this.updateWidgetToPage(this.viewer, paragraph);
+            if (this.isMergedWithNextParagraph(paragraph)) {
+                // Hidden paragraph mark: the next paragraph continues on the last line of this paragraph.
+                paragraph.height = 0;
+                this.viewer.clientActiveArea.y = paragraph.y;
+            }
             paragraph.isLayouted = true;
             paragraph.isFieldCodeBlock = false;
             return paragraph;
@@ -3284,6 +3299,8 @@ export class Layout {
         let bodyWidget = paragraph.bodyWidget as BodyWidget;
         if (bodyWidget.floatingElements.length > 0) {
             floatingElements = bodyWidget.floatingElements;
+        } else if (this.getPriorColumnFloatingTables(bodyWidget).length > 0) {
+            floatingElements = this.getPriorColumnFloatingTables(bodyWidget);
         } else if (!isNullOrUndefined(bodyWidget.page) && !isNullOrUndefined(bodyWidget.page.headerWidget) && bodyWidget.page.headerWidget.floatingElements.length > 0 && !paragraph.paragraphFormat.bidi) {
             floatingElements = bodyWidget.page.headerWidget.floatingElements;
         }
@@ -3579,6 +3596,9 @@ export class Layout {
                     element.line.paragraph.x = this.viewer.clientActiveArea.x;
                     this.isXPositionUpdated = false;
                 }
+            } else if (this.isContinuationAtColumnStart(element.line)) {
+                // Continuation of a split paragraph at the start of a later column is pushed below a floating table from the previous column.
+                element.line.paragraph.y = this.viewer.clientActiveArea.y;
             } else if (element.line.children[0] === element) {
                 element.line.marginTop += (this.viewer.clientActiveArea.y - previousTop);
             }
@@ -3703,6 +3723,8 @@ export class Layout {
         let floatingElements: (ShapeBase | TableWidget)[];       
         if (bodyWidget.floatingElements.length > 0) {
             floatingElements = bodyWidget.floatingElements;
+        } else if (bodyWidget instanceof BodyWidget && this.getPriorColumnFloatingTables(bodyWidget).length > 0) {
+            floatingElements = this.getPriorColumnFloatingTables(bodyWidget);
         } else if (!isNullOrUndefined(bodyWidget.page) && !isNullOrUndefined(bodyWidget.page.headerWidget) && bodyWidget.page.headerWidget.floatingElements.length > 0) {
             floatingElements = bodyWidget.page.headerWidget.floatingElements;
         }
@@ -3737,12 +3759,40 @@ export class Layout {
             && Math.round(rect.y + height) >= Math.round(textWrappingBounds.y))
             && !(allowOverlap && (isInTextBox)));
     }
+    private isContinuationAtColumnStart(line: LineWidget): boolean {
+        const paragraph: ParagraphWidget = line.paragraph;
+        const body: BlockContainer = paragraph.containerWidget as BlockContainer;
+        return line.indexInOwner === 0 && !isNullOrUndefined(paragraph.previousSplitWidget) && body instanceof BodyWidget
+            && body.columnIndex > 0 && body.floatingElements.length === 0 && body.firstChild === paragraph;
+    }
+    private getPriorColumnFloatingTables(bodyWidget: BlockContainer): TableWidget[] {
+        const tables: TableWidget[] = [];
+        if (!(bodyWidget instanceof BodyWidget) || isNullOrUndefined(bodyWidget.page) || isNullOrUndefined(bodyWidget.sectionFormat) || bodyWidget.sectionFormat.numberOfColumns < 2) {
+            return tables;
+        }
+        const bodies: BodyWidget[] = bodyWidget.page.bodyWidgets;
+        for (let i: number = 0; i < bodies.length && bodies[i] !== bodyWidget; i++) {
+            if (bodies[i].sectionIndex !== bodyWidget.sectionIndex) {
+                continue;
+            }
+            for (let j: number = 0; j < bodies[i].floatingElements.length; j++) {
+                const floatingTable: TableWidget = bodies[i].floatingElements[j] as TableWidget;
+                if (floatingTable instanceof TableWidget && floatingTable.x + floatingTable.getTableCellWidth() > bodyWidget.x) {
+                    tables.push(floatingTable);
+                }
+            }
+        }
+        return tables;
+    }
     private isNeedToWrapLeafWidget(pargaraph: ParagraphWidget, elementBox: ElementBox): boolean {
         let IsNeedToWrap: boolean = true;
         let floatingElements: (ShapeBase | TableWidget)[] = [];
         let bodyWidget = pargaraph.bodyWidget as BodyWidget;
         if (bodyWidget.floatingElements.length > 0) {
             floatingElements = floatingElements.concat(bodyWidget.floatingElements);
+        }
+        else {
+            floatingElements = floatingElements.concat(this.getPriorColumnFloatingTables(bodyWidget));
         }
         if (!(bodyWidget instanceof HeaderFooterWidget) && !isNullOrUndefined(bodyWidget.page) && !isNullOrUndefined(bodyWidget.page.headerWidget) && bodyWidget.page.headerWidget.floatingElements.length > 0) {
             floatingElements = floatingElements.concat(bodyWidget.page.headerWidget.floatingElements);
@@ -3924,7 +3974,7 @@ export class Layout {
         if (this.isNeedToWrapLeafWidget(ownerPara, elementBox)) {
             let clientLayoutArea: Rect = layouter.clientArea;
             let floatingElements: (ShapeBase | TableWidget)[] = [];
-            if (bodyWidget.floatingElements.length > 0) {
+            if (bodyWidget.floatingElements.length > 0 || this.getPriorColumnFloatingTables(bodyWidget).length > 0) {
                 const page: Page = bodyWidget.page;
                 for (let i: number = 0; i < page.bodyWidgets.length; i++) {
                     // In few cases current paragraph and previous body widget floating items will get overlapped. So need to adjust the client area for previous body widget in the page. 
@@ -5202,6 +5252,46 @@ export class Layout {
         return yPosition;
     }
 
+    private hasVisibleElement(line: LineWidget): boolean {
+        for (let i: number = 0; i < line.children.length; i++) {
+            if (line.children[i] instanceof TextElementBox && !line.children[i].characterFormat.hidden) {
+                return true;
+            }
+        }
+        return false;
+    }
+    private getMergedParagraphOffset(paragraph: ParagraphWidget): number {
+        const previous: ParagraphWidget = paragraph.previousWidget as ParagraphWidget;
+        const previousStart: number = previous.x + HelperMethods.convertPointToPixel(previous.paragraphFormat.firstLineIndent);
+        const currentStart: number = paragraph.x + HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent);
+        return previousStart + this.getLineWidth(previous.lastChild as LineWidget) + this.getHiddenParagraphMarkWidth(previous) - currentStart;
+    }
+    private getHiddenParagraphMarkWidth(paragraph: ParagraphWidget): number {
+        // The hidden paragraph mark is measured as zero, but Word reserves the width of a visible mark before the next paragraph continues on the same line.
+        const line: LineWidget = paragraph.lastChild as LineWidget;
+        for (let i: number = line.children.length - 1; i >= 0; i--) {
+            const element: ElementBox = line.children[i];
+            if (element instanceof TextElementBox) {
+                const format: WCharacterFormat = element.characterFormat;
+                const isHidden: boolean = format.hidden;
+                format.hidden = false;
+                const width: number = this.documentHelper.textHelper.getParagraphMarkSize(format).Width;
+                format.hidden = isHidden;
+                return width;
+            }
+        }
+        return 0;
+    }
+    /**
+     * @private
+     */
+    public isMergedWithNextParagraph(paragraph: ParagraphWidget): boolean {
+        const next: Widget = paragraph.nextWidget;
+        return paragraph.characterFormat.hidden && paragraph.characterFormat.specVanish && !paragraph.isInsideTable && paragraph.childWidgets.length === 1
+            && !paragraph.isEmpty() && this.hasVisibleElement(paragraph.childWidgets[0] as LineWidget) && !paragraph.isEndsWithPageBreak && !paragraph.isEndsWithColumnBreak
+            && next instanceof ParagraphWidget && !next.isSectionBreak && !next.isEmpty();
+    }
+
     private getLineXPosition(paragraph: ParagraphWidget): number {
         let lastLine: LineWidget = paragraph.lastChild as LineWidget;
         const paragraphMarkSize: TextSizeInfo = this.documentHelper.textHelper.getParagraphMarkSize(paragraph.characterFormat);
@@ -5770,7 +5860,9 @@ export class Layout {
             if (index > 0) {
                 textWidth = this.documentHelper.textHelper.measureTextExcludingSpaceAtEnd(text.slice(0, index), characterFormat, element.scriptType);
             }
-            if (this.viewer.clientActiveArea.width < textWidth && !this.documentHelper.textHelper.isUnicodeText(text, element.scriptType)
+            // The cell width is stored with limited precision, so a word that exactly fits the cell can measure wider by a negligible amount.
+            // Such a word should not be treated as exceeding the available width, otherwise it is split by character.
+            if (this.viewer.clientActiveArea.width + 0.0001 < textWidth && !this.documentHelper.textHelper.isUnicodeText(text, element.scriptType)
                 && !this.isWordFittedByJustification(element, textWidth, false)) {
                 //Check and split the previous text elements to next line.
                 isSplitByWord = this.checkPreviousElement(lineWidget, lineWidget.children.indexOf(element));
@@ -6816,7 +6908,7 @@ export class Layout {
                         viewer.updateClientAreaForBlock(paragraphWidget, false);
                     }
                     let lastBlock: ParagraphWidget = line.paragraph;
-                    if (keepWithNext) {
+                    if (keepWithNext && paragraphWidget !== lastBlock) {
                         let nextBlock: BlockWidget = paragraphWidget.nextWidget as BlockWidget;
                         if (!isNullOrUndefined(nextBlock)) {
                             do {
@@ -8552,7 +8644,7 @@ export class Layout {
             if ((nextIndex < length - 1 || (nextIndex === length - 1 && text[nextIndex - 1] === ' ')) && index !== nextIndex) {
                 splitWidth = this.documentHelper.textHelper.measureTextExcludingSpaceAtEnd(text.slice(0, nextIndex), characterFormat, scriptType);
             }
-            if (splitWidth <= clientActiveWidth) {
+            if (splitWidth <= clientActiveWidth + 0.0001) {
                 index = nextIndex;
             } else {
                 if (index === 0 && text[0] === ' ') {
@@ -8643,8 +8735,10 @@ export class Layout {
         let totalSpaceCount: number = lineText.length - HelperMethods.removeSpace(lineText).length;
         lineText = lineText.trim();
         spaceCount = lineText.length - HelperMethods.removeSpace(lineText).length;
-        let subWidth: number = (this.viewer.clientArea.width - firstLineIndent - width);
-        let totalSubWidth: number = (this.viewer.clientArea.width - firstLineIndent - (width + trimmedSpaceWidth));
+        // The first line of a paragraph rendered after a hidden paragraph starts at an offset, so the available width is reduced.
+        const mergedOffset: number = lineWidget.paragraph === this.mergedParagraph && lineWidget.isFirstLine() ? this.mergedParagraphOffset : 0;
+        let subWidth: number = (this.viewer.clientArea.width - mergedOffset - firstLineIndent - width);
+        let totalSubWidth: number = (this.viewer.clientArea.width - mergedOffset - firstLineIndent - (width + trimmedSpaceWidth));
         if (isBidi && justify) {
             if (totalSubWidth < 0) {
                 trimmedSpaceWidth = -trimmedSpaceWidth;
@@ -10006,10 +10100,13 @@ export class Layout {
                         //Updates table widgets location.
                         viewer.updateClientAreaForBlock(rowToMove.ownerTable, true, tableWidgets);
                         //Update splitted row widget location. if header is repeated update the y position of splitted widget to header height.
-                        splittedWidget.x = splittedWidget.x;
+                        // In multi-column layout, the split row keeps the x position of the previous column. Move it along with its content to the column of the table on the new page.
+                        const xOffset: number = splittedWidget.bodyWidget.sectionFormat.columns.length > 1 ? tableWidget.x - splittedWidget.x : 0;
                         splittedWidget.y = tableWidget.y + rowToMove.ownerTable.headerHeight;
-                        // let cellspace: number = viewer instanceof PageLayoutViewer ? cellspacing / 2 : cellspacing;
                         this.updateChildLocationForRow(tableWidget.y + rowToMove.ownerTable.headerHeight, splittedWidget, tableWidget.containerWidget as BodyWidget);
+                        if (xOffset !== 0) {
+                            this.shiftXPosition(splittedWidget, xOffset);
+                        }
                     } else {
                         //Updates table widgets location.
                         viewer.updateClientAreaForBlock(rowToMove.ownerTable, true, tableWidgets, undefined, true);
@@ -11035,13 +11132,23 @@ export class Layout {
             top += rowWidget.height;
         }
     }
-
+    public shiftXPosition(widget: Widget, offset: number): void {
+        widget.x += offset;
+        for (let i: number = 0; i < widget.childWidgets.length; i++) {
+            const child: Widget = widget.childWidgets[i] as Widget;
+            if (child instanceof LineWidget) {
+                continue;
+            }
+            this.shiftXPosition(child, offset);
+        }
+    }
     public updateChildLocationForRow(top: number, rowWidget: TableRowWidget, bodyWidget?: BodyWidget, updatePosition?: boolean, updateXPosition?: boolean): void {
         let spacing: number = 0;
         if (rowWidget.ownerTable.tableFormat.cellSpacing > 0) {
             spacing = HelperMethods.convertPointToPixel(rowWidget.ownerTable.tableFormat.cellSpacing);
         }
-        let xPosition: number = rowWidget.x;
+        // The cell x position includes its left margin, so the first cell starts after the left margin of the row.
+        let xPosition: number = rowWidget.x + (updateXPosition && rowWidget.childWidgets.length > 0 ? (rowWidget.childWidgets[0] as TableCellWidget).margin.left : 0);
         for (let i: number = 0; i < rowWidget.childWidgets.length; i++) {
             const cellWidget: TableCellWidget = rowWidget.childWidgets[i] as TableCellWidget;
             cellWidget.x = updateXPosition ? xPosition : cellWidget.x;
@@ -13143,7 +13250,7 @@ export class Layout {
     }
     // To skip the before spacing while shifting the paragraph. If it is the first child of the BodyWidget.
     private updateParaOnBeforeSpacing(widget: BlockWidget, bodyWidget: BodyWidget, updateBeforeSpace: Boolean) {
-        if (widget.bodyWidget instanceof HeaderFooterWidget || widget instanceof TableWidget || isNullOrUndefined((widget.firstChild as LineWidget).margin)) {
+        if (widget.bodyWidget instanceof HeaderFooterWidget || widget instanceof TableWidget || isNullOrUndefined(widget.firstChild) || isNullOrUndefined((widget.firstChild as LineWidget).margin)) {
             return;
         }
         let paragraph: ParagraphWidget = widget as ParagraphWidget;
@@ -13272,6 +13379,10 @@ export class Layout {
                     this.updateXPositionForEmptyParagraph(viewer.clientActiveArea, widget);
                 } else {
                     widget.x = viewer.clientActiveArea.x;
+                    const previousPara: ParagraphWidget = widget.previousWidget as ParagraphWidget;
+                    if (!widget.previousSplitWidget && previousPara instanceof ParagraphWidget && this.isMergedWithNextParagraph(previousPara)) {
+                        widget.x += Math.max(0, this.getMergedParagraphOffset(widget));
+                    }
                 }
                 viewer.updateClientAreaForBlock(widget, false);
                 widget.y = viewer.clientActiveArea.y;
@@ -13786,6 +13897,10 @@ export class Layout {
 
     public shiftParagraphWidget(paragraph: ParagraphWidget, skipCellContentHeightCalc?: boolean): void {
         this.addParagraphWidget(this.viewer.clientActiveArea, paragraph);
+        const previousPara: ParagraphWidget = paragraph.previousWidget as ParagraphWidget;
+        if (previousPara instanceof ParagraphWidget && !paragraph.previousSplitWidget && this.isMergedWithNextParagraph(previousPara)) {
+            paragraph.x += Math.max(0, this.getMergedParagraphOffset(paragraph));
+        }
         if (paragraph.floatingElements.length > 0) {
             for (let k: number = 0; k < paragraph.floatingElements.length; k++) {
                 let shape: ShapeBase = paragraph.floatingElements[k];
@@ -14579,6 +14694,32 @@ export class Layout {
         }
         return nextColumnBody;
     }
+    /**
+     * Gets the x position of the paragraph without the offset applied for a preceding merged hidden paragraph.
+     * @private
+     */
+    public getParagraphBaseX(paragraph: ParagraphWidget): number {
+        const container: Widget = paragraph.containerWidget as Widget;
+        const indent: number = HelperMethods.convertPointToPixel(paragraph.bidi ? paragraph.rightIndent : paragraph.leftIndent);
+        return container.x + indent;
+    }
+    /**
+     * The paragraph after a hidden paragraph starts at the end of the hidden paragraph's last line.
+     * When the hidden paragraph is edited, relayout the next paragraph so its offset and line breaks stay in sync.
+     */
+    private reLayoutParagraphAfterHidden(paragraph: ParagraphWidget): void {
+        if (paragraph.nextSplitWidget) {
+            return;
+        }
+        const next: Widget = paragraph.nextWidget;
+        if (!(next instanceof ParagraphWidget) || next.isEmpty() || next.childWidgets.length === 0 || next.isInsideTable) {
+            return;
+        }
+        const wasShifted: boolean = next.x !== this.getParagraphBaseX(next);
+        if (this.isMergedWithNextParagraph(paragraph) || wasShifted) {
+            this.reLayoutLine(next, 0, false, true, true);
+        }
+    }
     private moveToNextColumnByBodyWidget(block: BlockWidget, childStartIndex: number): BodyWidget {
         let fromBody: BodyWidget = block.containerWidget as BodyWidget;
         let nextColumnBody: BodyWidget = this.createOrGetNextColumnBody(fromBody);
@@ -14665,12 +14806,27 @@ export class Layout {
                 let firstLineIndent: number = -HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent);
                 this.viewer.updateClientWidth(firstLineIndent);
             }
+            const previousPara: ParagraphWidget = paragraph.previousWidget as ParagraphWidget;
+            if (lineToLayout.isFirstLine() && !paragraph.previousSplitWidget && previousPara instanceof ParagraphWidget && this.isMergedWithNextParagraph(previousPara)) {
+                // The paragraph x already holds the previous offset, so measure from the client area start.
+                paragraph.x = this.viewer.clientActiveArea.x;
+                const offset: number = Math.max(0, this.getMergedParagraphOffset(paragraph));
+                paragraph.x += offset;
+                this.mergedParagraph = paragraph;
+                this.mergedParagraphOffset = offset;
+                this.viewer.updateClientWidth(-offset);
+            }
             do {
                 lineToLayout = this.layoutLine(lineToLayout, 0);
                 paragraph = lineToLayout.paragraph;
                 lineToLayout = lineToLayout.nextLine;
             } while (lineToLayout);
             this.updateWidgetToPage(this.viewer, paragraph);
+        }
+        if (this.isMergedWithNextParagraph(paragraph)) {
+            // Hidden paragraph mark: the next paragraph continues on the last line of this paragraph.
+            paragraph.height = 0;
+            this.viewer.clientActiveArea.y = paragraph.y;
         }
         this.viewer.updateClientAreaForBlock(paragraph, false);
         let pageIndexAfterLayout: number = 0;
@@ -14680,6 +14836,7 @@ export class Layout {
             pageIndexAfterLayout = (splittedWidget.containerWidget as BodyWidget).page.index;
         }
         this.layoutNextItemsBlock(paragraph, this.viewer, undefined, pageIndexBeforeLayout !== pageIndexAfterLayout);
+        this.reLayoutParagraphAfterHidden(paragraph);
         const prevWidget: BodyWidget = paragraph.getSplitWidgets()[0].previousRenderedWidget as BodyWidget;
         if (!isNullOrUndefined(prevWidget) && !paragraph.isEndsWithPageBreak && !paragraph.isEndsWithColumnBreak && (!(prevWidget instanceof ParagraphWidget) ||
             (prevWidget instanceof ParagraphWidget) && !prevWidget.isEndsWithPageBreak && !prevWidget.isEndsWithColumnBreak)) {
@@ -16109,6 +16266,8 @@ export class Layout {
                             this.viewer.clientActiveArea.y = HelperMethods.convertPointToPixel(sectionFormat.topMargin);
                         } else if (Math.round(position.verticalPosition) != 0 && !isNullOrUndefined(sectionFormat.topMargin)) {
                             this.viewer.clientActiveArea.y = HelperMethods.convertPointToPixel(sectionFormat.topMargin + position.verticalPosition); 
+                        } else if (sectionFormat.numberOfColumns > 1 && !isNullOrUndefined(sectionFormat.topMargin)) {
+                            this.viewer.clientActiveArea.y = HelperMethods.convertPointToPixel(sectionFormat.topMargin);
                         } else {
                             this.viewer.clientActiveArea.y = HelperMethods.convertPointToPixel(position.verticalPosition);
                         }

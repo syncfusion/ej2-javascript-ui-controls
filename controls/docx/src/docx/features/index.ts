@@ -1,5 +1,5 @@
 /**
- * Feature-domain folder barrel, matching `src/feature/index.ts`
+ * Feature-domain folder barrel, matching the package sources
  * folder-entry pattern.
  *
  */
@@ -35,7 +35,7 @@ export * from './tables/index';
 export * from './watermark/index';
 
 // Explicit re-exports resolve names exported by more than one feature barrel
-// (TS2308). Choices mirror `src/all.ts`.
+// (TS2308). Choices mirror the package sources.
 export { VerticalAlignment } from './images/index';
 export { VerticalAlignment as PageVerticalAlignment } from './sections/index';
 export { Hyperlink } from './fields/index';

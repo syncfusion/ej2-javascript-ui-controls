@@ -6,6 +6,7 @@ import { _FontDescriptorFlag } from '../enumerator';
 import { _decode } from '../utils';
 import { _TrueTypeGlyph } from './../fonts/ttf-reader';
 import { _PdfStream } from './../base-stream';
+import { _TrueTypeTableInfo } from './ttf-table';
 /**
  * Handles embedding and subsetting of unicode truetype fonts for PDF output.
  *
@@ -146,6 +147,32 @@ export class _UnicodeTrueTypeFont {
         }
         this._ttfReader = new _TrueTypeReader(this._fontData);
         this._ttfMetrics = this._ttfReader._metrics;
+        if (this._ttfReader._isOpenType) {
+            this._validateOpenType();
+        }
+    }
+    /**
+     * Validates that an OpenType (OTTO) font contains the mandatory tables and that every table lies within the font data.
+     *
+     * @private
+     * @returns {void} nothing.
+     * @throws {Error} When the font is corrupted or a mandatory table is missing.
+     */
+    _validateOpenType(): void {
+        const reader: _TrueTypeReader = this._ttfReader;
+        const directory: Dictionary<string, _TrueTypeTableInfo> = reader._tableDirectory;
+        const dataLength: number = reader._fontData.length;
+        ['head', 'hhea', 'hmtx', 'maxp', 'OS/2', 'name', 'cmap', 'CFF '].forEach((name: string) => {
+            if (!directory || !directory.containsKey(name)) {
+                throw new Error('Invalid OpenType font: mandatory table \'' + name.trim() + '\' is missing or the font data is corrupted');
+            }
+        });
+        directory.keys().forEach((name: string) => {
+            const table: _TrueTypeTableInfo = directory.getValue(name);
+            if (!(table._offset >= 0) || !(table._length >= 0) || table._offset + table._length > dataLength) {
+                throw new Error('Invalid OpenType font: offset of table \'' + name.trim() + '\' exceeds the font data');
+            }
+        });
     }
     /**
      * Prepares internal dictionaries and streams before writing to the PDF.
@@ -209,7 +236,7 @@ export class _UnicodeTrueTypeFont {
         this._ttfMetrics = this._ttfReader._metrics;
         this._initializeMetrics();
         this._subsetName = this._getFontName();
-        this._createDescendantFont();
+        this._createDescendantFont(this._ttfReader._isOpenType && this._ttfMetrics._contains);
         this._createFontDictionary();
     }
     /**
@@ -256,15 +283,18 @@ export class _UnicodeTrueTypeFont {
      * Creates the cid descendant font dictionary including system info and descriptor.
      *
      * @private
+     * @param {boolean} isCff - True for OpenType fonts with CFF outlines (CIDFontType0), otherwise CIDFontType2.
      * @returns {void} nothing.
      */
-    _createDescendantFont(): void {
+    _createDescendantFont(isCff: boolean = false): void {
         this._descendantFont = new _PdfDictionary();
         this._descendantFont._updated = true;
         this._descendantFont.set('Type', new _PdfName('Font'));
-        this._descendantFont.set('Subtype', new _PdfName('CIDFontType2'));
+        this._descendantFont.set('Subtype', new _PdfName(isCff ? 'CIDFontType0' : 'CIDFontType2'));
         this._descendantFont.set('BaseFont', new _PdfName(this._subsetName));
-        this._descendantFont.set('CIDToGIDMap', new _PdfName('Identity'));
+        if (!isCff) {
+            this._descendantFont.set('CIDToGIDMap', new _PdfName('Identity'));
+        }
         this._descendantFont.set('DW', 1000);
         this._fontDescriptor = this._createFontDescriptor();
         this._descendantFont.set('FontDescriptor', this._fontDescriptor);

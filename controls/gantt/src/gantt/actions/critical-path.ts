@@ -1092,15 +1092,16 @@ export class CriticalPath {
                 }
             }
             const index: number = this.parent.currentViewData.indexOf(criticalData);
-            const element: HTMLElement = this.parent.getRowByIndex(index);
+            // T-22: getRowByIndex returns null for off-screen rows in DOM virt mode.
+            const element: HTMLElement | null = this.parent.getRowByIndex(index);
             let taskClass: string;
             const columnFields: TaskFieldsModel = this.parent.taskFields;
             if (criticalData && criticalData.parentItem) {
                 const parentRecord: IGanttData[] = this.parent.currentViewData.filter((data: IGanttData) => {
                     return criticalData.parentItem.uniqueID === data.uniqueID;
                 });
-                const parentIndex: number = this.parent.flatData.indexOf(parentRecord[0]);
-                const parentElement: HTMLElement = this.parent.getRowByIndex(parentIndex);
+                const parentIndex: number = this.parent.currentViewData.indexOf(parentRecord[0]);
+                const parentElement: HTMLElement | null = this.parent.getRowByIndex(parentIndex);
                 if (parentElement) {
                     const parentTaskbarElement: NodeListOf<Element> = parentElement.querySelectorAll('.e-taskbar-main-container');
                     for (let i: number = 0; i < parentTaskbarElement.length; i++) {

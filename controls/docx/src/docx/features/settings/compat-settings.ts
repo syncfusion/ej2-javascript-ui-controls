@@ -21,10 +21,7 @@ const MODELED_COMPAT_ON_OFF: Set<string> = new Set(['noColumnBalance']);
 /** Word `compatibilityMode` setting URI (Microsoft Office Word). */
 const WORD_COMPAT_URI: string = 'http://schemas.microsoft.com/office/word';
 /**
- * Word compatibility engine level from
- * `w:compat/w:compatSetting[@w:name='compatibilityMode']/@w:val`.
- *
- * Wire values are ECMA-376 / Word practice: `"12"` | `"14"` | `"15"`.
+ * Specifies the Word compatibility mode of a document.
  *
  * @public
  */
@@ -179,7 +176,7 @@ class CompatOnOffChild {
 }
 type CompatChild = CompatSetting | CompatOnOffChild | CompatOpaqueChild;
 /**
- * First-class `w:compat` container.
+ * Represents the compatibility settings of a document.
  *
  * @public
  */
@@ -337,27 +334,17 @@ export class CompatSettings {
         return undefined;
     }
     /**
-     * Word compatibility mode from
-     * `w:compat` / `w:compatSetting[@w:name='compatibilityMode']/@w:val`.
+     * Gets or sets the Word compatibility mode of the document.
      *
-     * Reports the document’s declared compatibility engine level when present.
-     * Common values:
-     * - `"15"` — Word 2013 and later
-     * - `"14"` — Word 2010
-     * - `"12"` — Word 2007
+     * Common values are "15" for Word 2013 and later, "14" for Word 2010, and "12" for Word 2007. Returns undefined when the mode is not set.
      *
-     * Returns `undefined` when the setting is absent. This method does not change
-     * layout or feature behavior; it only reads the stored attribute value.
-     *
-     * @returns {string | undefined} Compatibility mode string, or `undefined` if not set.
-     *
+     * @returns {string | undefined} - Returns the compatibility mode string, or `undefined` if not set.
      * @example
      * ```ts
      * const settings = settingsFor(document);
      * const mode = settings.compat()?.compatibilityMode();
      * // "15" for typical Word 2013+ documents
      * ```
-     *
      * @public
      */
     compatibilityMode(): string | undefined {

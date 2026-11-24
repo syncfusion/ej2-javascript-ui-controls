@@ -18,69 +18,87 @@ export enum PicturePlacement {
     Anchored = 'anchored'
 }
 /**
- * Text wrapping style for picture hosts.
+ * Specifies how text wraps around a picture.
  *
- * - `inline` — `wp:inline` host (in-line with text).
- * - `none` — `wp:wrapNone` on an anchor.
- * - `square` — `wp:wrapSquare`.
- * - `tight` — `wp:wrapTight` (wrapPolygon preserved when loaded).
- * - `through` — `wp:wrapThrough` (wrapPolygon preserved when loaded).
- * - `topAndBottom` — `wp:wrapTopAndBottom`.
+ * Inline places the picture in the line of text, and the remaining values wrap text around the picture.
  *
  * @public
  */
 export enum TextWrappingStyle {
+    /** Specifies the inline style. */
     Inline = 'inline',
+    /** Specifies the none style. */
     None = 'none',
+    /** Specifies the square style. */
     Square = 'square',
+    /** Specifies the tight style. */
     Tight = 'tight',
+    /** Specifies the through style. */
     Through = 'through',
+    /** Specifies the top and bottom style. */
     TopAndBottom = 'topAndBottom'
 }
 /**
- * Horizontal origin for `wp:positionH/@relativeFrom` (`ST_RelFromH`).
+ * Specifies the horizontal reference that a shape or picture is positioned against.
  *
  * @public
  */
 export enum HorizontalOrigin {
+    /** Specifies the margin origin. */
     Margin = 'margin',
+    /** Specifies the page origin. */
     Page = 'page',
+    /** Specifies the column origin. */
     Column = 'column',
+    /** Specifies the character origin. */
     Character = 'character',
+    /** Specifies the left margin origin. */
     LeftMargin = 'leftMargin',
+    /** Specifies the right margin origin. */
     RightMargin = 'rightMargin',
+    /** Specifies the inside margin origin. */
     InsideMargin = 'insideMargin',
+    /** Specifies the outside margin origin. */
     OutsideMargin = 'outsideMargin'
 }
 /**
- * Vertical origin for `wp:positionV/@relativeFrom` (`ST_RelFromV`).
+ * Specifies the vertical reference that a shape or picture is positioned against.
  *
  * @public
  */
 export enum VerticalOrigin {
+    /** Specifies the margin origin. */
     Margin = 'margin',
+    /** Specifies the page origin. */
     Page = 'page',
+    /** Specifies the paragraph origin. */
     Paragraph = 'paragraph',
+    /** Specifies the line origin. */
     Line = 'line',
+    /** Specifies the top margin origin. */
     TopMargin = 'topMargin',
+    /** Specifies the bottom margin origin. */
     BottomMargin = 'bottomMargin',
+    /** Specifies the inside margin origin. */
     InsideMargin = 'insideMargin',
+    /** Specifies the outside margin origin. */
     OutsideMargin = 'outsideMargin'
 }
 /**
- * Horizontal alignment for `wp:positionH/wp:align` (`ST_AlignH`).
- *
- * Mutually exclusive with horizontal position offset on the same axis.
- * `None` and `Unknown` are model-only (not schema tokens) and are never
- * written as `wp:align` text.
+ * Specifies the horizontal alignment of a shape or picture relative to its origin.
  *
  * @public
  */
 export enum HorizontalAlignment {
+    /** Specifies the left alignment. */
     Left = 'left',
+    /** Specifies the right alignment. */
     Right = 'right',
+    /** Specifies the center alignment. */
     Center = 'center',
+    /** Specifies the inside alignment. */
     Inside = 'inside',
+    /** Specifies the outside alignment. */
     Outside = 'outside',
     /** Model-only: axis uses posOffset (no wp:align). Not a schema token. */
     None = 'none',
@@ -99,22 +117,27 @@ export const HORIZONTAL_ALIGNMENT_WIRE_VALUES: ReadonlyArray<HorizontalAlignment
     HorizontalAlignment.Inside,
     HorizontalAlignment.Outside
 ];
-/** Closed set of public HorizontalAlignment values. @public */
+/**
+ * Closed set of public HorizontalAlignment values.
+ *
+ * @public
+ */
 export const HORIZONTAL_ALIGNMENT_VALUES: ReadonlyArray<HorizontalAlignment> = enumValues<HorizontalAlignment>(HorizontalAlignment);
 /**
- * Vertical alignment for `wp:positionV/wp:align` (`ST_AlignV`).
- *
- * Mutually exclusive with vertical position offset on the same axis.
- * `None` and `Unknown` are model-only (not schema tokens) and are never
- * written as `wp:align` text.
+ * Specifies the vertical alignment of a shape or picture relative to its origin.
  *
  * @public
  */
 export enum VerticalAlignment {
+    /** Specifies the top alignment. */
     Top = 'top',
+    /** Specifies the bottom alignment. */
     Bottom = 'bottom',
+    /** Specifies the center alignment. */
     Center = 'center',
+    /** Specifies the inside alignment. */
     Inside = 'inside',
+    /** Specifies the outside alignment. */
     Outside = 'outside',
     /** Model-only: axis uses posOffset (no wp:align). Not a schema token. */
     None = 'none',
@@ -133,7 +156,11 @@ export const VERTICAL_ALIGNMENT_WIRE_VALUES: ReadonlyArray<VerticalAlignment> = 
     VerticalAlignment.Inside,
     VerticalAlignment.Outside
 ];
-/** Closed set of public VerticalAlignment values. @public */
+/**
+ * Closed set of public VerticalAlignment values.
+ *
+ * @public
+ */
 export const VERTICAL_ALIGNMENT_VALUES: ReadonlyArray<VerticalAlignment> = enumValues<VerticalAlignment>(VerticalAlignment);
 const PICTURE_PLACEMENT_VALUES: Set<string> = new Set<string>(enumValues<PicturePlacement>(PicturePlacement));
 const TEXT_WRAPPING_STYLE_VALUES: Set<string> = new Set<string>(enumValues<TextWrappingStyle>(TextWrappingStyle));
@@ -156,32 +183,32 @@ export function isPicturePlacement(value: string): value is PicturePlacement {
     return PICTURE_PLACEMENT_VALUES.has(value);
 }
 /**
- * @param {string} value - The value.
- * @returns {*} The result.
+ * @param {string} value - Specifies the value.
+ * @returns {boolean} Returns the result.
  * @public
  */
 export function isTextWrappingStyle(value: string): value is TextWrappingStyle {
     return TEXT_WRAPPING_STYLE_VALUES.has(value);
 }
 /**
- * @param {string} value - The value.
- * @returns {*} The result.
+ * @param {string} value - Specifies the value.
+ * @returns {boolean} Returns the result.
  * @public
  */
 export function isHorizontalOrigin(value: string): value is HorizontalOrigin {
     return HORIZONTAL_ORIGIN_VALUES.has(value);
 }
 /**
- * @param {string} value - The value.
- * @returns {*} The result.
+ * @param {string} value - Specifies the value.
+ * @returns {boolean} Returns the result.
  * @public
  */
 export function isVerticalOrigin(value: string): value is VerticalOrigin {
     return VERTICAL_ORIGIN_VALUES.has(value);
 }
 /**
- * @param {string} value - The value.
- * @returns {*} The result.
+ * @param {string} value - Specifies the value.
+ * @returns {boolean} Returns the result.
  * @public
  */
 export function isHorizontalAlignment(value: string): value is HorizontalAlignment {
@@ -198,8 +225,8 @@ export function isHorizontalAlignmentWire(value: string): boolean {
     return HORIZONTAL_ALIGNMENT_WIRE_SET_INTERNAL.has(value);
 }
 /**
- * @param {string} value - The value.
- * @returns {*} The result.
+ * @param {string} value - Specifies the value.
+ * @returns {boolean} Returns the result.
  * @public
  */
 export function isVerticalAlignment(value: string): value is VerticalAlignment {
@@ -271,21 +298,29 @@ export const VERTICAL_ALIGNMENT_SET: Set<string> = VERTICAL_ALIGNMENT_ALL_SET;
 export const VERTICAL_ALIGNMENT_WIRE_SET: Set<string> = VERTICAL_ALIGNMENT_WIRE_SET_INTERNAL;
 
 /**
- * Wrap side behavior for anchored square/tight/through hosts (`wp:wrap* @wrapText`).
+ * Wrap side behavior for anchored square/tight/through hosts.
  *
  * `Unknown` is model-only (not a schema token) and is never written as `@wrapText`.
  *
  * @public
  */
 export enum TextWrappingType {
+    /** Specifies the both type. */
     Both = 'bothSides',
+    /** Specifies the left type. */
     Left = 'left',
+    /** Specifies the right type. */
     Right = 'right',
+    /** Specifies the largest type. */
     Largest = 'largest',
     /** Model-only: residual wrapText was unrecognized. Not a schema token. */
     Unknown = 'unknown'
 }
-/** Closed set of public TextWrappingType values. @public */
+/**
+ * Closed set of public TextWrappingType values.
+ *
+ * @public
+ */
 export const TEXT_WRAPPING_TYPE_VALUES: ReadonlyArray<TextWrappingType> = enumValues<TextWrappingType>(TextWrappingType);
 /**
  * Schema wrapText tokens (excludes model-only Unknown).
@@ -314,8 +349,8 @@ export const TEXT_WRAPPING_TYPE_WIRE_SET: ReadonlySet<string> = TEXT_WRAPPING_TY
 /**
  *  @public
  *
- * @param {string} value - The value.
- * @returns {*} The result.
+ * @param {string} value - Specifies the value.
+ * @returns {boolean} Returns the result.
  */
 export function isTextWrappingType(value: string): value is TextWrappingType {
     return TEXT_WRAPPING_TYPE_ALL_SET.has(value);

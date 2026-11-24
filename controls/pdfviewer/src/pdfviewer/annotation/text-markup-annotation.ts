@@ -1999,6 +1999,9 @@ export class TextMarkupAnnotation {
      * @returns {void}
      */
     public deleteTextMarkupAnnotation(): void {
+        if (this.pdfViewer.readOnlySettings.annotations) {
+            return;
+        }
         if (this.currentTextMarkupAnnotation) {
             let isLock: boolean = false;
             if (this.currentTextMarkupAnnotation.annotationSettings) {
@@ -2845,7 +2848,7 @@ export class TextMarkupAnnotation {
                 }
             }
         }
-        if (!isLock) {
+        if (!isLock && !this.pdfViewer.readOnlySettings.annotations) {
             const canvasParentPosition: DOMRect = canvas.parentElement.getBoundingClientRect() as DOMRect;
             const leftClickPosition: number = event.clientX - canvasParentPosition.left;
             const topClickPosition: number = event.clientY - canvasParentPosition.top;

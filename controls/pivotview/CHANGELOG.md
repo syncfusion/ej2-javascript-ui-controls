@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 35.2.13 (2026-11-24)
+
+### Pivot Table
+
+#### Features
+
+- Support has been added for a flat analytical table view that displays individual source records while preserving duplicate records. It supports configurable columns, sorting, filtering, searching, and summaries.
+- Support has been added for placing multiple instances of the same field in the Values axis with independent aggregation types and captions, allowing measures such as Sum and Average to be displayed side by side.
+- Support has been added for organizing fields into nested folders in the field list using slash-separated `groupName` paths, allowing related fields to be arranged in expandable levels.
+- Support has been added for applying `Min` and `Max` aggregations to date value fields to display the earliest and latest dates, while retaining date values and applying the configured date formatting.
+- Support has been added for calculating differences and percentage differences relative to the previous or next member of a base field, with comparisons restricted to the same parent group by default and optional support for comparisons across groups.
+- Support has been added for Top Percentage and Bottom Percentage value filters to retain a specified percentage of the highest- or lowest-valued members based on a selected measure.
+- Support has been added for CSV parsing with configurable delimiters, quoted fields, and escaped double quotes, allowing delimiter characters within quoted values to be handled correctly.
+
 ## 35.1.43 (2026-11-03)
 
 ### Pivot Table

@@ -246,6 +246,16 @@ export class Toolbar {
                     this.formDesignerToolbarModule.initializeFormDesignerToolbar();
                 }
             }
+            if (this.pdfViewer.readOnlySettings.comments) {
+                this.enableToolbarItem(['CommentTool'], false);
+            }
+            if (this.pdfViewer.readOnlySettings.annotations) {
+                this.enableToolbarItem(['AnnotationEditTool'], false);
+                this.enableToolbarItem(['CommentTool'], false);
+                if (this.pdfViewer.isAnnotationToolbarVisible) {
+                    this.showAnnotationToolbar(false);
+                }
+            }
         } else {
             if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.initialEnableItems();
@@ -1019,10 +1029,12 @@ export class Toolbar {
                         }
                         this.updateInteractionItems();
                         // modify this condition if new annotation types are added.
-                        if (this.pdfViewer.annotationModule && this.pdfViewer.enableAnnotation) {
+                        if (this.pdfViewer.annotationModule && this.pdfViewer.enableAnnotation &&
+                            !this.pdfViewer.readOnlySettings.annotations) {
                             this.enableItems(this.annotationItem.parentElement, true);
                         }
-                        if (this.pdfViewer.formDesignerModule && this.pdfViewer.enableFormDesigner) {
+                        if (this.pdfViewer.formDesignerModule && this.pdfViewer.enableFormDesigner &&
+                            !this.pdfViewer.readOnlySettings.formFields) {
                             this.enableItems(this.formDesignerItem.parentElement, true);
                         }
                         if (this.pdfViewer.annotation && this.pdfViewer.annotation.redactionAnnotationModule) {
@@ -1031,7 +1043,8 @@ export class Toolbar {
                         if (this.pdfViewer.textSearchModule && this.pdfViewer.enableTextSearch) {
                             this.enableItems(this.textSearchItem.parentElement, true);
                         }
-                        if (this.pdfViewer.annotationModule && this.pdfViewer.enableStickyNotesAnnotation) {
+                        if (this.pdfViewer.annotationModule && this.pdfViewer.enableStickyNotesAnnotation &&
+                            !this.pdfViewer.readOnlySettings.annotations) {
                             this.enableItems(this.commentItem.parentElement, true);
                         }
                     }
@@ -1073,7 +1086,8 @@ export class Toolbar {
                     this.enableItems(this.textSearchItem.parentElement, true);
                 }
                 this.enableItems(this.moreOptionItem.parentElement, true);
-                if (this.pdfViewer.annotationModule && this.pdfViewer.enableAnnotation) {
+                if (this.pdfViewer.annotationModule && this.pdfViewer.enableAnnotation &&
+                    !this.pdfViewer.readOnlySettings.annotations) {
                     this.enableItems(this.annotationItem.parentElement, true);
                 }
                 if (this.pdfViewer.annotation && this.pdfViewer.annotation.redactionAnnotationModule &&

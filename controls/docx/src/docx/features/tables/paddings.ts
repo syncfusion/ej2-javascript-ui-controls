@@ -33,6 +33,9 @@ export class Paddings {
         this.host = host;
     }
 
+    /**
+     * Gets or sets the left padding, in points.
+     */
     get left(): number {
         const m: TableCellMargins = this.host.read();
         return m !== undefined && m.left !== undefined ? m.left : 0;
@@ -41,6 +44,9 @@ export class Paddings {
         this.writeSide('left', value);
     }
 
+    /**
+     * Gets or sets the right padding, in points.
+     */
     get right(): number {
         const m: TableCellMargins = this.host.read();
         return m !== undefined && m.right !== undefined ? m.right : 0;
@@ -49,6 +55,9 @@ export class Paddings {
         this.writeSide('right', value);
     }
 
+    /**
+     * Gets or sets the top padding, in points.
+     */
     get top(): number {
         const m: TableCellMargins = this.host.read();
         return m !== undefined && m.top !== undefined ? m.top : 0;
@@ -57,6 +66,9 @@ export class Paddings {
         this.writeSide('top', value);
     }
 
+    /**
+     * Gets or sets the bottom padding, in points.
+     */
     get bottom(): number {
         const m: TableCellMargins = this.host.read();
         return m !== undefined && m.bottom !== undefined ? m.bottom : 0;
@@ -66,7 +78,7 @@ export class Paddings {
     }
 
     /**
-     * Common value when all sides match; otherwise the top side.
+     * Gets or sets the common value when all sides match; otherwise the top side.
      */
     get all(): number {
         const top: number = this.top;
@@ -79,8 +91,8 @@ export class Paddings {
     /**
      * Sets all four sides to the same point value.
      *
-     * @param {number} value - The value.
-     * @returns {void} Nothing is returned.
+     * @param {number} value - Specifies the value.
+     * @returns {void} Nothing.
      */
     set all(value: number) {
         this.host.write({

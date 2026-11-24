@@ -1410,9 +1410,8 @@ function toUint8ArrayFromFsRead(buffer: NodeFsBufferLike | Uint8Array): Uint8Arr
  * Static or dynamic `import('fs/promises')` is rewritten by Rollup into an
  * external during `global-scripts` UMD packaging and crashes without browser
  * globals (`TypeError` reading `.length` / `.name` on missing `output.globals`).
- * Prefer `process.getBuiltinModule` (no import graph edge). Fall back to direct
- * `eval('require')` so the binding resolves in CJS/AMD module scope
- * (a bare `Function` body cannot see module-local `require`).
+ * Uses `process.getBuiltinModule` (no import graph edge). No `eval` fallback is
+ * used, so bundlers do not warn; runtimes without it cannot load files by path.
  */
 function loadNodeFs(): NodeFsModule | undefined {
   try {
@@ -1436,19 +1435,6 @@ function loadNodeFs(): NodeFsModule | undefined {
     }
   } catch {
     // continue to require fallback
-  }
-  try {
-    // Direct eval: module-scoped require (CJS / AMD factory). Not a static import.
-    // eslint-disable-next-line no-eval
-    const req = eval('require') as unknown;
-    if (typeof req === 'function') {
-      const loaded = (req as (id: string) => unknown)('fs');
-      if (isNodeFsModule(loaded)) {
-        return loaded;
-      }
-    }
-  } catch {
-    return undefined;
   }
   return undefined;
 }

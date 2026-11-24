@@ -542,6 +542,13 @@ export class MainSlideArea {
         if (!this.root || !this.contextMenuElement) {
             return;
         }
+        // On touch devices the EJ2 ContextMenu hooks long-press / `contextmenu` and cancels the
+        // browser default, which blocks native text selection (handles and the Copy callout).
+        // Native selection already offers Copy there, so the menu is desktop (fine pointer) only.
+        if (typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+            && window.matchMedia('(pointer: coarse)').matches) {
+            return;
+        }
 
         const items: MenuItemModel[] = [
             {

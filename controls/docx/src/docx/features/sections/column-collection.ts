@@ -11,10 +11,9 @@ import {
 } from './section-validation';
 
 /**
- * Ordered text columns for a section (`w:cols` / `CT_Columns`).
+ * Represents the collection of text columns in a section.
  *
- * Public surface is add-only: {@link count}, {@link add}, index properties, and iteration.
- * Equal-width / separator / default spacing stay internal for OOXML round-trip.
+ * Use {@link ColumnCollection.add} to add a column.
  *
  * @public
  */
@@ -34,7 +33,7 @@ export class ColumnCollection {
     }
 
     /**
-     * Number of columns in this section.
+     * Gets the number of columns in this section.
      */
     get count(): number {
         if (this.equalWidthValue) {
@@ -46,9 +45,9 @@ export class ColumnCollection {
     /**
      * Append a column definition (switches the section to unequal widths).
      *
-     * @param {number} width - Column width in points
-     * @param {number} space - Space after this column in points (default: half-inch)
-     * @returns {Column} The result.
+     * @returns {Column} - Returns the Column.
+     * @param {number} width - Specifies the width.
+     * @param {number} space - Specifies the space.
      */
     add(width: number, space: number = DEFAULT_COLUMN_SPACE): Column {
         validateSectionLength(width, 'Column.width');
@@ -72,8 +71,8 @@ export class ColumnCollection {
     /**
      * Column at zero-based index, or `undefined` when out of range.
      *
-     * @param {number} index - The index.
-     * @returns {Column | undefined} The result.
+     * @returns {Column | undefined} - Returns the Column, or undefined.
+     * @param {number} index - Specifies the index.
      */
     item(index: number): Column | undefined {
         if (!Number.isInteger(index) || index < 0) {
@@ -91,9 +90,9 @@ export class ColumnCollection {
     [index: number]: Column;
 
     /**
-     * Iterate authored column definitions (empty when equal-width with no `w:col` children).
+     * Returns an iterator over the columns in the collection.
      *
-     * @returns {Iterator<Column>} The result.
+     * @returns {Iterator<Column>} - Returns an iterator over the columns.
      */
     [Symbol.iterator](): Iterator<Column> {
         const snapshot: Column[] = this.items.slice();

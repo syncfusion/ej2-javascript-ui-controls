@@ -18,12 +18,12 @@ export * from './serialize';
 /**
  * Optional watermark feature module (text and picture).
  *
- * Public construction (TASK-8060), lazy header VML parse (TASK-8061), and
- * dirty header rewrite on save (TASK-8062). Logical state is held in a module
+ * Public construction, lazy header VML parse, and
+ * dirty header rewrite on save. Logical state is held in a module
  * WeakMap so clean parse never mutates package parts.
  *
  * OOXML ownership: docs/ooxml-mapping/watermark.md. Requirement:
- * docs/requirements/watermark-basic.md. Spec: docs/specs/watermark-basic.md.
+ * docs/requirements/watermark-basic.md. Spec: the format specification
  *
  * @packageDocumentation
  */
@@ -66,10 +66,10 @@ export function resetWatermarkFeatureForTests(): void {
  * Register the watermark feature. Idempotent.
  *
  * Lazy header VML parse runs on first {@link WordDocument.watermark} get
- * (TASK-8061). Dirty assignment marks the document so save materializes
- * canonical watermark VML into scratch headers (TASK-8062). Remove/replace
+ * Dirty assignment marks the document so save materializes
+ * canonical watermark VML into scratch headers. Remove/replace
  * strips recognized watermark leaves, GCs unused header image relationships
- * and unreferenced media, and never deletes header parts (TASK-8063). Picture
+ * and unreferenced media, and never deletes header parts. Picture
  * media is applied via a package-level feature part after header multi-part
  * writes.
  *

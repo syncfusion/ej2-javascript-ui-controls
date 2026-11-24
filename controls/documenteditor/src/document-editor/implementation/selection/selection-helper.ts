@@ -597,6 +597,21 @@ export class TextPosition {
         this.currentWidget = previousParagraph.childWidgets[previousParagraph.childWidgets.length - 1] as LineWidget;
         this.offset = this.currentWidget.getEndOffset() + 1;
     }
+    /**
+     * The paragraph after a merged hidden paragraph is laid out on the last line of the hidden paragraph.
+     * Both share one visual line, so the line end is the end of the first line of the next paragraph.
+     */
+    private moveToMergedLineEnd(selection: Selection): void {
+        const paragraph: ParagraphWidget = this.currentWidget.paragraph;
+        if (this.currentWidget !== paragraph.lastChild || !isNullOrUndefined(paragraph.nextSplitWidget)) {
+            return;
+        }
+        const next: ParagraphWidget = paragraph.nextWidget as ParagraphWidget;
+        if (next instanceof ParagraphWidget && this.documentHelper.layout.isMergedWithNextParagraph(paragraph)) {
+            this.setPosition(next.firstChild as LineWidget, true);
+            this.moveToLineEndInternal(selection, true);
+        }
+    }
     private nextValidVisibleBlock(visibleBlock: ParagraphWidget, isStart: boolean): ParagraphWidget {
         let currentValidVisibleBlock: ParagraphWidget = visibleBlock;
         while (visibleBlock && ((visibleBlock.characterFormat.hidden && visibleBlock.height === 0) || (!visibleBlock.isEmpty() && !visibleBlock.characterFormat.hidden && visibleBlock.height === 0 && (visibleBlock.firstChild as LineWidget).children[0].characterFormat.hidden))) {
@@ -1843,6 +1858,7 @@ export class TextPosition {
         const prevParagraph: ParagraphWidget = this.currentWidget.paragraph;
         const currentLine: LineWidget = this.currentWidget;
         this.moveToLineEndInternal(selection, true);
+        this.moveToMergedLineEnd(selection);
         const length: number = this.selection.getParagraphLength(this.currentWidget.paragraph);
         if (this.offset > length) {
             this.offset = length;
@@ -2188,6 +2204,7 @@ export class TextPosition {
         const currentLine: LineWidget = selection.getLineWidgetParagraph(this.offset, this.currentWidget);
         //Moves text position to end of line.
         this.moveToLineEndInternal(selection, true);
+        this.moveToMergedLineEnd(selection);
         const isMoveToLineEnd: boolean = !textPosition.isAtSamePosition(this);
         textPosition.setPositionInternal(this);
         if (this.currentWidget.paragraph.isInsideTable) {

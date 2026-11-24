@@ -23,6 +23,7 @@ import { ColorMapping } from '../theme/color-mapping';
 import { Shape } from '../shapes/shape';
 import { OoxmlText } from '../xml/dom';
 import { PresentationSection } from './presentation-section';
+import { detectHasSections, findSectionList, SectionStore } from './section-store';
 
 /**
  * In-memory presentation skeleton attached to {@link Presentation}.
@@ -50,9 +51,9 @@ export interface PresentationModel {
     readonly layoutsByPartName: ReadonlyMap<string, LayoutSlide>;
     /**
      * `true` when `p:extLst` contains a `p14:sectionLst` (MS-PPTX sections).
-     * Computed once at open; not mutated by Phase 4 (preserve-only).
+     * Updated when sections are added or cleared.
      */
-    readonly hasSections: boolean;
+    hasSections: boolean;
     /** Slide width in presentation points, or undefined when `p:sldSz` is absent/invalid. */
     readonly slideWidth: number | undefined;
     /** Slide height in presentation points, or undefined when `p:sldSz` is absent/invalid. */
@@ -61,6 +62,13 @@ export interface PresentationModel {
     readonly slideSizeType: string | undefined;
     /** Parsed section membership resolved to presentation-order slide indexes. */
     readonly sections: ReadonlyArray<PresentationSection>;
+    /**
+     * Live section list. When dirty, flush rewrites `p14:sectionLst`; an untouched
+     * load keeps the extension opaque.
+     *
+     * @internal
+     */
+    readonly sectionStore: SectionStore;
 }
 /**
  * Parses the presentation part and resolves each `p:sldId` to a {@link Slide}.
@@ -198,6 +206,8 @@ export function loadPresentationModel(pkg: OpcPackage): PresentationModel {
 
     }
     const sections: ReadonlyArray<PresentationSection> = parseSections(root, slides);
+    const sectionStore: SectionStore = new SectionStore();
+    sectionStore.load(root, slides);
     return {
         presentationPartName,
         root,
@@ -208,7 +218,8 @@ export function loadPresentationModel(pkg: OpcPackage): PresentationModel {
         slideWidth: slideSize.width,
         slideHeight: slideSize.height,
         slideSizeType: slideSize.type,
-        sections
+        sections,
+        sectionStore
     };
 }
 
@@ -252,34 +263,6 @@ function emuToPoints(value: string | undefined): number | undefined {
     }
     return emu / 12700;
 }
-/**
- * Detects Microsoft PowerPoint section definitions in presentation `p:extLst`.
- *
- * @remarks Citation: MS-PPTX §2.2.5 / §2.3.1.25 — `p14:sectionLst` under `p:ext` with URI `{521415D9-36F7-43E2-AB2F-B90AF26B5E84}` and
- * namespace `http://schemas.microsoft.com/office/powerpoint/2010/main`. Detection is namespace-qualified on the child element only; missing
- * `p14` NS yields false while the opaque subtree is still preserved by DOM round-trip.
- * @internal
- * @param {OoxmlElement} presentationRoot - The presentationRoot value.
- * @returns {boolean} The result.
- */
-function detectHasSections(presentationRoot: OoxmlElement): boolean {
-    const extLst: OoxmlElement = findChild(presentationRoot, PML_NS, 'extLst');
-    if (extLst === undefined) {
-        return false;
-    }
-    for (let i: number = 0; i < extLst.children.length; i++) {
-        const child: OoxmlElement | OoxmlText = arrayAt(extLst.children, i);
-        if (child.kind !== 'element' || child.namespaceUri !== PML_NS || child.localName !== 'ext') {
-            continue;
-        }
-        if (findChild(child, P14_NS, 'sectionLst') !== undefined) {
-            return true;
-        }
-
-    }
-    return false;
-}
-
 /**
  * Parse section records and resolve authored slide ids to presentation indexes.
  *
@@ -343,8 +326,10 @@ function parseSections(presentationRoot: OoxmlElement, slides: ReadonlyArray<Sli
  * @returns {void} Nothing.
  */
 export function flushPresentationModel(pkg: OpcPackage, model: PresentationModel): void {
-    const nextRoot: OoxmlElement = replaceSldIdLst(model.root, model.slides);
+    const withSlides: OoxmlElement = replaceSldIdLst(model.root, model.slides);
+    const nextRoot: OoxmlElement = model.sectionStore.write(withSlides, model.slides);
     model.root = nextRoot;
+    model.hasSections = findSectionList(nextRoot) !== undefined;
     const encoder: TextEncoder = new TextEncoder();
     const existingPres: PackagePart = pkg.parts.get(model.presentationPartName);
     if (existingPres === undefined) {

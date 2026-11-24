@@ -34,10 +34,10 @@ import {
     _HTMLCenterElement,
     _HTMLFontElement,
     _HTMLSampElement
-} from './dom-node.js';
-import { parseInlineStyles } from './style-parser.js';
-import { _CSSProcessor } from './css-processor.js';
-import { sniffImageContentType } from '../images/image-sniff.js';
+} from './dom-node';
+import { parseInlineStyles } from './style-parser';
+import { _CSSProcessor } from './css-processor';
+import { sniffImageContentType } from '../images/image-sniff';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type _CSSRule = any;
 
@@ -58,35 +58,35 @@ export class _HTMLParser {
      * whether created by the parser or directly in code.
      * Useful when elements are created programmatically without going through the parser.
      *
-     * @param element - Root element to process (typically body or any container)
-     * @returns void
+     * @param {_HTMLElement} element - Root element to process (typically body or any container)
+     * @returns {void} void
      * @private
      */
     static processElementStyles(element: _HTMLElement): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const htmlElement = element as any;
-        
+        const htmlElement: any = element as any;
+
         // Get stylesheets from element (if it's a body element)
         if (!htmlElement.styleSheets || !Array.isArray(htmlElement.styleSheets)) {
             return;
         }
-        
+
         const styleSheets: string[] = htmlElement.styleSheets;
-        
+
         // Parse all CSS rules
         const allRules: _CSSRule[] = [];
         for (const styleText of styleSheets) {
             try {
-                const rules = _CSSProcessor.parseCSS(styleText);
+                const rules: _CSSRule[] = _CSSProcessor.parseCSS(styleText);
                 allRules.push(...rules);
             } catch (error) {
                 console.warn('Error parsing CSS rules:', error);
             }
         }
-        
+
         // Store parsed rules in element for later access
         htmlElement.cssRules = allRules;
-        
+
         // Apply styles to all elements in the tree
         this._applyStylesToElementTree(element, allRules);
     }
@@ -95,15 +95,15 @@ export class _HTMLParser {
      * Recursively apply CSS rules to all elements in a tree.
      * Static version for use with programmatically-created elements.
      *
-     * @param element - Current element to process
-     * @param rules - Array of CSS rules to apply
-     * @returns void
+     * @param {_HTMLElement} element - Current element to process
+     * @param {_CSSRule[]} rules - Array of CSS rules to apply
+     * @returns {void} void
      * @private
      */
     private static _applyStylesToElementTree(element: _HTMLElement, rules: _CSSRule[]): void {
         // Apply styles to this element
         _CSSProcessor.applyStylesToElement(element, rules);
-        
+
         // Recursively apply to children
         for (const child of element._childNodes) {
             this._applyStylesToElementTree(child, rules);
@@ -155,12 +155,12 @@ export class _HTMLParser {
      * Allows downstream consumers (DOCX, PDF, etc.) to use the same parsed tree
      * with image bytes already available.
      *
-     * @param supplied - Optional pre-supplied image bytes keyed by URL (skip download for these)
+     * @param {Record<string, Uint8Array>} supplied - Optional pre-supplied image bytes keyed by URL (skip download for these)
      * @returns {Promise<_HTMLElement>} The root element with all images resolved
      * @private
      */
     async parseAsync(supplied?: Record<string, Uint8Array>): Promise<_HTMLElement> {
-        const rootElement = this.parse();
+        const rootElement: _HTMLElement = this.parse();
         await this._resolveAllImages(rootElement, supplied);
         return rootElement;
     }
@@ -170,9 +170,9 @@ export class _HTMLParser {
      * Extracts <img src> URLs, downloads/resolves bytes, and stores in element._resolvedImageBytes.
      * Supports: data URIs, http(s) URLs, and caller-supplied bytes.
      *
-     * @param element - Root element to process
-     * @param supplied - Pre-supplied image bytes keyed by URL (skip download for these)
-     * @returns Promise that resolves when all images are processed
+     * @param {_HTMLElement} element - Root element to process
+     * @param {Record<string, Uint8Array>} supplied - Pre-supplied image bytes keyed by URL (skip download for these)
+     * @returns {Promise<void>} Promise that resolves when all images are processed
      * @private
      */
     private async _resolveAllImages(element: _HTMLElement, supplied?: Record<string, Uint8Array>): Promise<void> {
@@ -191,25 +191,28 @@ export class _HTMLParser {
      * Resolve a single image element.
      * Tries in order: supplied bytes, data URI, HTTP/HTTPS download, unsupported.
      *
-     * @param imgElement - The _HTMLImageElement to resolve
-     * @param supplied - Pre-supplied bytes keyed by URL
+     * @param {_HTMLImageElement} imgElement - The _HTMLImageElement to resolve
+     * @param {Record<string, Uint8Array>} supplied - Pre-supplied bytes keyed by URL
+     * @returns {Promise<void>} Resolves once the image element has been processed.
      * @private
      */
     private async _resolveImage(imgElement: _HTMLImageElement, supplied?: Record<string, Uint8Array>): Promise<void> {
-        const src = imgElement.src || imgElement.getAttribute('src');
+        const src: string = imgElement.src || imgElement.getAttribute('src');
         if (!src) {
             return; // No src, skip
         }
 
         // 1. Check if caller supplied this image
+        // eslint-disable-next-line security/detect-object-injection
         if (supplied && supplied[src]) {
+            // eslint-disable-next-line security/detect-object-injection
             imgElement._resolvedImageBytes = supplied[src];
             return;
         }
 
         // 2. Try data URI
         if (src.startsWith('data:')) {
-            const bytes = this._decodeDataUri(src);
+            const bytes: Uint8Array = this._decodeDataUri(src);
             if (bytes) {
                 imgElement._resolvedImageBytes = bytes;
                 return;
@@ -218,7 +221,7 @@ export class _HTMLParser {
 
         // 3. Try HTTP/HTTPS download
         if (/^https?:\/\//i.test(src)) {
-            const bytes = await this._downloadImage(src);
+            const bytes: Uint8Array = await this._downloadImage(src);
             if (bytes) {
                 imgElement._resolvedImageBytes = bytes;
                 return;
@@ -233,8 +236,8 @@ export class _HTMLParser {
      * Download an HTTP/HTTPS image and return the bytes.
      * Validates response, content type, and size.
      *
-     * @param url - HTTP/HTTPS URL
-     * @returns Image bytes or null if download failed
+     * @param {string} url - HTTP/HTTPS URL
+     * @returns {Promise<Uint8Array | null>} Image bytes or null if download failed
      * @private
      */
     private async _downloadImage(url: string): Promise<Uint8Array | null> {
@@ -242,22 +245,22 @@ export class _HTMLParser {
             return null; // fetch unavailable
         }
 
-        const MAX_SIZE = 10 * 1024 * 1024; // 10 MB limit
+        const MAX_SIZE: number = 10 * 1024 * 1024; // 10 MB limit
 
         try {
-            const response = await fetch(url);
+            const response: Response = await fetch(url);
             if (!response.ok) {
                 // Silently fail - image will render as alt text
                 return null;
             }
 
-            const buffer = await response.arrayBuffer();
+            const buffer: ArrayBuffer = await response.arrayBuffer();
             if (buffer.byteLength === 0 || buffer.byteLength > MAX_SIZE) {
                 // Silently fail - size check or empty response
                 return null;
             }
 
-            const data = new Uint8Array(buffer);
+            const data: Uint8Array = new Uint8Array(buffer);
             if (sniffImageContentType(data) === undefined) {
                 // Silently fail - not a valid image format
                 return null;
@@ -273,19 +276,19 @@ export class _HTMLParser {
     /**
      * Decode a data URI to image bytes.
      *
-     * @param dataUri - data: URI with base64 encoding
-     * @returns Image bytes or null
+     * @param {string} dataUri - data: URI with base64 encoding
+     * @returns {Uint8Array | null} Image bytes or null
      * @private
      */
     private _decodeDataUri(dataUri: string): Uint8Array | null {
         try {
-            const match = dataUri.match(/^data:[^;]*(;base64)?,(.*)$/);
+            const match: RegExpMatchArray = dataUri.match(/^data:[^;]*(;base64)?,(.*)$/);
             if (!match) {
                 return null;
             }
 
-            const isBase64 = !!match[1];
-            const data = match[2];
+            const isBase64: boolean = !!match[1];
+            const data: string = match[2];
 
             if (isBase64) {
                 return this._base64ToBytes(data);
@@ -301,14 +304,15 @@ export class _HTMLParser {
     /**
      * Decode base64 string to Uint8Array.
      *
-     * @param base64 - Base64 encoded string
-     * @returns Uint8Array
+     * @param {string} base64 - Base64 encoded string
+     * @returns {Uint8Array} Uint8Array
      * @private
      */
     private _base64ToBytes(base64: string): Uint8Array {
-        const binaryString = atob(base64);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
+        const binaryString: string = atob(base64);
+        const bytes: Uint8Array = new Uint8Array(binaryString.length);
+        for (let i: number = 0; i < binaryString.length; i++) {
+            // eslint-disable-next-line security/detect-object-injection
             bytes[i] = binaryString.charCodeAt(i);
         }
         return bytes;
@@ -598,6 +602,7 @@ export class _HTMLParser {
             } else if (body.startsWith('#')) {
                 codePoint = parseInt(body.substring(1), 10);
             } else {
+                // eslint-disable-next-line security/detect-object-injection -- key/index is internal (bounded loop index or fixed lookup table), not user-controlled property path
                 const named: string | undefined = _HTMLParser.namedEntities[body];
                 if (named !== undefined) {
                     return named;
@@ -637,7 +642,7 @@ export class _HTMLParser {
         bull: '\u2022',
         dagger: '\u2020',
         prime: '\u2032',
-        prime_reversed: '\u2035',
+        'prime_reversed': '\u2035',
         deg: '\u00B0',
         plusmn: '\u00B1',
         frac12: '\u00BD',
@@ -760,9 +765,9 @@ export class _HTMLParser {
     /**
      * Collect stylesheets from <head> section before body parsing.
      * Extracts all <style> elements and stores their content in the body element.
-     * 
-     * @param rootElement - The root body element to store stylesheets
-     * @returns void
+     *
+     * @param {_HTMLElement} rootElement - The root body element to store stylesheets
+     * @returns {void} void
      * @private
      */
     private _collectStylesheetsFromHead(rootElement: _HTMLElement): void {
@@ -800,9 +805,9 @@ export class _HTMLParser {
     /**
      * Parse CSS rules from stylesheets and apply them to elements.
      * This is called after HTML parsing is complete to resolve all styles.
-     * 
-     * @param rootElement - The root element (typically _HTMLBodyElement)
-     * @returns void
+     *
+     * @param {_HTMLElement} rootElement - The root element (typically _HTMLBodyElement)
+     * @returns {void} void
      * @private
      */
     private _parseAndApplyCSS(rootElement: _HTMLElement): void {
@@ -811,25 +816,25 @@ export class _HTMLParser {
         if (!(rootElement as any).styleSheets || !Array.isArray((rootElement as any).styleSheets)) {
             return;
         }
-        
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const styleSheets: string[] = (rootElement as any).styleSheets;
-        
+
         // Parse all CSS rules
         const allRules: _CSSRule[] = [];
         for (const styleText of styleSheets) {
             try {
-                const rules = _CSSProcessor.parseCSS(styleText);
+                const rules: _CSSRule[] = _CSSProcessor.parseCSS(styleText);
                 allRules.push(...rules);
             } catch (error) {
                 console.warn('Error parsing CSS rules:', error);
             }
         }
-        
-        // Store parsed rules in body element for later access (e.g., by DocIO mapper)
+
+        // Store parsed rules in body element for later access (e.g., by document mapper)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (rootElement as any).cssRules = allRules;
-        
+
         // Apply styles to all elements in the tree
         this._applyStylesToTree(rootElement, allRules);
     }
@@ -838,8 +843,8 @@ export class _HTMLParser {
      * Push the inheritable text properties of the body element down to every descendant element
      * that does not set them itself (CSS inheritance). Headings keep their own default size.
      *
-     * @param body - The root body element
-     * @returns void
+     * @param {_HTMLElement} body - The root body element
+     * @returns {void} void
      * @private
      */
     private _inheritBodyStyles(body: _HTMLElement): void {
@@ -852,7 +857,9 @@ export class _HTMLParser {
                 }
                 const isHeading: boolean = /^h[1-6]$/i.test(child.tagName);
                 for (const key of inheritable) {
+                    // eslint-disable-next-line security/detect-object-injection
                     if (bodyStyles[key] && !child._styles[key] && !(isHeading && key === 'fontSize')) {
+                        // eslint-disable-next-line security/detect-object-injection
                         child._styles[key] = bodyStyles[key];
                     }
                 }
@@ -864,16 +871,16 @@ export class _HTMLParser {
 
     /**
      * Recursively apply CSS rules to all elements in the DOM tree.
-     * 
-     * @param element - Current element to process
-     * @param rules - Array of CSS rules to apply
-     * @returns void
+     *
+     * @param {_HTMLElement} element - Current element to process
+     * @param {_CSSRule[]} rules - Array of CSS rules to apply
+     * @returns {void} void
      * @private
      */
     private _applyStylesToTree(element: _HTMLElement, rules: _CSSRule[]): void {
         // Apply styles to this element
         _CSSProcessor.applyStylesToElement(element, rules);
-        
+
         // Recursively apply to children
         for (const child of element._childNodes) {
             this._applyStylesToTree(child, rules);

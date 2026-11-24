@@ -57,6 +57,17 @@ import { registerRevisionsFeature, resetRevisionsFeatureForTests } from './docx/
 import { registerSectionsFeature, resetSectionsFeatureForTests } from './docx/features/sections/index';
 import { registerSettingsFeature, resetSettingsFeatureForTests } from './docx/features/settings/index';
 import { registerStylesFeature, resetStylesFeatureForTests } from './docx/features/styles/index';
+import {
+    resetFeatureBlockHandlers,
+    resetFeatureInlineHandlers,
+    resetFeatureRunLeafHandlers,
+    resetFeaturePartHandlers,
+    resetFeatureMultiPartHandlers,
+    resetFeaturePackagePartHandlers,
+    resetFeatureMaterializeHandlers,
+    resetFeatureRegistry
+} from './docx/core/registry/index';
+import { resetFeatureCreateDefaultHandlers } from './docx/core/registry/create-defaults';
 import { registerTablesFeature, resetTablesFeatureForTests } from './docx/features/tables/index';
 import { registerWatermarkFeature, resetWatermarkFeatureForTests } from './docx/features/watermark/index';
 /**
@@ -90,15 +101,25 @@ export const FEATURE_SUBPATHS: string[] = [
     'font-table'
 ];
 /** One optional feature export subpath under `@syncfusion/ej2-docx/`.
+ *
  * @private
  */
 export type FeatureSubpath = (typeof FEATURE_SUBPATHS)[number];
 /**
  * @returns {void} Nothing is returned.
  * @private
- * Test hook — clears per-module registration flags and re-registers handlers.
+ * Test hook — clears every registry and per-module registration flag without re-registering.
  */
-export function resetAllFeaturesForTests(): void {
+export function clearAllFeaturesForTests(): void {
+    resetFeatureBlockHandlers();
+    resetFeatureInlineHandlers();
+    resetFeatureRunLeafHandlers();
+    resetFeaturePartHandlers();
+    resetFeatureMultiPartHandlers();
+    resetFeaturePackagePartHandlers();
+    resetFeatureMaterializeHandlers();
+    resetFeatureCreateDefaultHandlers();
+    resetFeatureRegistry();
     resetSectionsFeatureForTests();
     resetStylesFeatureForTests();
     resetFontTableFeatureForTests();
@@ -123,6 +144,14 @@ export function resetAllFeaturesForTests(): void {
     resetGlossaryFeatureForTests();
     resetOleObjectFeatureForTests();
     resetWatermarkFeatureForTests();
+}
+/**
+ * @returns {void} Nothing is returned.
+ * @private
+ * Test hook — clears per-module registration flags and re-registers handlers.
+ */
+export function resetAllFeaturesForTests(): void {
+    clearAllFeaturesForTests();
     registerSectionsFeature();
     registerStylesFeature();
     registerFontTableFeature();

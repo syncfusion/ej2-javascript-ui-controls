@@ -60,7 +60,7 @@ export interface CommentExEntry {
     readonly paraIdParent: string | undefined;
     /**
      * `commentEx/@done` when present.
-     * `false` only when the attribute is `"0"` (DocIO-aligned); otherwise `true` when present.
+     * `false` only when the attribute is `"0"`; otherwise `true` when present.
      */
     readonly done: boolean | undefined;
 }
@@ -114,7 +114,7 @@ function namespacedAttribute(element: OpenXmlElement, namespaceUri: string, loca
     return found == null ? undefined : found.value;
 }
 /**
- * DocIO-aligned `done` parse: attribute absent → `undefined`; `"0"` → `false`; any other value → `true`.
+ * `done` parse: attribute absent → `undefined`; `"0"` → `false`; any other value → `true`.
  *
  * @param {string | undefined} raw - The raw.
  * @returns {boolean | undefined} The result.

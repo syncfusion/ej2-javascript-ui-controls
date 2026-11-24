@@ -16,6 +16,24 @@ export type SectionPageSetupClone = (source: SectionPropertiesModel) => SectionP
  */
 export type SectionPageSetupSeed = () => SectionPropertiesModel;
 
+/**
+ * @private
+ * Hook run when a section is attached to a document through {@link Sections.add}, so features
+ * (images) can re-register content cloned from another document.
+ */
+export type SectionAttachHook = (section: Section, document: WordDocument) => void;
+
+let sectionAttachHook: SectionAttachHook | undefined;
+
+/**
+ * @param {SectionAttachHook} hook - The hook.
+ * @returns {void} Nothing is returned.
+ * @private
+ */
+export function registerSectionAttachHook(hook: SectionAttachHook): void {
+    sectionAttachHook = hook;
+}
+
 let pageSetupClone: SectionPageSetupClone | undefined;
 let pageSetupSeed: SectionPageSetupSeed | undefined;
 
@@ -34,6 +52,14 @@ export function registerSectionPageSetupClone(clone: SectionPageSetupClone): voi
  */
 export function resetSectionPageSetupCloneForTests(): void {
     pageSetupClone = undefined;
+}
+
+/**
+ * @returns {SectionPageSetupClone | undefined} The result.
+ * @private
+ */
+export function currentSectionPageSetupClone(): SectionPageSetupClone | undefined {
+    return pageSetupClone;
 }
 
 /**
@@ -85,12 +111,9 @@ function resolveAuthoredPageSetup(
 }
 
 /**
- * Ordered collection of document {@link Section} objects.
+ * Represents the collection of sections in a document.
  *
- * A document always has at least one section. Removing the last section throws.
- * {@link Sections.add} clones page setup from the previous last section when a
- * clone hook is registered (sections feature); otherwise seeds a default when
- * a seed hook is registered.
+ * A document always contains at least one section. Removing the last section throws an error.
  *
  * @public
  */
@@ -118,21 +141,31 @@ export class Sections implements Iterable<Section> {
         this.rebuildIndexProperties();
     }
 
-    /** Number of sections in the document. */
+    /**
+     * Gets the number of sections in the document.
+     */
     get count(): number {
         return this.list.length;
     }
 
     /**
-     * Append a new section after the current last section.
+     * Appends a new section after the last section.
      *
-     * Clones `pageSetup` from the previous last section when the sections
-     * feature has registered a clone hook; otherwise seeds a default letter
-     * page setup when a seed hook is registered.
+     * The page setup of the previous last section is copied to the new section.
      *
-     * @returns {Section} The new {@link Section}.
+     * @param {Section} existing - Optional detached section (for example a clone) to append instead of a new one.
+     * @returns {Section} - Returns the new {@link Section}.
      */
-    add(): Section {
+    add(existing?: Section): Section {
+        if (existing !== undefined) {
+            this.list.push(existing);
+            existing.bindDocument(this.document);
+            if (sectionAttachHook !== undefined) {
+                sectionAttachHook(existing, this.document);
+            }
+            this.rebuildIndexProperties();
+            return existing;
+        }
         const previous: Section = this.list[this.list.length - 1];
         const setup: SectionPropertiesModel = resolveAuthoredPageSetup(previous);
         const section: Section = new Section(this.document, [], setup);
@@ -143,10 +176,24 @@ export class Sections implements Iterable<Section> {
     }
 
     /**
+     * Clones every section of this collection, in order, into `destination`.
+     * Source sections are never added to the destination.
+     *
+     * @param {Sections} destination - The destination collection.
+     * @returns {void}
+     * @private
+     */
+    cloneTo(destination: Sections): void {
+        for (let i: number = 0, cnt: number = this.count; i < cnt; i++) {
+            destination.add(this[i as number].clone());
+        }
+    }
+
+    /**
      * Insert a new section at `index` (`0…count` inclusive).
      *
-     * @param {number} index - The index.
-     * @returns {Section} The result.
+     * @returns {Section} - Returns the Section.
+     * @param {number} index - Specifies the index.
      * @throws RangeError when `index` is outside `0…count`.
      */
     insert(index: number): Section {
@@ -168,8 +215,8 @@ export class Sections implements Iterable<Section> {
     /**
      * Remove `section` from the document.
      *
-     * @param {Section} section - The section.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {Section} section - Specifies the section.
      * @throws DetachedObjectError when `section` is not in this collection.
      * @throws DetachedObjectError when removing would leave zero sections.
      */
@@ -184,8 +231,8 @@ export class Sections implements Iterable<Section> {
     /**
      * Remove the section at `index`.
      *
-     * @param {number} index - The index.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {number} index - Specifies the index.
      * @throws RangeError when `index` is out of range.
      * @throws DetachedObjectError when removing would leave zero sections.
      */
@@ -203,8 +250,8 @@ export class Sections implements Iterable<Section> {
     /**
      * Index of `section`, or `-1`.
      *
-     * @param {Section} section - The section.
-     * @returns {number} The result.
+     * @returns {number} - Returns the number.
+     * @param {Section} section - Specifies the section.
      */
     indexOf(section: Section): number {
         return this.list.indexOf(section);

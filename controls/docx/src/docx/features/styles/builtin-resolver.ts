@@ -1,6 +1,6 @@
 /**
  * Generic built-in style resolver (spec
- * `docs/specs/styles-builtin-definitions-catalog.md` §5, §6, §8, §9).
+ * the format specification §5, §6, §8, §9).
  *
  * One algorithm for all four {@link DocxStyleType}s:
  * 1. document collection first (by `styleId`, then by display name) — an

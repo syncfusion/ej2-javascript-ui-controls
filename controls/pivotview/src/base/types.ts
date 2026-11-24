@@ -121,6 +121,23 @@ export type FilterType =
     'Value';
 
 /**
+ * Defines how the value entered for the Top and Bottom value filter conditions
+ * selects the members. They are
+ * ```props
+ * Items :- Displays the specified number of top or bottom members.
+ * Percent :- Displays the specified percentage (an integer from 1 to 100) of the top or bottom members.
+ * Sum :- Displays the top or bottom members whose cumulative aggregated value reaches or exceeds the specified value.
+ * ```
+ */
+export type TopBottomMode =
+    /**  Displays the specified number of top or bottom members. */
+    'Items' |
+    /**  Displays the specified percentage (an integer from 1 to 100) of the top or bottom members. */
+    'Percent' |
+    /**  Displays the top or bottom members whose cumulative aggregated value reaches or exceeds the specified value. */
+    'Sum';
+
+/**
  * Defines the conditional operators for filtering settings. They are
  * ```props
  * Equals :- Display the pivot table that matches with the given text or value or date.

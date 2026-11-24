@@ -155,7 +155,7 @@ export class DomVirtualization {
         const isRemote: boolean = isRemoteData(this.parent) && !isOffline(this.parent);
         const flatData: ITreeData[] = isRemote ? this.parent.getCurrentViewRecords() : this.parent.enableVirtualization ?
             this.parent.virtualDomScrollData.slice() : this.parent.grid.currentViewData.slice();
-        const totalflatData: ITreeData[] = this.parent.infiniteScrollData;
+        const totalflatData: ITreeData[] = this.parent['isGantt'] ? this.parent.flatData : this.parent.infiniteScrollData;
         const uniqueIDCollpaseCollection: { [key: string]: ITreeData[] } = this.parent.uniqueIDCollpaseCollection;
         const startIndex: number = contentModule.currentStartIndex;
         if (getValue('isCollapseAll', this.parent) || getValue('isExpandAll', this.parent)) {

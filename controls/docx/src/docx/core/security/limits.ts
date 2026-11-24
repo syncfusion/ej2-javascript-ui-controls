@@ -29,7 +29,9 @@ export interface ResourceLimits {
     /** Max relationships in one relationships part. Default 10_000. */
     readonly relationshipCountPerPart: number;
 }
-/** @public */
+/**
+ * @public
+ */
 export const DEFAULT_RESOURCE_LIMITS: ResourceLimits = {
     totalUncompressedSize: 512 * 1024 * 1024,
     compressionRatio: 200,

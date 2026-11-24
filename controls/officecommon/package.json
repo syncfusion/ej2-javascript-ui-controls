@@ -9,7 +9,7 @@
 	"es2015": "./dist/es6/ej2-office-common.es5.js",
 	"typings": "index.d.ts",
 	"devDependencies": {
-		"@syncfusion/ej2-staging": "^1.0.15",
+		"@syncfusion/ej2-staging": "^1.0.16",
 		"@types/chai": "^3.4.28",
 		"@types/jasmine": "2.8.9",
 		"@types/jasmine-ajax": "^3.1.27",

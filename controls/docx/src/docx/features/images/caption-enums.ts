@@ -3,7 +3,7 @@ import { enumValues } from '../../core/compat/object-compat';
  * Numbering formats for image-caption `SEQ` fields.
  *
  * Each value maps to the corresponding general-formatting switch of the `SEQ`
- * field instruction (ECMA-376-1 §17.16.5 switch table).
+ * field instruction.
  *
  * @public
  */
@@ -102,9 +102,9 @@ function toRoman(value: number): string {
 /**
  *  1→`A` … 26→`Z`, 27→`AA` (Word alphabetic wrap).
  *
- * @param {number} value - The value.
- * @param {boolean} upper - The upper.
- * @returns {string} The result.
+ * @param {number} value - Specifies the value.
+ * @param {boolean} upper - Specifies the upper.
+ * @returns {string} Returns the result.
  */
 function toAlphabetic(value: number, upper: boolean): string {
     let remaining: number = value;

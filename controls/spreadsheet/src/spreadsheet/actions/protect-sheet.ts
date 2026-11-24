@@ -1,7 +1,7 @@
 import { Spreadsheet, DialogBeforeOpenEventArgs } from '../index';
 import { applyProtect, protectSheet, protectCellFormat, editAlert, enableFormulaInput, protectWorkbook, keyUp, unProtectSheetPassword, completeAction, setProtectWorkbook, removeWorkbookProtection } from '../common/event';
 import { unProtectWorkbook, importProtectWorkbook, hideAutoFillElement } from '../common/event';
-import { clearCopy, protectSelection, clearUndoRedoCollection, focus, isLockedCells, toggleProtect, getHashPassword } from '../common/index';
+import { clearCopy, protectSelection, clearUndoRedoCollection, focus, isLockedCells, toggleProtect, getHashPassword, getUpdateUsingRaf } from '../common/index';
 import { Dialog } from '../services/dialog';
 import { ListView, SelectedCollection, SelectEventArgs } from '@syncfusion/ej2-lists';
 import { L10n, EventHandler, closest, isNullOrUndefined, getInstance } from '@syncfusion/ej2-base';
@@ -811,6 +811,11 @@ export class ProtectSheet {
             this.parent.setSheetPropertyOnMute(sheet, 'isProtected', !sheet.isProtected);
             isActive = sheet.isProtected ? false : true;
             this.parent.notify(applyProtect, { isActive: isActive, id: parentId + '_protect', sheetIndex: this.parent.activeSheetIndex, triggerEvent: true });
+            if (isActive) {
+                getUpdateUsingRaf((): void => {
+                    focus(this.parent.element);
+                });
+            }
         }
     }
 

@@ -105,5 +105,5 @@ export function appendChartImpl(
 export function bindAppendChartToParaGraph(): void {
     // This will be called from the feature registration
     // For now, TypeScript augmentation handles the method signature
-    // Runtime installation happens in register.ts
+    // Runtime installation happens when the charts feature loads
 }

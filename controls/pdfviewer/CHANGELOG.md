@@ -2,13 +2,25 @@
 
 ## [Unreleased]
 
+## 35.2.13 (2026-11-24)
+
+### PDF Viewer
+
+#### Features
+
+- Read Only Support for Annotations, Form Fields, and Comments - Introduced read only support for annotations, form fields, and comments in the PDF Viewer, enabling developers to selectively restrict editing operations based on application requirements. The feature provides granular control over annotation, form field, and comment editing while preserving document viewing, navigation, search, zooming, printing, and downloading capabilities.
+
+#### Bug Fixes
+
+- `#I891394` - Fixed an issue where the `LinkTool` and `FreehandHighlightTool` were not hidden when configured through the `annotationToolbarItems` API.
+
 ## 35.2.12 (2026-11-18)
 
 ### PDF Viewer
 
 #### Features
 
-- `#I579850`, `#646216`, `#664660`, `#721745` - Annotation Appearance Rendering Support - Introduced support for rendering annotations using their native PDF appearance streams through `PDFium`. This enhancement preserves the original visual fidelity of annotations and ensures consistent rendering across viewing, export, printing, and download workflows.
+- `#I579850`, `#I646216`, `#I664660`, `#I721745` - Annotation Appearance Rendering Support - Introduced support for rendering annotations using their native PDF appearance streams through `PDFium`. This enhancement preserves the original visual fidelity of annotations and ensures consistent rendering across viewing, export, printing, and download workflows.
 - Text Field Format Actions Support - Added support for Adobe `AcroForm` text field format actions, enabling Number, Percentage, Special, and Arbitrary Mask formatting `behaviors` in PDF form fields. The feature introduces a typed JavaScript action model for format actions, a new `keyPressed` event for handling text field input, and support for parsing and applying Adobe Form Helper scripts while preserving document security by restricting arbitrary JavaScript execution.
 
 #### Bug Fixes

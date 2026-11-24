@@ -19,6 +19,7 @@ export {
     TextAutoFit, TextBodyProperties, TextTabStop, TextVerticalAnchor, TextVerticalType, TextWrapping
 } from './text-layout-types';
 export { TextFindMatch } from './find/text-find-match';
+export { TextSelection } from './find/text-selection';
 import * as findTextEngine from './find/index';
 export { findTextEngine };
 

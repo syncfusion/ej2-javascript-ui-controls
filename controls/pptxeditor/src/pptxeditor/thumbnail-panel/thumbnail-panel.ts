@@ -236,6 +236,7 @@ export class ThumbnailPanel {
 
         this.wireMediaQuery();
         this.applyWidth(this.host.thumbnailPanelWidth);
+        this.collapseOnMobileAtStartup();
         this.applyVisibility(this.host.thumbnailPanelVisible, false);
         this.rebuildItems();
         this.wireIntersectionObserver();
@@ -901,6 +902,9 @@ export class ThumbnailPanel {
         this.views.forEach((item: ThumbItem): void => {
             this.applyFrameStyles(item);
         });
+        this.views.forEach((item: ThumbItem): void => {
+            this.rescaleSurface(item);
+        });
         if (this.virtualizer) {
             if (this.views.size > 0) {
                 // A mounted row gives the exact height; skip the estimate so
@@ -909,6 +913,32 @@ export class ThumbnailPanel {
             } else {
                 this.virtualizer.setItemHeight(this.frameHeightPx + THUMB_ROW_CHROME_PX);
             }
+        }
+    }
+
+    /**
+     * Re-fits an already painted slide surface to the current frame size. The
+     * surface keeps its intrinsic size and is scaled once at paint time, so a
+     * pane resize must recompute the scale or the slide is cropped.
+     *
+     * @private
+     * @param {ThumbItem} item - Row
+     * @returns {void}
+     */
+    private rescaleSurface(item: ThumbItem): void {
+        const surface: HTMLElement | null = item.content.querySelector('[data-slide-surface]');
+        if (!surface) {
+            return;
+        }
+        const width: number = parseFloat(surface.style.width);
+        const height: number = parseFloat(surface.style.height);
+        if (!(width > 0) || !(height > 0)) {
+            return;
+        }
+        const hostW: number = item.content.clientWidth;
+        const hostH: number = item.content.clientHeight;
+        if (hostW > 0 && hostH > 0) {
+            surface.style.transform = 'scale(' + String(Math.min(hostW / width, hostH / height)) + ')';
         }
     }
 
@@ -1388,7 +1418,30 @@ export class ThumbnailPanel {
             : (typeof window !== 'undefined' ? window.innerWidth : 1024);
         const desktop: boolean = isDesktopViewport(width);
         if (desktop !== this.host.thumbnailPanelVisible) {
+            // An automatic flip is not a user choice: keep responsive behaviour armed.
             this.host.setThumbnailPanelVisible(desktop);
+            this.userVisibilityOverride = false;
+        }
+    }
+
+    /**
+     * Hides the panel by default on mobile-width hosts so the slide gets the full
+     * width. Desktop widths and explicit user choices are left untouched.
+     *
+     * @private
+     * @returns {void}
+     */
+    private collapseOnMobileAtStartup(): void {
+        if (this.userVisibilityOverride || !this.host.thumbnailPanelVisible) {
+            return;
+        }
+        const hostWidth: number = this.host.element ? this.host.element.clientWidth : 0;
+        const width: number = hostWidth > 0
+            ? hostWidth
+            : (typeof window !== 'undefined' ? window.innerWidth : 1024);
+        if (!isDesktopViewport(width)) {
+            this.host.setThumbnailPanelVisible(false);
+            this.userVisibilityOverride = false;
         }
     }
 }

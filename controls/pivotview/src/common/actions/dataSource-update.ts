@@ -1,11 +1,12 @@
 import { PivotCommon } from '../base/pivot-common';
 import * as events from '../../common/base/constant';
-import { IFieldOptions, IField } from '../../base/engine';
+import { IFieldOptions, IField, PivotEngine } from '../../base/engine';
 import { SummaryTypes } from '../../base/types';
 import { FieldDroppedEventArgs, FieldDropEventArgs } from '../base/interface';
 import { OlapEngine, IOlapField } from '../../base/olap/engine';
 import { PivotButton } from '../actions/pivot-button';
 import { PivotUtil } from '../../base/util';
+import * as cls from '../base/css-constant';
 import { PivotView } from '../../pivotview/base/pivotview';
 import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -49,6 +50,7 @@ export class DataSourceUpdate {
         let draggedClass: string;
         let draggedPosition: number = -1;
         let nodeDropped: boolean = true;
+        let isValuesAxisReorder: boolean = false;
         const row: IFieldOptions[] = this.parent.dataSourceSettings.rows;
         const column: IFieldOptions[] = this.parent.dataSourceSettings.columns;
         const value: IFieldOptions[] = this.parent.dataSourceSettings.values;
@@ -68,6 +70,19 @@ export class DataSourceUpdate {
                 }
             }
         }
+        // The drag element differs by source: a field-list tree drag reports the
+        // tree node text wrapper (an `.e-list-item` child, never a pivot button),
+        // while an axis button drag reports an element inside `.e-pivot-button`
+        // whose parent chain resolves to that button. Resolving the button from
+        // the chain is the reliable source test; direct `btnElement` attribute and
+        // class checks miss depending on which inner element started the drag.
+        const draggedButtonElement: Element = this.btnElement ?
+            this.btnElement.closest('.' + cls.PIVOT_BUTTON_CLASS) : null;
+        const isFieldAlreadyInValues: boolean = (this.parent.dataSourceSettings.values || [])
+            .some((value: IFieldOptions) => value && value.name === fieldName);
+        if (droppedClass === 'values' && !draggedButtonElement) {
+            draggedClass = 'fieldList';
+        }
         const eventdrop: FieldDropEventArgs = {
             fieldName: fieldName, dropField: PivotUtil.getFieldInfo(fieldName, this.control).fieldItem,
             dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
@@ -81,10 +96,18 @@ export class DataSourceUpdate {
                 droppedPosition = observedArgs.dropPosition;
                 fieldName = observedArgs.dropField ? observedArgs.dropField.name : observedArgs.fieldName;
                 dataSourceItem = observedArgs.dropField;
-                if (this.control && this.btnElement && this.btnElement.getAttribute('isvalue') === 'true') {
+                if (this.control && draggedButtonElement &&
+                    draggedButtonElement.getAttribute('isvalue') === 'true') {
                     switch (droppedClass) {
                     case '':
-                        this.control.setProperties({ dataSourceSettings: { values: [] } }, true);
+                        if (this.parent.dataType === 'pivot' && draggedButtonElement &&
+                            draggedButtonElement.getAttribute('data-instance-id')) {
+                            (this.parent.engineModule as PivotEngine).removeValueInstance(
+                                draggedButtonElement.getAttribute('data-instance-id')
+                            );
+                        } else {
+                            this.control.setProperties({ dataSourceSettings: { values: [] } }, true);
+                        }
                         break;
                     case 'rows':
                         droppedPosition = droppedPosition === this.parent.dataSourceSettings.rows.length ? -1 : droppedPosition;
@@ -98,7 +121,69 @@ export class DataSourceUpdate {
                 } else {
                     // dataSourceItem = this.removeFieldFromReport(fieldName.toString());
                     // dataSourceItem = dataSourceItem ? dataSourceItem : this.getNewField(fieldName.toString());
-                    this.removeFieldFromReport(fieldName.toString());
+                    const isExistingValueButton: boolean = !!draggedButtonElement &&
+                        draggedButtonElement.getAttribute('data-instance-index') !== null &&
+                        draggedButtonElement.getAttribute('data-instance-index') !== '';
+                    // Only a drag that started from an existing Values-axis button repositions
+                    // that instance (move). A field-list tree drag always inserts an
+                    // independent duplicate instance, whether it lands on a specific value
+                    // button or on the axis area.
+                    const isValuesButtonDrop: boolean = isExistingValueButton &&
+                        isFieldAlreadyInValues && droppedPosition !== -1;
+                    const isDuplicateValueDrop: boolean = droppedClass === 'values' &&
+                        draggedClass === 'fieldList' && !isExistingValueButton && !isValuesButtonDrop &&
+                        this.parent.dataSourceSettings.mode !== 'Server';
+                    // OLAP measure fields carry no value instance identifiers, so the
+                    // instance-based reorder path cannot resolve them and must not run;
+                    // OLAP repositions flow through the regular remove/re-insert path.
+                    isValuesAxisReorder = isExistingValueButton &&
+                        droppedClass === 'values' && draggedClass === 'values' &&
+                        this.parent.dataType !== 'olap';
+                    if (isValuesAxisReorder) {
+                        const reorderInstanceId: string = draggedButtonElement.getAttribute('data-instance-id');
+                        const values: IFieldOptions[] = this.parent.dataSourceSettings.values;
+                        const currentIndex: number = reorderInstanceId ?
+                            values.findIndex((value: IFieldOptions) =>
+                                value && value.instanceId === reorderInstanceId) : -1;
+                        if (currentIndex >= 0) {
+                            const appendToEnd: boolean = droppedPosition === -1 ||
+                                droppedPosition >= values.length;
+                            const targetIndex: number = appendToEnd ?
+                                values.length - 1 :
+                                Math.max(0, Math.min(droppedPosition, values.length - 1));
+                            if (targetIndex !== currentIndex) {
+                                const moved: IFieldOptions = values.splice(currentIndex, 1)[0];
+                                // The dragged instance is already removed, so inserting at
+                                // `targetIndex` places it at the dropped button's position
+                                // for both forward and backward moves.
+                                const insertIndex: number = appendToEnd ?
+                                    values.length :
+                                    targetIndex;
+                                values.splice(insertIndex, 0, moved);
+                                this.control.setProperties(
+                                    { dataSourceSettings: { values: values } }, true);
+                            }
+                            const lastIndex: number = Math.max(0, values.length - 1);
+                            dataSourceItem = values[lastIndex as number];
+                        }
+                    } else if (isValuesButtonDrop) {
+                        // Repositioning an existing value-field instance: remove only the
+                        // matching instance from the values axis (the field may also sit on
+                        // another axis, which must remain untouched) and re-insert it at the
+                        // dropped position through the regular insertion flow below.
+                        const values: IFieldOptions[] = this.parent.dataSourceSettings.values;
+                        const existingIndex: number = values.findIndex((value: IFieldOptions) =>
+                            value && value.name === fieldName);
+                        if (existingIndex > -1) {
+                            values.splice(existingIndex, 1);
+                        }
+                    } else if (!isDuplicateValueDrop) {
+                        // Instance ids only identify entries on the Values axis; for other axes the
+                        // field must be removed by name so the source entry is not left behind.
+                        const instanceId: string = isExistingValueButton ?
+                            draggedButtonElement.getAttribute('data-instance-id') : null;
+                        this.removeFieldFromReport(fieldName.toString(), instanceId);
+                    }
                     if (this.parent.dataType === 'pivot' && this.control.showValuesButton && this.parent.dataSourceSettings.values.length > 1) {
                         const dropAxisFields: IFieldOptions[] = (this.parent.dataSourceSettings.valueAxis === 'row' &&
                             droppedClass === 'rows') ? this.parent.dataSourceSettings.rows : (this.parent.dataSourceSettings.valueAxis === 'column' && droppedClass === 'columns') ?
@@ -121,8 +206,26 @@ export class DataSourceUpdate {
                             }
                         }
                     }
-                    dataSourceItem = this.getNewField(fieldName.toString(), observedArgs.dropField);
-                    if (dataSourceItem.type === 'CalculatedField' && droppedClass !== '') {
+                    if (isDuplicateValueDrop) {
+                        dataSourceItem = this.getNewField(fieldName.toString(), observedArgs.dropField);
+                    }
+                    if (droppedClass === 'values' && draggedClass === 'fieldList' && !isValuesAxisReorder) {
+                        const sourceField: IField = this.parent.engineModule.fieldList[fieldName.toString()];
+                        if (sourceField && sourceField.aggregateType !== 'CalculatedField') {
+                            dataSourceItem.type = sourceField.type === 'number' ? 'Sum' as SummaryTypes : 'Count' as SummaryTypes;
+                        }
+                        dataSourceItem.instanceId = undefined;
+                        dataSourceItem.instanceId = PivotUtil.getOrGenerateInstanceId(
+                            dataSourceItem, this.parent.dataSourceSettings.values.length);
+                    }
+                    if (droppedClass === 'values' && dataSourceItem && dataSourceItem.type === 'CalculatedField') {
+                        for (let i: number = 0; i < this.parent.dataSourceSettings.values.length; i++) {
+                            if (this.parent.dataSourceSettings.values[i as number].name === fieldName) {
+                                return;
+                            }
+                        }
+                    }
+                    if (dataSourceItem && dataSourceItem.type === 'CalculatedField' && droppedClass !== '') {
                         droppedClass = 'values';
                     }
                 }
@@ -146,6 +249,9 @@ export class DataSourceUpdate {
                     };
                     control.trigger(events.onFieldDropped, eventArgs, (droppedArgs: FieldDroppedEventArgs) => {
                         dataSourceItem = droppedArgs.droppedField;
+                        if (isValuesAxisReorder) {
+                            return;
+                        }
                         if (dataSourceItem) {
                             droppedPosition = droppedArgs.droppedPosition;
                             droppedClass = droppedArgs.droppedAxis;
@@ -202,14 +308,14 @@ export class DataSourceUpdate {
         return nodeDropped;
     }
     /**
-     * Updates the dataSource by removing the given field from the dataSource.
+     * Removes a field from its current report axis.
      *
-     * @param  {string} fieldName - Defines dropped field name to remove dataSource.
-     * @function removeFieldFromReport
-     * @returns {void}
+     * @param  {string} fieldName - Field name to remove.
+     * @param  {string} [instanceId] - Optional value-field instance identifier.
+     * @returns {IFieldOptions} - Removed field settings.
      * @hidden
      */
-    public removeFieldFromReport(fieldName: string): IFieldOptions {
+    public removeFieldFromReport(fieldName: string, instanceId?: string): IFieldOptions {
         let dataSourceItem: IFieldOptions;
         let isDataSource: boolean = false;
         const rows: IFieldOptions[] = this.parent.dataSourceSettings.rows;
@@ -221,7 +327,8 @@ export class DataSourceUpdate {
         for (let len: number = 0, lnt: number = fields.length; len < lnt; len++) {
             if (!isDataSource && fields[len as number]) {
                 for (let i: number = 0, n: number = fields[len as number].length; i < n; i++) {
-                    if (fields[len as number][i as number].name === fieldName || (this.parent.dataType === 'olap' &&
+                    if ((instanceId && len === 2 && fields[len as number][i as number].instanceId === instanceId) ||
+                        (!instanceId && fields[len as number][i as number].name === fieldName) || (this.parent.dataType === 'olap' &&
                         fields[len as number][i as number].name.toLowerCase() === '[measures]' && fields[len as number][i as number].name.toLowerCase() === fieldName)) {
                         dataSourceItem = (<{ [key: string]: IFieldOptions }>fields[len as number][i as number]).properties ?
                             (<{ [key: string]: IFieldOptions }>fields[len as number][i as number]).properties :
@@ -243,6 +350,20 @@ export class DataSourceUpdate {
             }
         }
         return dataSourceItem;
+    }
+
+    public removeAllFieldInstances(fieldName: string): void {
+        const fields: IFieldOptions[][] = [
+            this.parent.dataSourceSettings.rows || [], this.parent.dataSourceSettings.columns || [],
+            this.parent.dataSourceSettings.values || [], this.parent.dataSourceSettings.filters || []
+        ];
+        for (const axisFields of fields) {
+            for (let i: number = axisFields.length - 1; i >= 0; i--) {
+                if (axisFields[i as number].name === fieldName) {
+                    axisFields.splice(i, 1);
+                }
+            }
+        }
     }
 
     /**
@@ -289,6 +410,7 @@ export class DataSourceUpdate {
                 showNoDataItems: fieldItem ? fieldItem.showNoDataItems : field.showNoDataItems,
                 baseField: fieldItem ? fieldItem.baseField : field.baseField,
                 baseItem: fieldItem ? fieldItem.baseItem : field.baseItem,
+                allowCrossGroupCalculation: fieldItem ? fieldItem.allowCrossGroupCalculation : field.allowCrossGroupCalculation,
                 allowDragAndDrop: fieldItem ? fieldItem.allowDragAndDrop : field.allowDragAndDrop,
                 showSubTotals: fieldItem ? fieldItem.showSubTotals : field.showSubTotals,
                 showFilterIcon: fieldItem ? fieldItem.showFilterIcon : field.showFilterIcon,
@@ -298,6 +420,9 @@ export class DataSourceUpdate {
                 showValueTypeIcon: fieldItem ? fieldItem.showValueTypeIcon : field.showValueTypeIcon,
                 expandAll: fieldItem ? fieldItem.expandAll : field.expandAll
             };
+            if (fieldName && !newField.instanceId) {
+                newField.instanceId = PivotUtil.getOrGenerateInstanceId(newField, this.parent.dataSourceSettings.values.length);
+            }
         }
         return newField;
     }

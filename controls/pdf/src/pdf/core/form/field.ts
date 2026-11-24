@@ -2192,7 +2192,8 @@ export abstract class PdfField {
         let resource: _PdfDictionary;
         if (document) {
             if (document.form._dictionary.has('DR')) {
-                resource = document.form._dictionary.get('DR');
+                const existingDR: _PdfDictionary = document.form._dictionary.get('DR');
+                resource = existingDR instanceof _PdfDictionary ? existingDR : new _PdfDictionary(this._crossReference);
             } else {
                 resource = new _PdfDictionary(this._crossReference);
             }
@@ -8316,30 +8317,32 @@ export abstract class PdfListField extends PdfField {
                 if (fontName && fontName !== fontFamily) {
                     if (this.form._dictionary.has('DR')) {
                         const resources: _PdfDictionary = this.form._dictionary.get('DR');
-                        const fonts: _PdfDictionary = resources.get('Font');
-                        if (fonts) {
-                            if (fonts.has(fontFamily)) {
-                                const fontDictionary: _PdfDictionary = fonts.get(fontFamily);
-                                const fontSubtType: any = fontDictionary.get('Subtype').name; // eslint-disable-line
-                                if (fontDictionary && fontFamily && fontDictionary.has('BaseFont')) {
-                                    const baseFont: _PdfName = fontDictionary.get('BaseFont');
-                                    let textFontStyle: PdfFontStyle = PdfFontStyle.regular;
-                                    if (baseFont && baseFont.name !== null && typeof baseFont.name !== 'undefined') {
-                                        textFontStyle = _getFontStyle(baseFont.name);
-                                        if (fontSubtType && fontSubtType === 'TrueType') {
-                                            const fontData: Uint8Array = _createFontStream(this.form, fontDictionary);
-                                            if (fontData && fontData.length > 0) {
-                                                const base64String: string = _encode(fontData);
-                                                if (base64String && base64String.length > 0) {
-                                                    this._font = new PdfTrueTypeFont(base64String, fontSize, textFontStyle);
+                        if (resources instanceof _PdfDictionary) {
+                            const fonts: _PdfDictionary = resources.get('Font');
+                            if (fonts) {
+                                if (fonts.has(fontFamily)) {
+                                    const fontDictionary: _PdfDictionary = fonts.get(fontFamily);
+                                    const fontSubtType: any = fontDictionary.get('Subtype').name; // eslint-disable-line
+                                    if (fontDictionary && fontFamily && fontDictionary.has('BaseFont')) {
+                                        const baseFont: _PdfName = fontDictionary.get('BaseFont');
+                                        let textFontStyle: PdfFontStyle = PdfFontStyle.regular;
+                                        if (baseFont && baseFont.name !== null && typeof baseFont.name !== 'undefined') {
+                                            textFontStyle = _getFontStyle(baseFont.name);
+                                            if (fontSubtType && fontSubtType === 'TrueType') {
+                                                const fontData: Uint8Array = _createFontStream(this.form, fontDictionary);
+                                                if (fontData && fontData.length > 0) {
+                                                    const base64String: string = _encode(fontData);
+                                                    if (base64String && base64String.length > 0) {
+                                                        this._font = new PdfTrueTypeFont(base64String, fontSize, textFontStyle);
+                                                    }
                                                 }
-                                            }
-                                        } else if (fontSubtType && fontSubtType === 'Type0') {
-                                            const fontData: Uint8Array = _getFontFromDescriptor(fontDictionary);
-                                            if (fontData && fontData.length > 0) {
-                                                const base64String: string = _encode(fontData);
-                                                if (base64String && base64String.length > 0) {
-                                                    this._font = new PdfTrueTypeFont(base64String, fontSize, textFontStyle);
+                                            } else if (fontSubtType && fontSubtType === 'Type0') {
+                                                const fontData: Uint8Array = _getFontFromDescriptor(fontDictionary);
+                                                if (fontData && fontData.length > 0) {
+                                                    const base64String: string = _encode(fontData);
+                                                    if (base64String && base64String.length > 0) {
+                                                        this._font = new PdfTrueTypeFont(base64String, fontSize, textFontStyle);
+                                                    }
                                                 }
                                             }
                                         }

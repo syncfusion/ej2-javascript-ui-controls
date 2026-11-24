@@ -113,7 +113,7 @@ function pushOnOff(out: OpenXmlChild[], localName: string, value: boolean | unde
 // ---------------------------------------------------------------------------
 
 /**
- * Base live style definition (`w:style`).
+ * Base live style definition.
  *
  * Paragraph and character styles are {@link ParagraphStyle} / {@link CharacterStyle}.
  * Table and numbering styles are internal opaque instances.
@@ -158,8 +158,14 @@ export abstract class Style implements CharacterFormatHost {
      */
     protected constructor(
         styleId: string,
+        /**
+         * Gets or sets the type.
+         */
         type: DocxStyleType | undefined,
         defaultFlag: boolean | undefined,
+        /**
+         * Gets or sets the custom style.
+         */
         customStyle: boolean | undefined
     ) {
         if (styleId.length === 0) {
@@ -202,7 +208,7 @@ export abstract class Style implements CharacterFormatHost {
     }
 
     /**
-     * Style type (`w:style/@w:type`), when present.
+     * Gets the style type, when present.
      *
      * @public
      */
@@ -211,7 +217,7 @@ export abstract class Style implements CharacterFormatHost {
     }
 
     /**
-     * Whether this is the default style of its type (`@w:default`).
+     * Gets a value indicating whether this is the default style of its type.
      *
      * @public
      */
@@ -220,7 +226,7 @@ export abstract class Style implements CharacterFormatHost {
     }
 
     /**
-     * Customer-defined style flag (`@w:customStyle`).
+     * Gets the customer-defined style flag.
      *
      * @public
      */
@@ -229,7 +235,7 @@ export abstract class Style implements CharacterFormatHost {
     }
 
     /**
-     * Display name (`w:name/@w:val`). Mutable; does not change {@link styleId}.
+     * Gets or sets the display name.
      *
      * @public
      */
@@ -243,7 +249,7 @@ export abstract class Style implements CharacterFormatHost {
     }
 
     /**
-     * Style-level character formatting (`w:rPr`). Stable facade identity.
+     * Gets the character formatting of the style.
      *
      * @public
      */
@@ -281,7 +287,7 @@ export abstract class Style implements CharacterFormatHost {
     }
 
     /**
-     * Resolved base style of the same public kind, when present and attached.
+     * Gets the resolved base style of the same public kind, when present and attached.
      *
      * @public
      */
@@ -307,8 +313,8 @@ export abstract class Style implements CharacterFormatHost {
      *
      * Pass `undefined` to clear the relationship.
      *
-     * @param {Style | string | undefined} styleOrId - The style or id.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {Style | string | undefined} styleOrId - Specifies the style or id.
      * @public
      */
     applyBaseStyle(styleOrId: Style | string | undefined): void {
@@ -400,7 +406,11 @@ export abstract class Style implements CharacterFormatHost {
         this.markDirty();
     }
 
-    /** `w:uiPriority/@w:val`. @public */
+    /**
+     * Gets or sets the priority that determines the order in which the style is displayed in the style list.
+     *
+     * @public
+     */
     get uiPriority(): number | undefined {
         return this.uiPriorityValue;
     }
@@ -410,7 +420,11 @@ export abstract class Style implements CharacterFormatHost {
         this.markDirty();
     }
 
-    /** `w:qFormat`. @public */
+    /**
+     * Gets or sets a value indicating whether the style is shown in the quick style gallery.
+     *
+     * @public
+     */
     get isQuickStyle(): boolean | undefined {
         return this.qFormatValue;
     }
@@ -420,7 +434,11 @@ export abstract class Style implements CharacterFormatHost {
         this.markDirty();
     }
 
-    /** `w:semiHidden`. @public */
+    /**
+     * Gets or sets a value indicating whether the style is hidden from the style list until it is used.
+     *
+     * @public
+     */
     get isSemiHidden(): boolean | undefined {
         return this.semiHiddenValue;
     }
@@ -473,12 +491,11 @@ export abstract class Style implements CharacterFormatHost {
     }
 
     /**
-     * Remove this style from the document styles collection: drop the `w:style`
-     * definition, detach this instance, and clear content/catalog references to
-     * its style id so save does not re-materialize a stub. After removal the
-     * instance is detached; a second call throws {@link DetachedObjectError}.
+     * Removes the style from the document.
      *
-     * @returns {void} Nothing is returned.
+     * After removal, the style is detached, and calling this method again throws a {@link DetachedObjectError}.
+     *
+     * @returns {void}
      * @public
      */
     remove(): void {
@@ -894,7 +911,7 @@ export abstract class Style implements CharacterFormatHost {
 // ---------------------------------------------------------------------------
 
 /**
- * Paragraph style (`w:type="paragraph"`) with paragraph and character format facades.
+ * Paragraph style with paragraph and character format facades.
  *
  * @public
  */
@@ -910,6 +927,9 @@ export class ParagraphStyle extends Style implements ParagraphFormatHost {
     constructor(
         styleId: string,
         defaultFlag?: boolean | undefined,
+        /**
+         * Gets or sets the custom style.
+         */
         customStyle?: boolean | undefined
     ) {
         super(styleId, 'paragraph', defaultFlag, customStyle);
@@ -917,7 +937,7 @@ export class ParagraphStyle extends Style implements ParagraphFormatHost {
     }
 
     /**
-     * Style-level paragraph formatting (`w:pPr`). Stable facade identity.
+     * Gets the paragraph formatting of the style.
      *
      * @public
      */
@@ -926,7 +946,7 @@ export class ParagraphStyle extends Style implements ParagraphFormatHost {
     }
 
     /**
-     * Resolved paragraph base style, when present.
+     * Gets the resolved paragraph base style, when present.
      *
      * @public
      */
@@ -1010,7 +1030,7 @@ export class ParagraphStyle extends Style implements ParagraphFormatHost {
 // ---------------------------------------------------------------------------
 
 /**
- * Character style (`w:type="character"`) with a character format facade only.
+ * Represents a character style that defines the character formatting applied to text.
  *
  * @public
  */
@@ -1024,13 +1044,16 @@ export class CharacterStyle extends Style {
     constructor(
         styleId: string,
         defaultFlag?: boolean | undefined,
+        /**
+         * Gets or sets the custom style.
+         */
         customStyle?: boolean | undefined
     ) {
         super(styleId, 'character', defaultFlag, customStyle);
     }
 
     /**
-     * Resolved character base style, when present.
+     * Gets the resolved character base style, when present.
      *
      * @public
      */

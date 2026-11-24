@@ -284,6 +284,8 @@ export const LEVEL_OPTIONS_CLASS: string = 'e-level-options';
 /** @hidden */
 export const FILTER_OPERATOR_CLASS: string = 'e-filter-operator';
 /** @hidden */
+export const FILTER_MODE_CLASS: string = 'e-filter-mode';
+/** @hidden */
 export const FILTER_SORT_CLASS: string = 'e-filter-sort';
 /** @hidden */
 export const SORT_ASCEND_ICON_CLASS: string = 'e-sort-ascend-icon';
@@ -614,6 +616,8 @@ export const GRID_REPORT_DIALOG: string = 'e-pivotview-report-dialog';
 export const TOOLBAR_FIELDLIST: string = 'e-toolbar-fieldlist';
 /** @hidden */
 export const TOOLBAR_GRID: string = 'e-toolbar-grid';
+/** @hidden */
+export const TOOLBAR_LAYOUT: string = 'e-toolbar-layout';
 /** @hidden */
 export const TOOLBAR_CHART: string = 'e-toolbar-chart';
 /** @hidden */

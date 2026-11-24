@@ -77,4 +77,6 @@ export function materializeTableShape(element: OoxmlElement, elementKind: ShapeE
     return table; 
 }
 /** @internal */
-export const tableShapeMaterializer: ShapeMaterializer = materializeTableShape;   
+export const tableShapeMaterializer: ShapeMaterializer = materializeTableShape;
+// Register on module load so any import of Table / asTable yields Table handles from slide.shapes, not only the package index.
+Shape.materializer = tableShapeMaterializer;

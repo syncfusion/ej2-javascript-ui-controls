@@ -23,8 +23,7 @@ import { officeDocumentPartName, OpcPackage } from '../../core/opc/package';
 import { partName, PartName } from '../../core/opc/part-name';
 import { registerFeaturePackagePartHandler } from '../../core/registry/package-part-handlers';
 import { registerFeatureRunLeafHandler } from '../../core/registry/run-leaf-handlers';
-import { ParagraphItem } from '../document/paragraph-item';
-import { FeatureRunParagraphItem, ConcreteParagraphItem, TextRange, Tab, CarriageReturn, Break, FeatureInlineParagraphItem, OpaqueRunItem, OpaqueParagraphItem } from '../document/text-range';
+import { FeatureRunParagraphItem, ParagraphItem, TextRange, Tab, CarriageReturn, Break, FeatureInlineParagraphItem, OpaqueRunItem, OpaqueParagraphItem } from '../document/text-range';
 import { ChartRunLeaf, loadChart, parseChartDrawing } from './chart-load';
 import { WordDocument } from '../document/document';
 import { FeatureId } from '../../core/registry/feature-registry';
@@ -39,7 +38,7 @@ let registered: boolean = false;
  *
  * @returns {void} Nothing is returned.
  * @remarks
- * Binds <see cref="Paragraph.appendChart">appendChart</see> to the <see cref="Paragraph">Paragraph</see> class.
+ * Binds {@link Paragraph.appendChart} to the {@link Paragraph} class.
  * Charts work without calling this method; call it to make the registration explicit. Calling it more than once has no effect.
  *
  * @example
@@ -50,7 +49,7 @@ let registered: boolean = false;
  * const chart = paragraph.appendChart(ChartType.ColumnClustered, 500, 300);
  * ```
  *
- * @public
+ * @private
  */
 export function registerChartsFeature(): void {
     if (registered) {
@@ -78,7 +77,7 @@ export function registerChartsFeature(): void {
         materialize(document: WordDocument): void {
             const charts: Chart[] = [];
             visitParagraphsInDocumentOrder(document, (paragraph: Paragraph) => {
-                paragraph.items.forEach((item: ConcreteParagraphItem) => {
+                paragraph.items.forEach((item: ParagraphItem) => {
                     if (item instanceof Chart) {
                         charts.push(item);
                     }
@@ -110,6 +109,7 @@ export function registerChartsFeature(): void {
 /**
  * Replace preserved chart drawings with live charts after a document is opened.
  * A chart whose parts cannot be read keeps its preserved drawing.
+ *
  * @private
  */
 const loadedChartIndexes: WeakMap<WordDocument, Set<number>> = new WeakMap();
@@ -120,9 +120,9 @@ function hydrateLoadedCharts(document: WordDocument): void {
     const pkg: OpcPackage = document.opcPackage();
     const main: PartName = officeDocumentPartName(pkg);
     visitParagraphsInDocumentOrder(document, (paragraph: Paragraph) => {
-        const items: ConcreteParagraphItem[] = paragraph.items.toArray();
+        const items: ParagraphItem[] = paragraph.items.toArray();
         let changed: boolean = false;
-        const next: ParagraphItem[] = items.map((item: ConcreteParagraphItem) => {
+        const next: ParagraphItem[] = items.map((item: ParagraphItem) => {
             if (item instanceof FeatureRunParagraphItem && item.featureId === CHARTS && item.value instanceof ChartRunLeaf) {
                 let chart: Chart | undefined;
                 try {

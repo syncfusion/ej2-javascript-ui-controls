@@ -1,6 +1,6 @@
 import { Dialog, ButtonPropsModel } from '@syncfusion/ej2-popups';
 import { isNullOrUndefined as isNaN, createElement, extend, remove, addClass, select, SanitizeHtmlHelper, getInstance } from '@syncfusion/ej2-base';
-import { IConditionalFormatSettings } from '../../base/engine';
+import { IConditionalFormatSettings, PivotEngine, IFieldOptions } from '../../base/engine';
 import { PivotView } from '../../pivotview/base/pivotview';
 import { Button } from '@syncfusion/ej2-buttons';
 import { ChangeEventArgs } from '@syncfusion/ej2-buttons';
@@ -386,10 +386,16 @@ export class ConditionalFormatting {
             let caption: string = this.parent.dataSourceSettings.values[i as number].caption ||
                 this.parent.dataSourceSettings.values[i as number].name;
             caption = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(caption) : caption;
+            // Key the measure by instance id when the same field is added multiple
+            // times to the values axis so a rule can target a single instance.
+            const measureKey: string = this.parent.engineModule && (this.parent.engineModule as PivotEngine)
+                .valueFieldHasDuplicates ? ((this.parent.dataSourceSettings.values[i as number] as IFieldOptions).instanceId ||
+                    this.parent.dataSourceSettings.values[i as number].name) :
+                this.parent.dataSourceSettings.values[i as number].name;
             fields.push({
                 index: i + 1,
                 name: caption,
-                field: this.parent.dataSourceSettings.values[i as number].name
+                field: measureKey
             });
         }
         let value: string = isNaN(format.measure) ? this.parent.localeObj.getConstant('AllValues') : format.measure;

@@ -182,6 +182,19 @@ export interface ChartAxisFormat {
     readonly titleArea: ChartTitleAreaFormat;
 }
 /**
+ * 3-D camera settings of the host engine (`c:view3D`).
+ *
+ * @internal
+ */
+export interface HostChartView3D {
+    rotationX?: number;
+    rotationY?: number;
+    heightPercent?: number;
+    depthPercent?: number;
+    rightAngleAxis?: boolean;
+    perspective?: number;
+}
+/**
  * Parsed classic `c:chartSpace` surface from ej2-xlsx `parseChartSpace`.
  *
  * @remarks
@@ -196,6 +209,8 @@ export interface ChartAxisFormat {
  * @public
  */
 export interface ParsedChartSpace {
+    /** Parsed `c:view3D` camera settings (3-D charts) when present. */
+    readonly view3D?: HostChartView3D;
     /** Parsed chart type token from c:chartSpace. */
     readonly type: string;
     /** Optional chart name when the engine surfaces it. */
@@ -323,6 +338,8 @@ export interface HostChartSeries {
     title: string | undefined;
     categoryLabels: string | undefined;
     values: string | undefined;
+    /** Per-series engine chart type override (combination charts); `undefined` = chart default. */
+    serieType?: string | undefined;
     /** Fill + line for this series (`c:spPr`); same bag shape as chart/plot area. */
     readonly serieFormat: ChartFrameFormat;
     /** Series data labels (`c:dLbls`). */
@@ -379,6 +396,8 @@ export interface HostChart {
     readonly primaryCategoryAxis: ChartAxisFormat;
     /** Primary value (Y) axis — engine `primaryValueAxis`. */
     readonly primaryValueAxis: ChartAxisFormat;
+    /** 3-D camera settings written as `c:view3D` (`undefined` removes the element). */
+    view3D: HostChartView3D | undefined;
     /** Ordered series rows on the host chart. */
     readonly series: ReadonlyArray<HostChartSeries>;
     /** Adds a series from host options and returns the new series row. */
@@ -1202,6 +1221,22 @@ function wrapHostChartSeries(raw: unknown): HostChartSeries {
          *
          * @returns {ChartFrameFormat} The result.
          */
+        get serieType(): string | undefined {
+            return typeof (live as { serieType?: unknown }).serieType === 'string'
+                ? (live as { serieType?: string }).serieType : undefined;
+        },
+        /**
+         *
+         * @param {string | undefined} value - The value value.
+         * @returns {void} Nothing.
+         */
+        set serieType(value: string | undefined) {
+            (live as { serieType?: string }).serieType = value;
+        },
+        /**
+         *
+         * @returns {ChartFrameFormat} The result.
+         */
         get serieFormat(): ChartFrameFormat {
             return serieFormat;
         },
@@ -1383,6 +1418,12 @@ function wrapHostChart(raw: unknown): HostChart {
          *
          * @returns {boolean} The result.
          */
+        get view3D(): HostChartView3D | undefined {
+            return (live as { view3D?: HostChartView3D }).view3D;
+        },
+        set view3D(value: HostChartView3D | undefined) {
+            (live as { view3D?: HostChartView3D }).view3D = value;
+        },
         get hasLegend(): boolean {
             return (live as {
                 hasLegend?: unknown;
@@ -1686,6 +1727,57 @@ function rebindParsedSeriesTitles(xml: string, parsed: ParsedChartSpace): Parsed
     return { ...parsed, series: fixed };
 }
 /**
+ * Restore the series fill the engine mis-reads as `none`.
+ *
+ * @remarks
+ * The vendored engine tests `<a:noFill` against the whole series `c:spPr`, so the
+ * ubiquitous PowerPoint form `<a:solidFill>..</a:solidFill><a:ln><a:noFill/></a:ln>` (an
+ * outline-less series) is parsed as a `none` fill. The edit session then writes `a:noFill`
+ * and the bars (notably after a switch to a 3-D type) become invisible. Re-read the fill
+ * from the series `c:spPr` with the `a:ln` outline removed, and restore an explicit
+ * `a:srgbClr` solid fill when the engine reported `none`.
+ *
+ * Citations: ECMA-376 Part 1 §21.2.2.197 `c:spPr`; §20.1.2.2.35 `a:ln` (its own `a:noFill`
+ * describes the outline, not the fill); §20.1.8.54 `a:solidFill`.
+ *
+ * @internal
+ * @param {string} xml - Serialized `c:chartSpace` the engine parsed.
+ * @param {ParsedChartSpace} parsed - Engine parse result.
+ * @returns {ParsedChartSpace} Same parse with corrected per-series solid fills.
+ */
+function rebindParsedSeriesFills(xml: string, parsed: ParsedChartSpace): ParsedChartSpace {
+    const series: unknown = parsed.series;
+    if (!Array.isArray(series)) {
+        return parsed;
+    }
+    const serBlocks: string[] = collectSerBlocks(xml);
+    for (let i: number = 0; i < series.length && i < serBlocks.length; i += 1) {
+        const entry: unknown = series[i];
+        if (entry === null || typeof entry !== 'object') {
+            continue;
+        }
+        const format: { fill?: { type?: unknown; foreColor?: unknown } } | undefined =
+            (entry as { serieFormat?: { fill?: { type?: unknown; foreColor?: unknown } } }).serieFormat;
+        if (format === undefined || format.fill === undefined || format.fill.type !== 'none') {
+            continue;
+        }
+        const spPr: RegExpExecArray | null = /<c:spPr>([\s\S]*?)<\/c:spPr>/.exec(serBlocks[i]);
+        if (spPr === null) {
+            continue;
+        }
+        const own: string = spPr[1].replace(/<a:ln\b[^>]*\/>/g, '').replace(/<a:ln\b[^>]*>[\s\S]*?<\/a:ln>/g, '');
+        if (/<a:noFill\b/.test(own)) {
+            continue;
+        }
+        const solid: RegExpExecArray | null = /<a:solidFill\b[^>]*>\s*<a:srgbClr\b[^>]*\bval="([0-9A-Fa-f]{6})"/.exec(own);
+        if (solid !== null) {
+            format.fill.type = 'solid';
+            format.fill.foreColor = solid[1].toUpperCase();
+        }
+    }
+    return parsed;
+}
+/**
  * Collect the inner `c:ser` block strings in document order.
  *
  * @internal
@@ -1822,7 +1914,7 @@ export function getXlsxChartHostApi(module: Ej2XlsxRootModule): XlsxChartHostApi
                                           ? {}
                                           : { partName: chartPartName });
             }
-            return rebindParsedSeriesTitles(xml, result as ParsedChartSpace);
+            return rebindParsedSeriesFills(xml, rebindParsedSeriesTitles(xml, result as ParsedChartSpace));
         },
         /**
          *

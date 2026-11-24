@@ -63,6 +63,8 @@ export class TaskbarEdit extends DateProcessor {
     private elementOffsetTop: number = 0;
     private elementOffsetWidth: number = 0;
     private elementOffsetHeight: number = 0;
+    private rootContainerOffsetLeft: number = 0;
+    private rootContainerOffsetTop: number = 0;
     public segmentIndex: number = -1;
     private targetElement: Element;
     public currentItemTop: number = 0;
@@ -681,6 +683,10 @@ export class TaskbarEdit extends DateProcessor {
             islastRowIndex = element && !isEmptyRow &&
                 this.parent.treeGrid.getRows()[this.parent.treeGrid.getCurrentViewRecords().length - 1].getAttribute('data-uid') !==
                     element.getAttribute('data-uid');
+        } else if (this.parent.enableDomVirtualization) {
+            islastRowIndex = element && !isEmptyRow &&
+                this.parent.treeGrid.getRows()[this.parent.treeGrid['currentDomVirtualRecords'].length - 1].getAttribute('data-uid') !==
+                    element.getAttribute('data-uid');
         }
         else {
             islastRowIndex = element && !isEmptyRow &&
@@ -706,10 +712,14 @@ export class TaskbarEdit extends DateProcessor {
                 return parseInt(data.getAttribute('aria-rowindex'), 10) - 1 === parseInt(target.getAttribute('aria-rowindex'), 10) - 1;
             })[0];
             const index: number = this.parent.treeGrid.getRows().indexOf(gridElement as HTMLTableRowElement);
-            rowElement = this.parent.getRowByIndex(index).children;
+            // T-16: null-guard — row may be off-screen in DOM virt mode.
+            const rowEl: HTMLElement = this.parent.getRowByIndex(index);
+            rowElement = rowEl ? rowEl.children : null;
         }
         else {
-            rowElement = this.parent.getRowByIndex(parseInt(target.getAttribute('aria-rowindex'), 10) - 1).children;
+            // T-16: null-guard — row may be off-screen in DOM virt mode.
+            const rowEl: HTMLElement = this.parent.getRowByIndex(parseInt(target.getAttribute('aria-rowindex'), 10) - 1);
+            rowElement = rowEl ? rowEl.children : null;
         }
         if (rowElement) {
             if (this.parent.rowDragAndDropModule['dropPosition'] === 'above') {
@@ -744,7 +754,7 @@ export class TaskbarEdit extends DateProcessor {
         }
         let droppedTreeGridRowElement: Element;
         let rowPositionHeight: number = 0;
-        if (this.parent.enableVirtualization) {
+        if (this.parent.enableVirtualization || this.parent.enableDomVirtualization) {
             droppedTreeGridRowElement = this.parent.treeGrid.getRows().filter((data: HTMLTableRowElement) => {
                 return parseInt(data.getAttribute('aria-rowindex'), 10) - 1 === parseInt(chartRowElement.getAttribute('aria-rowindex'), 10) - 1;
             })[0];
@@ -771,7 +781,7 @@ export class TaskbarEdit extends DateProcessor {
         if (!isNullOrUndefined(droppedTreeGridRowElement)) {
             rowPositionHeight = (droppedTreeGridRowElement as HTMLElement).offsetTop - scrollTop;
         }
-        if (this.parent.enableVirtualization) {
+        if (this.parent.enableVirtualization || this.parent.enableDomVirtualization) {
             rowTop = this.parent.getOffsetRect(droppedTreeGridRowElement as HTMLElement).top;
         }
         else {
@@ -797,6 +807,8 @@ export class TaskbarEdit extends DateProcessor {
             else {
                 rowElement = this.parent.getRowByIndex(parseInt(droppedTreeGridRowElement.getAttribute('aria-rowindex'), 10) - 1);
             }
+            // T-17: null-guard — row may be off-screen in DOM virt mode.
+            if (!rowElement) { return; }
             const rowIndex: number = getValue('rowIndex', rowElement);
             const droppedTreeGridRecord: IGanttData = this.parent.currentViewData[rowIndex as number];
             let isValid: boolean = true;
@@ -954,6 +966,8 @@ export class TaskbarEdit extends DateProcessor {
             else {
                 ganttRowElement = this.parent.getRowByIndex(this.taskBarEditRecord.index);
             }
+            // T-15: null-guard — row may be off-screen in DOM virt mode.
+            if (!ganttRowElement) { return; }
             const eventArgs: Object = {
                 cancel: cancel,
                 cloneElement: this.taskbarElement,
@@ -1051,7 +1065,7 @@ export class TaskbarEdit extends DateProcessor {
                     target = document.elementFromPoint(xValue, yValue);
                 }
                 let draggedTreeGridRowElement: Element;
-                if (this.parent.enableVirtualization) {
+                if (this.parent.enableVirtualization || this.parent.enableDomVirtualization) {
                     if (!this.draggedTreeGridRowElement) {
                         const currentElement: HTMLElement = this.editElement.parentElement;
                         draggedTreeGridRowElement = currentElement.parentElement;
@@ -2903,7 +2917,7 @@ export class TaskbarEdit extends DateProcessor {
                 this.taskBarEditAction === 'MilestoneDrag' || this.taskBarEditAction === 'ManualParentDrag') && this.dragMoveY > 0 &&
                 ((this.parent.viewType === 'ResourceView' && !ganttRecord.hasChildRecords) || this.parent.viewType === 'ProjectView')) {
             if (this.parent.rowDragAndDropModule) {
-                const flatRecordCol: IGanttData[] = this.parent.currentViewData;
+                const flatRecordCol: IGanttData[] = this.parent.enableDomVirtualization ? this.parent.treeGrid['currentDomVirtualRecords'] : this.parent.currentViewData;
                 if (this.taskBarEditRecord.parentItem && flatRecordCol[this.taskBarEditRecord.parentItem.index] &&
                     ((this.parent.editedRecords.indexOf(flatRecordCol[this.taskBarEditRecord.parentItem.index as number]) === -1))) {
                     this.parent.editedRecords.push(flatRecordCol[this.taskBarEditRecord.parentItem.index as number]);
@@ -3089,21 +3103,26 @@ export class TaskbarEdit extends DateProcessor {
             this.parent.ganttChartModule.chartBodyContainer.offsetTop) - this.parent.ganttChartModule.scrollObject.previousScroll.top;
 
         this.removeFalseLine(false);
+        this.rootContainerOffsetTop = this.parent.element.querySelector('.e-chart-root-container')['offsetTop'];
+        this.rootContainerOffsetLeft = this.parent.element.querySelector('.e-chart-root-container')['offsetLeft'];
+        // Account for positioned root container offset when DOM virtualization is enabled
+        const falseLineLeft: number = this.parent.domVirtualizationModule ? (left - this.rootContainerOffsetLeft) : left;
+        const falseLineTop: number = this.parent.domVirtualizationModule ? (top - this.rootContainerOffsetTop) : top;
 
         this.falseLine = createElement('div', {
             className: cls.falseLine, id: 'ganttfalseline' + this.parent.element.id,
             styles: 'position: absolute;transform:' + transform + ';' +
                 'border-top-width: 1px;border-top-style: dashed;z-index: 5;width:' + (length - 3) + 'px;' +
-                'top:' + top + 'px;'
+                'top:' + falseLineTop + 'px;'
         });
         if (this.parent.enableRtl) {
             this.falseLine.style.left = 'auto';
-            this.falseLine.style.right = left + 'px';
+            this.falseLine.style.right = falseLineLeft + 'px';
             this.falseLine.style.transformOrigin = '100% 0%';
         }
         else {
             this.falseLine.style.right = 'auto';
-            this.falseLine.style.left = left + 'px';
+            this.falseLine.style.left = falseLineLeft + 'px';
             this.falseLine.style.transformOrigin = '0% 100%';
         }
 
@@ -3154,12 +3173,28 @@ export class TaskbarEdit extends DateProcessor {
             this.toPredecessorText = null;
         }
         if (this.taskBarEditElement !== element && this.taskBarEditElement !== this.highlightedSecondElement) {
-            if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
+            if (this.parent.enableDomVirtualization && this.parent.domVirtualizationModule) {
+                const taskTable: HTMLElement = this.parent.chartRowsModule.taskTable;
+                const transform: string = taskTable ? taskTable.style.transform : '';
+                const rowPosition: number = transform.indexOf('(') === -1 ? 0 :
+                    parseFloat(transform.substring(transform.indexOf('(') + 1));
+                if (!isNaN(rowPosition)) {
+                    scrollTop = rowPosition;
+                }
+            } else if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
                 const top: number = this.parent.virtualScrollModule.getTopPosition();
                 scrollTop = top;
             }
             if ((this.parent.virtualScrollModule && this.parent.enableVirtualization &&
                 !this.elementOffsetLeft) || !this.parent.enableVirtualization) {
+                const chartRoot: HTMLElement = this.parent.ganttChartModule.chartBodyContainer;
+                if (chartRoot && chartRoot.style.position === 'relative') {
+                    this.rootContainerOffsetLeft = chartRoot.offsetLeft;
+                    this.rootContainerOffsetTop = chartRoot.offsetTop;
+                } else {
+                    this.rootContainerOffsetLeft = 0;
+                    this.rootContainerOffsetTop = 0;
+                }
                 if (!this.parent.allowParentDependency) {
                     this.elementOffsetLeft = (this.realTaskbarElement as HTMLElement).offsetLeft - ((isBigger) ? 10 : 0);
                     this.elementOffsetTop = (this.realTaskbarElement as HTMLElement).parentElement.offsetTop +

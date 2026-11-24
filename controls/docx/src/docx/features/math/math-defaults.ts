@@ -1,4 +1,3 @@
-import { ownGet } from '../../core/compat/object-compat';
 import {
     MathFunctionType,
     OfficeMath,
@@ -31,7 +30,9 @@ function childEquations(fn: OfficeMathFunctionBase): OfficeMath[] {
     const holder: { [name: string]: unknown; } = fn as unknown as { [name: string]: unknown };
     const result: OfficeMath[] = [];
     for (const name of CHILD_EQUATION_NAMES) {
-        const value: unknown = ownGet(holder, name);
+        // Child equations are prototype accessors (not own properties) and `name` comes from a fixed list.
+        // eslint-disable-next-line security/detect-object-injection
+        const value: unknown = holder[name];
         if (value instanceof OfficeMath) {
             result.push(value);
         }
@@ -49,6 +50,8 @@ function childEquations(fn: OfficeMathFunctionBase): OfficeMath[] {
  * @param {OfficeMathParagraph} paragraph - The paragraph.
  * @param {Function} visit - The visit.
  * @returns {void} Nothing is returned.
+ *
+ * @private
  */
 export function forEachMathFunction(paragraph: OfficeMathParagraph, visit: (fn: OfficeMathFunctionBase) => void): void {
     const walk: (math: OfficeMath) => void = (math: OfficeMath): void => {
@@ -67,6 +70,8 @@ export function forEachMathFunction(paragraph: OfficeMathParagraph, visit: (fn: 
  * @param {OfficeMathParagraph} paragraph - The paragraph.
  * @param {WeakSet<object>} skip - The skip.
  * @returns {void} Nothing is returned.
+ *
+ * @private
  */
 export function seedMathDefaults(paragraph: OfficeMathParagraph, skip: WeakSet<object>): void {
     forEachMathFunction(paragraph, (fn: OfficeMathFunctionBase) => {

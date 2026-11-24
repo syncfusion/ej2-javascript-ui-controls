@@ -1,20 +1,18 @@
 export * from './comment-extensions';
 import { DetachedObjectError, DocxError } from '../../core/errors/docx-error';
 import { registerAlwaysOnBodyFeatureBootstrap } from '../document/body-always-on';
-import { parseBodyBlocks, serializeBodyBlocks } from '../document/body-blocks';
+import { parseBodyBlocks, serializeBodyBlocks, BodyBlockParseContext } from '../document/body-blocks';
 import { WordDocument, FeaturePartState } from '../document/document';
 import { FeatureInline } from '../document/feature-inline';
 import { FeatureMultiPackagePart } from '../document/feature-multi-package-part';
 import { FeatureRunLeaf } from '../document/feature-run-leaf';
 import { CharacterFormatSnapshot } from '../document/character-format';
-import { BlockContent, Paragraph, ParagraphOwner } from '../document/paragraph';
+import { BlockContent, Paragraph } from '../document/paragraph';
 import {
-    ConcreteParagraphItem,
     FeatureInlineParagraphItem,
     FeatureRunParagraphItem,
-    InlineContent,
-    Owner,
     ParagraphItem,
+    Owner,
     TextRange,
     WireRunGroup
 } from '../document/text-range';
@@ -25,7 +23,7 @@ import { partName, partNameKey, resolveInternalTarget, PartName } from '../../co
 import { featureId, isFeatureRegistered, registerFeature, registerFeatureInlineHandler, registerFeatureMultiPartHandler, registerFeatureRunLeafHandler } from '../../core/registry/index';
 import { FeatureMultiPartLoadContext } from '../../core/registry/multi-part-handlers';
 import { replaceOrAddPackagePart } from '../../core/registry/multi-part-handlers';
-import { parseXml, serializeXml, WML_TRANSITIONAL_NAMESPACE, OpenXmlAttribute, OpenXmlElement } from '../../core/xml/index';
+import { parseXml, serializeXml, closePartNamespaces, WML_TRANSITIONAL_NAMESPACE, OpenXmlAttribute, OpenXmlElement } from '../../core/xml/index';
 import { WORDML_2010_NAMESPACE } from '../content-controls/index';
 import { CommentExtensionParts, loadCommentExtensionMetadata, CommentExEntry } from './comment-extensions';
 import { FeatureId } from '../../core/registry/feature-registry';
@@ -63,7 +61,7 @@ function parseCommentId(raw: string | undefined): number | undefined {
     }
     return Number.parseInt(raw, 10);
 }
-const detachedParagraphOwner: ParagraphOwner = {
+const detachedCommentParseContext: BodyBlockParseContext = {
     assertAttachedParagraph(): void {
         return;
     },
@@ -163,7 +161,7 @@ function blocksWithSimpleText(text: string): BlockContent[] {
     const paragraph: OpenXmlElement = wmlElement('p', {
         children: [wmlElement('r', { children: [wmlElement('t', { children: [{ kind: 'text', value: text }] })] })]
     });
-    return parseBodyBlocks([paragraph], detachedParagraphOwner);
+    return parseBodyBlocks([paragraph], detachedCommentParseContext);
 }
 function firstParagraphText(blocks: ReadonlyArray<BlockContent>): string | undefined {
     for (const content of blocks) {
@@ -375,7 +373,7 @@ export class CommentAnchor {
  * Does not expose raw OOXML. Opaque/`preservedXml` entries yield empty paragraphs
  * until a later modeling slice.
  *
- * After main-story elevation (TASK-8055), the same interned instance may also
+ * After main-story elevation, the same interned instance may also
  * appear in `paragraph.items` as a feature inline at the former
  * `w:commentReference` position. Serialize emits one `w:r` + optional `w:rPr` +
  * `w:commentReference` (ECMA-376-1 §17.13.4.5 / `CT_Markup` in `EG_RunInnerContent`).
@@ -460,7 +458,7 @@ export class Comment implements FeatureInline {
      * Parent comment when this comment is a reply (`commentsExtended` / `commentEx/@paraIdParent`).
      *
      * Top-level comments and replies whose parent cannot be resolved return `undefined`.
-     * Read-only; DocIO-aligned (`WComment.Ancestor`). The returned instance is the
+     * Read-only; (`WComment.Ancestor`). The returned instance is the
      * collection-interned {@link Comment} for the parent id when resolved.
      */
     get ancestor(): Comment | undefined {
@@ -588,9 +586,9 @@ function serializeCommentsPart(state: CommentsPartState): Uint8Array {
     }
     const root: OpenXmlElement = wmlElement('comments', {
         attributes: state.rootExtra.attributes,
-        namespaceDeclarations: state.rootExtra.namespaceDeclarations.length > 0
+        namespaceDeclarations: closePartNamespaces(state.rootExtra.namespaceDeclarations.length > 0
             ? state.rootExtra.namespaceDeclarations
-            : [{ prefix: 'w', namespaceUri: WML }],
+            : [{ prefix: 'w', namespaceUri: WML }], children, state.rootExtra.attributes),
         children
     });
     return utf8.encode(serializeXml(root));
@@ -623,7 +621,7 @@ function parseCommentsPart(part: PackagePart, relationship: OpcRelationship): Co
             });
             continue;
         }
-        const blocks: BlockContent[] = parseBodyBlocks(child.children, detachedParagraphOwner);
+        const blocks: BlockContent[] = parseBodyBlocks(child.children, detachedCommentParseContext);
         entries.push({
             commentId,
             author,
@@ -732,11 +730,11 @@ function elevateCommentReferencesInParagraph(
     catalog: CommentsCollection,
     elevatedIds: Set<number>
 ): boolean {
-    const nextItems: ConcreteParagraphItem[] = [];
+    const nextItems: ParagraphItem[] = [];
     let changed: boolean = false;
     // Use storage wrappers (snapshot), not projected public leaves — projected
     // Picture/Shape values are not ParagraphItems and have no attach().
-    const stored: ConcreteParagraphItem[] = paragraph.snapshot().items;
+    const stored: ParagraphItem[] = paragraph.snapshot().items;
     for (const item of stored) {
         if (!isElevatableCommentReferenceItem(item, catalog, elevatedIds)) {
             nextItems.push(item);
@@ -772,12 +770,12 @@ export function elevateCommentReferencesInDocument(WordDocument: WordDocument): 
 /**
  * Type guard: paragraph feature-inline value is an elevated {@link Comment}.
  *
- * @param {InlineContent} inline - The inline.
+ * @param {ParagraphItem} inline - The inline.
  * @returns {Object} The result.
  * @private
  */
 export function isCommentInline(
-    inline: InlineContent
+    inline: ParagraphItem
 ): inline is FeatureInlineParagraphItem & { value: Comment } {
     return (
         inline instanceof FeatureInlineParagraphItem &&
@@ -815,7 +813,7 @@ export class CommentsCollection implements FeatureMultiPackagePart {
         return this.extensionParts;
     }
     /**
-     * Main-story `commentReference` → elevated {@link Comment} (TASK-8055 / D14).
+     * Main-story `commentReference` → elevated {@link Comment} (D14).
      *
      * Invoked from {@link WordDocument.fromPackage} via duck-typed `afterMainDocumentLoad`
      * so core/document does not value-import this module (avoids Paragraph TDZ cycles).
@@ -968,7 +966,7 @@ export class CommentsCollection implements FeatureMultiPackagePart {
         return (this.state == null ? undefined : this.state.entries).find((entry: CommentEntry) => entry.commentId === commentId);
     }
     /**
-     * Resolve parent comment via DocIO-aligned reverse scan on prior Comments part entries.
+     * Resolve parent comment via reverse scan on prior Comments part entries.
      *
      * @param {WordDocument} WordDocument - The word document.
      * @param {number} commentId - The comment id.
@@ -1087,7 +1085,7 @@ export class CommentsCollection implements FeatureMultiPackagePart {
 }
 /**
  * Read `w14:paraId` (Word 2010) from paragraph OpenXml attributes.
- * Matches DocIO `WParagraph.ParaId` used to join `commentEx`.
+ * follows the standard behaviour.
  *
  * @param {ReadonlyArray<OpenXmlAttribute>} attributes - The attributes.
  * @returns {string | undefined} The result.
@@ -1114,7 +1112,6 @@ function lastParagraphParaId(blocks: ReadonlyArray<BlockContent>): string | unde
 }
 /**
  * Join Comments part entries to `commentsExtended` rows by last body paragraph paraId
- * (DocIO `SetParentParaIdAndIsResolved`).
  *
  * Copies `paraIdParent` and `done` onto the same catalog entry used by interned
  * {@link Comment} views. Read default for absent `@done` after join is `false`
@@ -1165,7 +1162,7 @@ function loadCatalog(pkg: OpcPackage, mainPartName: PartName): CommentsCollectio
     return new CommentsCollection(undefined, extensionParts);
 }
 function usedRelationshipIds(WordDocument: WordDocument): Set<string> {
-    const main: PartName = partName('/word/WordDocument.xml');
+    const main: PartName = partName('/word/document.xml');
     const used: Set<string> = new Set<string>();
     for (const rel of relationshipsForPart(WordDocument.opcPackage(), main).items) {
         used.add(rel.id);
@@ -1180,15 +1177,15 @@ function usedPartNameKeys(WordDocument: WordDocument): Set<string> {
     return used;
 }
 function anchorRunsForReference(
-    content: ReadonlyArray<InlineContent>,
+    content: ReadonlyArray<ParagraphItem>,
     referenceIndex: number,
     commentId: number
 ): ReadonlyArray<TextRange> {
     let startIndex: number = -1;
     for (let index: number = referenceIndex - 1; index >= 0; index -= 1) {
         // eslint-disable-next-line security/detect-object-injection -- integer index bounded by the collection length (loop counter or range-checked argument); not a user-controlled property name
-        const inline: ConcreteParagraphItem = content[index];
-        // TS 3.3 does not narrow InlineContent through `(x == null ? undefined : x.type)`.
+        const inline: ParagraphItem = content[index];
+        // TS 3.3 does not narrow ParagraphItem through `(x == null ? undefined : x.type)`.
         if (
             inline === undefined ||
             !(inline instanceof FeatureInlineParagraphItem) ||
@@ -1201,7 +1198,7 @@ function anchorRunsForReference(
         }
         for (let scan: number = index - 1; scan >= 0; scan -= 1) {
             // eslint-disable-next-line security/detect-object-injection -- integer index bounded by the collection length (loop counter or range-checked argument); not a user-controlled property name
-            const candidate: ConcreteParagraphItem = content[scan];
+            const candidate: ParagraphItem = content[scan];
             if (
                 candidate === undefined ||
                 !(candidate instanceof FeatureInlineParagraphItem) ||
@@ -1221,7 +1218,7 @@ function anchorRunsForReference(
     const runs: TextRange[] = [];
     for (let index: number = startIndex + 1; index < referenceIndex; index += 1) {
         // eslint-disable-next-line security/detect-object-injection -- integer index bounded by the collection length (loop counter or range-checked argument); not a user-controlled property name
-        const inline: ConcreteParagraphItem = content[index];
+        const inline: ParagraphItem = content[index];
         if (inline === undefined || !(inline instanceof TextRange)) {
             continue;
         }
@@ -1232,9 +1229,9 @@ function anchorRunsForReference(
 function findAnchorsInParagraph(paragraph: Paragraph, catalog: CommentsCollection): CommentAnchor[] {
     let ts337: any; let ts338: any;
     const found: CommentAnchor[] = [];
-    const content: ConcreteParagraphItem[] = paragraph.items.toArray();
+    const content: ParagraphItem[] = paragraph.items.toArray();
     for (const [index, item] of content.entries()) {
-        // TS 3.3 does not narrow InlineContent through `(x == null ? undefined : x.type)`.
+        // TS 3.3 does not narrow ParagraphItem through `(x == null ? undefined : x.type)`.
         if (item !== undefined &&
             item instanceof FeatureInlineParagraphItem &&
             item.value instanceof Comment) {
@@ -1854,7 +1851,7 @@ export function insertComment(WordDocument: WordDocument, paragraph: Paragraph, 
         reference
     );
 }
-// Safe once WordDocument.ts no longer value-imports this module (TASK-8056 cycle fix).
+// Safe once the owning module no longer value-imports this module.
 Paragraph.prototype.appendComment = function (
     this: Paragraph,
     textOrOptions: string | AppendCommentOptions,
@@ -1879,12 +1876,12 @@ export function removeComment(WordDocument: WordDocument, paragraph: Paragraph, 
 /**
  * Whether paragraph inline content is a modeled comment range start from this module.
  *
- * @param {InlineContent} inline - The inline.
+ * @param {ParagraphItem} inline - The inline.
  * @returns {Object} The result.
  * @private
  */
 export function isCommentRangeStartInline(
-    inline: InlineContent
+    inline: ParagraphItem
 ): inline is FeatureInlineParagraphItem & { value: CommentRangeStart } {
     return (
         inline instanceof FeatureInlineParagraphItem &&
@@ -1895,12 +1892,12 @@ export function isCommentRangeStartInline(
 /**
  * Whether paragraph inline content is a modeled comment range end from this module.
  *
- * @param {InlineContent} inline - The inline.
+ * @param {ParagraphItem} inline - The inline.
  * @returns {Object} The result.
  * @private
  */
 export function isCommentRangeEndInline(
-    inline: InlineContent
+    inline: ParagraphItem
 ): inline is FeatureInlineParagraphItem & { value: CommentRangeEnd } {
     return (
         inline instanceof FeatureInlineParagraphItem &&

@@ -3432,7 +3432,23 @@ export class PptxEditor extends Component<HTMLElement> implements INotifyPropert
             this.touchStart = null;
             return;
         }
+        // A drag that starts while text is selected moves a selection handle; it is not a swipe.
+        if (this.hasActiveTextSelection()) {
+            this.touchStart = null;
+            return;
+        }
         this.touchStart = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+    }
+
+    /**
+     * Whether the document currently has a non-empty text selection (e.g. after a long press).
+     *
+     * @returns {boolean} True when selected text exists
+     */
+    private hasActiveTextSelection(): boolean {
+        const selection: Selection | null = typeof window !== 'undefined' && typeof window.getSelection === 'function'
+            ? window.getSelection() : null;
+        return !!selection && !selection.isCollapsed && selection.toString().length > 0;
     }
 
     private onEditorTouchEnd(event: TouchEvent): void {
@@ -3443,6 +3459,10 @@ export class PptxEditor extends Component<HTMLElement> implements INotifyPropert
         const deltaX: number = event.changedTouches[0].clientX - this.touchStart.x;
         const deltaY: number = event.changedTouches[0].clientY - this.touchStart.y;
         this.touchStart = null;
+        // A long press may have started a selection during this gesture: never swipe-navigate then.
+        if (this.hasActiveTextSelection()) {
+            return;
+        }
         if (Math.abs(deltaX) < 50 || Math.abs(deltaX) < Math.abs(deltaY) * 1.5) {
             return;
         }

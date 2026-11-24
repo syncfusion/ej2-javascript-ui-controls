@@ -49,6 +49,7 @@ export class KeyboardInteraction {
         });
     }
     private keyActionHandler(e: KeyboardEventArgs): void {
+        if (!this.parent || this.parent.gridSettings && this.parent.gridSettings.layout === 'Flat') { return; }
         switch (e.action) {
         case 'tab':
             this.processTab(e);

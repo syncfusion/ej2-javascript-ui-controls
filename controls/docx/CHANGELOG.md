@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 35.2.13 (2026-11-24)
+
+### Word
+
+#### Features
+
+- Added support for **creating, modifying and updating fields** in DOCX documents.
+- Added support for **cloning all document object model (DOM) elements** in DOCX documents.
+- Added support for **importing content from one DOCX document to another**, enabling seamless document merging while preserving formatting, styles, lists, images, bookmarks, and document structure.
+- Added support for **encryption and decryption** in DOCX documents.
+
 ## 35.2.12 (2026-11-18)
 
 ### Word

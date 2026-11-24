@@ -19980,11 +19980,14 @@ export class Editor {
         }
         if (isNullOrUndefined(list)) {
             let isUpdated: boolean = false;
+            let isTableMultiLevelList: boolean = false;
             let prevParagraph: ParagraphWidget = selection.getPreviousParagraphBlock(currentParagraph) as ParagraphWidget;
             while (!isNullOrUndefined(prevParagraph) && prevParagraph instanceof ParagraphWidget) {
                 if (prevParagraph.paragraphFormat.listFormat && prevParagraph.paragraphFormat.listFormat.listId !== -1) {
                     currentParagraph = prevParagraph;
                     isUpdated = true;
+                    // A multi-level list that ends inside a table must not be continued by a paragraph outside the table.
+                    isTableMultiLevelList = prevParagraph.paragraphFormat.listFormat.listLevelNumber > 0 && prevParagraph.isInsideTable && !start.paragraph.isInsideTable;
                     break;
                 }
                 const listItem: Widget = prevParagraph.previousWidget;
@@ -19995,6 +19998,10 @@ export class Editor {
                     break;
                 }
                 prevParagraph = selection.getPreviousParagraphBlock(prevParagraph, true) as ParagraphWidget;
+            }
+            if (isUpdated && isTableMultiLevelList) {
+                currentParagraph = start.paragraph;
+                isUpdated = false;
             }
             if (isUpdated) {
                 while (!isNullOrUndefined(currentParagraph.previousWidget) && currentParagraph.previousWidget instanceof ParagraphWidget

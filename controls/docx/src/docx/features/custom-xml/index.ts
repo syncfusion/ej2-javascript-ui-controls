@@ -8,10 +8,9 @@ import { BlockContent, Paragraph } from '../document/paragraph';
 import {
     FeatureInlineParagraphItem,
     ParagraphItem,
-    Run,
-    RunOwner,
-    serializeRun,
-    TextRange
+    TextRange,
+    ParagraphItemOwner,
+    serializeTextRange
 } from '../document/text-range';
 import { FeatureInlineContent } from '../../core/registry/inline-handlers';
 import { elementChildren, isWml, wmlAttr, wmlElement } from '../document/wml';
@@ -149,14 +148,14 @@ type CustomXmlInlineItem =
     | { readonly type: 'textRange'; readonly run: TextRange }
     | { readonly type: 'opaque'; readonly xml: OpenXmlElement }
     | FeatureInlineContent;
-const detachedRunOwner: RunOwner = {
+const detachedRunOwner: ParagraphItemOwner = {
     assertAttachedItem(): void {
         return;
     }
 };
 function parseInlineContent(children: ReadonlyArray<{
     kind: string;
-}>, owner: RunOwner): CustomXmlInlineItem[] {
+}>, owner: ParagraphItemOwner): CustomXmlInlineItem[] {
     const inlines: CustomXmlInlineItem[] = [];
     for (const child of children) {
         if (child.kind !== 'element') {
@@ -180,7 +179,7 @@ function serializeInlineContent(inlines: ReadonlyArray<CustomXmlInlineItem>): Op
     const out: OpenXmlElement[] = [];
     for (const inline of inlines) {
         if (inline.type === 'textRange') {
-            out.push(serializeRun(inline.run));
+            out.push(serializeTextRange(inline.run));
         }
         else if (inline.type === 'feature') {
             out.push(serializeFeatureInline(inline));

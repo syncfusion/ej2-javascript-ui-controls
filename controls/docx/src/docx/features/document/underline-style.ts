@@ -1,29 +1,47 @@
 /**
- * Underline styles for character format (`w:u` / ST_Underline).
+ * Underline styles for character format.
  *
- * Numeric values match the DocIO / requirement surface. Value 8 is reserved
+ * Numeric values match the requirement surface. Value 8 is reserved
  * and intentionally unused.
  *
  * @public
  */
 export enum UnderlineStyle {
+    /** Specifies the none style. */
     None = 0,
+    /** Specifies the single style. */
     Single = 1,
+    /** Specifies the words style. */
     Words = 2,
+    /** Specifies the double style. */
     Double = 3,
+    /** Specifies the dotted style. */
     Dotted = 4,
+    /** Specifies the thick style. */
     Thick = 6,
+    /** Specifies the dash style. */
     Dash = 7,
+    /** Specifies the dot dash style. */
     DotDash = 9,
+    /** Specifies the dot dot dash style. */
     DotDotDash = 10,
+    /** Specifies the wavy style. */
     Wavy = 11,
+    /** Specifies the dotted heavy style. */
     DottedHeavy = 20,
+    /** Specifies the dash heavy style. */
     DashHeavy = 23,
+    /** Specifies the dot dash heavy style. */
     DotDashHeavy = 25,
+    /** Specifies the dot dot dash heavy style. */
     DotDotDashHeavy = 26,
+    /** Specifies the wavy heavy style. */
     WavyHeavy = 27,
+    /** Specifies the dash long style. */
     DashLong = 39,
+    /** Specifies the dash long heavy style. */
     DashLongHeavy = 55,
+    /** Specifies the wavy double style. */
     WavyDouble = 43,
 }
 

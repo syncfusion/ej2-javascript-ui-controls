@@ -10,7 +10,7 @@ import {
 import { BlockContent, Paragraph } from './paragraph';
 import { PageSetup } from './page-setup';
 import { SectionPropertiesModel } from './section-properties-model';
-import { currentSectionPageSetupSeed, SectionPageSetupSeed } from './sections';
+import { currentSectionPageSetupClone as pageSetupCloneHook, currentSectionPageSetupSeed, SectionPageSetupSeed } from './sections';
 import { notifySectionPropertiesAttached } from './section-partition-flatten';
 import { DetachedObjectError } from '../../core/errors/docx-error';
 import { WordDocument } from './document';
@@ -36,6 +36,7 @@ export class Section {
     private readonly headersFootersInstance: HeadersFooters;
     private pageSetupModel: SectionPropertiesModel | undefined;
     private document: WordDocument | undefined;
+    private cloneSourceDocument: WordDocument | undefined;
 
     /**
      * @param {WordDocument | undefined} document - The document.
@@ -46,6 +47,9 @@ export class Section {
     constructor(
         document: WordDocument | undefined,
         blocks: ReadonlyArray<BlockContent> = [],
+        /**
+         * Gets or sets the page setup.
+         */
         pageSetup?: SectionPropertiesModel
     ) {
         this.document = document;
@@ -69,51 +73,46 @@ export class Section {
     }
 
     /**
-     * Section body — sole collection owner for this section's main-story items.
+     * Gets the body of the section, which holds the paragraphs, tables, and block content controls of the main story.
      */
     get body(): Body {
         return this.bodyInstance;
     }
 
     /**
-     * Paragraphs in this section body (filtered view over {@link Body.items}).
+     * Gets the paragraphs of the section body.
      */
     get paragraphs(): ParagraphCollection {
         return this.paragraphsInstance;
     }
 
     /**
-     * Tables in this section body (filtered view). Empty until the tables
-     * feature registers typed-collection hooks.
+     * Gets the tables in this section body (filtered view). Empty until the tables feature registers typed-collection hooks.
      */
     get tables(): TableCollection {
         return this.tablesInstance;
     }
 
     /**
-     * Block content controls in this section body (filtered view).
+     * Gets the block content controls in this section body (filtered view).
      */
     get blockContentControls(): BlockContentControlCollection {
         return this.blockContentControlsInstance;
     }
 
     /**
-     * Always-present header/footer slots for this section.
+     * Gets the headers footers.
      *
-     * Six getters never return `undefined`. Empty slots expose zero child items
-     * until content is written; package parts are created lazily.
+     * Six getters never return `undefined`. Empty slots expose zero child items until content is written; package parts are created lazily.
      */
     get headersFooters(): HeadersFooters {
         return this.headersFootersInstance;
     }
 
     /**
-     * Live section page setup (`w:sectPr` model).
+     * Gets the page setup.
      *
-     * Always returns the same {@link PageSetup} instance while the sections
-     * feature is registered. Never typed as {@link SectionPropertiesModel}.
-     * Serialization stays on the internal model bridge
-     * ({@link internalPageSetupModel}).
+     * Always returns the same {@link PageSetup} instance while the sections feature is registered. Never typed as {@link SectionPropertiesModel}. Serialization stays on the internal model bridge ({@link internalPageSetupModel}).
      *
      * @public
      */
@@ -173,6 +172,18 @@ export class Section {
     }
 
     /**
+     * The document this section was cloned from, until it is attached elsewhere.
+     *
+     * @returns {WordDocument | undefined} The source document, when this section is a clone.
+     * @private
+     */
+    takeCloneSource(): WordDocument | undefined {
+        const source: WordDocument | undefined = this.cloneSourceDocument;
+        this.cloneSourceDocument = undefined;
+        return source;
+    }
+
+    /**
      * @param {WordDocument} document - The document.
      * @returns {void} Nothing is returned.
      * @private
@@ -197,5 +208,30 @@ export class Section {
         this.paragraphsInstance.syncFromHost();
         this.tablesInstance.syncFromHost();
         this.blockContentControlsInstance.syncFromHost();
+    }
+
+    /**
+     * Create an independent copy of this section.
+     * Body content, headers, footers, and page setup are all cloned.
+     *
+     * The cloned section is detached and has no document owner until attached to a document.
+     * Its body, headers, and footers are owned by the cloned section.
+     *
+     * @returns {Section} Cloned section.
+     * @public
+     */
+    clone(): Section {
+        const clonedBody: Body = this.bodyInstance.clone();
+
+        let clonedPageSetup: SectionPropertiesModel | undefined;
+        if (this.pageSetupModel !== undefined && pageSetupCloneHook() !== undefined) {
+            clonedPageSetup = pageSetupCloneHook()(this.pageSetupModel);
+        }
+
+        // The constructor takes ownership of the cloned body's items.
+        const cloned: Section = new Section(undefined, clonedBody.listBlocks(), clonedPageSetup);
+        cloned.headersFootersInstance.cloneFrom(this.headersFootersInstance, cloned);
+        cloned.cloneSourceDocument = this.document;
+        return cloned;
     }
 }

@@ -9,6 +9,7 @@ import { editAction } from './crud-actions';
 import { getParentData, findChildrenRecords, isRemoteData, isOffline, isCountRequired, isCheckboxcolumn } from '../utils';
 import { TreeActionEventArgs } from '../models';
 import { RowDragEventArgs } from '../base';
+import { RowDropSettingsModel } from '../models/rowdrop-settings-model';
 
 /**
  * TreeGrid RowDragAndDrop module
@@ -48,7 +49,7 @@ export class RowDD {
     /** @hidden
      *
      */
-    public isMultipleGrid: string;
+    public isMultipleGrid: string | string[];
     /** @hidden
      * Indicates whether multiple TreeGrid instances are being managed or displayed.
      */
@@ -70,6 +71,19 @@ export class RowDD {
      */
     private hasDropItem: boolean = true;
     /** @hidden
+     * Normalized list of configured cross-grid drop target ids.
+     * Populated from `rowDropSettings.targetID` (string or string[]).
+     */
+    private targetIDs: string[];
+    /** @hidden
+     * Set form of `targetIDs` for O(1) membership checks.
+     */
+    private targetIDSet: Set<string>;
+    /** @hidden
+     * Resolved TreeGrid id of the drop target during a cross-grid move.
+     */
+    private resolvedTargetID: string;
+    /** @hidden
      * Indicates whether the item is being added to the bottom of the TreeGrid.
      */
     public isaddtoBottom: boolean = false;
@@ -85,6 +99,7 @@ export class RowDD {
         initializeTelemetryFeature('RowDD', 'TreeGrid');
         Grid.Inject(GridDragDrop);
         this.parent = parent;
+        this.refreshTargetIDs();
         this.addEventListener();
     }
 
@@ -118,6 +133,103 @@ export class RowDD {
         this.parent.on(events.rowsRemove, this.rowsRemoved, this);
     }
 
+    /**
+     * Rebuilds `targetIDs` and `targetIDSet` from the current
+     * `rowDropSettings.targetID` (string or string[]). Non-string non-array
+     * values and undefined/null collapse to an empty list.
+     *
+     * @returns {void}
+     * @hidden
+     */
+    public refreshTargetIDs(): void {
+        const raw: string | string[] = this.parent.rowDropSettings.targetID as string | string[];
+        let ids: string[] = [];
+        if (typeof raw === 'string') {
+            ids = [raw];
+        } else if (Array.isArray(raw)) {
+            ids = (raw as string[]).filter((id: string) => typeof id === 'string' && id.length > 0);
+        }
+        this.targetIDs = ids;
+        this.targetIDSet = new Set(ids);
+    }
+
+    /**
+     * Resolves the actual drop target grid id from the drop event's DOM target.
+     *
+     * @param {EventTarget} eventTarget - The drag/drop event's args.target.
+     * @returns {string} The matched TreeGrid id, or `undefined`.
+     * @hidden
+     */
+    public resolveDropTargetID(eventTarget: EventTarget): string {
+        if (!eventTarget) {
+            return undefined;
+        }
+        const dropElement: Element = parentsUntil(eventTarget as Element, 'e-treegrid');
+        if (dropElement && this.targetIDSet.has(dropElement.id)) {
+            return dropElement.id;
+        }
+        return undefined;
+    }
+
+    /**
+     * Returns true when any ancestor of `eventTarget` has an id in `targetIDSet`.
+     *
+     * @param {EventTarget} eventTarget - The drag event's args.target.
+     * @returns {boolean} `true` if a configured target ancestor is found.
+     */
+    private isPointerOverConfiguredTarget(eventTarget: EventTarget): boolean {
+        if (!eventTarget || !this.targetIDSet.size) {
+            return false;
+        }
+        let node: Element = eventTarget as Element;
+        while (node && node !== document.body) {
+            if (this.targetIDSet.has(node.id)) {
+                return true;
+            }
+            node = node.parentElement;
+        }
+        return false;
+    }
+
+    /**
+     * Keeps the inner Grid's `rowDropSettings.targetID` in sync with the
+     * configured target that the pointer is currently over. The inner Grid's
+     * own row-drop logic uses a single string comparison
+     * (`grid.rowDropSettings.targetID === parentsUntil(target, 'e-grid').id`)
+     * to decide whether the drop is allowed. TreeGrid only ever feeds the
+     * first id of the array to the inner Grid (see `treegrid.ts`), so without
+     * this sync the inner Grid would only accept drops on the first configured
+     * target. Re-running on every drag event makes the comparison succeed for
+     * whichever configured grid the pointer is currently over.
+     *
+     * @param {EventTarget} eventTarget - The drag event's args.target.
+     * @returns {void}
+     * @hidden
+     */
+    public syncInnerGridTargetID(eventTarget: EventTarget): void {
+        if (!this.targetIDSet.size || !this.parent.grid || !this.parent.grid.rowDropSettings) {
+            return;
+        }
+        const gridTargetSetting: RowDropSettingsModel =
+            this.parent.grid.rowDropSettings as RowDropSettingsModel;
+        let pointerTargetID: string;
+        if (eventTarget) {
+            const dropElement: Element = parentsUntil(eventTarget as Element, 'e-treegrid');
+            if (dropElement && this.targetIDSet.has(dropElement.id)) {
+                pointerTargetID = dropElement.id;
+            }
+        }
+        // When the pointer is over a configured target, expose only that id to
+        // the inner Grid (suffix _gridcontrol matches the TreeGrid wrapper
+        // appended in treegrid.ts). Otherwise fall back to the first id; the
+        // inner Grid's DOM walk will then fail to match and the drop is
+        // rejected, preserving the legacy "drop outside target is invalid"
+        // semantics.
+        const syncTo: string = pointerTargetID || this.targetIDs[0];
+        if (gridTargetSetting.targetID !== syncTo + '_gridcontrol') {
+            gridTargetSetting.targetID = syncTo + '_gridcontrol';
+        }
+    }
 
     /**
      * Reorder the rows based on given indexes and position
@@ -574,9 +686,14 @@ export class RowDD {
             element.classList.contains('e-columnheader') ||
             element.classList.contains('e-detailrow');
         if (isEmptyRow) { return; }
+        const viewLength: number = this.parent.getCurrentViewRecords().length;
+        if (!viewLength) { return; }
         const lastRow: HTMLTableRowElement = this.parent.enableVirtualization ?
-            this.parent.getRows()[this.parent.getCurrentViewRecords().length - 1] as HTMLTableRowElement :
-            this.parent.getRowByIndex(this.parent.getCurrentViewRecords().length - 1) as HTMLTableRowElement;
+            this.parent.getRows()[viewLength - 1] as HTMLTableRowElement :
+            this.parent.getRowByIndex(viewLength - 1) as HTMLTableRowElement;
+        // Guard against empty-filter or empty-data states where there is no last row
+        // to compare against (e.g. when a filter is applied and no records remain).
+        if (!lastRow) { return; }
         const isNotLastRow: boolean = lastRow.getAttribute('data-uid') !== element.getAttribute('data-uid');
         const canRemove: boolean = isNotLastRow || this.dropPosition === 'topSegment';
         const lastRowBorderElement: HTMLElement = this.parent.element.getElementsByClassName('e-lastrow-border')[0] as HTMLElement;
@@ -625,7 +742,7 @@ export class RowDD {
             rowPositionHeight = (rowEle as HTMLElement).offsetTop - scrollTop;
         }
         // let scrollTop = (tObj.grid.scrollModule as any).content.scrollTop;
-        if (this.parent.enableVirtualization) {
+        if (this.parent.enableVirtualization || this.parent.enableDomVirtualization) {
             rowTop = rowEle.getBoundingClientRect().top;
         }
         else {
@@ -642,7 +759,7 @@ export class RowDD {
         const touchEvent: TouchEvent = getObject('originalEvent.event', args);
         let posy: number = (mouseEvent.type === 'mousemove') ? mouseEvent.pageY : ((!isNullOrUndefined(touchEvent) &&
             !isNullOrUndefined(touchEvent.changedTouches)) ? touchEvent.changedTouches[0].pageY : null);
-        if (this.parent.enableVirtualization) {
+        if (this.parent.enableVirtualization || this.parent.enableDomVirtualization) {
             posy = (mouseEvent.type === 'mousemove') ? mouseEvent.clientY : ((!isNullOrUndefined(touchEvent) &&
                 !isNullOrUndefined(touchEvent.changedTouches)) ? touchEvent.changedTouches[0].clientY : null);
         }
@@ -880,8 +997,10 @@ export class RowDD {
         if (!trElement) { return; }
         const isEmptyRow: boolean = trElement && (trElement.classList.contains('e-emptyrow') ||
             trElement.classList.contains('e-columnheader') || trElement.classList.contains('e-detailrow'));
+        const currentViewRecords: ITreeData[] = this.parent.enableDomVirtualization ?
+            this.parent.currentDomVirtualRecords : this.parent.getCurrentViewRecords();
         if (isEmptyRow) { return; }
-        if (trElement && !isEmptyRow && this.parent.getRows()[this.parent.getCurrentViewRecords().length - 1].getAttribute('data-uid') ===
+        if (trElement && !isEmptyRow && this.parent.getRows()[currentViewRecords.length - 1].getAttribute('data-uid') ===
             trElement.getAttribute('data-uid')) {
             const bottomborder: HTMLElement = this.parent.createElement('div', { className: 'e-lastrow-border' });
             const gridcontentEle: Element = this.parent.getContent();
@@ -1053,6 +1172,11 @@ export class RowDD {
      */
     private Rowdraging(args: RowDragEventArgs): void {
         const tObj: TreeGrid = this.parent;
+        this.refreshTargetIDs();
+        // Keep the inner Grid's rowDropSettings.targetID in sync with the
+        // configured target under the pointer so its single-id check passes
+        // for any of the configured grids, not just the first one.
+        this.syncInnerGridTargetID(args.target);
         const cloneElement: HTMLElement = this.parent.element.querySelector('.e-cloneproperties') as HTMLElement;
         if (!cloneElement) { return; }
         cloneElement.style.cursor = '';
@@ -1073,9 +1197,9 @@ export class RowDD {
         }
         const dragRecords: ITreeData[] = Array.isArray(args.data) ? args.data : [args.data as ITreeData];
         let droppedRecord: ITreeData = tObj.getCurrentViewRecords()[parseInt(rowIdx.toString(), 10)];
-        if (tObj.rowDropSettings.targetID) {
+        if (this.targetIDSet.size) {
             const dropElement: Element = parentsUntil(args.target, 'e-treegrid');
-            if (dropElement && dropElement.id === this.parent.rowDropSettings.targetID) {
+            if (dropElement && this.targetIDSet.has(dropElement.id)) {
                 const srcControl: TreeGrid = (<EJ2Intance>dropElement).ej2_instances[0];
                 droppedRecord = srcControl.getCurrentViewRecords()[parseInt(rowIdx.toString(), 10)];
             }
@@ -1086,15 +1210,15 @@ export class RowDD {
         if (!tObj.rowDropSettings.targetID && this.canDrop && !isNullOrUndefined(args.rows[0])) {
             tObj.rowDragAndDropModule.updateIcon(args.rows, rowIdx, args);
         }
-        if (tObj.rowDropSettings.targetID) {
+        if (this.targetIDSet.size) {
             const dropElement: Element = parentsUntil(args.target, 'e-treegrid');
-            if (dropElement && dropElement.id === this.parent.rowDropSettings.targetID) {
+            if (dropElement && this.targetIDSet.has(dropElement.id)) {
                 const srcControl: TreeGrid = (<EJ2Intance>dropElement).ej2_instances[0];
                 srcControl.rowDragAndDropModule.updateIcon(args.rows, rowIdx, args);
                 this.dropPosition = srcControl.rowDragAndDropModule.dropPosition;
             }
         }
-        if (args.target && closest(args.target, '#' + tObj.rowDropSettings.targetID)) {
+        if (args.target && this.isPointerOverConfiguredTarget(args.target)) {
             const dropElement: Element = parentsUntil(args.target, 'e-treegrid');
             if (!dropElement) {
                 cloneElement.style.cursor = 'default';
@@ -1118,7 +1242,9 @@ export class RowDD {
         }
         const tObj: TreeGrid = this.parent;
         const parentItem: string = 'parentItem';
-        if (!tObj.rowDropSettings.targetID) {
+        this.refreshTargetIDs();
+        this.resolvedTargetID = this.resolveDropTargetID(args.target);
+        if (!this.targetIDSet.size) {
             if (parentsUntil(args.target, 'e-content') || (this.dropPosition === 'Invalid' || !this.canDrop)) {
                 if (this.parent.element.querySelector('.e-errorelem') || !this.canDrop) {
                     this.dropPosition = 'Invalid';
@@ -1135,19 +1261,23 @@ export class RowDD {
                     if (tObj.isLocalData) {
                         tObj.flatData = this.orderToIndex(tObj.flatData);
                     }
+                    // Use the TreeGrid's `refresh()` so that `flatData` is rebuilt
+                    // and `grid.dataSource` is reassigned. The inner Grid's
+                    // `refresh()` alone leaves the renderer's view cache pointing
+                    // at stale row objects (white space on scroll, missing rows
+                    // after Add).
                     tObj.grid.refresh();
                     this.removeRowBorders();
                 }
             }
         } else {
-            if (args.target && closest(args.target, '#' + tObj.rowDropSettings.targetID) || parentsUntil(args.target, 'e-treegrid') &&
-                parentsUntil(args.target, 'e-treegrid').id === tObj.rowDropSettings.targetID || args.target && document.getElementById(tObj.rowDropSettings.targetID)) {
+            if (args.target && (this.resolvedTargetID || this.isPointerOverConfiguredTarget(args.target))) {
                 if (this.parent.element.querySelector('.e-errorelem') || !this.canDrop) {
                     this.dropPosition = 'Invalid';
                 }
                 setValue('dropPosition', this.dropPosition, args);
                 tObj.trigger(events.rowDrop, args);
-                if (!args.cancel && tObj.rowDropSettings.targetID) {
+                if (!args.cancel && this.resolvedTargetID) {
                     if (this.dropPosition === 'Invalid' && !this.canDrop) {
                         return;
                     }
@@ -1172,7 +1302,11 @@ export class RowDD {
                 const record: Object[] = []; const rows: HTMLTableRowElement[] = [];
                 record.push(data); rows.push(row);
                 const parentUniqueID: string = 'parentUniqueID';
+                const draggedRecord: any = args.data[0];
                 data = getParentData(this.parent, args.data[0][`${parentUniqueID}`]);
+                if (!data && draggedRecord.parentItem) {
+                    data = draggedRecord.parentItem;
+                }
                 rowIndex = this.parent.grid.getRowIndexByPrimaryKey(data[`${primaryKeyField}`]);
                 const parentrow: HTMLTableRowElement = this.parent.getRows()[parseInt(rowIndex.toString(), 10)];
                 record.push(data); rows.push(parentrow);
@@ -1196,6 +1330,43 @@ export class RowDD {
                     requestType: 'rowDragAndDrop'
                 });
             }
+        }
+        // Clear per-drop state on the source grid. Without this reset, subsequent
+        // CRUD / sort / scroll / re-drag operations trip over references to records
+        // that no longer exist in this TreeGrid (they were moved out to the target).
+        // Symptoms observed without the reset:
+        //   * TreeGrid `args.promise.then is not a function` on add — args object
+        //     accumulates a stale `draggedRecord` reference through the crudAction
+        //     notification chain (normal-edit.js:384 reads args.promise).
+        //   * Add row not rendered in TreeGrid — `parentData` rebuild in edit.ts:388
+        //     walks over stale parentItem references.
+        //   * White space after scroll — flatData index walk passes over the stale
+        //     `draggedRecord` slot, which now points outside the live records.
+        //   * `querySelectorAll` error in inner Grid's row-reorder.js — the inner Grid
+        //     reuses `this.isDropGrid` set from the first drag, then walks to a row
+        //     index that no longer exists after the source's flatData shifted.
+        this.resetDragDropState();
+    }
+
+    /**
+     * Resets all per-row-drag-drop bookkeeping state on this module and on the
+     * parent TreeGrid. Called at the end of `rowDropped` so that the source grid
+     * starts from a clean slate for the next operation.
+     *
+     * @returns {void}
+     */
+    private resetDragDropState(): void {
+        this.draggedRecord = undefined;
+        this.droppedRecord = undefined;
+        this.dropPosition = undefined;
+        this.isDraggedWithChild = false;
+        this.isMultipleGrid = undefined;
+        this.canDrop = true;
+        // Clear any records the row-drag pipeline pushed into the TreeGrid-level
+        // modifiedRecords list. Indent/outdent explicitly clears this list (see
+        // treegrid.ts:3098); row drag must do the same.
+        if (Array.isArray(this.parent[`${this.modifiedRecords}`])) {
+            (this.parent[`${this.modifiedRecords}`] as ITreeData[]).length = 0;
         }
     }
 
@@ -1225,7 +1396,7 @@ export class RowDD {
         const targetIndex: number = isNaN(this.getTargetIdx(targetRow)) ? 0 : this.getTargetIdx(targetRow);
         const dropElement: Element = parentsUntil(args.target, 'e-treegrid');
         let srcControl: TreeGrid;
-        if (dropElement && dropElement.id === this.parent.rowDropSettings.targetID && !isRemoteData(this.parent)
+        if (dropElement && this.targetIDSet.has(dropElement.id) && !isRemoteData(this.parent)
             && !isCountRequired(this.parent)) {
             srcControl = (<EJ2Intance>dropElement).ej2_instances[0];
             let records: ITreeData[] = tObj.getSelectedRecords();
@@ -1262,6 +1433,15 @@ export class RowDD {
                     }
                 }
             }
+            // Use the TreeGrid's `refresh()` (not the inner Grid's) so that
+            // `flatData` is rebuilt and `grid.dataSource` is reassigned. The inner
+            // Grid's `refresh()` alone leaves the renderer's view cache pointing at
+            // stale row objects, which surfaces as:
+            //   * Add-row not rendering — `refreshRow()` in normal-edit.js:554 looks
+            //     up the new row by UID in the stale cache and finds nothing.
+            //   * White space on scroll — the renderer's `totalRecords` was computed
+            //     before the source's records were removed by `rowsRemove`, so the
+            //     content height is now larger than the actual visible rows.
             tObj.grid.refresh();
             srcControl.grid.refresh();
             if ((<ITreeData[]>srcControl.grid.dataSource).length > 1) {
@@ -1276,6 +1456,15 @@ export class RowDD {
         }
         if (isCountRequired(this.parent)) {
             srcControl = (<EJ2Intance>dropElement).ej2_instances[0];
+            // Use the TreeGrid's `refresh()` (not the inner Grid's) so that
+            // `flatData` is rebuilt and `grid.dataSource` is reassigned. The inner
+            // Grid's `refresh()` alone leaves the renderer's view cache pointing at
+            // stale row objects, which surfaces as:
+            //   * Add-row not rendering — `refreshRow()` in normal-edit.js:554 looks
+            //     up the new row by UID in the stale cache and finds nothing.
+            //   * White space on scroll — the renderer's `totalRecords` was computed
+            //     before the source's records were removed by `rowsRemove`, so the
+            //     content height is now larger than the actual visible rows.
             tObj.grid.refresh();
             srcControl.grid.refresh();
         }
@@ -1381,7 +1570,7 @@ export class RowDD {
             }
             this.parent[this.modifiedRecords].push(args.data[0], droppedRecord);
             let count: number = 0;
-            const multiplegrid: string = this.parent.rowDropSettings.targetID;
+            const multiplegrid: string | string[] = this.parent.rowDropSettings.targetID;
             this.isMultipleGrid = multiplegrid;
             if (!multiplegrid) {
                 this.ensuredropPosition(dragRecords, droppedRecord);

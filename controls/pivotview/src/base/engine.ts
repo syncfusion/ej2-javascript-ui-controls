@@ -2,10 +2,11 @@ import { extend, Internationalization, NumberFormatOptions, DateFormatOptions } 
 import { isNullOrUndefined, L10n, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { PivotUtil } from './util';
-import { Sorting, SummaryTypes, FilterType, LabelOperators, ValueOperators, Operators, DateOperators, Condition, RenderMode } from './types';
+import { Sorting, SummaryTypes, FilterType, LabelOperators, ValueOperators, Operators, DateOperators, Condition, RenderMode, TopBottomMode } from './types';
 import { DateGroup, GroupType, ProviderType, DataSourceType } from './types';
 import { HeaderCollection, AggregateEventArgs, GrandTotalsPosition, HeadersSortEventArgs, SubTotalsPosition } from '../common';
 import { evaluateExpression } from './expression-evaluator';
+import { isAdjacentToken, ADJACENT_PREVIOUS, buildNeighbourMap, findBaseMember, calculateAdjacent, IAdjacentResult, INeighbours } from './adjacent-difference';
 
 /**
  * PivotEngine is used to manipulate the relational or Multi-Dimensional data as pivoting values.
@@ -22,6 +23,8 @@ export class PivotEngine {
     public pivotValues: IAxisSet[][];
     /** @hidden */
     public aggregatedValueMatrix: IMatrix2D = [];
+    /** @hidden */
+    public adjacentErrors: string[] = [];
     /** @hidden */
     public headerContent: IGridValues;
     /** @hidden */
@@ -146,6 +149,10 @@ export class PivotEngine {
     /** @hidden */
     public valueAxisFields: IValueFields = {};
     /** @hidden */
+    public valueFieldHasDuplicates: boolean = false;
+    /** @hidden */
+    public valueInstanceFieldList: { [instanceId: string]: IField } = {};
+    /** @hidden */
     public data: IDataSet[] | string[][] = [];
     /** @hidden */
     public actualData: IDataSet[] | string[][] = [];
@@ -175,7 +182,23 @@ export class PivotEngine {
     private enableOptimizedRendering: boolean = false;
     private groupedDataType: { [key: string]: string } = {};
     private customProperties: ICustomProperties;
+    /**
+     * Diagnostics collected when a date-typed value field is configured with an
+     * unsupported summary type (PIVOT-MINMAX-008). Cleared on each engine render;
+     * consumed by the controls to raise `actionFailure`.
+     *
+     * @hidden
+     */
+    public dateAggregateErrors: { fieldName: string; type: string }[] = [];
     private tabularPivotValues: IAxisSet[][] = [];
+    /**
+     * Contributing record count of the typed date Min/Max cell currently framed
+     * by `updateRowData`; written onto the value cell as `dateCount` for the
+     * pivot chart count fallback (PIVOT-MINMAX, OQ-MINMAX-06).
+     *
+     * @hidden
+     */
+    private dateCellValueCount: number;
     private sortMembers: { [key: string]: Object } = {};
     private isFilterAction: boolean = false;
     private levelMap: { [key: number]: number } = {};
@@ -229,6 +252,7 @@ export class PivotEngine {
         this.getValueCellInfo = fn;
         this.getHeaderSortInfo = onHeadersSort;
         this.customProperties = customProperties;
+        this.dateAggregateErrors = [];
         if (this.fieldList) {
             for (let i: number = 0, j: IFormatSettings[] = dataSource.formatSettings; i < j.length; i++) {
                 if (!this.formatFields[j[i as number].name] && this.fieldList[j[i as number].name]) {
@@ -256,6 +280,7 @@ export class PivotEngine {
         this.enableValueSorting = false;
         this.headerCollection = { rowHeaders: [], columnHeaders: [], rowHeadersCount: 0, columnHeadersCount: 0 };
         this.aggregatedValueMatrix = [];
+        this.adjacentErrors = [];
         this.rMembers = [];
         this.cMembers = [];
         this.memberCnt = -1;
@@ -349,6 +374,7 @@ export class PivotEngine {
             this.dataSourceSettings.columns = dataSource.columns ? dataSource.columns : [];
             this.dataSourceSettings.filters = dataSource.filters ? dataSource.filters : [];
             this.dataSourceSettings.values = dataSource.values ? dataSource.values : [];
+            this.updateValueFieldKeyFlag();
             this.dataSourceSettings.formatSettings = dataSource.formatSettings ? dataSource.formatSettings : [];
             this.dataSourceSettings.groupSettings = dataSource.groupSettings ? dataSource.groupSettings : [];
             this.dataSourceSettings.calculatedFieldSettings = dataSource.calculatedFieldSettings ? dataSource.calculatedFieldSettings : [];
@@ -370,13 +396,16 @@ export class PivotEngine {
             this.rowValuesLength = this.valueAxis === 1 ? this.dataSourceSettings.values.length : 1;
             this.colValuesLength = this.valueAxis === 0 ? this.dataSourceSettings.values.length : 1;
             this.valueSortSettings = dataSource.valueSortSettings ||
-                { rowSortOrder: 'None', rowHeaderText: '', columnSortOrder: 'None', columnHeaderText: '', headerDelimiter: '.', columnIndex: undefined,
+                { rowSortOrder: 'None', rowHeaderText: '', columnSortOrder: 'None', columnHeaderText: '', headerDelimiter: '##', columnIndex: undefined,
                     rowIndex: undefined } as IValueSortSettings;
+            this.dataSourceSettings.valueSortSettings = this.valueSortSettings;
             this.pageSettings = customProperties ? (customProperties.pageSettings ? customProperties.pageSettings : this.pageSettings)
                 : undefined;
             this.allowDataCompression = customProperties && customProperties.allowDataCompression;
             this.savedFieldList = customProperties ? customProperties.savedFieldList : undefined;
             this.getFieldList(fields, this.enableSort, dataSource.allowValueFilter);
+            this.updateValueFieldKeyFlag();
+            this.validateDateValueAggregates();
             this.removeIrrelevantFields(Object.keys(this.fieldList));
             this.fillFieldMembers();
             this.updateSortSettings(dataSource.sortSettings, this.enableSort);
@@ -412,10 +441,11 @@ export class PivotEngine {
                         report[pos as number].splice(cnt, 1);
                         cnt--;
                     } else if (pos === 2) {
-                        this.measureNames[fieldName as string] =
-                        report[pos as number][cnt as number].caption ? report[pos as number][cnt as number].caption : fieldName;
-                        this.measureNames[report[pos as number][cnt as number].caption ?
-                            report[pos as number][cnt as number].caption : fieldName] = fieldName;
+                        const instKey: string = this.getValueFieldKey(report[pos as number][cnt as number]);
+                        const displayCaption: string = report[pos as number][cnt as number].caption ?
+                            report[pos as number][cnt as number].caption : fieldName;
+                        this.measureNames[instKey as string] = displayCaption;
+                        this.measureNames[displayCaption as string] = fieldName;
                     }
                 }
             }
@@ -456,6 +486,7 @@ export class PivotEngine {
             this.enableSort = dataSource.enableSorting === undefined ? true : dataSource.enableSorting;
             this.dataSourceSettings.fieldMapping = dataSource.fieldMapping ? dataSource.fieldMapping : [];
             this.dataSourceSettings.values = dataSource.values ? dataSource.values : [];
+            this.updateValueFieldKeyFlag();
             this.dataSourceSettings.rows = dataSource.rows ? dataSource.rows : [];
             this.dataSourceSettings.columns = dataSource.columns ? dataSource.columns : [];
             this.dataSourceSettings.filters = dataSource.filters ? dataSource.filters : [];
@@ -478,6 +509,26 @@ export class PivotEngine {
             return item.type === 'Count' || item.type === 'DistinctCount';
         }).map((item: IFieldOptions) => { return item.name; });
         const hasCountField: boolean = countFields.length > 0;
+        // Date-typed value fields are excluded from compression pre-folding: their
+        // raw records must be kept so Min/Max/Count/DistinctCount stay correct
+        // after a later summary change (PIVOT-MINMAX, design Q7 option A).
+        const hasDateValueField: boolean = dataSourceSettings.values.some((item: IFieldOptions) => {
+            const mapping: IFieldOptions = (dataSourceSettings.fieldMapping || []).find((field: IFieldOptions) => field.name === item.name);
+            const dataType: string = (mapping && mapping.dataType) ? mapping.dataType.toLowerCase() : undefined;
+            if (this.isDateType(dataType)) {
+                return true;
+            }
+            // Without an explicit mapping, infer from the first raw record value.
+            const firstRecord: IDataSet = (this.data as IDataSet[])[0];
+            const firstFieldKey: string | number = this.fieldKeys[item.name as string] as string | number;
+            // Field key comes from the engine's own field metadata; the record lookup is not a user-controlled injection sink.
+            // eslint-disable-next-line security/detect-object-injection
+            const firstValue: string | number | Date = firstRecord ? firstRecord[firstFieldKey] : undefined;
+            return firstValue instanceof Date;
+        });
+        if (hasDateValueField) {
+            return this.data;
+        }
         const realData: IDataSet[] | string[][] = this.data;
         const headerFields: string[] =
             dataSourceSettings.rows.concat(dataSourceSettings.columns.concat(dataSourceSettings.filters)).map((item: IFieldOptions) => {
@@ -801,6 +852,7 @@ export class PivotEngine {
                                                 showNoDataItems: actualField.showNoDataItems,
                                                 baseField: actualField.baseField,
                                                 baseItem: actualField.baseItem,
+                                                allowCrossGroupCalculation: actualField.allowCrossGroupCalculation,
                                                 showFilterIcon: actualField.showFilterIcon,
                                                 showSortIcon: actualField.showSortIcon,
                                                 showEditIcon: actualField.showEditIcon,
@@ -1067,6 +1119,7 @@ export class PivotEngine {
                                         showNoDataItems: actualField.showNoDataItems,
                                         baseField: actualField.baseField,
                                         baseItem: actualField.baseItem,
+                                        allowCrossGroupCalculation: actualField.allowCrossGroupCalculation,
                                         showSubTotals: actualField.showValueTypeIcon,
                                         allowDragAndDrop: actualField.allowDragAndDrop,
                                         showFilterIcon: actualField.showFilterIcon,
@@ -1088,6 +1141,7 @@ export class PivotEngine {
                                         showNoDataItems: customGroupField.showNoDataItems,
                                         baseField: customGroupField.baseField,
                                         baseItem: customGroupField.baseItem,
+                                        allowCrossGroupCalculation: customGroupField.allowCrossGroupCalculation,
                                         showRemoveIcon: customGroupField.showRemoveIcon,
                                         showSubTotals: customGroupField.showValueTypeIcon,
                                         allowDragAndDrop: customGroupField.allowDragAndDrop,
@@ -1329,7 +1383,9 @@ export class PivotEngine {
                         baseField: (field && 'baseField' in field) ?
                             field.baseField : undefined,
                         baseItem: (field && 'baseItem' in field) ?
-                            field.baseItem : undefined
+                            field.baseItem : undefined,
+                        allowCrossGroupCalculation: (field && 'allowCrossGroupCalculation' in field) ?
+                            field.allowCrossGroupCalculation : undefined
                     };
                     this.updateMembersOrder(key);
                 }
@@ -1399,7 +1455,9 @@ export class PivotEngine {
                     baseField: (field && 'baseField' in field) ?
                         field.baseField : undefined,
                     baseItem: (field && 'baseItem' in field) ?
-                        field.baseItem : undefined
+                        field.baseItem : undefined,
+                    allowCrossGroupCalculation: (field && 'allowCrossGroupCalculation' in field) ?
+                        field.allowCrossGroupCalculation : undefined
                 };
                 this.updateMembersOrder(key);
                 index++;
@@ -1412,9 +1470,26 @@ export class PivotEngine {
     private getFieldType(field: IFieldOptions): string {
         if (!isNullOrUndefined(field.dataType) && field.dataType !== 'number' && field.type !== 'DistinctCount' &&
             field.type !== 'Count') {
-            field.type = 'Count';
+            // Date-typed fields additionally keep Min/Max (typed date summaries); every
+            // other type is still coerced to Count as before. Diagnostics for a
+            // date-typed value field configured with an unsupported summary are
+            // collected by validateDateValueAggregates, which knows the axis; this
+            // path also runs for unbound fieldMapping entries whose model-level
+            // default `type: 'Sum'` must not raise a diagnostic (PIVOT-MINMAX-008).
+            field.type = (this.isDateType(field.dataType) && (field.type === 'Min' || field.type === 'Max')) ?
+                field.type : 'Count';
         }
         return field.type;
+    }
+    /**
+     * Whether the given field data type denotes a date-typed field, whose
+     * Min/Max summaries are computed as typed date summaries (PIVOT-MINMAX).
+     *
+     * @param {string} dataType - The declared data type of the field.
+     * @returns {boolean} True when the type is `date` or `datetime`.
+     */
+    private isDateType(dataType: string): boolean {
+        return dataType === 'date' || dataType === 'datetime';
     }
     private updateMembersOrder(key: string): void {
         for (const sortInfo of this.dataSourceSettings.sortSettings) {
@@ -1456,6 +1531,7 @@ export class PivotEngine {
                 field.aggregateType = this.getFieldType(fields[cnt as number]);
                 field.baseField = fields[cnt as number].baseField;
                 field.baseItem = fields[cnt as number].baseItem;
+                field.allowCrossGroupCalculation = fields[cnt as number].allowCrossGroupCalculation;
                 field.allowDragAndDrop = fields[cnt as number].allowDragAndDrop;
                 field.showFilterIcon = fields[cnt as number].showFilterIcon;
                 field.showSortIcon = fields[cnt as number].showSortIcon;
@@ -2161,10 +2237,17 @@ export class PivotEngine {
                 if (rows[i as number].level === level) {
                     this.isValueFiltered = true;
                     this.fieldList[fieldName as string].isExcelFilter = true;
-                    let value: number = 0;
+                    let value: number | Date = 0;
                     const measure: string = filterSettings[fieldName as string].measure;
-                    const mPos: number = this.fieldList[measure as string].index;
-                    const aggregate: string = this.fieldList[measure as string].aggregateType;
+                    const measureEntry: IFieldOptions = this.getValueInstanceByMeasureName(measure) ||
+                        (this.fieldList[measure as string] ? {
+                            name: measure,
+                            type: this.fieldList[measure as string].aggregateType
+                        } as IFieldOptions : null);
+                    const mPos: number = (measureEntry && this.fieldList[measureEntry.name as string] &&
+                        !isNullOrUndefined(this.fieldList[measureEntry.name as string].index)) ?
+                        this.fieldList[measureEntry.name as string].index : 0;
+                    const aggregate: string = this.getEffectiveAggregate(measureEntry, measureEntry ? measureEntry.name : measure);
                     this.rawIndexObject = {};
                     value = (type === 'row' ? this.getAggregateValue(rows[i as number].index, columns.indexObject, mPos, aggregate, false) :
                         this.getAggregateValue(columns.index, rows[i as number].indexObject, mPos, aggregate, false));
@@ -2182,7 +2265,7 @@ export class PivotEngine {
                     if (this.getValueCellInfo) {
                         this.getValueCellInfo(cellDetails);
                     }
-                    value = cellDetails.value as number;
+                    value = cellDetails.value;
                     this.rawIndexObject = {};
                     const condition: string = filterSettings[fieldName as string].condition as string;
                     if (condition === 'Top' || condition === 'Bottom') {
@@ -2200,9 +2283,15 @@ export class PivotEngine {
                             rowFilterData[rowFilterData.length - 1].isLevelFiltered = true;
                         }
                     } else {
-                        const operand1: number = this.getParsedValue(measure, filterSettings[fieldName as string].value1 as string);
-                        const operand2: number = this.getParsedValue(measure, filterSettings[fieldName as string].value2 as string);
-                        if (!this.validateFilterValue(value, filterSettings[fieldName as string].condition as ValueOperators, operand1, operand2) && rows[i as number].type !== 'grand sum') {
+                        const isDateMeasure: boolean = (measureEntry && measureEntry.dataType) ?
+                            this.isDateType(measureEntry.dataType.toLowerCase()) :
+                            (this.fieldList[measure as string] ? this.isDateType(this.fieldList[measure as string].type as string) : false);
+                        const operand1: number = isDateMeasure ? this.getDateOperand(filterSettings[fieldName as string].value1) :
+                            this.getParsedValue(measure, filterSettings[fieldName as string].value1 as string);
+                        const operand2: number = isDateMeasure ? this.getDateOperand(filterSettings[fieldName as string].value2) :
+                            this.getParsedValue(measure, filterSettings[fieldName as string].value2 as string);
+                        const compareValue: number = value instanceof Date ? value.valueOf() : value as number;
+                        if (!this.validateFilterValue(compareValue, filterSettings[fieldName as string].condition as ValueOperators, operand1, operand2) && rows[i as number].type !== 'grand sum') {
                             const data: IAxisSet = this.removefilteredData(rows[i as number], this.valueFilteredData);
                             const row: IAxisSet = data ? data : rows[i as number];
                             this.validateFilteredParentData(row, this.valueFilteredData, allMember, 0, level, type);
@@ -2221,6 +2310,20 @@ export class PivotEngine {
                 }
             }
         }
+    }
+    /**
+     * Parses a value-filter operand of a date-typed measure into its epoch so the
+     * filter comparison works on the instant (PIVOT-MINMAX-009). Accepts a Date
+     * or a parseable date string; an invalid operand yields `NaN`, which never
+     * matches a comparison.
+     *
+     * @param {string | number | Date} operand - The configured filter operand.
+     * @returns {number} The epoch of the operand, or `NaN` when unparseable.
+     */
+    private getDateOperand(operand: string | number | Date): number {
+        const parsed: Date = (operand instanceof Date) ? operand :
+            (isNullOrUndefined(operand) || operand === '' ? undefined : new Date(operand as string));
+        return (parsed && !isNaN(parsed.valueOf())) ? parsed.valueOf() : NaN;
     }
     private getParsedValue(measure: string, value: string): number {
         const cValue: string = value ? value.toString() : '';
@@ -2249,37 +2352,118 @@ export class PivotEngine {
         }
         return filteredData;
     }
+    /**
+     * Validates a Top/Bottom value filter configuration (FR-022). A Percent
+     * value must be a base-10 integer from 1 to 100; a Sum threshold must be
+     * numeric and greater than 0; the mode must be Items, Percent or Sum (or
+     * missing); Sum is refused for a date-typed measure. Invalid filters log a
+     * development-mode warning and are not applied.
+     *
+     * @param {string} fieldName - The filtered field name.
+     * @param {IFilter} filter - The Top/Bottom value filter.
+     * @returns {boolean} True when the configuration is invalid and must not be applied.
+     */
+    private isInvalidTopBottomFilter(fieldName: string, filter: IFilter): boolean {
+        const mode: TopBottomMode = filter.mode || 'Items';
+        const value1: string = (filter.value1 === null || filter.value1 === undefined) ? '' : filter.value1.toString();
+        const globalScope: { process?: { env?: { NODE_ENV?: string } } } =
+            typeof window !== 'undefined' ? (window as unknown as { process?: { env?: { NODE_ENV?: string } } }) : undefined;
+        const nodeEnv: string = (globalScope && globalScope.process && globalScope.process.env) ?
+            globalScope.process.env.NODE_ENV : undefined;
+        if (['Items', 'Percent', 'Sum'].indexOf(mode) === -1) {
+            if (nodeEnv !== 'production') {
+                // eslint-disable-next-line no-console
+                console.warn('Warning: ' + `The value filter on field "${fieldName}" uses the mode "${mode}". ` +
+                    'The supported modes are Items, Percent, and Sum. The filter was not applied.');
+            }
+            return true;
+        }
+        if (mode === 'Percent') {
+            const isValidPercent: boolean = /^[0-9]+$/.test(value1) && parseInt(value1, 10) >= 1 && parseInt(value1, 10) <= 100;
+            if (!isValidPercent) {
+                if (nodeEnv !== 'production') {
+                    // eslint-disable-next-line no-console
+                    console.warn('Warning: ' + `The value filter on field "${fieldName}" has a percentage of "${value1}" in Percent mode. ` +
+                        'An integer percentage between 1 and 100 is required. The filter was not applied.');
+                }
+                return true;
+            }
+        }
+        if (mode === 'Sum') {
+            const threshold: number = isNaN(Number(value1)) ? NaN : this.getParsedValue(filter.measure, value1);
+            const isDateMeasure: boolean = (this.fieldList[filter.measure] ?
+                this.isDateType((this.fieldList[filter.measure].type || this.fieldList[filter.measure].aggregateType) as string) : false);
+            if (isDateMeasure) {
+                if (nodeEnv !== 'production') {
+                    // eslint-disable-next-line no-console
+                    console.warn('Warning: ' + `The value filter on field "${fieldName}" uses the Sum mode on the date-type measure "${filter.measure}". ` +
+                        'Sum is not supported for date measures. The filter was not applied.');
+                }
+                return true;
+            }
+            if (isNaN(threshold) || threshold <= 0) {
+                if (nodeEnv !== 'production') {
+                    // eslint-disable-next-line no-console
+                    console.warn('Warning: ' + `The value filter on field "${fieldName}" has a Sum threshold of "${value1}". ` +
+                        'A number greater than 0 is required. The filter was not applied.');
+                }
+                return true;
+            }
+        }
+        return false;
+    }
     private applyTopBottomFiltering(
         fieldName: string, level: number, members: IAxisSet[], filter: IFilter,
         parentLevelName: string, columns: IAxisSet, filterType: string
     ): Set<string> {
-        const cacheKey: string = fieldName + '_' + level + '_' + (parentLevelName || 'global') + '_' + (filter.condition as string) + '_' + (filter.measure as string) + '_' + (filter.value1 as string);
+        const mode: TopBottomMode = (filter.mode || 'Items') as TopBottomMode;
+        const cacheKey: string = fieldName + '_' + level + '_' + (parentLevelName || 'global') + '_' + (filter.condition as string) + '_' + (filter.measure as string) + '_' + (filter.value1 as string) + '_' + mode;
         if (this.topBottomFilterCache.has(cacheKey as string)) {
             const cached: Set<string> = this.topBottomFilterCache.get(cacheKey as string);
             this.topBottomFilterCache.delete(cacheKey as string);
             this.topBottomFilterCache.set(cacheKey as string, cached);
             return cached;
         }
-        let count: number;
-        const parsedValue: number = parseInt(filter.value1 as string, 10);
-        if (isNaN(parsedValue)) {
-            count = 10;
-        } else {
-            count = parsedValue;
-        }
         const topBottomSet: Set<string> = new Set<string>();
-        if (count <= 0) {
+        if (this.isInvalidTopBottomFilter(fieldName, filter)) {
+            // FR-022: an invalid configuration is not applied; every member at the level is retained.
+            for (let i: number = 0; i < members.length; i++) {
+                if (members[i as number].level === level && members[i as number].type !== 'grand sum' &&
+                    members[i as number].type !== 'sum') {
+                    topBottomSet.add(members[i as number].actualText as string);
+                }
+            }
             this.setTopBottomCacheEntry(cacheKey, topBottomSet);
             return topBottomSet;
         }
-        const memberValues: Array<{ memberId: string; memberName: string | number; aggregateValue: number; member: IAxisSet }> = [];
+        let count: number;
+        if (mode === 'Items') {
+            const parsedValue: number = parseInt(filter.value1 as string, 10);
+            if (isNaN(parsedValue)) {
+                count = 10;
+            } else {
+                count = parsedValue;
+            }
+            if (count <= 0) {
+                this.setTopBottomCacheEntry(cacheKey, topBottomSet);
+                return topBottomSet;
+            }
+        }
+        const memberValues: Array<{ memberId: string; memberName: string | number; aggregateValue: number | Date; member: IAxisSet }> = [];
         const rLen: number = members.length;
         const measure: string = filter.measure;
-        const mPos: number = this.fieldList[measure as string].index;
-        const aggregate: string = this.fieldList[measure as string].aggregateType;
+        const measureEntry: IFieldOptions = this.getValueInstanceByMeasureName(measure) ||
+            (this.fieldList[measure as string] ? {
+                name: measure,
+                type: this.fieldList[measure as string].aggregateType
+            } as IFieldOptions : null);
+        const mPos: number = (measureEntry && this.fieldList[measureEntry.name as string] &&
+            !isNullOrUndefined(this.fieldList[measureEntry.name as string].index)) ?
+            this.fieldList[measureEntry.name as string].index : 0;
+        const aggregate: string = this.getEffectiveAggregate(measureEntry, measureEntry ? measureEntry.name : measure);
         for (let i: number = 0; i < rLen; i++) {
             if (members[i as number].level === level && members[i as number].type !== 'grand sum' && members[i as number].type !== 'sum') {
-                let aggregateValue: number = 0;
+                let aggregateValue: number | Date = 0;
                 const member: IAxisSet = members[i as number];
                 this.rawIndexObject = {};
                 if (filterType === 'row') {
@@ -2297,22 +2481,58 @@ export class PivotEngine {
             }
         }
         const condition: string = filter.condition as string;
-        type MemberValueItem = { memberId: string; memberName: string | number; aggregateValue: number; member: IAxisSet };
+        type MemberValueItem = { memberId: string; memberName: string | number; aggregateValue: number | Date; member: IAxisSet };
+        // Date-typed Min/Max members sort chronologically via their epoch (PIVOT-MINMAX-009).
+        const toEpoch: Function = (val: number | Date): number => val instanceof Date ? val.valueOf() : val;
         const nonEmptyMembers: MemberValueItem[] = memberValues.filter(function (member: MemberValueItem): boolean {
             return member.aggregateValue !== undefined && member.aggregateValue !== null && member.aggregateValue !== 0;
         });
         if (condition === 'Top') {
             nonEmptyMembers.sort(function (a: MemberValueItem, b: MemberValueItem): number {
-                return b.aggregateValue - a.aggregateValue;
+                return toEpoch(b.aggregateValue) - toEpoch(a.aggregateValue);
             });
         } else if (condition === 'Bottom') {
             nonEmptyMembers.sort(function (a: MemberValueItem, b: MemberValueItem): number {
-                return a.aggregateValue - b.aggregateValue;
+                return toEpoch(a.aggregateValue) - toEpoch(b.aggregateValue);
             });
         }
         const len: number = Math.min(count, nonEmptyMembers.length);
-        for (let i: number = 0; i < len; i++) {
-            topBottomSet.add(nonEmptyMembers[i as number].memberId);
+        // Items/Percent: members tying with the cut-off member's value are retained too.
+        const includeBoundaryTies: (end: number) => number = (end: number): number => {
+            if (end <= 0 || end >= nonEmptyMembers.length) {
+                return Math.min(Math.max(end, 0), nonEmptyMembers.length);
+            }
+            const cutValue: number = toEpoch(nonEmptyMembers[end - 1].aggregateValue);
+            while (end < nonEmptyMembers.length && toEpoch(nonEmptyMembers[end as number].aggregateValue) === cutValue) {
+                end++;
+            }
+            return end;
+        };
+        if (mode === 'Percent') {
+            // BR-03: the percentage selects ceil(n%) of the eligible candidates.
+            const percent: number = parseInt(filter.value1 as string, 10);
+            const retainedCount: number = Math.ceil(nonEmptyMembers.length * percent / 100);
+            const percentEnd: number = includeBoundaryTies(retainedCount);
+            for (let i: number = 0; i < percentEnd; i++) {
+                topBottomSet.add(nonEmptyMembers[i as number].memberId);
+            }
+        } else if (mode === 'Sum') {
+            // BR-05: retain members in rank order until the running total reaches the threshold;
+            // the member that reaches or crosses it is retained. All are retained when unreachable.
+            const threshold: number = this.getParsedValue(filter.measure, filter.value1 as string);
+            let runningTotal: number = 0;
+            for (let i: number = 0; i < nonEmptyMembers.length; i++) {
+                topBottomSet.add(nonEmptyMembers[i as number].memberId);
+                runningTotal += toEpoch(nonEmptyMembers[i as number].aggregateValue);
+                if (runningTotal >= threshold) {
+                    break;
+                }
+            }
+        } else {
+            const itemsEnd: number = includeBoundaryTies(len);
+            for (let i: number = 0; i < itemsEnd; i++) {
+                topBottomSet.add(nonEmptyMembers[i as number].memberId);
+            }
         }
         this.setTopBottomCacheEntry(cacheKey, topBottomSet);
         return topBottomSet;
@@ -2508,6 +2728,7 @@ export class PivotEngine {
     }
     public generateGridData(
         dataSource: IDataOptions, requireDatasourceUpdate: boolean = false, isExport?: boolean, headerCollection?: HeaderCollection,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         isScrolled: boolean = false): void {
         if (isNullOrUndefined(headerCollection) && this.customProperties.isTabularLayout) {
             this.rowMaxLevel = 0;
@@ -2845,7 +3066,47 @@ export class PivotEngine {
         if (dataSource) {
             this.updateDataSourceSettings(dataSource, true);
         }
-        this.fieldList[field.name].aggregateType = field.type;
+        if (this.dataSourceSettings && this.dataSourceSettings.values) {
+            const matches: IFieldOptions[] = [];
+            for (let i: number = 0; i < this.dataSourceSettings.values.length; i++) {
+                if (this.dataSourceSettings.values[i as number].name === field.name) {
+                    matches.push(this.dataSourceSettings.values[i as number]);
+                }
+            }
+            if (matches.length === 1) {
+                matches[0].type = field.type;
+                this.fieldList[field.name as string].aggregateType = field.type;
+            } else if (matches.length > 1) {
+                // Resolve the aggregate-menu target instance by its instance identifier;
+                // only that instance's aggregation changes. The shared field-level
+                // aggregate type is left untouched so other instances (and future
+                // additions of the same field) keep their own aggregation.
+                let target: IFieldOptions = null;
+                for (let i: number = 0; i < matches.length; i++) {
+                    if (field.instanceId && matches[i as number] &&
+                        matches[i as number].instanceId === field.instanceId) {
+                        target = matches[i as number];
+                        break;
+                    }
+                }
+                if (isNullOrUndefined(target)) {
+                    for (let i: number = 0; i < matches.length; i++) {
+                        if (this.getValueFieldKey(matches[i as number]) === field.name) {
+                            target = matches[i as number];
+                            break;
+                        }
+                    }
+                }
+                if (isNullOrUndefined(target)) {
+                    target = matches[0];
+                }
+                target.type = field.type;
+            }
+        } else {
+            this.fieldList[field.name].aggregateType = field.type;
+        }
+        // Recompute instance metadata after the aggregation change.
+        this.updateValueFieldKeyFlag();
         this.rMembers = this.headerCollection.rowHeaders;
         this.cMembers = this.headerCollection.columnHeaders;
         if (this.allowDataCompression) {
@@ -3138,11 +3399,25 @@ export class PivotEngine {
         return { axis: axis, fields: fields, headers: headers, position: position };
     }
     /**
-     * It performs the updating engine.
+     * Removes a value-field instance and refreshes the engine.
      *
-     * @returns {void}
+     * @param {string} instanceId - Value-field instance identifier to remove.
+     * @returns {boolean} - True when removed; otherwise, false.
      * @hidden
      */
+    public removeValueInstance(instanceId: string): boolean {
+        const values: IFieldOptions[] = this.dataSourceSettings.values || [];
+        const index: number = values.findIndex((value: IFieldOptions) => value && value.instanceId === instanceId);
+        if (index < 0) {
+            return false;
+        }
+        values.splice(index, 1);
+        delete this.valueInstanceFieldList[instanceId as string];
+        this.updateValueFieldKeyFlag();
+        this.updateEngine();
+        return true;
+    }
+
     public updateEngine(): void {
         this.removeCount = 0;
         this.validateValueFields();
@@ -3414,9 +3689,11 @@ export class PivotEngine {
         let mIndex: number;
         let mType: string;
         let caption: string;
+        let captionInstance: IFieldOptions = null;
         for (let i: number = 0; i < this.dataSourceSettings.values.length; i++) {
             if (this.dataSourceSettings.values[i as number].caption === textArray[textArray.length - 1]) {
                 caption = this.dataSourceSettings.values[i as number].name;
+                captionInstance = this.dataSourceSettings.values[i as number];
                 break;
             } else {
                 caption = textArray[textArray.length - 1];
@@ -3431,7 +3708,9 @@ export class PivotEngine {
                 hText = hText === '' ? textArray[i as number] : (hText + this.valueSortSettings.headerDelimiter + textArray[i as number]);
             }
             mIndex = this.fieldList[caption as string].index;
-            mType = this.fieldList[caption as string].aggregateType;
+            const matchedInstance: IFieldOptions = captionInstance ||
+                this.getValueInstanceByMeasureName(caption);
+            mType = this.getEffectiveAggregate(matchedInstance, caption);
         } else {
             if (!this.dataSourceSettings.alwaysShowValueHeader || textArray.length === 1 || ((isRow &&
                 this.dataSourceSettings.valueAxis !== 'row') || (!isRow && this.dataSourceSettings.valueAxis !== 'column'))) {
@@ -3443,19 +3722,24 @@ export class PivotEngine {
             }
             if (!isNullOrUndefined(this.dataSourceSettings.valueSortSettings.measure) &&
                 this.dataSourceSettings.valueSortSettings.measure !== '') {
-                for (let i: number = 0; i < this.dataSourceSettings.values.length; i++) {
-                    if (this.dataSourceSettings.valueSortSettings.measure === this.dataSourceSettings.values[i as number].name) {
-                        mIndex = this.fieldList[this.dataSourceSettings.valueSortSettings.measure].index;
-                        mType = this.fieldList[this.dataSourceSettings.valueSortSettings.measure].aggregateType;
-                        break;
-                    } else {
-                        mIndex = this.fieldList[this.dataSourceSettings.values[0].name].index;
-                        mType = this.fieldList[this.dataSourceSettings.values[0].name].aggregateType;
-                    }
+                const sortMeasure: string = this.dataSourceSettings.valueSortSettings.measure;
+                const sortInstance: IFieldOptions = this.getValueInstanceByMeasureName(sortMeasure) ||
+                    (this.fieldList[sortMeasure as string] ? {
+                        name: sortMeasure,
+                        type: this.fieldList[sortMeasure as string].aggregateType
+                    } as IFieldOptions : null);
+                if (sortInstance && this.fieldList[sortInstance.name as string]) {
+                    mIndex = this.fieldList[sortInstance.name as string].index;
+                    mType = this.getEffectiveAggregate(sortInstance, sortInstance.name);
+                } else {
+                    const firstInstance: IFieldOptions = this.getValueInstanceByMeasureName(this.dataSourceSettings.values[0].name);
+                    mIndex = this.fieldList[this.dataSourceSettings.values[0].name].index;
+                    mType = this.getEffectiveAggregate(firstInstance, this.dataSourceSettings.values[0].name);
                 }
             } else {
+                const firstInstance: IFieldOptions = this.getValueInstanceByMeasureName(this.dataSourceSettings.values[0].name);
                 mIndex = this.fieldList[this.dataSourceSettings.values[0].name].index;
-                mType = this.fieldList[this.dataSourceSettings.values[0].name].aggregateType;
+                mType = this.getEffectiveAggregate(firstInstance, this.dataSourceSettings.values[0].name);
             }
         }
         return { hText, mIndex, mType };
@@ -3477,13 +3761,13 @@ export class PivotEngine {
         return member;
     }
     private sortByValueRow(rMembers: IAxisSet[], member: IAxisSet, sortOrder: Sorting, mIndex: number, mType: string): IAxisSet[] {
-        const aggreColl: { 'header': IAxisSet; 'value'?: number }[] = [];
+        const aggreColl: { 'header': IAxisSet; 'value'?: number | Date }[] = [];
         for (const header of rMembers) {
             if (header.type === 'grand sum') {
                 aggreColl.push({ 'header': header });
             } else {
                 this.rawIndexObject = {};
-                let value: number = this.getAggregateValue(header.index, member.indexObject, mIndex, mType, false);
+                let value: number | Date = this.getAggregateValue(header.index, member.indexObject, mIndex, mType, false);
                 const cellDetails: AggregateEventArgs = {
                     fieldName: this.fields[mIndex as number],
                     row: header,
@@ -4395,6 +4679,7 @@ export class PivotEngine {
                 }
                 const header: IAxisSet = PivotUtil.getFormattedHeader(row, this);
                 if (!this.isDrillThrough) {
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     const { index, indexObject, ...uiHeader } = header;
                     data[tnum as number][0] = uiHeader;
                 } else {
@@ -4565,8 +4850,15 @@ export class PivotEngine {
                 {
                     let baseField: string;
                     let baseItem: string;
-                    this.selectedHeaders.values.push(values[vln as number].name);
-                    if (values[vln as number].baseField && values[vln as number].baseItem) {
+                    const isAdjacent: boolean = isAdjacentToken(values[vln as number].baseItem);
+                    if (isAdjacent && this.getAdjacentAxis(values[vln as number], rows, columns)) {
+                        break;
+                    }
+                    if (isAdjacent && this.adjacentErrors.indexOf(values[vln as number].name) === -1) {
+                        this.adjacentErrors.push(values[vln as number].name);
+                    }
+                    this.selectedHeaders.values.push(this.getValueFieldKey(values[vln as number]));
+                    if (!isAdjacent && values[vln as number].baseField && values[vln as number].baseItem) {
                         baseField = values[vln as number].baseField;
                         baseItem = values[vln as number].baseItem;
                     } else if (this.valueAxis && (this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader) &&
@@ -4580,7 +4872,7 @@ export class PivotEngine {
                     let isHeaderSelected: boolean = false;
                     for (const row of rows) {
                         if (row.name === baseField) {
-                            this.getAggregatedHeaderData(rMembers, values[vln as number].name, baseItem, false, 'row', values[vln as number].type, this.selectedHeaders.selectedHeader, vln);
+                            this.getAggregatedHeaderData(rMembers, this.getValueFieldKey(values[vln as number]), baseItem, false, 'row', values[vln as number].type, this.selectedHeaders.selectedHeader, vln);
                             isHeaderSelected = true;
                             break;
                         }
@@ -4588,7 +4880,7 @@ export class PivotEngine {
                     if (!isHeaderSelected) {
                         for (const column of columns) {
                             if (column.name === baseField) {
-                                this.getAggregatedHeaderData(cMembers, values[vln as number].name, baseItem, false, 'column', values[vln as number].type, this.selectedHeaders.selectedHeader, vln);
+                                this.getAggregatedHeaderData(cMembers, this.getValueFieldKey(values[vln as number]), baseItem, false, 'column', values[vln as number].type, this.selectedHeaders.selectedHeader, vln);
                                 break;
                             }
                         }
@@ -4598,21 +4890,21 @@ export class PivotEngine {
             case 'PercentageOfParentRowTotal':
             case 'PercentageOfParentColumnTotal':
                 {
-                    this.selectedHeaders.values.push(values[vln as number].name);
-                    this.getAggregatedHeaderData((values[vln as number].type === 'PercentageOfParentRowTotal' ? rMembers : cMembers), values[vln as number].name, undefined, false, (values[vln as number].type === 'PercentageOfParentRowTotal' ? 'row' : 'column'), values[vln as number].type, this.selectedHeaders.selectedHeader, vln);
+                    this.selectedHeaders.values.push(this.getValueFieldKey(values[vln as number]));
+                    this.getAggregatedHeaderData((values[vln as number].type === 'PercentageOfParentRowTotal' ? rMembers : cMembers), this.getValueFieldKey(values[vln as number]), undefined, false, (values[vln as number].type === 'PercentageOfParentRowTotal' ? 'row' : 'column'), values[vln as number].type, this.selectedHeaders.selectedHeader, vln);
                 }
                 break;
             case 'RunningTotals':
             case 'PercentageOfRunningTotals':
                 {
-                    this.selectedHeaders.values.push(values[vln as number].name);
-                    this.getAggregatedHeaderData((this.valueAxis && (this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader) ? cMembers : rMembers), values[vln as number].name, undefined, false, (this.valueAxis && (this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader) ? 'column' : 'row'), values[vln as number].type, this.selectedHeaders.selectedHeader, vln);
+                    this.selectedHeaders.values.push(this.getValueFieldKey(values[vln as number]));
+                    this.getAggregatedHeaderData((this.valueAxis && (this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader) ? cMembers : rMembers), this.getValueFieldKey(values[vln as number]), undefined, false, (this.valueAxis && (this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader) ? 'column' : 'row'), values[vln as number].type, this.selectedHeaders.selectedHeader, vln);
                 }
                 break;
             case 'PercentageOfParentTotal':
                 {
                     let baseField: string;
-                    this.selectedHeaders.values.push(values[vln as number].name);
+                    this.selectedHeaders.values.push(this.getValueFieldKey(values[vln as number]));
                     if (values[vln as number].baseField) {
                         baseField = values[vln as number].baseField;
                     } else if (this.valueAxis && (this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader) &&
@@ -4625,7 +4917,7 @@ export class PivotEngine {
                     for (let len: number = rows.length, i: number = 0; i < len; i++) {
                         if (rows[i as number].name === baseField) {
                             const level: number = i >= this.measureIndex ? i + 1 : i;
-                            this.getAggregatedHeaderData(rMembers, values[vln as number].name, undefined, false, 'row', values[vln as number].type, this.selectedHeaders.selectedHeader, vln, level);
+                            this.getAggregatedHeaderData(rMembers, this.getValueFieldKey(values[vln as number]), undefined, false, 'row', values[vln as number].type, this.selectedHeaders.selectedHeader, vln, level);
                             isHeaderSelected = true;
                             break;
                         }
@@ -4637,7 +4929,7 @@ export class PivotEngine {
                                 if (!this.valueAxis && !this.isLastHeaderHasMeasures) {
                                     level = i >= this.measureIndex ? i + 1 : i;
                                 }
-                                this.getAggregatedHeaderData(cMembers, values[vln as number].name, undefined, false, 'column', values[vln as number].type, this.selectedHeaders.selectedHeader, vln, level);
+                                this.getAggregatedHeaderData(cMembers, this.getValueFieldKey(values[vln as number]), undefined, false, 'column', values[vln as number].type, this.selectedHeaders.selectedHeader, vln, level);
                                 break;
                             }
                         }
@@ -4764,6 +5056,7 @@ export class PivotEngine {
     }
     private applyAdvancedAggregate(rowheads: IAxisSet[], colheads: IAxisSet[], data: IAxisSet[][]): void {
         this.aggregatedValueMatrix = [];
+        const isAdjacentApplied: boolean = this.updateAdjacentAggregates(data);
         if (this.selectedHeaders.values.length > 0) {
             const pivotIndex: { [key: string]: [number, number] } = {};
             const colIndex: number[] = [];
@@ -4773,9 +5066,10 @@ export class PivotEngine {
                 if (data[rln as number] !== undefined && data[rln as number][0] !== undefined) {
                     if (!isIndexFilled) {
                         for (let clt: number = (data[rln as number] as IAxisSet[][]).length, cln: number = 0; cln < clt; cln++) {
-                            const actualText: string = (data[rln as number][cln as number] as IAxisSet).actualText as string;
+                            const cellToken: string = this.getValueCellKey(
+                                (data[rln as number][cln as number] as IAxisSet));
                             if ((data[rln as number][cln as number] as IAxisSet).axis === 'value' &&
-                                this.selectedHeaders.values.indexOf(actualText) !== -1) {
+                                this.selectedHeaders.values.indexOf(cellToken) !== -1) {
                                 colIndex.push(cln);
                                 isIndexFilled = true;
                             }
@@ -4786,7 +5080,8 @@ export class PivotEngine {
                     if (!isTotal) {
                         if (colIndex.length > 0 && (data[rln as number][colIndex[0]] as IAxisSet).axis === 'value' &&
                             this.selectedHeaders.values.indexOf(
-                                (data[rln as number][colIndex[0]] as IAxisSet).actualText as string) !== -1) {
+                                this.getValueCellKey(
+                                    (data[rln as number][colIndex[0]] as IAxisSet))) !== -1) {
                             rowIndex.push(rln);
                             for (const index of colIndex) {
                                 pivotIndex[rln + ',' + index] = [rln, index];
@@ -4807,8 +5102,176 @@ export class PivotEngine {
                 this.aggregatedValueMatrix[pivotIndex[index as string][0]][pivotIndex[index as string][1]] = 0;
             }
             this.updatePivotValues(true);
+        } else if (isAdjacentApplied) {
+            this.updatePivotValues(true);
+        }
+    }
+    private getAdjacentAxis(field: IFieldOptions, rows: IFieldOptions[], columns: IFieldOptions[]): string {
+        let baseField: string = field.baseField;
+        if (!baseField) {
+            baseField = this.valueAxis && (this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader) &&
+                columns.length > 0 ? columns[0].name : (rows.length > 0 ? rows[0].name : undefined);
+        }
+        for (const row of rows) {
+            if (row.name === baseField) {
+                return 'row';
+            }
+        }
+        for (const column of columns) {
+            if (column.name === baseField) {
+                return 'column';
+            }
+        }
+        return undefined;
+    }
+    private updateAdjacentAggregates(data: IAxisSet[][]): boolean {
+        const rows: IFieldOptions[] = this.dataSourceSettings.rows;
+        const columns: IFieldOptions[] = this.dataSourceSettings.columns;
+        const delimiter: string = this.valueSortSettings.headerDelimiter;
+        // Operands are the un-differenced base sums, indexed once so a result is never used as another cell's operand.
+        let cellIndex: { [key: string]: IAxisSet };
+        let isApplied: boolean = false;
+        for (const field of this.dataSourceSettings.values) {
+            if ((field.type !== 'DifferenceFrom' && field.type !== 'PercentageOfDifferenceFrom') ||
+                !isAdjacentToken(field.baseItem)) {
+                continue;
+            }
+            const axis: string = this.getAdjacentAxis(field, rows, columns);
+            if (!axis) {
+                continue;
+            }
+            isApplied = true;
+            if (!cellIndex) {
+                cellIndex = {};
+                for (const row of data) {
+                    for (const cell of (row ? row : []) as IAxisSet[]) {
+                        if (cell && cell.axis === 'value') {
+                            cellIndex[this.getAdjacentCellKey(cell.rowHeaders as string, cell.columnHeaders as string, cell)] = cell;
+                        }
+                    }
+                }
+            }
+            const baseField: string = field.baseField || (axis === 'row' ? rows[0].name : columns[0].name);
+            // With paging or virtualization the displayed headers are only a window; the neighbours come from the full result.
+            const fullRows: IAxisSet[] = this.getAdjacentFullHeaders('row');
+            const fullColumns: IAxisSet[] = this.getAdjacentFullHeaders('column');
+            const neighbours: { [key: string]: INeighbours } = buildNeighbourMap(
+                axis === 'row' ? fullRows : fullColumns, baseField, !!field.allowCrossGroupCalculation);
+            let headerIndex: { row: { [key: string]: IAxisSet }; column: { [key: string]: IAxisSet } };
+            const fieldKey: string = this.getValueFieldKey(field);
+            const isPrevious: boolean = field.baseItem === ADJACENT_PREVIOUS;
+            const isPercent: boolean = field.type === 'PercentageOfDifferenceFrom';
+            for (let rowPos: number = 0; rowPos < data.length; rowPos++) {
+                for (let colPos: number = 0; data[rowPos as number] && colPos < data[rowPos as number].length; colPos++) {
+                    const cell: IAxisSet = data[rowPos as number][colPos as number] as IAxisSet;
+                    if (!cell || cell.axis !== 'value' || this.getValueCellKey(cell) !== fieldKey) {
+                        continue;
+                    }
+                    const ownPath: string = (axis === 'row' ? cell.rowHeaders : cell.columnHeaders) as string;
+                    const member: string = findBaseMember(ownPath, delimiter, neighbours);
+                    let result: IAdjacentResult = { kind: 'empty' };
+                    if (member) {
+                        const neighbour: string = isPrevious ? neighbours[member as string].previous : neighbours[member as string].next;
+                        if (neighbour !== undefined) {
+                            const path: string = neighbour + ownPath.substring(member.length);
+                            const rowPath: string = axis === 'row' ? path : cell.rowHeaders as string;
+                            const columnPath: string = axis === 'row' ? cell.columnHeaders as string : path;
+                            const operand: IAxisSet = cellIndex[this.getAdjacentCellKey(rowPath, columnPath, cell)];
+                            let operandValue: number = operand ? operand.actualValue : undefined;
+                            if (!operand && this.isPagingOrVirtualizationEnabled) {
+                                headerIndex = headerIndex ? headerIndex : { row: this.indexAdjacentHeaders(fullRows),
+                                    column: this.indexAdjacentHeaders(fullColumns) };
+                                operandValue = this.getAdjacentOffWindowValue(
+                                    headerIndex.row[rowPath || ''], headerIndex.column[columnPath || ''], field);
+                            }
+                            result = calculateAdjacent(cell.actualValue, operandValue, isPercent);
+                        }
+                    }
+                    this.setAdjacentCell(cell, result, rowPos, colPos, fieldKey, isPercent);
+                }
+            }
+            this.updateAdjacentCaption(data, field, fieldKey, baseField, isPrevious, isPercent);
+        }
+        return isApplied;
+    }
+    private getAdjacentFullHeaders(axis: string): IAxisSet[] {
+        const full: IAxisSet[] = this.isPagingOrVirtualizationEnabled && this.headerCollection ?
+            (axis === 'row' ? this.headerCollection.rowHeaders : this.headerCollection.columnHeaders) : undefined;
+        return full && full.length > 0 ? full : (axis === 'row' ? this.rMembers : this.cMembers);
+    }
+    private indexAdjacentHeaders(headers: IAxisSet[], index?: { [key: string]: IAxisSet }): { [key: string]: IAxisSet } {
+        index = index ? index : {};
+        for (const header of headers) {
+            index[header.type === 'grand sum' ? '' : header.valueSort.levelName as string] = header;
+            if (header.members && header.members.length > 0) {
+                this.indexAdjacentHeaders(header.members, index);
+            }
+        }
+        return index;
+    }
+    private getAdjacentOffWindowValue(rowHeader: IAxisSet, columnHeader: IAxisSet, field: IFieldOptions): number {
+        if (!rowHeader || !columnHeader) {
+            return undefined;
+        }
+        const position: number = this.fieldList[field.name] && !isNullOrUndefined(this.fieldList[field.name].index) ?
+            this.fieldList[field.name].index : 0;
+        return this.getAggregateValue(
+            rowHeader.index, columnHeader.indexObject, position, this.getEffectiveAggregate(field, field.name), true);
+    }
+    private updateAdjacentCaption(
+        data: IAxisSet[][], field: IFieldOptions, fieldKey: string, baseField: string, isPrevious: boolean, isPercent: boolean): void {
+        const baseCaption: string = this.fieldList[baseField as string] && this.fieldList[baseField as string].caption ?
+            this.fieldList[baseField as string].caption : baseField;
+        const valueCaption: string = field.caption ? field.caption : field.name;
+        const key: string = 'adjacent' + (isPrevious ? 'Previous' : 'Next') + (isPercent ? 'Percent' : '') + 'Caption';
+        const caption: string = (this.localeObj ? this.localeObj.getConstant(key) :
+            (isPercent ? '% ' : '') + 'Difference from ' + (isPrevious ? 'previous' : 'next') + ' {0} of {1}')
+            .replace('{0}', baseCaption).replace('{1}', valueCaption);
+        // Value-header cells carry no instance id, so they are located from the value cells of this field.
+        let headerRow: number = -1;
+        for (let i: number = 0; i < data.length && data[i as number] && !data[i as number][0]; i++) {
+            headerRow = i;
+        }
+        for (const row of data) {
+            for (let pos: number = 0; row && pos < row.length; pos++) {
+                const cell: IAxisSet = row[pos as number] as IAxisSet;
+                if (!cell || cell.axis !== 'value' || this.getValueCellKey(cell) !== fieldKey) {
+                    continue;
+                }
+                const header: IAxisSet = this.valueAxis ? row[0] as IAxisSet :
+                    (headerRow >= 0 ? data[headerRow as number][pos as number] as IAxisSet : undefined);
+                if (header && this.getValueCellKey(header) === fieldKey && (header.axis === 'row' || header.axis === 'column')) {
+                    header.formattedText = caption;
+                }
+            }
+        }
+    }
+    private getAdjacentCellKey(rowPath: string, columnPath: string, cell: IAxisSet): string {
+        return (rowPath || '') + '\u0000' + (columnPath || '') + '\u0000' + this.getValueCellKey(cell);
+    }
+    private setAdjacentCell(
+        cell: IAxisSet, result: IAdjacentResult, rowPos: number, colPos: number, fieldKey: string, isPercent: boolean): void {
+        // Chart and export read the matrix, then cell.value. A displayed difference must replace the base sum in both, and an
+        // empty or not-applicable cell must carry no number at all (a gap, never a zero).
+        if (result.kind === 'value') {
+            if (!this.aggregatedValueMatrix[rowPos as number]) {
+                this.aggregatedValueMatrix[rowPos as number] = [];
+            }
+            this.aggregatedValueMatrix[rowPos as number][colPos as number] = result.value;
+            cell.value = result.value;
         } else {
-            return;
+            cell.value = undefined;
+        }
+        if (result.kind === 'empty') {
+            cell.formattedText = this.emptyCellTextContent;
+        } else if (result.kind === 'notApplicable') {
+            cell.formattedText = this.localeObj ? this.localeObj.getConstant('adjacentNotApplicable') : 'N/A';
+        } else if (isPercent) {
+            cell.formattedText = this.globalize.formatNumber(result.value, {
+                format: 'P', maximumFractionDigits: this.getPercentFormat(this.formatFields, fieldKey)
+            });
+        } else {
+            cell.formattedText = this.getFormattedValue(result.value, fieldKey).formattedText;
         }
     }
 
@@ -4825,7 +5288,7 @@ export class PivotEngine {
                         if (rowheads[rowIdx as number].valueSort[headerItem.valueSort.levelName as string] &&
                             rowheads[rowIdx as number].level === headerItem.level &&
                             rowheads[rowIdx as number].type !== 'grand sum' &&
-                            currentSet.axis === 'value' && currentSet.actualText === name) {
+                            currentSet.axis === 'value' && (this.valueFieldHasDuplicates ? currentSet.instanceId === name : currentSet.actualText === name)) {
                             grandTotal += this.extractRunningTotalValue(currentSet);
                         }
                     }
@@ -4848,7 +5311,7 @@ export class PivotEngine {
                         const currentSet: IAxisSet = data[rowIdx as number][colIdx as number] as IAxisSet;
                         if (activeColumn[colIdx as number] !== undefined &&
                             activeColumn[colIdx as number].valueSort[headerItem.valueSort.levelName as string] &&
-                            currentSet.axis === 'value' && currentSet.actualText === name) {
+                            currentSet.axis === 'value' && (this.valueFieldHasDuplicates ? currentSet.instanceId === name : currentSet.actualText === name)) {
                             if (activeColumn[colIdx as number].type !== 'grand sum') {
                                 grandTotal += this.extractRunningTotalValue(currentSet);
                             }
@@ -4877,10 +5340,11 @@ export class PivotEngine {
     }
 
     private extractRunningTotalValue(currentSet: IAxisSet): number {
+        const cellValue: number = currentSet.value instanceof Date ? currentSet.value.valueOf() : currentSet.value;
         return (!currentSet.showSubTotals && !(
             !isNullOrUndefined(currentSet.actualValue) && isNaN(currentSet.actualValue))) ?
-            currentSet.actualValue : (!isNullOrUndefined(currentSet.value) &&
-            !isNaN(currentSet.value)) ? currentSet.value : 0;
+            currentSet.actualValue : (!isNullOrUndefined(cellValue) &&
+            !isNaN(cellValue)) ? cellValue : 0;
     }
 
     private isRowSubtotal(rowIdx: number, rowheads: IAxisSet[]): boolean {
@@ -4906,7 +5370,7 @@ export class PivotEngine {
                             rowheads[rowIdx as number].valueSort[headerItem.valueSort.levelName as string] &&
                             rowheads[rowIdx as number].level === headerItem.level &&
                             currentSet.axis === 'value' &&
-                            currentSet.actualText === name) {
+                            (this.valueFieldHasDuplicates ? currentSet.instanceId === name : currentSet.actualText === name)) {
                             if (rowheads[rowIdx as number].type !== 'grand sum') {
                                 accumulatedValue += this.extractRunningTotalValue(currentSet);
                             }
@@ -4940,7 +5404,7 @@ export class PivotEngine {
                         if (activeColumn[colIdx as number] !== undefined &&
                             activeColumn[colIdx as number].valueSort[headerItem.valueSort.levelName as string] &&
                             currentSet.axis === 'value' &&
-                            currentSet.actualText === name) {
+                            (this.valueFieldHasDuplicates ? currentSet.instanceId === name : currentSet.actualText === name)) {
                             if (activeColumn[colIdx as number].type !== 'grand sum') {
                                 accumulatedValue += this.extractRunningTotalValue(currentSet);
                             }
@@ -4985,7 +5449,9 @@ export class PivotEngine {
                                 if (rowheads[rln as number].valueSort[uniqueName as string]) {
                                     activeValues = rowheads[rln as number];
                                     if (this.valueAxis === 0 || (this.valueAxis && data[rln as number] && data[rln as number][1] &&
-                                        (data[rln as number][1] as IAxisSet).actualText === name)) {
+                                        (this.valueFieldHasDuplicates ?
+                                            (data[rln as number][1] as IAxisSet).instanceId === name :
+                                            (data[rln as number][1] as IAxisSet).actualText === name))) {
                                         selectedRowValues = data[rln as number] as IAxisSet[];
                                     } else {
                                         selectedRowValues = [];
@@ -5006,7 +5472,9 @@ export class PivotEngine {
                     let len: number = columnHeaders.length;
                     while (len--) {
                         const axisObj: IAxisSet = (columnHeaders[len as number] as IAxisSet[])[colIndex[0]];
-                        const cLevelName: string = axisObj.actualText as string;
+                        const cLevelName: string = this.valueFieldHasDuplicates ?
+                            ((axisObj.instanceId as string) || (axisObj.actualText as string)) :
+                            (axisObj.actualText as string);
                         if (this.selectedHeaders.values.indexOf(cLevelName) === -1) {
                             activeColumn = columnHeaders[len as number] as IAxisSet[];
                             len = 0;
@@ -5019,7 +5487,7 @@ export class PivotEngine {
                                 activeValues = activeColumn[cln as number];
                                 for (let len: number = data.length, i: number = 0; i < len; i++) {
                                     const axisObj: IAxisSet[] = (data[i as number] as IAxisSet[]);
-                                    if (axisObj !== undefined && axisObj[0] !== undefined && (axisObj[cln as number] as IAxisSet).axis === 'value' && this.selectedHeaders.values.indexOf((axisObj[cln as number] as IAxisSet).actualText as string) !== -1) {
+                                    if (axisObj !== undefined && axisObj[0] !== undefined && (axisObj[cln as number] as IAxisSet).axis === 'value' && this.selectedHeaders.values.indexOf(this.getValueCellKey((axisObj[cln as number] as IAxisSet))) !== -1) {
                                         isSelectedColumn = true;
                                         selectedColumnValues[i as number] = axisObj[cln as number] as IAxisSet;
                                         rowindexCollection.push(i);
@@ -5036,7 +5504,7 @@ export class PivotEngine {
                                     activeValues = activeColumn[cln as number];
                                     for (let lnt: number = data.length, j: number = 0; j < lnt; j++) {
                                         const axisObj: IAxisSet[] = (data[j as number] as IAxisSet[]);
-                                        if (axisObj !== undefined && axisObj[0] !== undefined && (axisObj[cln as number] as IAxisSet).axis === 'value' && this.selectedHeaders.values.indexOf((axisObj[cln as number] as IAxisSet).actualText as string) !== -1) {
+                                        if (axisObj !== undefined && axisObj[0] !== undefined && (axisObj[cln as number] as IAxisSet).axis === 'value' && this.selectedHeaders.values.indexOf(this.getValueCellKey((axisObj[cln as number] as IAxisSet))) !== -1) {
                                             isSelectedColumn = true;
                                             // selectedColumnValues[i as number] = axisObj[cln as number] as IAxisSet;
                                             rowindexCollection.push(j);
@@ -5063,7 +5531,7 @@ export class PivotEngine {
                                             rowheads[rln as number].level === activeValues.level && rowheads[rln as number].type !== 'grand sum') {
                                             for (const index of colIndex) {
                                                 const currentSet: IAxisSet = data[rln as number][index as number] as IAxisSet;
-                                                if (currentSet.axis === 'value' && currentSet.actualText === name) {
+                                                if (currentSet.axis === 'value' && (this.valueFieldHasDuplicates ? currentSet.instanceId === name : currentSet.actualText === name)) {
                                                     indexCollection.push([rln, index]);
                                                     if (pivotIndex[rln + ',' + index]) {
                                                         delete pivotIndex[rln + ',' + index];
@@ -5084,7 +5552,7 @@ export class PivotEngine {
                                         rowheads[rlen as number].level === activeValues.level) {
                                         for (const index of colIndex) {
                                             const currentSet: IAxisSet = data[rlen as number][index as number] as IAxisSet;
-                                            if (currentSet.axis === 'value' && currentSet.actualText === name) {
+                                            if (currentSet.axis === 'value' && (this.valueFieldHasDuplicates ? currentSet.instanceId === name : currentSet.actualText === name)) {
                                                 indexCollection.push([rlen, index]);
                                                 if (pivotIndex[rlen + ',' + index]) {
                                                     delete pivotIndex[rlen + ',' + index];
@@ -5116,7 +5584,7 @@ export class PivotEngine {
                                 // 0 : (cVal / (selectedRowValues[index[1]] as IAxisSet).value));
                                 cVal = (actualValue === 0 ? 0 : (cVal / actualValue));
                                 this.aggregatedValueMatrix[index[0]][index[1]] = cVal;
-                                currentSet.formattedText = currentSet.showSubTotals ? (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: 'P', maximumFractionDigits: this.getPercentFormat(this.formatFields, currentSet.actualText as string) }) : this.emptyCellTextContent) : currentSet.formattedText;
+                                currentSet.formattedText = currentSet.showSubTotals ? (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: 'P', maximumFractionDigits: this.getPercentFormat(this.formatFields, (this.valueFieldHasDuplicates ? ((currentSet.instanceId as string) || (currentSet.actualText as string)) : (currentSet.actualText as string))) }) : this.emptyCellTextContent) : currentSet.formattedText;
                             }
                         }
                     } else {
@@ -5129,7 +5597,7 @@ export class PivotEngine {
                                         activeColumn[cln as number].level === activeValues.level && activeColumn[cln as number].type !== 'grand sum') {
                                         for (const index of rowindexCollection) {
                                             const currentSet: IAxisSet = data[index as number][cln as number] as IAxisSet;
-                                            if (currentSet.axis === 'value' && currentSet.actualText === name) {
+                                            if (currentSet.axis === 'value' && (this.valueFieldHasDuplicates ? currentSet.instanceId === name : currentSet.actualText === name)) {
                                                 isSelectedColumn = true;
                                                 indexCollection.push([index, cln]);
                                                 if (pivotIndex[index + ',' + cln]) {
@@ -5153,7 +5621,7 @@ export class PivotEngine {
                                         activeColumn[clen as number].level === activeValues.level) {
                                         for (const index of rowindexCollection) {
                                             const currentSet: IAxisSet = data[index as number][clen as number] as IAxisSet;
-                                            if (currentSet.axis === 'value' && currentSet.actualText === name) {
+                                            if (currentSet.axis === 'value' && (this.valueFieldHasDuplicates ? currentSet.instanceId === name : currentSet.actualText === name)) {
                                                 isSelectedColumn = true;
                                                 indexCollection.push([index, clen]);
                                                 if (pivotIndex[index + ',' + clen]) {
@@ -5179,9 +5647,13 @@ export class PivotEngine {
                                     selectedRow.index, selectedColumn.indexObject, this.fieldList[name as string].index,
                                     headers.type, false);
                             } else {
-                                selectedColumnValue = (selectedColumnValues[index[0]] as IAxisSet).value;
+                                selectedColumnValue = ((selectedColumnValues[index[0]] as IAxisSet).value instanceof Date ?
+                                    (selectedColumnValues[index[0]] as IAxisSet).value.valueOf() :
+                                    (selectedColumnValues[index[0]] as IAxisSet).value as number);
                             }
-                            let cVal: number = currentSet.value - selectedColumnValue;
+                            const currentSetValue: number = currentSet.value instanceof Date ?
+                                (currentSet.value as Date).valueOf() : currentSet.value as number;
+                            let cVal: number = currentSetValue - selectedColumnValue;
                             cVal = isNaN(cVal) ? 0 : cVal;
                             if (!this.aggregatedValueMatrix[index[0]]) {
                                 this.aggregatedValueMatrix[index[0]] = [];
@@ -5191,9 +5663,11 @@ export class PivotEngine {
                                     this.getFormattedValue(cVal, name).formattedText;
                                 this.aggregatedValueMatrix[index[0]][index[1]] = cVal;
                             } else {
-                                cVal = ((selectedColumnValues[index[0]] as IAxisSet).value === 0 ?
-                                    0 : (cVal / (selectedColumnValues[index[0]] as IAxisSet).value));
-                                currentSet.formattedText = (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: 'P', maximumFractionDigits: this.getPercentFormat(this.formatFields, currentSet.actualText as string) }) : this.emptyCellTextContent);
+                                const denominatorValue: number = (selectedColumnValues[index[0]] as IAxisSet).value instanceof Date ?
+                                    ((selectedColumnValues[index[0]] as IAxisSet).value as Date).valueOf() :
+                                    (selectedColumnValues[index[0]] as IAxisSet).value as number;
+                                cVal = (denominatorValue === 0 ? 0 : (cVal / denominatorValue));
+                                currentSet.formattedText = (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: 'P', maximumFractionDigits: this.getPercentFormat(this.formatFields, (this.valueFieldHasDuplicates ? ((currentSet.instanceId as string) || (currentSet.actualText as string)) : (currentSet.actualText as string))) }) : this.emptyCellTextContent);
                                 this.aggregatedValueMatrix[index[0]][index[1]] = cVal;
                             }
                         }
@@ -5215,7 +5689,7 @@ export class PivotEngine {
                                         rowheads[i as number].level === item.level) {
                                         for (const index of colIndex) {
                                             const currentSet: IAxisSet = data[i as number][index as number] as IAxisSet;
-                                            if (currentSet.axis === 'value' && currentSet.actualText === name) {
+                                            if (currentSet.axis === 'value' && (this.valueFieldHasDuplicates ? currentSet.instanceId === name : currentSet.actualText === name)) {
                                                 indexCollection.push([i, index]);
                                                 if (pivotIndex[i + ',' + index]) {
                                                     delete pivotIndex[i + ',' + index];
@@ -5237,9 +5711,11 @@ export class PivotEngine {
                             } else {
                                 selectedRowValue = selectedRowValues[i[1]] ? (selectedRowValues[i[1]] as IAxisSet).actualValue : 0;
                             }
-                            let cVal: number = currentSet.value / selectedRowValue;
+                            const currentSetValue: number = currentSet.value instanceof Date ?
+                                (currentSet.value as Date).valueOf() : currentSet.value as number;
+                            let cVal: number = currentSetValue / selectedRowValue;
                             cVal = isNaN(cVal) ? 0 : cVal;
-                            currentSet.formattedText = currentSet.showSubTotals ? (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: 'P', maximumFractionDigits: this.getPercentFormat(this.formatFields, currentSet.actualText as string) }) : this.emptyCellTextContent) : currentSet.formattedText;
+                            currentSet.formattedText = currentSet.showSubTotals ? (cVal !== 0 ? this.globalize.formatNumber(cVal, { format: 'P', maximumFractionDigits: this.getPercentFormat(this.formatFields, (this.valueFieldHasDuplicates ? ((currentSet.instanceId as string) || (currentSet.actualText as string)) : (currentSet.actualText as string))) }) : this.emptyCellTextContent) : currentSet.formattedText;
                             if (!this.aggregatedValueMatrix[i[0]]) {
                                 this.aggregatedValueMatrix[i[0]] = [];
                             }
@@ -5257,7 +5733,7 @@ export class PivotEngine {
                                             data[index as number][0] as IAxisSet).hasChild;
                                         if (!isTotals) {
                                             const currentSet: IAxisSet = data[index as number][j as number] as IAxisSet;
-                                            if (currentSet.axis === 'value' && currentSet.actualText === name) {
+                                            if (currentSet.axis === 'value' && (this.valueFieldHasDuplicates ? currentSet.instanceId === name : currentSet.actualText === name)) {
                                                 isSelectedColumn = true;
                                                 indexCollection.push([index, j]);
                                                 if (pivotIndex[index + ',' + j]) {
@@ -5282,11 +5758,15 @@ export class PivotEngine {
                                 selectedColValue = this.getAggregateValue(
                                     selectedRow.index, selectedCol.indexObject, this.fieldList[name as string].index, headers.type, false);
                             } else {
-                                selectedColValue = (selectedColumnValues[i[0]] as IAxisSet).value;
+                                selectedColValue = ((selectedColumnValues[i[0]] as IAxisSet).value instanceof Date ?
+                                    (selectedColumnValues[i[0]] as IAxisSet).value.valueOf() :
+                                    (selectedColumnValues[i[0]] as IAxisSet).value as number);
                             }
-                            let val: number = currentSet.value / selectedColValue;
+                            const currentSetValue: number = currentSet.value instanceof Date ?
+                                (currentSet.value as Date).valueOf() : currentSet.value as number;
+                            let val: number = currentSetValue / selectedColValue;
                             val = isNaN(val) ? 0 : val;
-                            currentSet.formattedText = (val !== 0 ? this.globalize.formatNumber(val, { format: 'P', maximumFractionDigits: this.getPercentFormat(this.formatFields, currentSet.actualText as string) }) : this.emptyCellTextContent);
+                            currentSet.formattedText = (val !== 0 ? this.globalize.formatNumber(val, { format: 'P', maximumFractionDigits: this.getPercentFormat(this.formatFields, (this.valueFieldHasDuplicates ? ((currentSet.instanceId as string) || (currentSet.actualText as string)) : (currentSet.actualText as string))) }) : this.emptyCellTextContent);
                             if (!this.aggregatedValueMatrix[i[0]]) {
                                 this.aggregatedValueMatrix[i[0]] = [];
                             }
@@ -5300,7 +5780,7 @@ export class PivotEngine {
                     if (isRowBaseField) {
                         this.accumulateRowBasedRunningValues(
                             colIndex, rowIndex, rowheads, data, name, selectedHeaderCollection, pivotIndex,
-                            (accumulatedValue: number, _colIdx: number) => ({
+                            (accumulatedValue: number): { formattedText: string; actualValue: number } => ({
                                 formattedText: accumulatedValue === 0 ? '' : this.getFormattedValue(accumulatedValue, name).formattedText,
                                 actualValue: accumulatedValue
                             })
@@ -5327,7 +5807,7 @@ export class PivotEngine {
                         );
                         this.accumulateRowBasedRunningValues(
                             colIndex, rowIndex, rowheads, data, name, selectedHeaderCollection, pivotIndex,
-                            (accumulatedValue: number, colIdx: number) => {
+                            (accumulatedValue: number, colIdx: number): { formattedText: string; actualValue: number } => {
                                 const grandTotal: number = columnTotals[colIdx.toString()] || 0;
                                 return this.convertRunningTotalToPercentage(accumulatedValue, grandTotal, name);
                             }
@@ -5392,12 +5872,16 @@ export class PivotEngine {
     private updateRowData(
         rows: IAxisSet[], columns: IAxisSet[], tnum: number, data: IAxisSet[][], vln: number, rln: number,
         cln: number, dln: number, actCnt: number, rTotal: IAxisSet, cTotal: IAxisSet): void {
-        const mPos: number = this.fieldList[this.dataSourceSettings.values[vln as number].name].index;
-        const aggregate: string = this.fieldList[this.dataSourceSettings.values[vln as number].name].aggregateType;
-        const field: string = this.dataSourceSettings.values[vln as number].name;
+        // Read aggregation from the value instance.
+        const valueInstance: IFieldOptions = this.dataSourceSettings.values[vln as number];
+        const field: string = valueInstance.name;
+        const fieldKey: string = this.getValueFieldKey(valueInstance);
+        const aggregate: string = this.getEffectiveAggregate(valueInstance, field);
+        const mPos: number = (this.fieldList[field as string] && !isNullOrUndefined(this.fieldList[field as string].index)) ?
+            this.fieldList[field as string].index : vln;
         let gTotalIndex: [IAxisSet, IAxisSet][] = [];
         const totalValues: { [key: string]: number } = {};
-        let value: number = 0;
+        let value: number | Date = 0;
         let actualValue: number = 0;
         // let isLeast: boolean = isLeastNode && (vln === vlt - 1);
         switch (aggregate) {
@@ -5446,12 +5930,22 @@ export class PivotEngine {
             break;
         default:
             {
-                const val: number = this.getAggregateValue(
-                    rows[rln as number].index, columns[cln as number].indexObject, mPos, aggregate, false);
+                const val: number | Date = this.getAggregateValue(
+                    rows[rln as number].index, columns[cln as number].indexObject, mPos, aggregate, false) as number | Date;
                 value = (rows[rln as number].members.length > 0 && rows[rln as number].hasChild && rows[rln as number].isDrilled &&
                     ((!isNullOrUndefined(rows[rln as number].showSubTotals) && !rows[rln as number].showSubTotals) ||
                         !this.dataSourceSettings.showSubTotals || !this.dataSourceSettings.showRowSubTotals)) ? undefined : val;
-                actualValue = val;
+                actualValue = ((val as Object) instanceof Date) ? (val as Date).valueOf() : val as number;
+                // Typed date Min/Max cell: also record the contributing record count
+                // so the pivot chart can plot counts for a date-only report
+                // (PIVOT-MINMAX, OQ-MINMAX-06 count fallback).
+                if ((val as Object) instanceof Date) {
+                    this.dateCellValueCount = (rows[rln as number].index && rows[rln as number].index.length) ?
+                        this.getAggregateValue(rows[rln as number].index, columns[cln as number].indexObject, mPos, 'Count', false) :
+                        undefined;
+                } else {
+                    this.dateCellValueCount = undefined;
+                }
             }
             break;
         }
@@ -5488,11 +5982,12 @@ export class PivotEngine {
         let formattedText: string = subTotal ?
             '' : (value === undefined) ? this.emptyCellTextContent :
                 (aggregate === 'Count' || aggregate === 'DistinctCount') ? value.toLocaleString() :
-                    this.getFormattedValue(value, field).formattedText;
-        if (!isNaN(value) && !isNullOrUndefined(value) && (['PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal']).indexOf(aggregate) >= 0) {
-            formattedText = this.globalize.formatNumber(value, { format: 'P', maximumFractionDigits: this.getPercentFormat(this.formatFields, cellDetails.fieldName) });
+                    this.getFormattedValue(value, this.getValueFormatKey(valueInstance)).formattedText;
+        if (!isNaN(value as number) && !isNullOrUndefined(value) &&
+            (['PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal']).indexOf(aggregate) >= 0) {
+            formattedText = this.globalize.formatNumber(value as number, { format: 'P', maximumFractionDigits: this.getPercentFormat(this.formatFields, this.getValueFormatKey(valueInstance)) });
         } else if (!subTotal &&
-            isNaN(value) && !isNullOrUndefined(value) &&
+            isNaN(value as number) && !isNullOrUndefined(value) &&
             (['PopulationStDev', 'SampleStDev', 'PopulationVar', 'SampleVar']).indexOf(aggregate) !== -1) {
             formattedText = '#DIV/0!';
             value = 0;
@@ -5501,13 +5996,17 @@ export class PivotEngine {
         formattedText = (cellDetails.skipFormatting ? isNullOrUndefined(value) ?
             this.emptyCellTextContent : value.toString() : formattedText);
         data[tnum as number][dln as number] = this.valueContent[actCnt as number][dln as number] = {
-            axis: 'value', actualText: field, indexObject: this.isDrillThrough ? this.rawIndexObject : {},
+            axis: 'value', actualText: field, instanceId: this.valueFieldHasDuplicates ? fieldKey : undefined,
+            indexObject: this.isDrillThrough ? this.rawIndexObject : {},
             rowHeaders: rows[rln as number].type === 'grand sum' ? '' : rows[rln as number].valueSort.levelName,
             columnHeaders: columns[cln as number].type === 'grand sum' ? '' : columns[cln as number].valueSort.levelName,
             formattedText: formattedText, value: value,
             hierarchyName: columns[cln as number].hierarchyName,
             actualValue: actualValue,
-            rowIndex: tnum, colIndex: dln, isSum: isSum, isGrandSum: isGrand, showSubTotals: !subTotal
+            rowIndex: tnum, colIndex: dln, isSum: isSum, isGrandSum: isGrand, showSubTotals: !subTotal,
+            // Contributing record count of a typed date Min/Max cell; consumed by
+            // the pivot chart count fallback (PIVOT-MINMAX, OQ-MINMAX-06).
+            dateCount: this.dateCellValueCount
         };
         this.rawIndexObject = {};
     }
@@ -5536,6 +6035,7 @@ export class PivotEngine {
                     rowIndex: !this.valueAxis ? (headerInfo && levelIndex <= headerInfo.rowIndex ?
                         (headerInfo.rowIndex + 1) : levelIndex) : 0,
                     actualText: field.name,
+                    instanceId: PivotUtil.getOrGenerateInstanceId(field, vln),
                     formattedText: name,
                     level: 0,
                     valueSort: {},
@@ -5836,10 +6336,12 @@ export class PivotEngine {
             if ((this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader || isSingleMeasure) &&
                 !this.valueAxis && isTotalHide) {
                 for (let vln: number = 0; vln < vcnt; vln++) {
-                    const name: string = this.dataSourceSettings.values[vln as number].caption ?
-                        this.dataSourceSettings.values[vln as number].caption : this.dataSourceSettings.values[vln as number].name;
+                    const valueField: IFieldOptions = this.dataSourceSettings.values[vln as number];
+                    const name: string = valueField.caption ? valueField.caption : valueField.name;
+                    const valueKey: string = this.getValueFieldKey(valueField);
                     const calObj: Object = {
-                        axis: 'column', actualText: this.dataSourceSettings.values[vln as number].name, formattedText: name, level: 0, valueSort: {},
+                        axis: 'column', actualText: valueField.name, instanceId: this.valueFieldHasDuplicates ? valueKey : undefined,
+                        formattedText: name, level: 0, valueSort: {},
                         colIndex: (tnum * vcnt) + 1 + vln, rowIndex: colItmLn
                     };
                     if (!data[colItmLn as number]) {
@@ -5855,9 +6357,9 @@ export class PivotEngine {
                     vData[axis[rln as number].valueSort.levelName + this.valueSortSettings.headerDelimiter + name] = 1;
                     vData.levelName = axis[rln as number].valueSort.levelName + this.valueSortSettings.headerDelimiter + name;
                     vData[axis[rln as number].valueSort.uniqueName + this.valueSortSettings.headerDelimiter +
-                    this.dataSourceSettings.values[vln as number].name] = 1;
+                    valueKey] = 1;
                     vData.uniqueName = axis[rln as number].valueSort.uniqueName +
-                        this.valueSortSettings.headerDelimiter + this.dataSourceSettings.values[vln as number].name;
+                        this.valueSortSettings.headerDelimiter + valueKey;
                     if (vData && vData[sortText as string]) {
                         this.valueSortSettings.columnIndex = (tnum * vcnt) + 1 + vln;
                     }
@@ -5877,6 +6379,61 @@ export class PivotEngine {
         }
     }
 
+    /**
+     * Whether the value field at the given field position is date-typed, so its
+     * Min/Max summaries must be computed as typed date summaries from the raw
+     * records instead of the numeric value matrix (PIVOT-MINMAX).
+     *
+     * @param {number} fieldIndex - The position of the field in `this.fields`.
+     * @returns {boolean} True when the field's declared type is `date` or `datetime`.
+     */
+    private isDateValueField(fieldIndex: number): boolean {
+        const fieldName: string = this.fields[fieldIndex as number];
+        const field: IField = fieldName ? this.fieldList[fieldName as string] : null;
+        return field ? this.isDateType(field.type as string) : false;
+    }
+    /**
+     * Computes the earliest (`isMax` false) or latest (`isMax` true) contributing
+     * date of a cell for a date-typed value field. Contributors are read from the
+     * raw records (like `distinctcount`); null, undefined and unparseable values
+     * are omitted; comparison is by the instant, and the winner's original value
+     * is returned. A cell with no valid contributor yields `undefined`
+     * (PIVOT-MINMAX-001/004/005).
+     *
+     * @param {number[]} rowIndex - The contributing row indexes.
+     * @param {INumberIndex} columnIndex - The contributing column index object.
+     * @param {number} value - The position of the value field in `this.fields`.
+     * @param {boolean} isMax - Whether the latest (true) or earliest (false) date is required.
+     * @returns {number | Date} The winning date value, or `undefined` when no valid contributor exists.
+     */
+    private getDateAggregate(rowIndex: number[], columnIndex: INumberIndex, value: number, isMax: boolean): number | Date {
+        let ri: number = 0;
+        let isValueExist: boolean = false;
+        let winner: Date | undefined = undefined;
+        let winnerEpoch: number = 0;
+        const fieldKey: string | number = this.fieldKeys[this.fields[value as number] as string] as string | number;
+        while (rowIndex[ri as number] !== undefined) {
+            const index: number = rowIndex[ri as number];
+            if (columnIndex[index as number] !== undefined) {
+                this.rawIndexObject[index as number] = index as number;
+                // Index is a numeric row position derived from engine-controlled collections, not user input.
+                // eslint-disable-next-line security/detect-object-injection
+                const val: string | number | Date = (this.data as IDataSet[])[index as number][fieldKey];
+                const parsed: Date = (val instanceof Date) ? val : (isNullOrUndefined(val) || typeof val === 'number' ?
+                    undefined : new Date(val as string));
+                const epoch: number = (parsed && !isNaN(parsed.valueOf())) ? parsed.valueOf() : NaN;
+                if (!isNaN(epoch)) {
+                    isValueExist = true;
+                    if (winner === undefined || (isMax ? epoch > winnerEpoch : epoch < winnerEpoch)) {
+                        winner = parsed;
+                        winnerEpoch = epoch;
+                    }
+                }
+            }
+            ri++;
+        }
+        return isValueExist ? winner : undefined as number;
+    }
     public getAggregateValue(rowIndex: number[], columnIndex: INumberIndex, value: number, type: string, isGrandTotal: boolean): number {
         //rowIndex = rowIndex.sort();
         //columnIndex = columnIndex.sort();
@@ -5886,7 +6443,21 @@ export class PivotEngine {
         let avgCnt: number = 0;
         let isInit: boolean = true;
         let isValueExist: boolean = false;
-        switch (type.toLowerCase()) {
+        const lowerType: string = type.toLowerCase();
+        // Date-typed value fields compute Min/Max from the raw records instead of
+        // the numeric value matrix, whose non-number slots hold the count sentinel.
+        if (this.isDateValueField(value as number)) {
+            if (lowerType === 'min' || lowerType === 'max') {
+                return this.getDateAggregate(rowIndex, columnIndex, value as number, lowerType === 'max') as number;
+            }
+            // An unsupported summary type on a date-typed value field yields an
+            // empty result with a diagnostic, never a numeric result
+            // (PIVOT-MINMAX-008); Count and DistinctCount keep their semantics.
+            if (lowerType !== 'count' && lowerType !== 'distinctcount') {
+                return undefined as number;
+            }
+        }
+        switch (lowerType) {
         case 'median':
             {
                 const values: number[] = [];
@@ -6134,8 +6705,8 @@ export class PivotEngine {
                  ri++;
              }
          } */
-        return ((type && type.toLowerCase() === 'avg' && cellValue !== 0 &&
-            !isNullOrUndefined(cellValue)) ? (cellValue / avgCnt) : isValueExist ? cellValue : undefined);
+        return ((type && lowerType === 'avg' && cellValue !== 0 &&
+            !isNullOrUndefined(cellValue)) ? (cellValue / avgCnt) : isValueExist ? cellValue : undefined) as number;
     }
     /**
      * CSP-safe arithmetic evaluation of a substituted calculated field formula
@@ -6170,24 +6741,36 @@ export class PivotEngine {
     /**
      * It performs the formatting to get formatted Value
      *
-     * @param {number | string} value - It contains the value which went formatting.
+     * @param {number | string | Date} value - It contains the value which went formatting.
      * @param {string} fieldName - It contains the field name.
      * @returns {IAxisSet} - It returns the formatted value as IAxisSet data.
      * @hidden
      */
-    public getFormattedValue(value: number | string, fieldName: string): IAxisSet {
-        const commonValue: number | string = value === null ? (this.localeObj ? this.localeObj.getConstant('null') :
+    public getFormattedValue(value: number | string | Date, fieldName: string): IAxisSet {
+        const commonValue: number | string | Date = value === null ? (this.localeObj ? this.localeObj.getConstant('null') :
             String(value)) : value === undefined ?
             (this.localeObj ? (fieldName in this.groupingFields) ? this.localeObj.getConstant('groupOutOfRange') :
                 this.localeObj.getConstant('undefined') : String(value)) : value;
         const formattedValue: IAxisSet = {
             formattedText: commonValue.toString(),
-            actualText: commonValue,
-            dateText: commonValue
+            actualText: commonValue as string | number,
+            dateText: commonValue as string | number
         };
-        if (this.formatFields[fieldName as string] && (this.formatFields[fieldName as string].format ||
-            this.formatFields[fieldName as string].skeleton) && !isNullOrUndefined(value)) {
+        // A typed date result (date-typed value field with Min/Max) is formatted as
+        // a date regardless of whether the field has an explicit date format
+        // (PIVOT-MINMAX-007); the underlying value is never truncated.
+        const isDateValue: boolean = (value instanceof Date);
+        if ((this.formatFields[fieldName as string] && (this.formatFields[fieldName as string].format ||
+            this.formatFields[fieldName as string].skeleton) || isDateValue) && !isNullOrUndefined(value)) {
             try {
+                if (isDateValue && !this.formatFields[fieldName as string]) {
+                    // No format configured: use the component's existing date display
+                    // behaviour (Intl default date-time string), never a raw epoch.
+                    formattedValue.formattedText = (value as Date).toLocaleString();
+                    formattedValue.actualText = value as string | number;
+                    formattedValue.dateText = value as string | number;
+                    return formattedValue;
+                }
                 const formatField: IFormatSettings = ((<{ [key: string]: Object }>this.formatFields[fieldName as string]).properties ?
                     (<{ [key: string]: Object }>this.formatFields[fieldName as string]).properties :
                     this.formatFields[fieldName as string]);
@@ -6200,10 +6783,11 @@ export class PivotEngine {
                     delete formatSetting.maximumSignificantDigits;
                 }
                 if (formatSetting.type) {
-                    formattedValue.formattedText = this.dateFormatFunction[fieldName as string].exactFormat(new Date(value as string))
-                        === null ? formattedValue.formattedText :
-                        this.dateFormatFunction[fieldName as string].exactFormat(new Date(value as string));
-                    formattedValue.actualText = value;
+                    const formattedDateValue: string = this.dateFormatFunction[fieldName as string].exactFormat(
+                        new Date(value as string | number | Date)
+                    );
+                    formattedValue.formattedText = formattedDateValue === null ? formattedValue.formattedText : formattedDateValue;
+                    formattedValue.actualText = value as string | number;
                 } else {
                     delete formatSetting.type;
                     if ((formatSetting.format) && !(this.formatRegex.test(formatSetting.format))) {
@@ -6217,27 +6801,36 @@ export class PivotEngine {
                             delete formatSetting.minimumIntegerDigits;
                         }
                     }
-                    formattedValue.formattedText =
+                    formattedValue.formattedText = isDateValue ? (value as Date).toLocaleString() :
                         this.globalize.formatNumber(!isNaN(Number(value)) ? Number(value) : value as number, formatSetting);
-                    formattedValue.actualText = !isNaN(Number(value)) ? Number(value) : value;
-                    formattedValue.dateText = !isNaN(Number(value)) ? Number(value) : value;
+                    formattedValue.actualText = isDateValue ? value as string | number :
+                        (!isNaN(Number(value)) ? Number(value) : value as string | number);
+                    formattedValue.dateText = isDateValue ? value as string | number :
+                        (!isNaN(Number(value)) ? Number(value) : value as string | number);
                 }
-                if (this.fieldList[fieldName as string].sort !== 'None' && formatSetting.type &&
+                // When formatting is resolved through an instance-level key (instance
+                // identifier or caption of a duplicated value field), the key is not a
+                // fieldList entry; treat such fields as regular (non-custom) fields.
+                const formatFieldListEntry: IField = this.fieldList[fieldName as string];
+                if (formatFieldListEntry && formatFieldListEntry.sort !== 'None' && formatSetting.type &&
                     ['date', 'dateTime', 'time'].indexOf(this.formatFields[fieldName as string].type) > -1) {
-                    formattedValue.dateText = this.dateFormatFunction[fieldName as string].fullFormat(new Date(value as string));
+                    const fullFormattedDateValue: string = this.dateFormatFunction[fieldName as string].fullFormat(
+                        new Date(value as string | number | Date)
+                    );
+                    formattedValue.dateText = fullFormattedDateValue;
                 }
-                if (this.fieldList[fieldName as string].isCustomField) {
+                if (formatFieldListEntry && formatFieldListEntry.isCustomField) {
                     formattedValue.formattedText = formattedValue.formattedText === 'NaN' ?
                         commonValue.toString() : formattedValue.formattedText;
                     formattedValue.dateText = formattedValue.dateText === 'NaN' ?
                         commonValue.toString() : formattedValue.dateText;
                 }
             } catch (exception) {
-                if (!this.fieldList[fieldName as string].isCustomField) {
+                if (!this.fieldList[fieldName as string] || !this.fieldList[fieldName as string].isCustomField) {
                     throw exception;
                 }
             } finally {
-                if (this.fieldList[fieldName as string].isCustomField) {
+                if (this.fieldList[fieldName as string] && this.fieldList[fieldName as string].isCustomField) {
                     formattedValue.formattedText =
                         (isNullOrUndefined(formattedValue.formattedText) || formattedValue.formattedText === 'NaN') ?
                             commonValue.toString() : formattedValue.formattedText;
@@ -6628,6 +7221,231 @@ export class PivotEngine {
             }
         }
     }
+
+    private updateValueFieldKeyFlag(): void {
+        this.valueFieldHasDuplicates = false;
+        this.valueInstanceFieldList = {};
+        const counters: { [key: string]: number } = {};
+        const values: IFieldOptions[] = (this.dataSourceSettings && this.dataSourceSettings.values) ?
+            this.dataSourceSettings.values : [];
+        if (!values || values.length === 0) {
+            return;
+        }
+        for (let i: number = 0; i < values.length; i++) {
+            const field: IFieldOptions = values[i as number];
+            if (!field || !field.name) {
+                continue;
+            }
+            counters[field.name] = (counters[field.name] || 0) + 1;
+        }
+        const counterKeys: string[] = Object.keys(counters);
+        let hasDuplicateValueField: boolean = false;
+        for (let i: number = 0; i < counterKeys.length; i++) {
+            if (counters[counterKeys[i as number]] > 1) {
+                hasDuplicateValueField = true;
+                break;
+            }
+        }
+        this.valueFieldHasDuplicates = hasDuplicateValueField;
+        for (let valueIndex: number = 0; valueIndex < values.length; valueIndex++) {
+            const valueField: IFieldOptions = values[valueIndex as number];
+            if (!valueField || !valueField.name) {
+                continue;
+            }
+            valueField.instanceId = PivotUtil.getOrGenerateInstanceId(valueField, valueIndex);
+        }
+        const instanceIdCounts: { [id: string]: number } = {};
+        for (let valueIndex: number = 0; valueIndex < values.length; valueIndex++) {
+            const valueField: IFieldOptions = values[valueIndex as number];
+            if (!valueField || !valueField.instanceId) { continue; }
+            if (instanceIdCounts[valueField.instanceId as string] === undefined) {
+                instanceIdCounts[valueField.instanceId as string] = 1;
+            } else {
+                instanceIdCounts[valueField.instanceId as string]++;
+                valueField.instanceId = valueField.instanceId + '_' + instanceIdCounts[valueField.instanceId as string];
+            }
+        }
+        this.refreshValueInstanceFieldList();
+    }
+    /**
+     * Validates the summary types configured on date-typed value fields. Only
+     * `Min`, `Max`, `Count` and `DistinctCount` are supported; any other type
+     * is coerced to `Count` (yielding an empty result per PIVOT-MINMAX-008) and
+     * recorded in `dateAggregateErrors` for the controls to raise through
+     * `actionFailure`.
+     *
+     * @returns {void}
+     */
+    private validateDateValueAggregates(): void {
+        const values: IFieldOptions[] = this.dataSourceSettings.values || [];
+        for (let i: number = 0; i < values.length; i++) {
+            const valueField: IFieldOptions = values[i as number];
+            if (!valueField || !valueField.name || !this.fieldList[valueField.name as string]) {
+                continue;
+            }
+            const field: IField = this.fieldList[valueField.name as string];
+            if (!this.isDateType(field.type as string) || !valueField.type) {
+                continue;
+            }
+            const allowed: string[] = ['Min', 'Max', 'Count', 'DistinctCount'];
+            if (allowed.indexOf(valueField.type as string) === -1) {
+                const entry: IFieldOptions = (valueField as { [key: string]: Object }).properties ?
+                    ((valueField as { [key: string]: Object }).properties as IFieldOptions) : valueField;
+                this.dateAggregateErrors.push({ fieldName: valueField.name, type: entry.type });
+                // The type is kept as configured; getAggregateValue yields an empty
+                // result for it (PIVOT-MINMAX-008), rather than silently Counting.
+            }
+        }
+    }
+
+    /**
+     * Gets metadata for a value-field instance.
+     *
+     * @param {string} instanceId - Value-field instance identifier.
+     * @returns {IField | null} Matching field metadata, or null when not found.
+     * @hidden
+     */
+    public getValueInstanceFieldListEntry(instanceId: string): IField | null {
+        return instanceId && this.valueInstanceFieldList[instanceId as string] ? this.valueInstanceFieldList[instanceId as string] : null;
+    }
+
+    private refreshValueInstanceFieldList(): void {
+        const values: IFieldOptions[] = this.dataSourceSettings && this.dataSourceSettings.values ?
+            this.dataSourceSettings.values : [];
+        for (let i: number = 0; i < values.length; i++) {
+            const valueField: IFieldOptions = values[i as number];
+            if (!valueField || !valueField.instanceId) {
+                continue;
+            }
+            const sourceField: IField | undefined = this.fieldList && valueField.name ? this.fieldList[valueField.name] : undefined;
+            const instanceField: IField = sourceField ? extend({}, sourceField, null, true) as IField : {};
+            instanceField.id = valueField.name;
+            instanceField.caption = valueField.caption || instanceField.caption;
+            instanceField.aggregateType = valueField.type || instanceField.aggregateType;
+            instanceField.baseField = valueField.baseField;
+            instanceField.baseItem = valueField.baseItem;
+            instanceField.allowCrossGroupCalculation = valueField.allowCrossGroupCalculation;
+            this.valueInstanceFieldList[valueField.instanceId] = instanceField;
+        }
+    }
+
+    private getValueFieldKey(field: IFieldOptions): string {
+        if (!field) {
+            return '';
+        }
+        if (!this.valueFieldHasDuplicates) {
+            return field.name;
+        }
+        return PivotUtil.getOrGenerateInstanceId(field);
+    }
+
+    private getValueFieldKeyAt(instanceIndex: number): string {
+        const values: IFieldOptions[] = (this.dataSourceSettings && this.dataSourceSettings.values) ?
+            this.dataSourceSettings.values : [];
+        if (!values || instanceIndex < 0 || instanceIndex >= values.length) {
+            return '';
+        }
+        const valueField: IFieldOptions = values[instanceIndex as number];
+        if (!this.valueFieldHasDuplicates) {
+            return valueField.name;
+        }
+        return PivotUtil.getOrGenerateInstanceId(valueField);
+    }
+
+    /**
+     * Resolves the number-format key for a value-field instance. When the same field
+     * is added multiple times to the values axis, a `formatSettings` entry can target a
+     * single instance either by its instance identifier or by its caption; a plain
+     * field-name entry applies to all instances of that field as before.
+     *
+     * @param {IFieldOptions} valueInstance - Value-field instance.
+     * @returns {string} - Key to look up in `formatFields`.
+     * @hidden
+     */
+    private getValueFormatKey(valueInstance: IFieldOptions): string {
+        if (!valueInstance || !this.valueFieldHasDuplicates) {
+            return valueInstance ? valueInstance.name : '';
+        }
+        const instanceKey: string = PivotUtil.getOrGenerateInstanceId(valueInstance);
+        if (this.formatFields[instanceKey as string]) {
+            return instanceKey;
+        }
+        const caption: string = valueInstance.caption;
+        if (caption && caption !== valueInstance.name && this.formatFields[caption as string]) {
+            return caption;
+        }
+        return valueInstance.name;
+    }
+
+    private getValueInstanceByMeasureName(measure: string): IFieldOptions | null {
+        if (!measure) {
+            return null;
+        }
+        const values: IFieldOptions[] = (this.dataSourceSettings && this.dataSourceSettings.values) ?
+            this.dataSourceSettings.values : [];
+        if (!values || values.length === 0) {
+            return null;
+        }
+        for (let i: number = 0; i < values.length; i++) {
+            const valueField: IFieldOptions = values[i as number];
+            if (valueField && valueField.instanceId === measure) {
+                return valueField;
+            }
+        }
+        for (let j: number = 0; j < values.length; j++) {
+            const valueField: IFieldOptions = values[j as number];
+            if (valueField && valueField.caption === measure) {
+                return valueField;
+            }
+        }
+        if (!this.valueFieldHasDuplicates) {
+            for (let k: number = 0; k < values.length; k++) {
+                const valueField: IFieldOptions = values[k as number];
+                if (valueField && valueField.name === measure) {
+                    return valueField;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Resolves the aggregation to apply for a value-field instance. A calculated
+     * field must always aggregate through its formula (`CalculatedField`), even
+     * when the instance carries a default `type`, so that the formula is applied
+     * instead of a plain summary of the underlying field.
+     *
+     * @param {IFieldOptions} instance - Value-field instance (may be null).
+     * @param {string} fieldName - Field name the instance refers to.
+     * @returns {string} - Effective aggregate type.
+     * @hidden
+     */
+    private getEffectiveAggregate(instance: IFieldOptions, fieldName: string): string {
+        const fieldListEntry: IField = fieldName ? this.fieldList[fieldName as string] : null;
+        if (fieldListEntry && fieldListEntry.aggregateType === 'CalculatedField') {
+            return 'CalculatedField';
+        }
+        return (instance && instance.type) ? instance.type :
+            ((fieldListEntry && fieldListEntry.aggregateType) || 'Sum');
+    }
+
+    private isValueCellForKey(cell: IAxisSet, key: string): boolean {
+        if (!cell || !key) {
+            return false;
+        }
+        if (this.valueFieldHasDuplicates) {
+            return cell.instanceId === key;
+        }
+        return cell.actualText === key;
+    }
+
+    private getValueCellKey(cell: IAxisSet): string {
+        if (!cell) {
+            return '';
+        }
+        return this.valueFieldHasDuplicates ?
+            ((cell.instanceId as string) || '') : (cell.actualText as string || '');
+    }
     /* private makeMirrorObject(elements: number[], obj: NumberIndex): void {
          for (let lp: number = 0, end: number = elements.length; lp < end; lp++) {
              obj[elements[lp]] = elements[lp];
@@ -6713,6 +7531,19 @@ export interface IDataOptions {
      */
     url?: string;
     /**
+     * Allows you to set the character, or character sequence, that separates the fields of CSV data loaded from `url`.
+     * Common values are "," for comma, ";" for semicolon, "|" for pipe, and "\t" for tab.
+     * Quoted fields may contain the configured delimiter. For example, `West;"Bike; Deluxe";12.50` is parsed as
+     * three values when the delimiter is ";".
+     * > It is applicable only when the data source `type` is `CSV`.
+     */
+    delimiter?: string;
+    /**
+     * Allows line breaks inside double-quoted CSV fields to stay part of the value instead of starting a new record.
+     * > It is applicable only when the data source `type` is `CSV`.
+     */
+    enableQuotedLineBreaks?: boolean;
+    /**
      * Allows you to set the specific culture code as number type to render pivot table with desired localization.
      * By default, the pivot table displays with culture code **1033**, which indicates "en-US" locale.
      * > It is applicable only for OLAP data source.
@@ -6786,6 +7617,8 @@ export interface IDataOptions {
      *  DifferenceFrom or PercentageOfDifferenceFrom or PercentageOfParentTotal aggregate types. **Note: It is applicable only for relational data source.**
      * * `baseItem`: Allows you to set the selective item of a specific field, which used to display the values with either DifferenceFrom or PercentageOfDifferenceFrom aggregate types.
      * The selective item should be set the from field specified in the baseField property. **Note: It is applicable only for relational data source.**
+     * Set it to `(previous)` or `(next)` to compare each member with its neighbour on the baseField axis.
+     * * `allowCrossGroupCalculation`: Allows the `(previous)` or `(next)` neighbour to belong to another parent member. **Note: It is applicable only for relational data source.**
      * * `isCalculatedField`: Allows to set whether the specified field is a calculated field or not.
      * In general, the calculated field is created from the bound data source or using simple formula with basic arithmetic operators in the pivot table. **Note: It is applicable only for OLAP data source.**
      * * `showRemoveIcon`: Allows you to show or hide the remove icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI.
@@ -7300,9 +8133,15 @@ export interface IFieldOptions {
     /**
      * Allows you to set the selective item of a specific field, which used to display the values with either DifferenceFrom or PercentageOfDifferenceFrom aggregate types.
      * The selective item should be set the from field specified in the baseField property.
+     * Set it to `(previous)` or `(next)` to compare each member with its neighbour on the baseField axis.
      * > It is applicable only for relational data source.
      */
     baseItem?: string;
+    /**
+     * Allows the `(previous)` or `(next)` neighbour of the baseItem to belong to another parent member.
+     * > It is applicable only for relational data source.
+     */
+    allowCrossGroupCalculation?: boolean;
     /**
      * Allows to show or hide sub-totals to a specific field in row/column axis of the pivot table.
      */
@@ -7427,6 +8266,16 @@ export interface IFilter {
      * > This option will be used by default when the operator **Between** and **NotBetween** is chosen to apply. Also, it is applicable only for label and value filtering.
      */
     value2?: string | Date;
+    /**
+     * Allows you to specify how the value entered in `value1` is used to select the members for the Top and Bottom value filter conditions. They are:
+     * * Items - Displays the specified number of top or bottom members.
+     * * Percent - Displays the specified percentage (an integer from 1 to 100) of the top or bottom members.
+     * * Sum - Displays the top or bottom members whose cumulative aggregated value reaches or exceeds the specified value.
+     * > This option is applicable only for the **Top** and **Bottom** conditions of the value filter. It has no effect for any other condition.
+     *
+     * @default Items
+     */
+    mode?: TopBottomMode;
     /**
      * It allows excel-like label filtering operation through UI and code-behind.
      */
@@ -7605,6 +8454,10 @@ export interface IField {
      */
     baseItem?: string;
     /**
+     * It allows the previous/next neighbour to belong to another parent member.
+     */
+    allowCrossGroupCalculation?: boolean;
+    /**
      * It allows to change the specific field's type.
      */
     filterType?: string;
@@ -7745,9 +8598,19 @@ export interface IAxisSet {
      */
     axis?: string;
     /**
-     * It allows to set value of the cell.
+     * It allows to set value of the cell. For a date-typed value field with `Min`
+     * or `Max` summary it holds the typed `Date` result, while `actualValue`
+     * holds its numeric epoch used for comparisons.
      */
-    value?: number;
+    value?: number | Date;
+    /**
+     * Contributing record count of a typed date Min/Max value cell; used by the
+     * pivot chart to plot counts for a date-only report
+     * (PIVOT-MINMAX, OQ-MINMAX-06 count fallback).
+     *
+     * @hidden
+     */
+    dateCount?: number;
     /**
      * It allows to set actual value of the cell.
      */
@@ -7960,14 +8823,6 @@ interface IHeadersInfo {
     fields: IFieldOptions[];
     position: number;
 }
-/**
- * @hidden
- */
-interface ValueSortData {
-    rowData: IDataSet[];
-    childMembers: this[];
-}
-
 /**
  * @hidden
  */

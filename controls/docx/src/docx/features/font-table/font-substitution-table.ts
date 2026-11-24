@@ -9,7 +9,7 @@ import { FontTableFont } from './font-table-entry';
  * alternate (ECMA-376-1 §17.8.3.1).
  *
  * **Preferred public entry:** {@link WordDocument.fontSubstitutionTable}. Prefer this
- * over {@link fontTableFor} for substitution-only workflows (TASK-8067). Use
+ * over {@link fontTableFor} for substitution-only workflows. Use
  * `fontTableFor` for full `CT_Font` catalog metadata (panose, embeds, residual).
  *
  * Lookup keys are case-insensitive (locale-independent lower-case), matching

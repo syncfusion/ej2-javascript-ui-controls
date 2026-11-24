@@ -6,19 +6,19 @@ import {
     projectBlockToBodyItem
 } from '../document/body-item-adapters';
 import { BodyItem, isParagraphBodyItem } from '../document/body-item';
-import { WordDocument, FeaturePartState } from '../document/document';
+import { WordDocument, FeaturePartState, Body } from '../document/document';
 import { FeatureMultiPackagePart } from '../document/feature-multi-package-part';
 import { parseBodyBlocks, serializeBodyBlocks } from '../document/body-blocks';
-import { BlockContent, Paragraph, ParagraphOwner } from '../document/paragraph';
+import { BlockContent, Paragraph } from '../document/paragraph';
 import { TextRange } from '../document/text-range';
 import { isWml, wmlElement } from '../document/wml';
-import { detachedBodyBlockParseContext } from '../../core/registry/block-handlers';
+import { detachedBodyBlockParseContext, BodyBlockParseContext } from '../../core/registry/block-handlers';
 import { allocateRelationshipId, OpcRelationship, RelationshipId, Relationships } from '../../core/opc/relationships';
 import { partByName, relationshipsForPart, OpcPackage, PackagePart } from '../../core/opc/package';
 import { partName, partNameKey, resolveInternalTarget, PartName } from '../../core/opc/part-name';
-import { featureId, isFeatureRegistered, registerFeature, registerFeatureMultiPartHandler, replaceOrAddPackagePart, usedMainDocumentRelationshipIds } from '../../core/registry/index';
+import { featureId, isFeatureRegistered, registerFeature, registerFeatureMultiPartHandler, replaceOrAddPackagePart, visitBlocksInDocumentOrder, usedMainDocumentRelationshipIds } from '../../core/registry/index';
 import { FeatureMultiPartLoadContext } from '../../core/registry/multi-part-handlers';
-import { parseXml, serializeXml, WML_TRANSITIONAL_NAMESPACE, OpenXmlElement } from '../../core/xml/index';
+import { parseXml, serializeXml, closePartNamespaces, WML_TRANSITIONAL_NAMESPACE, OpenXmlElement } from '../../core/xml/index';
 import {
     defaultLetterPageSetup,
     finalSection,
@@ -44,6 +44,7 @@ import {
     resetHeadersFootersLinkToPreviousHandlersForTests
 } from '../document/headers-footers';
 import { Sections } from '../document/sections';
+import { picturesInParagraph, Picture } from '../images/index';
 import { FeatureId } from '../../core/registry/feature-registry';
 /** @public Compat alias — prefer HeaderFooter. */
 export type Header = HeaderFooter;
@@ -62,6 +63,7 @@ const HEADERS_FOOTERS: FeatureId = featureId('headers-footers');
  *
  * Main entry and @syncfusion/ej2-docx/headers-footers can load separate module graphs of the
  * same class. instanceof fails across those graphs; Symbol.for stays shared.
+ *
  * @private
  */
 const HEADERS_FOOTERS_CATALOG_BRAND: unique symbol = Symbol.for('@syncfusion/ej2-docx.HeadersFootersCatalog');
@@ -103,7 +105,7 @@ interface LoadedPart {
     readonly relationshipId: RelationshipId;
     readonly relationshipType: string;
     readonly kind: HeaderFooterType;
-    readonly rootExtra: Pick<OpenXmlElement, 'attributes' | 'namespaceDeclarations'>;
+    rootExtra: Pick<OpenXmlElement, 'attributes' | 'namespaceDeclarations'>;
     blocks: BlockContent[];
     dirty: boolean;
     pendingRelationship: OpcRelationship | undefined;
@@ -141,7 +143,7 @@ function firstParagraphText(blocks: ReadonlyArray<BlockContent>): string | undef
     }
     return undefined;
 }
-function blocksWithSimpleText(text: string, owner: ParagraphOwner = detachedParagraphOwner): BlockContent[] {
+function blocksWithSimpleText(text: string, parseCtx: BodyBlockParseContext = detachedParseContext): BlockContent[] {
     const paragraph: Paragraph = Paragraph.fromXml(wmlElement('p', {
         children: [
             wmlElement('r', {
@@ -152,10 +154,10 @@ function blocksWithSimpleText(text: string, owner: ParagraphOwner = detachedPara
                 ]
             })
         ]
-    }), owner);
+    }), parseCtx);
     return [{ type: 'paragraph', paragraph }];
 }
-const detachedParagraphOwner: ParagraphOwner = {
+const detachedParseContext: BodyBlockParseContext = {
     assertAttachedParagraph(): void {
         return;
     },
@@ -164,42 +166,36 @@ const detachedParagraphOwner: ParagraphOwner = {
     }
 };
 /**
- * Paragraph owner scoped to one header/footer catalog entry.
- * Membership is checked against the live entry blocks.
+ * Parse context for header/footer entries that create a scoped check
+ * against the live catalog entry blocks.
+ *
+ * @param {WordDocument} document - The document.
+ * @param {string} relationshipId - The relationship id.
+ * @returns {BodyBlockParseContext} The result.
+ * @private
  */
-class HeaderFooterPartOwner implements ParagraphOwner {
-    private readonly document: WordDocument;
-    private readonly relationshipId: string;
-    constructor(document: WordDocument, relationshipId: string) {
-        this.document = document;
-        this.relationshipId = relationshipId;
-    }
-    assertAttachedParagraph(target: Paragraph): void {
-        const catalog: HeadersFootersCatalog = headersFootersFor(this.document);
-        const entry: LoadedPart = catalog.entryForRelationship(this.relationshipId);
-        if (entry === undefined) {
-            throw new DetachedObjectError('Header or footer part is no longer loaded');
+function parseContextForEntry(document: WordDocument, relationshipId: string): BodyBlockParseContext {
+    return {
+        assertAttachedParagraph(target: Paragraph): void {
+            const catalog: HeadersFootersCatalog = headersFootersFor(document);
+            const entry: LoadedPart = catalog.entryForRelationship(relationshipId);
+            if (entry === undefined) {
+                throw new DetachedObjectError('Header or footer part is no longer loaded');
+            }
+            const found: boolean = entry.blocks.some((block: BlockContent) => block.type === 'paragraph' && block.paragraph === target);
+            if (!found) {
+                throw new DetachedObjectError('This paragraph is no longer in its header or footer');
+            }
+        },
+        owningDocument(): WordDocument {
+            return document;
         }
-        const found: boolean = entry.blocks.some((block: BlockContent) => block.type === 'paragraph' && block.paragraph === target);
-        if (!found) {
-            throw new DetachedObjectError('This paragraph is no longer in its header or footer');
-        }
-    }
-    /**
-     * @returns {WordDocument} The result.
-     * @private
-     */
-    owningDocument(): WordDocument {
-        return this.document;
-    }
-}
-function ownerForEntry(document: WordDocument, relationshipId: string): HeaderFooterPartOwner {
-    return new HeaderFooterPartOwner(document, relationshipId);
+    };
 }
 /**
  * Bind a feature body block (table, content control, â€¦) to the owning document when
  * the value exposes `bindDocument`. Mirrors {@link Body} without exporting
- * that helper from `document.ts`.
+ * that helper from the owning module.
  *
  * @param {unknown} value - The value.
  * @param {WordDocument} document - The document.
@@ -226,11 +222,17 @@ function releaseFeatureBlockContent(value: unknown): void {
         (releaseContent as (this: object) => void).call(value);
     }
 }
-function attachEntryParagraphs(document: WordDocument, entry: LoadedPart): void {
-    const owner: HeaderFooterPartOwner = ownerForEntry(document, entry.relationshipId);
+function attachEntryParagraphs(catalog: HeadersFootersCatalog, document: WordDocument, entry: LoadedPart): void {
+    // Try to find a loaded HeaderFooter Body for this entry
+    const bound: HeaderFooter | undefined = catalog.boundByRelId.get(entry.relationshipId);
+
     for (const block of entry.blocks) {
         if (block.type === 'paragraph') {
-            block.paragraph.attach(owner);
+            // Attach to the loaded HeaderFooter Body if available;
+            // otherwise attachment will happen when the HeaderFooter is loaded
+            if (bound !== undefined) {
+                block.paragraph.attach(bound);
+            }
         }
         else if (block.type === 'feature') {
             bindDocumentToFeatureBlock(block.value, document);
@@ -272,9 +274,17 @@ function parseHeaderFooterPart(part: PackagePart, relationship: OpcRelationship,
 }
 /**
  * In-memory header and footer parts linked from the Main Document.
+ *
  * @private
  */
 export class HeadersFootersCatalog implements FeatureMultiPackagePart {
+    /**
+     * Materialized HeaderFooter instances by relationship id. Per catalog (per document) so
+     * identical relationship ids in different documents never collide.
+     *
+     * @private
+     */
+    readonly boundByRelId: Map<string, HeaderFooter> = new Map<string, HeaderFooter>();
     private readonly entries: Map<PartName, LoadedPart>;
     private readonly byRelationshipId: Map<string, LoadedPart>;
     private catalogDirty: boolean;
@@ -310,7 +320,7 @@ export class HeadersFootersCatalog implements FeatureMultiPackagePart {
     bindDocument(document: WordDocument): void {
         this.boundDocument = document;
         for (const entry of this.entries.values()) {
-            attachEntryParagraphs(document, entry);
+            attachEntryParagraphs(this, document, entry);
         }
     }
     /**
@@ -343,7 +353,9 @@ export class HeadersFootersCatalog implements FeatureMultiPackagePart {
             return true;
         }
         for (const entry of this.entries.values()) {
-            if (entry.dirty || entry.pendingRelationship !== undefined) {
+            // A materialized HeaderFooter can be edited in place (text, run formatting, ...) without
+            // any structural change notifying the catalog, so it is re-checked on every save.
+            if (entry.dirty || entry.pendingRelationship !== undefined || this.boundByRelId.get(entry.relationshipId) !== undefined) {
                 return true;
             }
         }
@@ -358,10 +370,23 @@ export class HeadersFootersCatalog implements FeatureMultiPackagePart {
     applyToPackage(pkg: OpcPackage, mainPartName: PartName): OpcPackage {
         let next: OpcPackage = pkg;
         for (const entry of this.entries.values()) {
-            if (!entry.dirty && entry.pendingRelationship === undefined) {
+            const bound: HeaderFooter = this.boundByRelId.get(entry.relationshipId);
+            const edited: boolean = entry.dirty || entry.pendingRelationship !== undefined;
+            if (!edited && bound === undefined) {
                 continue;
             }
+            if (bound !== undefined && !entry.dirty) {
+                // Pick up in-place edits made through the materialized HeaderFooter. Catalog-level
+                // changes (entry.dirty, e.g. a watermark strip) are authoritative and kept as-is.
+                entry.blocks = bound.rawBlocks().slice();
+            }
             const xml: Uint8Array = serializeHeaderFooterPart(entry);
+            if (!edited) {
+                const existing: PackagePart = partByName(next, entry.partName);
+                if (existing !== undefined && sameBytes(existing.data, xml)) {
+                    continue;
+                }
+            }
             const rel: OpcRelationship =
                 entry.pendingRelationship != null
                     ? entry.pendingRelationship
@@ -520,7 +545,7 @@ export class HeadersFootersCatalog implements FeatureMultiPackagePart {
             return [];
         }
         if (this.boundDocument !== undefined) {
-            attachEntryParagraphs(this.boundDocument, entry);
+            attachEntryParagraphs(this, this.boundDocument, entry);
         }
         const projected: BodyItem[] = [];
         for (const block of entry.blocks) {
@@ -547,7 +572,7 @@ export class HeadersFootersCatalog implements FeatureMultiPackagePart {
             return [];
         }
         if (this.boundDocument !== undefined) {
-            attachEntryParagraphs(this.boundDocument, entry);
+            attachEntryParagraphs(this, this.boundDocument, entry);
         }
         const paragraphs: Paragraph[] = [];
         for (const item of this.itemsForRelationship(relationshipId)) {
@@ -564,7 +589,7 @@ export class HeadersFootersCatalog implements FeatureMultiPackagePart {
      * @private
      */
     setSimpleText(entry: LoadedPart, text: string): void {
-        const bound: HeaderFooter = boundHeaderFooterByRelId.get(entry.relationshipId);
+        const bound: HeaderFooter = this.boundByRelId.get(entry.relationshipId);
         detachEntryBlocks(entry.blocks);
         if (bound !== undefined) {
             entry.blocks = blocksWithSimpleText(text, bound);
@@ -572,8 +597,8 @@ export class HeadersFootersCatalog implements FeatureMultiPackagePart {
             bound.replaceItemsSilent(entry.blocks.slice());
         }
         else if (this.boundDocument !== undefined) {
-            const owner: HeaderFooterPartOwner = ownerForEntry(this.boundDocument, entry.relationshipId);
-            entry.blocks = blocksWithSimpleText(text, owner);
+            const parseCtx: BodyBlockParseContext = parseContextForEntry(this.boundDocument, entry.relationshipId);
+            entry.blocks = blocksWithSimpleText(text, parseCtx);
         }
         else {
             entry.blocks = blocksWithSimpleText(text);
@@ -621,10 +646,13 @@ export class HeadersFootersCatalog implements FeatureMultiPackagePart {
             throw new RangeError(`Body item index ${String(index)} is out of range`);
         }
         const block: BlockContent = bodyItemToBlock(item);
-        const bound: HeaderFooter = boundHeaderFooterByRelId.get(relationshipId);
+        const bound: HeaderFooter = this.boundByRelId.get(relationshipId);
         if (block.type === 'paragraph') {
-            // Prefer HeaderFooter Body as paragraph owner when a live view is bound.
-            block.paragraph.attach(bound !== undefined ? bound : ownerForEntry(document, relationshipId));
+            // Attach to the loaded HeaderFooter Body if available;
+            // otherwise keep it detached (will be attached when HeaderFooter loads)
+            if (bound !== undefined) {
+                block.paragraph.attach(bound);
+            }
         }
         else if (block.type === 'feature') {
             bindDocumentToFeatureBlock(block.value, document);
@@ -698,7 +726,7 @@ export class HeadersFootersCatalog implements FeatureMultiPackagePart {
             releaseFeatureBlockContent(block.value);
         }
         entry.dirty = true;
-        const bound: HeaderFooter = boundHeaderFooterByRelId.get(relationshipId);
+        const bound: HeaderFooter = this.boundByRelId.get(relationshipId);
         if (bound !== undefined) {
             bound.replaceItemsSilent(entry.blocks.slice());
         }
@@ -750,9 +778,12 @@ export class HeadersFootersCatalog implements FeatureMultiPackagePart {
     }): Paragraph {
         const document: WordDocument = this.requireBoundDocument();
         const entry: LoadedPart = this.requireEntry(relationshipId);
-        const bound: HeaderFooter = boundHeaderFooterByRelId.get(relationshipId);
-        const owner: HeaderFooter | HeaderFooterPartOwner = bound !== undefined ? bound : ownerForEntry(document, relationshipId);
-        const paragraph: Paragraph = new Paragraph(owner);
+        // A part that was never exposed through a HeaderFooter is materialized here so the
+        // new paragraph has a live Body owner (an ownerless paragraph rejects mutation).
+        const bound: HeaderFooter = this.boundByRelId.get(relationshipId) !== undefined
+            ? this.boundByRelId.get(relationshipId)
+            : createHeaderFooterForRelationship(document, relationshipId, entry.kind);
+        const paragraph: Paragraph = new Paragraph(bound);
         this.insertBodyItemAtForRelationship(
             relationshipId,
             this.itemsForRelationship(relationshipId).length,
@@ -785,9 +816,14 @@ export class HeadersFootersCatalog implements FeatureMultiPackagePart {
         if (index < 0 || index > paragraphs.length) {
             throw new RangeError(`Paragraph index ${String(index)} is out of range`);
         }
-        const bound: HeaderFooter = boundHeaderFooterByRelId.get(relationshipId);
-        const owner: HeaderFooter | HeaderFooterPartOwner = bound !== undefined ? bound : ownerForEntry(document, relationshipId);
-        const paragraph: Paragraph = new Paragraph(owner);
+        const bound: HeaderFooter = this.boundByRelId.get(relationshipId);
+        if (bound === undefined) {
+            throw new DocxError(
+                'content/invalid-header-footer-reference',
+                'Cannot insert paragraph into unloaded header/footer. Access the HeaderFooter directly through its section.'
+            );
+        }
+        const paragraph: Paragraph = new Paragraph(bound);
         if (index === paragraphs.length) {
             this.insertBodyItemAtForRelationship(
                 relationshipId,
@@ -836,7 +872,7 @@ export class HeadersFootersCatalog implements FeatureMultiPackagePart {
         detachEntryBlocks(entry.blocks);
         entry.blocks = [];
         entry.dirty = true;
-        const bound: HeaderFooter = boundHeaderFooterByRelId.get(relationshipId);
+        const bound: HeaderFooter = this.boundByRelId.get(relationshipId);
         if (bound !== undefined) {
             bound.replaceItemsSilent([]);
         }
@@ -885,36 +921,32 @@ export class HeadersFootersCatalog implements FeatureMultiPackagePart {
     }
 }
 
-/**
- * Bound HeaderFooter instances by relationship id (document-scoped views).
- * Catalog text helpers and Body mutations stay in sync through this map.
- * @private
- */
-const boundHeaderFooterByRelId: Map<string, HeaderFooter> = new Map<string, HeaderFooter>();
 
 /**
+ * @param {WordDocument} document - The document.
  * @param {string} relationshipId - The relationship id.
  * @param {HeaderFooter} hf - The hf.
  * @returns {void} Nothing is returned.
  * @private
  */
-function registerBoundHeaderFooter(relationshipId: string, hf: HeaderFooter): void {
+function registerBoundHeaderFooter(document: WordDocument, relationshipId: string, hf: HeaderFooter): void {
     if (relationshipId === '') {
         return;
     }
-    boundHeaderFooterByRelId.set(relationshipId, hf);
+    headersFootersFor(document).boundByRelId.set(relationshipId, hf);
 }
 
 /**
  * Keep bound HeaderFooter Body store aligned after catalog-only mutations.
  *
+ * @param {HeadersFootersCatalog} catalog - The catalog.
  * @param {string} relationshipId - The relationship id.
  * @param {LoadedPart} entry - The entry.
  * @returns {void} Nothing is returned.
  * @private
  */
-function refreshBoundHeaderFooterFromEntry(relationshipId: string, entry: LoadedPart): void {
-    const bound: HeaderFooter = boundHeaderFooterByRelId.get(relationshipId);
+function refreshBoundHeaderFooterFromEntry(catalog: HeadersFootersCatalog, relationshipId: string, entry: LoadedPart): void {
+    const bound: HeaderFooter = catalog.boundByRelId.get(relationshipId);
     if (bound === undefined) {
         return;
     }
@@ -997,11 +1029,11 @@ function createHeaderFooterForRelationship(
     refType: HeaderFooterSlotRef = 'default',
     section?: DocSection
 ): HeaderFooter {
-    const existing: HeaderFooter = boundHeaderFooterByRelId.get(relationshipId);
+    const catalog: HeadersFootersCatalog = headersFootersFor(document);
+    const existing: HeaderFooter = catalog.boundByRelId.get(relationshipId);
     if (existing !== undefined) {
         return existing;
     }
-    const catalog: HeadersFootersCatalog = headersFootersFor(document);
     const entry: LoadedPart = catalog.entryForRelationship(relationshipId);
     const blocks: BlockContent[] = entry !== undefined ? entry.blocks.slice() : [];
     const hf: HeaderFooter = new HeaderFooter(section, kind, refType, blocks, document, relationshipId);
@@ -1016,7 +1048,7 @@ function createHeaderFooterForRelationship(
             syncHeaderFooterToCatalog(document, hf.relationshipId, hf);
         }
     );
-    registerBoundHeaderFooter(relationshipId, hf);
+    registerBoundHeaderFooter(document, relationshipId, hf);
     return hf;
 }
 
@@ -1055,7 +1087,7 @@ function createSectionHeaderFooterSlot(
             return;
         }
         hf.bindRelationshipId(relId);
-        registerBoundHeaderFooter(relId, hf);
+        registerBoundHeaderFooter(document, relId, hf);
         const entry: LoadedPart = catalog.entryForRelationship(relId);
         if (entry !== undefined) {
             loadCatalogBlocksIntoHeaderFooter(document, entry, hf);
@@ -1078,7 +1110,7 @@ function createSectionHeaderFooterSlot(
         );
         props.setHeaderFooterReference(kind, refType, ensured.relationshipId);
         hf.bindRelationshipId(ensured.relationshipId);
-        registerBoundHeaderFooter(ensured.relationshipId, hf);
+        registerBoundHeaderFooter(document, ensured.relationshipId, hf);
         loadCatalogBlocksIntoHeaderFooter(document, ensured.entry, hf);
     };
 
@@ -1361,11 +1393,25 @@ export function evenFooter(document: WordDocument): HeaderFooter | undefined {
     }
     return footerForSection(document, section, 'even');
 }
+function sameBytes(a: Uint8Array, b: Uint8Array): boolean {
+    if (a.length !== b.length) {
+        return false;
+    }
+    for (let i: number = 0; i < a.length; i++) {
+        // eslint-disable-next-line security/detect-object-injection -- key/index is internal (bounded loop index or fixed lookup table), not user-controlled property path
+        if (a[i] !== b[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
 function serializeHeaderFooterPart(entry: LoadedPart): Uint8Array {
+    const children: OpenXmlElement[] = serializeBodyBlocks(entry.blocks);
     const root: OpenXmlElement = wmlElement(rootLocalName(entry.kind), {
         attributes: entry.rootExtra.attributes,
-        namespaceDeclarations: entry.rootExtra.namespaceDeclarations,
-        children: serializeBodyBlocks(entry.blocks)
+        namespaceDeclarations: closePartNamespaces(entry.rootExtra.namespaceDeclarations, children, entry.rootExtra.attributes),
+        children
     });
     return utf8.encode(serializeXml(root));
 }
@@ -1429,7 +1475,6 @@ let registered: boolean = false;
  */
 export function resetHeadersFootersFeatureForTests(): void {
     registered = false;
-    boundHeaderFooterByRelId.clear();
     resetHeadersFootersSlotFactoryForTests();
     resetHeadersFootersLinkToPreviousHandlersForTests();
 }
@@ -1611,6 +1656,91 @@ export function setSectionFooter(document: WordDocument, section: PageSetup, tex
     const { entry, relationshipId } = catalog.ensurePart('footer', section, refType, usedRelationshipIds(document), usedPartNameKeys(document));
     catalog.setSimpleText(entry, text);
     section.setHeaderFooterReference('footer', refType, relationshipId);
+}
+/**
+ * Reads the bytes of every picture in a live header/footer from its own part relationships.
+ *
+ * @param {WordDocument} source - The document the header/footer belongs to.
+ * @param {HeadersFootersCatalog} catalog - The source catalog.
+ * @param {string} relationshipId - The header/footer relationship id.
+ * @param {HeaderFooter} live - The live header/footer.
+ * @returns {Array<Uint8Array | undefined>} Picture bytes in document order.
+ * @private
+ */
+function headerFooterPictureBytes(
+    source: WordDocument, catalog: HeadersFootersCatalog, relationshipId: string, live: HeaderFooter
+): Array<Uint8Array | undefined> {    const result: Array<Uint8Array | undefined> = [];
+    const entry: LoadedPart | undefined = catalog.entryForRelationship(relationshipId);
+    const pkg: OpcPackage = source.opcPackage();
+    const rels: Relationships | undefined = entry === undefined ? undefined : relationshipsForPart(pkg, entry.partName);
+    visitBlocksInDocumentOrder(live.listBlocks(), (paragraph: Paragraph): void => {
+        for (const picture of picturesInParagraph(paragraph)) {
+            let bytes: Uint8Array | undefined;
+            const rel: OpcRelationship | undefined = rels === undefined || entry === undefined
+                ? undefined : rels.items.find((item: OpcRelationship): boolean => item.id === picture.relationshipId);
+            if (rel !== undefined && entry !== undefined) {
+                const part: PackagePart | undefined = partByName(pkg, resolveInternalTarget(rel.target, entry.partName));
+                bytes = part === undefined ? undefined : part.data;
+            }
+            result.push(bytes);
+        }
+    });
+    return result;
+}
+/**
+ * Copies every header/footer part referenced by `sourceSetup` into `destination` and re-points
+ * `destSetup` at the new parts, so an imported section never references a relationship id that
+ * only exists in the source package.
+ *
+ * @param {WordDocument} source - The document the references belong to.
+ * @param {WordDocument} destination - The document receiving the copies.
+ * @param {PageSetup} sourceSetup - The source section properties.
+ * @param {PageSetup} destSetup - The cloned section properties inside `destination`.
+ * @returns {void} Nothing is returned.
+ * @private
+ */
+export function copySectionHeaderFooterParts(
+    source: WordDocument, destination: WordDocument, sourceSetup: PageSetup, destSetup: PageSetup
+): void {
+    const sourceCatalog: HeadersFootersCatalog = headersFootersFor(source);
+    type Reference = { kind: HeaderFooterType; refType: HeaderFooterReferenceType; relationshipId: string };
+    const references: ReadonlyArray<Reference> = sourceSetup.headerFooterReferences.map((r: Reference): Reference =>
+        ({ kind: r.kind, refType: r.refType, relationshipId: r.relationshipId }));
+    // Drop ids that only mean something in the source package.
+    for (const ref of references) {
+        destSetup.setHeaderFooterReference(ref.kind, ref.refType, undefined);
+    }
+    const destCatalog: HeadersFootersCatalog = headersFootersFor(destination);
+    for (const ref of references) {
+        if (!sourceCatalog.hasRelationship(ref.relationshipId)) {
+            continue;
+        }
+        const live: HeaderFooter = createHeaderFooterForRelationship(source, ref.relationshipId, ref.kind, ref.refType);
+        const { entry, relationshipId } = destCatalog.ensurePart(
+            ref.kind, destSetup, ref.refType, usedRelationshipIds(destination), usedPartNameKeys(destination));
+        // Picture relationships in a header/footer are scoped to that part, so read the bytes from its own rels.
+        const sourceBytes: Array<Uint8Array | undefined> = headerFooterPictureBytes(source, sourceCatalog, ref.relationshipId, live);
+        const cloned: Body = live.clone();
+        entry.blocks = cloned.listBlocks().slice();
+        let pictureIndex: number = 0;
+        visitBlocksInDocumentOrder(entry.blocks, (paragraph: Paragraph): void => {
+            for (const picture of picturesInParagraph(paragraph)) {
+                // eslint-disable-next-line security/detect-object-injection
+                const bytes: Uint8Array | undefined = sourceBytes[pictureIndex];
+                pictureIndex += 1;
+                if (bytes !== undefined) {
+                    picture.adoptBytes(destination, bytes);
+                }
+            }
+        });
+        // Copied content keeps source-only prefixes (w14:paraId, ...), so the root must declare them too.
+        const sourceEntry: LoadedPart | undefined = sourceCatalog.entryForRelationship(ref.relationshipId);
+        if (sourceEntry !== undefined) {
+            entry.rootExtra = sourceEntry.rootExtra;
+        }
+        entry.dirty = true;
+        destSetup.setHeaderFooterReference(ref.kind, ref.refType, relationshipId);
+    }
 }
 /**
  * Link an existing header part to a section without creating a duplicate part.

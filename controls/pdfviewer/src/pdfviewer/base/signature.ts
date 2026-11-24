@@ -756,10 +756,11 @@ export class Signature {
     /**
      * @param {any} annot - It describes the signature annotation details.
      * @param {string} key - It describes the signature form field key.
+     * @param {boolean} isExistingFieldRender - It describes whether the signature is being rendered from an existing field value during document load.
      * @private
      * @returns {void}
      */
-    public updateSignatureDataInSession(annot: any, key: string): void {
+    public updateSignatureDataInSession(annot: any, key: string, isExistingFieldRender?: boolean): void {
         const data: string = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         const formFieldsData: any = JSON.parse(data);
         if (!isNullOrUndefined(formFieldsData)){
@@ -827,8 +828,10 @@ export class Signature {
                         }
                     }
                     this.pdfViewer.formDesigner.updateFormFieldCollections(formFieldsData[parseInt(i.toString(), 10)].FormField);
-                    this.pdfViewer.formDesigner.updateFormFieldPropertiesChanges('formFieldPropertiesChange', formFieldsData[parseInt(i.toString(), 10)].FormField, true, false, false,
-                                                                                 false, false, false, false, false, false, false, false, false, false, false, false, false,  '', formFieldsData[parseInt(i.toString(), 10)].FormField.value);
+                    if (!isExistingFieldRender) {
+                        this.pdfViewer.formDesigner.updateFormFieldPropertiesChanges('formFieldPropertiesChange', formFieldsData[parseInt(i.toString(), 10)].FormField, true, false, false,
+                                                                                     false, false, false, false, false, false, false, false, false, false, false, false, false,  '', formFieldsData[parseInt(i.toString(), 10)].FormField.value);
+                    }
                 }
                 if (formFieldsData[parseInt(i.toString(), 10)].Key === annot.id) {
                     formFieldsData[parseInt(i.toString(), 10)].FormField.signatureBound = annot.bounds;

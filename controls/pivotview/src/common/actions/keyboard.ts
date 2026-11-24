@@ -38,6 +38,7 @@ export class CommonKeyboardInteraction {
         });
     }
     private keyActionHandler(e: KeyboardEventArgs): void {
+        if (!this.parent || this.parent.control instanceof PivotView && this.parent.control.gridSettings.layout === 'Flat') { return; }
         switch (e.action) {
         case 'shiftF':
             this.processFilter(e);

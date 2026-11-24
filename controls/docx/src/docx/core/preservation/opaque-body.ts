@@ -29,7 +29,7 @@ export function documentBody(root: OpenXmlElement): OpenXmlElement {
     return body;
 }
 /**
- * Every body child element is opaque until a feature claims it (TASK-1009 for `w:p`).
+ * Every body child element is opaque until a feature claims it (for `w:p`).
  *
  * @param {OpenXmlElement} body - The body.
  * @returns {ReadonlyArray<OpaqueBlock>} The result.

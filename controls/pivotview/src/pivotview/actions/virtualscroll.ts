@@ -58,6 +58,7 @@ export class VirtualScroll {
     }
 
     private wireEvents(): void {
+        if (this.parent.gridSettings.layout === 'Flat') { this.suspend(); return; }
         this.engineModule = this.parent.dataType === 'pivot' ? this.parent.engineModule : this.parent.olapEngineModule;
         if (this.parent.displayOption.view !== 'Chart') {
             this.clearAllEventHandlers();
@@ -125,6 +126,16 @@ export class VirtualScroll {
             this.parent.grid.off('check-scroll-reset');
             this.parent.grid.off('prevent-frozen-scroll-refresh');
         }
+    }
+
+    /**
+     * Releases pivot axis handlers while Grid owns the Flat viewport.
+     * @returns {void}
+     * @hidden
+     */
+    public suspend(): void {
+        this.clearAllEventHandlers();
+        if (this.keyboardEvents) { this.keyboardEvents.destroy(); this.keyboardEvents = null; }
     }
 
     private onWheelScroll(mCont: HTMLElement): Function {

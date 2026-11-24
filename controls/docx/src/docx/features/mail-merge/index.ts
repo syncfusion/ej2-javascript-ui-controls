@@ -73,10 +73,12 @@ const DATA_SOURCE_RELATIONSHIP_TYPES: string[] = [
     STRICT_MAIL_MERGE_HEADER_SOURCE_RELATIONSHIP_TYPE
 ];
 /** `ST_MailMergeDocType` (Transitional `wml.xsd`).
+ *
  * @private
  */
 export type MailMergeDocumentType = 'catalog' | 'envelopes' | 'mailingLabels' | 'formLetters' | 'email' | 'fax';
 /** `ST_MailMergeDest` (Transitional `wml.xsd`).
+ *
  * @private
  */
 export type MailMergeDestination = 'newDocument' | 'printer' | 'email' | 'fax';
@@ -183,6 +185,7 @@ function collectExternalTargets(pkg: OpcPackage, source: PartName, relationshipT
  * Preserve-only mail merge metadata catalog.
  * Recipient data and data-source relationships are never fetched, executed, or
  * mutated; connection strings and queries remain opaque.
+ *
  * @private
  */
 export class MailMergeCatalog implements FeatureMultiPackagePart {

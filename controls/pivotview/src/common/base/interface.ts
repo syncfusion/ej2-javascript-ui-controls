@@ -6,7 +6,7 @@ import { L10n } from '@syncfusion/ej2-base';
 import { Grid, ExcelStyle, CellSelectionMode, SelectionType, CheckboxSelectionType, PdfExportProperties as GridPdfExportProperties, Hyperlink, Image as GridExcelImage } from '@syncfusion/ej2-grids';
 import { Column, ExcelExportProperties as GridExcelExportProperties } from '@syncfusion/ej2-grids';
 import { ExcelHeaderQueryCellInfoEventArgs as GridExcelHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs as GridExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
-import { CellSelectingEventArgs, ColumnModel, ExcelHAlign, ExcelVAlign } from '@syncfusion/ej2-grids';
+import { CellSelectingEventArgs, ColumnModel, ExcelHAlign, ExcelVAlign, ISelectedCell } from '@syncfusion/ej2-grids';
 import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell, PdfPageOrientation, PdfGridColumn } from '@syncfusion/ej2-pdf-export';
 import { SeriesModel, ExportType, Axis, IChartEventArgs, FontModel, Alignment } from '@syncfusion/ej2-charts';
 import { ItemModel } from '@syncfusion/ej2-navigations';
@@ -16,7 +16,49 @@ import { OlapEngine } from '../../base/olap/engine';
 import { GridSettings } from '../../pivotview/model/gridsettings';
 import { ChartSettings } from '../../pivotview/model/chartsettings';
 import { Workbook } from '@syncfusion/ej2-excel-export';
+import { FlatSettingsModel } from '../../pivotview/model/flatsettings-model';
 import { ConditionalFormatSettingsModel, FilterModel, FormatSettingsModel, SortModel, ValueSortSettingsModel } from '../../model/datasourcesettings-model';
+
+/**
+ * Represents a physical field in the internal Flat field chooser.
+ *
+ * @hidden
+ */
+export interface FlatFieldNode {
+    [key: string]: string | boolean;
+    id: string;
+    text: string;
+    isChecked: boolean;
+}
+
+/**
+ * Stores physical selection identities before native Grid column gestures change their indexes.
+ *
+ * @hidden
+ */
+export interface FlatColumnSelection {
+    rows: number[];
+    cells: ISelectedCell[];
+    fields: string[];
+    focus?: { row: number; field: string };
+}
+
+/** Defines a public Flat record value. Unsupported or missing source values are represented as null. */
+export type FlatValue = string | number | boolean | Date | null;
+
+/** Defines a public Flat record containing selected values keyed by their physical source field paths. */
+export interface FlatRecord {
+    /** Defines the selected value for a physical source field path. */
+    [field: string]: FlatValue;
+}
+
+/** Provides public, detached configuration snapshots for a Flat action. Changes to these snapshots do not update the component. */
+export interface FlatActionInfo {
+    /** Defines the Flat settings committed before the action. */
+    previous: FlatSettingsModel;
+    /** Defines the Flat settings proposed by the action. */
+    current: FlatSettingsModel;
+}
 
 /**
  * Interface
@@ -1055,9 +1097,11 @@ export interface AggregateEventArgs {
     /** Defines the column header information of the value cell. */
     column?: IAxisSet;
     /**
-     * Defines the aggregate cell value of the current cell.
+     * Defines the aggregate cell value of the current cell. For a date-typed value
+     * field with `Min` or `Max` summary, the value is a `Date` and the hook may
+     * return a `Date` or `undefined`.
      */
-    value?: number;
+    value?: number | Date;
     /** Defines the actual data source collection that used to aggregate the value of the current cell. */
     cellSets?: IDataSet[];
     /** Defines whether the row header cell type is header or sub-total or grand-total. */
@@ -1334,6 +1378,8 @@ export interface FetchRawDataArgs {
  * CRUD operation in [`editing`](../../pivotview/editing/) in the Pivot Table.
  */
 export interface PivotActionBeginEventArgs {
+    /** Informational Flat settings; only cancel is mutable before the action. */
+    flatInfo?: FlatActionInfo;
     /** Defines the current data source settings information such as rows, columns, values, filters, etc., that are used to render the pivot table and field list. */
     dataSourceSettings?: IDataOptions;
     /** Defines name of the current UI action when it begins. The following are the UI actions and their names:
@@ -1514,6 +1560,8 @@ export interface PivotActionFailureEventArgs {
  * Defines the unique information of the current UI action performed such as sorting, filtering, drill, editing, report manipulation, summarization, etc.
  */
 export interface PivotActionInfo {
+    /** Flat configuration snapshots for the completed action. */
+    flatInfo?: FlatActionInfo;
     /** Defines the selected field’s sort settings to order their members either in ascending or descending that used to be displayed in the pivot table. */
     sortInfo?: ISort;
     /** Defines the selected field’s filter settings with either selective or conditional-based filter members that used to be displayed in the pivot table. */
@@ -1654,6 +1702,8 @@ export interface PivotAggregateInfo {
     baseField?: string;
     /** Defines the base item for aggregate operations. */
     baseItem?: string;
+    /** Defines whether the previous/next base item can belong to another parent member. */
+    allowCrossGroupCalculation?: boolean;
 }
 
 /**
@@ -1965,6 +2015,19 @@ export interface WebMcpChartSettings {
         /** Chart series type. */
         type?: ChartSeriesType;
     };
+}
+
+/**
+ * Result of parsing CSV text, used by PivotView and PivotFieldList when
+ * the data source `type` is `CSV` and data is loaded from `url`.
+ */
+export interface CSVParseResult {
+    /** Parsed records. The first record is the header row. */
+    records: string[][];
+    /** True when the text ended inside an open quoted field. */
+    hasUnterminatedQuote: boolean;
+    /** True when the supplied delimiter was invalid and "," was used instead. */
+    isDelimiterInvalid: boolean;
 }
 
 /**

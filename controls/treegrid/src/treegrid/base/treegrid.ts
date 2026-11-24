@@ -4,7 +4,9 @@ import {Event, Property, NotifyPropertyChanges, INotifyPropertyChanged, setValue
 import { Column, ColumnModel } from '../models/column';
 import { BeforeBatchSaveArgs, BeforeBatchAddArgs, BatchDeleteArgs, BeforeBatchDeleteArgs, Row, getNumberFormat, RowSelectable, LoadEventArgs, setEnableSeamlessScrolling } from '@syncfusion/ej2-grids';
 import { GridModel, ColumnQueryModeType, HeaderCellInfoEventArgs, EditSettingsModel as GridEditModel, Freeze as FreezeColumn } from '@syncfusion/ej2-grids';
-import { RowDragEventArgs, RowDropEventArgs, RowDropSettingsModel, RowDropSettings, getUid, parentsUntil } from '@syncfusion/ej2-grids';
+import { RowDragEventArgs, RowDropEventArgs, getUid, parentsUntil } from '@syncfusion/ej2-grids';
+import { RowDropSettings } from '../models/rowdrop-settings';
+import { RowDropSettingsModel } from '../models/rowdrop-settings-model';
 import { LoadingIndicator } from '../models/loading-indicator';
 import { LoadingIndicatorModel } from '../models/loading-indicator-model';
 import { TextAlign } from'@syncfusion/ej2-grids';
@@ -2553,7 +2555,20 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.grid.enableAdaptiveUI = this.enableAdaptiveUI;
         this.grid.enableImmutableMode = this.enableImmutableMode;
         this.grid.allowRowDragAndDrop = this.allowRowDragAndDrop;
-        this.grid.rowDropSettings = getActualProperties(this.rowDropSettings);
+        const rawTargetID: string | string[] = this.rowDropSettings.targetID as string | string[];
+        // Build a fresh shallow-copy here. `getActualProperties(this.rowDropSettings)`
+        // returns the same internal `properties` bag owned by the outer ChildProperty,
+        // so any mutation on it (e.g. setting targetID to the first id) would also
+        // mutate the outer TreeGrid-side setting and silently strip the array down
+        // to a single string. That bug surfaced as `targetIDSet` ending up with one
+        // element at runtime (the first configured id).
+        const gridRowDropSettings: RowDropSettingsModel = {
+            targetID: Array.isArray(rawTargetID) ? rawTargetID[0] : rawTargetID
+        };
+        // The inner Grid consumes ej2-grids' narrower RowDropSettingsModel;
+        // we hold the wider local model on the TreeGrid-side property and
+        // normalize before delegating.
+        this.grid.rowDropSettings = gridRowDropSettings as any;
         this.grid.rowHeight = this.rowHeight;
         this.grid.gridLines = this.gridLines;
         this.grid.allowSelection = this.allowSelection;
@@ -3723,7 +3738,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         if (isNullOrUndefined(this.grid)) {
             return;
         }
-        if (!isNullOrUndefined(this.rowDropSettings.targetID) &&
+        if (!isNullOrUndefined(this.rowDropSettings.targetID) && !Array.isArray(this.rowDropSettings.targetID) &&
         isNullOrUndefined(document.getElementById(this.grid.rowDropSettings.targetID))) {
             document.getElementById(this.rowDropSettings.targetID).id = this.grid.rowDropSettings.targetID;
             this.rowDropSettings.targetID = this.grid.rowDropSettings.targetID;
@@ -3878,6 +3893,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             query.queries = sortQuery;
             const modifiedData: Object = new DataManager(parentData).executeLocal(query);
             if (this.allowRowDragAndDrop && !isNullOrUndefined(this.rowDragAndDropModule['draggedRecord']) &&
+                !isNullOrUndefined(this.rowDragAndDropModule['droppedRecord']) &&
                 this.rowDragAndDropModule['droppedRecord'].hasChildRecords && this.rowDragAndDropModule['dropPosition'] !== 'middleSegment') {
                 const dragdIndex: number = (modifiedData as ITreeData[]).indexOf(this.rowDragAndDropModule['draggedRecord']);
                 (modifiedData as ITreeData[]).splice(dragdIndex, 1);
@@ -4186,7 +4202,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public setRowData(key: string | number, rowData?: ITreeData): void {
-        const currentRecords: ITreeData[] = this.getCurrentViewRecords();
+        const currentRecords: ITreeData[] = this.enableDomVirtualization ?
+            this.currentDomVirtualRecords : this.getCurrentViewRecords();
         const primaryKey: string = this.grid.getPrimaryKeyFieldNames()[0];
         let level: number = 0;
         let record: ITreeData = {};
@@ -4775,7 +4792,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @isGenericType true
      */
     public getVisibleRecords(): Object[] {
-        let visibleRecords: ITreeData[] = []; const currentViewRecords: ITreeData[] = this.getCurrentViewRecords();
+        let visibleRecords: ITreeData[] = [];
+        const currentViewRecords: ITreeData[] = this.enableDomVirtualization ?
+            this.currentDomVirtualRecords : this.getCurrentViewRecords();
         if (!this.allowPaging) {
             for (let i: number = 0; i < currentViewRecords.length; i++) {
                 visibleRecords.push(currentViewRecords[parseInt(i.toString(), 10)]);

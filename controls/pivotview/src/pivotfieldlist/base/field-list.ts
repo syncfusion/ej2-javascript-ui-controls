@@ -10,7 +10,7 @@ import * as cls from '../../common/base/css-constant';
 import { LoadEventArgs, EnginePopulatingEventArgs, EnginePopulatedEventArgs, BeforeServiceInvokeEventArgs, FetchRawDataArgs, UpdateRawDataArgs, PivotActionBeginEventArgs, PivotActionCompleteEventArgs, PivotActionFailureEventArgs, HeadersSortEventArgs, AfterServiceInvokeEventArgs } from '../../common/base/interface';
 import { AggregateEventArgs, CalculatedFieldCreateEventArgs, AggregateMenuOpenEventArgs } from '../../common/base/interface';
 import { FieldDroppedEventArgs, FieldListRefreshedEventArgs, FieldDropEventArgs } from '../../common/base/interface';
-import { FieldDragStartEventArgs, FieldRemoveEventArgs } from '../../common/base/interface';
+import { FieldDragStartEventArgs, FieldRemoveEventArgs, CSVParseResult } from '../../common/base/interface';
 import { CommonArgs, MemberFilteringEventArgs, MemberEditorOpenEventArgs } from '../../common/base/interface';
 import { Mode, AggregateTypes } from '../../common/base/enum';
 import { PivotCommon } from '../../common/base/pivot-common';
@@ -27,6 +27,7 @@ import { CalculatedField } from '../../common/calculatedfield/calculated-field';
 import { PivotContextMenu } from '../../common/popups/context-menu';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { PivotUtil } from '../../base/util';
+import { getTokenFields } from '../../base/adjacent-difference';
 import { OlapEngine, IOlapFieldListOptions, IOlapCustomProperties, IOlapField } from '../../base/olap/engine';
 import { Sorting } from '../../base';
 
@@ -126,6 +127,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     public actionObj: PivotActionCompleteEventArgs = {};
     /** @hidden */
     public destroyEngine: boolean = false;
+    /** @hidden */
+    public expandedFolders: { [id: string]: boolean } = {};
     /** @hidden */
     public defaultFieldListOrder: Sorting = 'None';
     /** @hidden */
@@ -672,6 +675,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             NotBetween: 'Not Between',
             Top: 'Top',
             Bottom: 'Bottom',
+            Items: 'Items',
+            topBottomMode: 'Mode',
+            invalidPercentage: 'You must enter a number between 0 and 100.',
             Before: 'Before',
             BeforeOrEqualTo: 'Before Or Equal To',
             After: 'After',
@@ -722,6 +728,14 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             summarizeValuesBy: 'Summarize values by',
             baseField: 'Base field',
             baseItem: 'Base item',
+            previousItem: '(previous)',
+            nextItem: '(next)',
+            crossGroupComparison: 'Compare across groups',
+            adjacentNotApplicable: 'N/A',
+            adjacentPreviousCaption: 'Difference from previous {0} of {1}',
+            adjacentNextCaption: 'Difference from next {0} of {1}',
+            adjacentPreviousPercentCaption: '% Difference from previous {0} of {1}',
+            adjacentNextPercentCaption: '% Difference from next {0} of {1}',
             example: 'e.g:',
             editorDataLimitMsg: ' more items. Search to refine further.',
             deferLayoutUpdate: 'Defer Layout Update',
@@ -1059,12 +1073,15 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     private onReadyStateChange(result: string): void {
         let dataSource: string[][] | IDataSet[] = [];
         if (this.dataSourceSettings.type === 'CSV') {
-            const jsonObject: string[] = result.split(/\r?\n|\r/);
-            for (let i: number = 0; i < jsonObject.length; i++) {
-                if (!isNullOrUndefined(jsonObject[i as number]) && jsonObject[i as number] !== '') {
-                    (dataSource as string[][]).push(jsonObject[i as number].split(','));
-                }
+            const parseResult: CSVParseResult = PivotUtil.parseCSV(
+                result, this.dataSourceSettings.delimiter, this.dataSourceSettings.enableQuotedLineBreaks);
+            if (parseResult.isDelimiterInvalid) {
+                this.actionFailureMethod(new Error('Pivot Table: "delimiter" must be a non-empty string without double quotes or line breaks. Falling back to ",".'));
             }
+            if (parseResult.hasUnterminatedQuote) {
+                this.actionFailureMethod(new Error('Pivot Table: the CSV data ended inside a quoted field. The remaining text was read as one value.'));
+            }
+            (dataSource as string[][]) = parseResult.records;
         } else {
             try {
                 dataSource = JSON.parse(result);
@@ -1184,7 +1201,22 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                         control.updateGroupingReport(newProp.dataSourceSettings.groupSettings, 'Date');
                     }
                 }
-                if (!isNullOrUndefined(newProp.dataSourceSettings.dataSource) || (this.dataType === 'olap' && !isNullOrUndefined(newProp.dataSourceSettings.url))) {
+                if (this.dataType === 'pivot' && this.dataSourceSettings.type === 'CSV' &&
+                    this.dataSourceSettings.url && this.dataSourceSettings.url !== '' &&
+                    this.dataSourceSettings.mode !== 'Server' && newProp.dataSourceSettings &&
+                    ('url' in newProp.dataSourceSettings || 'type' in newProp.dataSourceSettings ||
+                    ('delimiter' in newProp.dataSourceSettings || 'enableQuotedLineBreaks' in newProp.dataSourceSettings))) {
+                    this.engineModule.fieldList = null;
+                    this.engineModule.isEmptyData = true;
+                    this.engineModule.data = [];
+                    this.engineModule.pivotValues = [];
+                    this.engineModule.groupingFieldsInfo = {};
+                    this.engineModule.rowCount = 0;
+                    this.engineModule.columnCount = 0;
+                    this.render();
+                } else if (newProp.dataSourceSettings &&
+                    (!isNullOrUndefined(newProp.dataSourceSettings.dataSource) ||
+                    (this.dataType === 'olap' && !isNullOrUndefined(newProp.dataSourceSettings.url)))) {
                     if (this.dataType !== 'olap') {
                         if (!isNullOrUndefined(this.savedDataSourceSettings)) {
                             PivotUtil.updateDataSourceSettings(this.staticPivotGridModule, this.savedDataSourceSettings);
@@ -1358,6 +1390,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     pivotFieldList: this.pivotFieldList,
                     pivotValues: this.engineModule.pivotValues
                 };
+                this.reportAdjacentDifferenceErrors(this.engineModule.adjacentErrors);
                 const this$: PivotFieldList = this as PivotFieldList;
                 control.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
                     this$.pivotFieldList = observedArgs.pivotFieldList;
@@ -1372,6 +1405,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     pivotFieldList: this.pivotFieldList,
                     pivotValues: this.olapEngineModule.pivotValues
                 };
+                this.reportAdjacentDifferenceErrors(getTokenFields(this.dataSourceSettings.values));
                 const this$: PivotFieldList = this as PivotFieldList;
                 control.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
                     this$.pivotFieldList = observedArgs.pivotFieldList;
@@ -1385,6 +1419,21 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             if (this.treeViewModule.fieldTable && !this.isAdaptive) {
                 this.notify(events.treeViewUpdate, {});
             }
+        }
+    }
+
+    /**
+     * Raises actionFailure for value fields whose (previous)/(next) base item cannot be applied.
+     *
+     * @param {string[]} fields - Names of the misconfigured value fields.
+     * @returns {void}
+     * @hidden
+     */
+    public reportAdjacentDifferenceErrors(fields: string[]): void {
+        for (const field of fields) {
+            this.actionObj.actionName = events.adjacentDifferenceError;
+            this.actionFailureMethod(new Error('The (previous)/(next) base item of value field "' + field +
+                '" needs a Difference From type and a base field on the row or column axis.'));
         }
     }
 
@@ -1693,6 +1742,15 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         //});
     }
     private enginePopulatedEventMethod(pivot: PivotFieldList, isTreeViewRefresh: boolean, isOlapDataRefreshed: boolean): void {
+        // Unsupported summary types configured on a date-typed value field yield
+        // empty cells; raise the recorded diagnostics through actionFailure
+        // (PIVOT-MINMAX-008). In popup view the linked PivotView owns the event.
+        if (pivot.dataType === 'pivot' && pivot.engineModule && pivot.engineModule.dateAggregateErrors.length > 0) {
+            const errorField: { fieldName: string; type: string } = pivot.engineModule.dateAggregateErrors[0];
+            pivot.actionFailureMethod(new Error('Summary type "' + errorField.type +
+                '" is not supported for date field "' + errorField.fieldName + '"; the cell is empty.'));
+            pivot.engineModule.dateAggregateErrors = [];
+        }
         const control: PivotView | PivotFieldList = pivot.isPopupView ? pivot.pivotGridModule : pivot;
         const eventArgs: EnginePopulatedEventArgs = {
             dataSourceSettings: pivot.dataSourceSettings as IDataOptions,

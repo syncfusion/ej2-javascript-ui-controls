@@ -9,11 +9,9 @@ import { pointToTwips, twipsToPoint } from '../document/length';
 import { wmlAttr, wmlElement } from '../document/wml';
 import { OpenXmlAttribute } from '../../core/xml/model';
 /**
- * `ST_CharacterSpacing` values from Transitional `wml.xsd`.
+ * Specifies how character spacing is adjusted for East Asian text.
  *
- * - `doNotCompress` — no compression
- * - `compressPunctuation` — compress punctuation
- * - `compressPunctuationAndJapaneseKana` — compress both
+ * The values are DoNotCompress, CompressPunctuation, and CompressPunctuationAndJapaneseKana.
  *
  * @public
  */

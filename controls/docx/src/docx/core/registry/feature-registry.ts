@@ -50,7 +50,6 @@ export function registerFeature(registration: FeatureRegistration): void {
  * @returns {FeatureRegistration} The result.
  *  Internal feature lookup. Not part of the public API.
  * Require a registered feature. Unknown ids throw `UNKNOWN_FEATURE`
- * (TASK-1008 assumption).
  *
  * @private
  */

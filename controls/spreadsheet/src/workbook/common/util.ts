@@ -752,22 +752,24 @@ export function getDataRange(rowIdx: number, colIdx: number, sheet: SheetModel):
  * @param {InsertDeleteModelArgs} args - row index
  * @param {number[]} formatRange - format range index
  * @param {boolean} isAction - specifies isAction.
+ * @param {number} startIndex - Specifies the model insertion start index.
+ * @param {number} endIndex - Specifies the model insertion end index.
  * @returns {number[]} - retruns updated range
  * @hidden
  */
-export function insertFormatRange(args: InsertDeleteModelArgs, formatRange: number[], isAction: boolean): number[] {
-    let sltRangeIndex: number[] = getRangeIndexes(args.model.selectedRange); let insertStartIndex: number = 0;
+export function insertFormatRange(args: InsertDeleteModelArgs, formatRange: number[], isAction: boolean,
+                                  startIndex: number, endIndex: number): number[] {
+    let sltRangeIndex: number[] = getSwapRange(getRangeIndexes(args.model.selectedRange)); let insertStartIndex: number = 0;
     let insertEndIndex: number = 0;
     if (args.modelType === 'Column') {
         if (isAction || (args.insertType === 'before' && args.isUndoRedo)) {
-            sltRangeIndex = [0, args.start as number, 0, args.end];
+            sltRangeIndex = [0, startIndex, 0, endIndex];
         }
-        if (args.insertType === 'before') {
-            if ((formatRange[1] <= sltRangeIndex[1] && formatRange[3] >= sltRangeIndex[1])) {
-                insertStartIndex = 0;
-                insertEndIndex = (sltRangeIndex[3] - sltRangeIndex[1]) + 1;
-            } else if (sltRangeIndex[1] < formatRange[1]) {
+        if (isAction || args.insertType === 'before') {
+            if (sltRangeIndex[1] <= formatRange[1]) {
                 insertStartIndex = insertEndIndex = (sltRangeIndex[3] - sltRangeIndex[1]) + 1;
+            } else if (sltRangeIndex[1] <= formatRange[3]) {
+                insertEndIndex = (sltRangeIndex[3] - sltRangeIndex[1]) + 1;
             }
         } else {
             if (args.isUndoRedo) {
@@ -784,14 +786,13 @@ export function insertFormatRange(args: InsertDeleteModelArgs, formatRange: numb
         return [formatRange[0], formatRange[1] + insertStartIndex, formatRange[2], formatRange[3] + insertEndIndex];
     } else {
         if (isAction || (args.insertType === 'above' && args.isUndoRedo)) {
-            sltRangeIndex = [args.start as number, 0, args.end, 0];
+            sltRangeIndex = [startIndex, 0, endIndex, 0];
         }
-        if (args.insertType === 'above') {
-            if ((formatRange[0] <= sltRangeIndex[0] && formatRange[2] >= sltRangeIndex[0])) {
-                insertStartIndex = 0;
-                insertEndIndex = (sltRangeIndex[2] - sltRangeIndex[0]) + 1;
-            } else if (sltRangeIndex[0] < formatRange[0]) {
+        if (isAction || args.insertType === 'above') {
+            if (sltRangeIndex[0] <= formatRange[0]) {
                 insertStartIndex = insertEndIndex = (sltRangeIndex[2] - sltRangeIndex[0]) + 1;
+            } else if (sltRangeIndex[0] <= formatRange[2]) {
+                insertEndIndex = (sltRangeIndex[2] - sltRangeIndex[0]) + 1;
             }
         } else {
             if (args.isUndoRedo) {

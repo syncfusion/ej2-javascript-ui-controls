@@ -21,6 +21,7 @@ export * from './feature-package-level-part';
 export * from './feature-package-part';
 export * from './feature-run-leaf';
 export * from './headers-footers';
+export * from './import-options';
 export * from './length';
 export * from './load-options';
 export * from './locale-ids';

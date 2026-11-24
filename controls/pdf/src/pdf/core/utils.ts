@@ -4094,7 +4094,7 @@ export function _obtainFontDetails(form: PdfForm, widget: PdfWidgetAnnotation, f
     }
     if (form && form._dictionary.has('DR')) {
         const resources: _PdfDictionary = form._dictionary.get('DR');
-        if (resources.has('Font')) {
+        if (resources instanceof _PdfDictionary && resources.has('Font')) {
             const fonts: _PdfDictionary = resources.get('Font');
             if (fonts.has(fontFamily)) {
                 const fontDictionary: _PdfDictionary = fonts.get(fontFamily);
@@ -4682,7 +4682,7 @@ export function _hasSharedFontResource(annotation: PdfAnnotation | PdfField): bo
         const form: PdfForm = annotation.form;
         if (form && form._dictionary.has('DR')) {
             const resources: _PdfDictionary = form._dictionary.get('DR');
-            if (resources.has('Font')) {
+            if (resources instanceof _PdfDictionary && resources.has('Font')) {
                 if (!form._fontResources) {
                     form._fontResources = resources.get('Font');
                 }

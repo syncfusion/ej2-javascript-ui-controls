@@ -1,12 +1,12 @@
 /**
  * CSS stylesheet processing for HTML parser.
  * Parses CSS rules and applies them to HTML elements during parsing.
- * This allows both DocIO and PDF consumers to use pre-resolved styles.
+ * This allows both document and PDF consumers to use pre-resolved styles.
  *
  * @private
  */
 
-import { _HTMLElement } from './dom-node.js';
+import { _HTMLElement } from './dom-node';
 
 /**
  * Represents a parsed CSS rule with selector and declarations.
@@ -33,35 +33,35 @@ export interface _CSSRule {
 export class _CSSProcessor {
     /**
      * Parse CSS text and extract rules.
-     * 
-     * @param cssText - Raw CSS text from <style> element
-     * @returns Array of parsed CSS rules
+     *
+     * @param {string} cssText - Raw CSS text from <style> element
+     * @returns {_CSSRule[]} Array of parsed CSS rules
      * @private
      */
     static parseCSS(cssText: string): _CSSRule[] {
         const rules: _CSSRule[] = [];
-        
+
         // Remove comments
-        const cleanCSS = cssText.replace(/\/\*[\s\S]*?\*\//g, '');
-        
+        const cleanCSS: string = cssText.replace(/\/\*[\s\S]*?\*\//g, '');
+
         // Match rules: selector { declarations }
-        const rulePattern = /([^{]+)\{([^}]+)\}/g;
+        const rulePattern: RegExp = /([^{]+)\{([^}]+)\}/g;
         let match: RegExpExecArray | null;
-        
+
         // eslint-disable-next-line no-cond-assign
         while ((match = rulePattern.exec(cleanCSS)) !== null) {
-            const selector = match[1].trim();
-            const declarations = match[2].trim();
-            
+            const selector: string = match[1].trim();
+            const declarations: string = match[2].trim();
+
             // Parse declarations
-            const parsedDeclarations = this._parseDeclarations(declarations);
+            const parsedDeclarations: Record<string, string> = this._parseDeclarations(declarations);
             if (Object.keys(parsedDeclarations).length === 0) {
                 continue;
             }
 
             // Selector lists ("h1, h2") produce one rule per selector
             for (const single of selector.split(',')) {
-                const parsedSelector = this._parseSelector(single);
+                const parsedSelector: _CSSRule['selector'] = this._parseSelector(single);
                 if (!parsedSelector) {
                     continue;
                 }
@@ -71,45 +71,46 @@ export class _CSSProcessor {
                 });
             }
         }
-        
+
         return rules;
     }
-    
+
     /**
      * Parse a CSS selector.
      * Supports: .class, #id, element, element.class, etc.
-     * 
-     * @param selector - CSS selector string
-     * @returns Parsed selector object or null if unsupported
+     *
+     * @param {string} selector - CSS selector string
+     * @returns {Object | null} Parsed selector object or null if unsupported
      * @private
      */
     private static _parseSelector(selector: string): _CSSRule['selector'] | null {
         selector = selector.trim();
-        
+
         if (!selector) {
             return null;
         }
-        
+
         // Class selector: .classname
-        const classMatch = selector.match(/^\.([a-zA-Z0-9_-]+)$/);
+        const classMatch: RegExpMatchArray = selector.match(/^\.([a-zA-Z0-9_-]+)$/);
         if (classMatch) {
             return {
                 type: 'class',
                 className: classMatch[1]
             };
         }
-        
+
         // ID selector: #id
-        const idMatch = selector.match(/^#([a-zA-Z0-9_-]+)$/);
+        const idMatch: RegExpMatchArray = selector.match(/^#([a-zA-Z0-9_-]+)$/);
         if (idMatch) {
             return {
                 type: 'id',
                 id: idMatch[1]
             };
         }
-        
+
         // Element selector: tagname
-        const elementMatch = selector.match(/^([a-zA-Z][a-zA-Z0-9]*)(\.([a-zA-Z0-9_-]+))?$/);
+        // eslint-disable-next-line security/detect-unsafe-regex
+        const elementMatch: RegExpMatchArray = selector.match(/^([a-zA-Z][a-zA-Z0-9]*)(\.([a-zA-Z0-9_-]+))?$/);
         if (elementMatch) {
             if (elementMatch[3]) {
                 // Element with class: p.classname
@@ -124,72 +125,73 @@ export class _CSSProcessor {
                 tagName: elementMatch[1]
             };
         }
-        
+
         // Descendant selector: element element (e.g., "div p")
-        const parts = selector.split(/\s+/).filter((p) => p.length > 0);
+        const parts: string[] = selector.split(/\s+/).filter((p: string) => p.length > 0);
         if (parts.length > 1) {
             return {
                 type: 'descendant',
                 value: selector
             };
         }
-        
+
         // Unknown selector
         return {
             type: 'unknown',
             value: selector
         };
     }
-    
+
     /**
      * Parse CSS declarations.
-     * 
-     * @param declarationsText - CSS declarations text (e.g., "color: red; font-size: 12px;")
-     * @returns Object with property names and values
+     *
+     * @param {string} declarationsText - CSS declarations text (e.g., "color: red; font-size: 12px;")
+     * @returns {Record<string, string>} Object with property names and values
      * @private
      */
     private static _parseDeclarations(declarationsText: string): Record<string, string> {
         const declarations: Record<string, string> = {};
-        
+
         // Split by semicolon
-        const parts = declarationsText.split(';');
-        
+        const parts: string[] = declarationsText.split(';');
+
         for (const part of parts) {
-            const trimmed = part.trim();
+            const trimmed: string = part.trim();
             if (!trimmed) {
                 continue;
             }
-            
-            const colonIndex = trimmed.indexOf(':');
+
+            const colonIndex: number = trimmed.indexOf(':');
             if (colonIndex === -1) {
                 continue;
             }
-            
-            const property = trimmed.substring(0, colonIndex).trim().toLowerCase();
-            const value = trimmed.substring(colonIndex + 1).trim();
-            
+
+            const property: string = trimmed.substring(0, colonIndex).trim().toLowerCase();
+            const value: string = trimmed.substring(colonIndex + 1).trim();
+
             if (property && value) {
                 // Normalize property names to camelCase
-                const camelCase = this._toCamelCase(property);
+                const camelCase: string = this._toCamelCase(property);
+                // eslint-disable-next-line security/detect-object-injection
                 declarations[camelCase] = value;
             }
         }
-        
+
         return declarations;
     }
-    
+
     /**
      * Convert CSS property name to camelCase.
      * Example: font-size -> fontSize
-     * 
-     * @param property - CSS property name (kebab-case)
-     * @returns camelCase property name
+     *
+     * @param {string} property - CSS property name (kebab-case)
+     * @returns {string} camelCase property name
      * @private
      */
     private static _toCamelCase(property: string): string {
-        return property.replace(/-([a-z])/g, (_match, char) => char.toUpperCase());
+        return property.replace(/-([a-z])/g, (_match: string, char: any) => char.toUpperCase());
     }
-    
+
     /**
      * Apply CSS rules to an element using the CSS cascade.
      *
@@ -197,17 +199,19 @@ export class _CSSProcessor {
      * source order, so later/more specific rules override earlier ones. Inline
      * styles already stored in `element._styles` always win. Element-level
      * descendant matches additionally record `_descendantSelectorId` so the
-     * DocIO mapper can create a reusable paragraph style for them.
+     * document mapper can create a reusable paragraph style for them.
      *
-     * @param element - The HTML element to apply styles to
-     * @param rules - Array of CSS rules to match against
+     * @param {_HTMLElement} element - The HTML element to apply styles to
+     * @param {_CSSRule[]} rules - Array of CSS rules to match against
+     * @returns {void}
      * @private
      */
     static applyStylesToElement(element: _HTMLElement, rules: _CSSRule[]): void {
         const matched: Array<{ rule: _CSSRule; spec: number; order: number }> = [];
-        for (let i = 0; i < rules.length; i++) {
-            const rule = rules[i];
-            const spec = this._matchRule(element, rule);
+        for (let i: number = 0; i < rules.length; i++) {
+            // eslint-disable-next-line security/detect-object-injection
+            const rule: _CSSRule = rules[i];
+            const spec: number = this._matchRule(element, rule);
             if (spec !== undefined) {
                 matched.push({ rule: rule, spec: spec, order: i });
             }
@@ -215,7 +219,10 @@ export class _CSSProcessor {
         if (matched.length === 0) {
             return;
         }
-        matched.sort((a, b) => a.spec - b.spec || a.order - b.order);
+        matched.sort((
+            a: { rule: _CSSRule; spec: number; order: number; },
+            b: { rule: _CSSRule; spec: number; order: number; }
+        ) => a.spec - b.spec || a.order - b.order);
 
         const inline: Record<string, string> = { ...element._styles };
         const cascaded: Record<string, string> = {};
@@ -229,7 +236,7 @@ export class _CSSProcessor {
         element._styles = { ...cascaded, ...inline };
 
         if (descendant && descendant.selector.value) {
-            const normalized = descendant.selector.value
+            const normalized: string = descendant.selector.value
                 .toLowerCase()
                 .replace(/[^a-z0-9]+/g, '_')
                 .replace(/^_|_$/g, '');
@@ -241,14 +248,17 @@ export class _CSSProcessor {
     /**
      * Returns the specificity (a*10000 + b*100 + c) if the rule matches the element.
      *
+     * @param {_HTMLElement} element - The element.
+     * @param {_CSSRule} rule - The rule.
+     * @returns {number | undefined} The result of the operation.
      * @private
      */
     private static _matchRule(element: _HTMLElement, rule: _CSSRule): number | undefined {
-        const sel = rule.selector;
-        const tagName = element.tagName.toLowerCase();
-        const classAttr = element._attributes.get('class');
-        const classes = classAttr ? classAttr.split(/\s+/).filter((c) => c.length > 0) : [];
-        const idAttr = element._attributes.get('id');
+        const sel: _CSSRule['selector'] = rule.selector;
+        const tagName: string = element.tagName.toLowerCase();
+        const classAttr: string = element._attributes.get('class');
+        const classes: string[] = classAttr ? classAttr.split(/\s+/).filter((c: string) => c.length > 0) : [];
+        const idAttr: string = element._attributes.get('id');
 
         switch (sel.type) {
         case 'class':
@@ -261,10 +271,9 @@ export class _CSSProcessor {
             return tagName === (sel.tagName || '').toLowerCase() && classes.indexOf(sel.className || '') !== -1
                 ? 101 : undefined;
         case 'descendant':
-        case 'unknown':
+        default:
             return sel.value ? this._matchComplex(element, sel.value) : undefined;
         }
-        return undefined;
     }
 
     /**
@@ -272,13 +281,16 @@ export class _CSSProcessor {
      * descendant (space) or child (>) combinators. Unsupported syntax
      * (attributes, pseudo-classes, sibling combinators) never matches.
      *
+     * @param {_HTMLElement} element - The element.
+     * @param {string} selector - The selector.
+     * @returns {number | undefined} The result of the operation.
      * @private
      */
     private static _matchComplex(element: _HTMLElement, selector: string): number | undefined {
-        const tokens = selector.replace(/\s*>\s*/g, ' > ').trim().split(/\s+/);
+        const tokens: string[] = selector.replace(/\s*>\s*/g, ' > ').trim().split(/\s+/);
         const compounds: string[] = [];
         const combinators: string[] = []; // combinator preceding compounds[i] (i>0)
-        let pending = ' ';
+        let pending: string = ' ';
         for (const t of tokens) {
             if (t === '>') {
                 pending = '>';
@@ -290,9 +302,9 @@ export class _CSSProcessor {
                 pending = ' ';
             }
         }
-        let specificity = 0;
+        let specificity: number = 0;
         for (const c of compounds) {
-            const parsed = this._parseCompound(c);
+            const parsed: { tag?: string; classes: string[]; id?: string; } = this._parseCompound(c);
             if (!parsed) {
                 return undefined;
             }
@@ -322,6 +334,7 @@ export class _CSSProcessor {
         combinators: string[],
         index: number
     ): boolean {
+        // eslint-disable-next-line security/detect-object-injection
         if (!element || !this._compoundMatches(element, compounds[index])) {
             return false;
         }
@@ -331,7 +344,7 @@ export class _CSSProcessor {
         if (combinators[index - 1] === '>') {
             return this._matchCompoundAt(element._parentNode, compounds, combinators, index - 1);
         }
-        let ancestor = element._parentNode;
+        let ancestor: _HTMLElement = element._parentNode;
         while (ancestor) {
             if (this._matchCompoundAt(ancestor, compounds, combinators, index - 1)) {
                 return true;
@@ -349,7 +362,8 @@ export class _CSSProcessor {
      * @private
      */
     private static _parseCompound(text: string): { tag?: string; classes: string[]; id?: string } | undefined {
-        const m = text.match(/^([a-zA-Z][a-zA-Z0-9-]*|\*)?((?:[.#][a-zA-Z0-9_-]+)*)$/);
+        // eslint-disable-next-line security/detect-unsafe-regex
+        const m: RegExpMatchArray = text.match(/^([a-zA-Z][a-zA-Z0-9-]*|\*)?((?:[.#][a-zA-Z0-9_-]+)*)$/);
         if (!m || (!m[1] && !m[2])) {
             return undefined;
         }
@@ -357,8 +371,8 @@ export class _CSSProcessor {
         if (m[1] && m[1] !== '*') {
             result.tag = m[1].toLowerCase();
         }
-        const rest = m[2] || '';
-        const re = /([.#])([a-zA-Z0-9_-]+)/g;
+        const rest: string = m[2] || '';
+        const re: RegExp = /([.#])([a-zA-Z0-9_-]+)/g;
         let r: RegExpExecArray | null;
         // eslint-disable-next-line no-cond-assign
         while ((r = re.exec(rest)) !== null) {
@@ -380,7 +394,7 @@ export class _CSSProcessor {
      * @private
      */
     private static _compoundMatches(element: _HTMLElement, compound: string): boolean {
-        const parsed = this._parseCompound(compound);
+        const parsed: { tag?: string; classes: string[]; id?: string; } = this._parseCompound(compound);
         if (!parsed || !element._attributes || typeof element.tagName !== 'string') {
             return false;
         }
@@ -391,8 +405,8 @@ export class _CSSProcessor {
             return false;
         }
         if (parsed.classes.length > 0) {
-            const attr = element._attributes.get('class');
-            const have = attr ? attr.split(/\s+/) : [];
+            const attr: string = element._attributes.get('class');
+            const have: string[] = attr ? attr.split(/\s+/) : [];
             for (const c of parsed.classes) {
                 if (have.indexOf(c) === -1) {
                     return false;

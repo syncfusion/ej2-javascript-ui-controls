@@ -46,10 +46,10 @@ export class ChartData {
     /**
      * Sets the value of a cell in the chart data worksheet.
      *
-     * @param {number} row - The 1-based row index.
-     * @param {number} column - The 1-based column index.
-     * @param {string | number | boolean | null} value - The new cell value. Pass null to clear the cell.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {number} row - Specifies the row.
+     * @param {number} column - Specifies the column.
+     * @param {string | number | boolean | null} value - Specifies the value.
      * @public
      */
     setValue(row: number, column: number, value: string | number | boolean | null): void {
@@ -65,9 +65,9 @@ export class ChartData {
     /**
      * Gets the value of a cell in the chart data worksheet.
      *
-     * @param {number} row - The 1-based row index.
-     * @param {number} column - The 1-based column index.
-     * @returns {string | number | boolean | null | undefined} The cell value, or null when the cell is empty.
+     * @returns {string | number | boolean | null | undefined} - Returns the cell value, or null when the cell is empty.
+     * @param {number} row - Specifies the row.
+     * @param {number} column - Specifies the column.
      * @public
      */
     getValue(row: number, column: number): string | number | boolean | null | undefined {
@@ -82,11 +82,11 @@ export class ChartData {
     /**
      * Gets the A1-style range reference (for example B2:B11) of a block of cells, for use as series values or category labels.
      *
-     * @param {number} firstRow - The 1-based first row.
-     * @param {number} firstColumn - The 1-based first column.
-     * @param {number} lastRow - The 1-based last row.
-     * @param {number} lastColumn - The 1-based last column.
-     * @returns {string} The range reference.
+     * @returns {string} - Returns the range reference.
+     * @param {number} firstRow - Specifies the first row.
+     * @param {number} firstColumn - Specifies the first column.
+     * @param {number} lastRow - Specifies the last row.
+     * @param {number} lastColumn - Specifies the last column.
      * @public
      */
     getRange(firstRow: number, firstColumn: number, lastRow: number, lastColumn: number): string {

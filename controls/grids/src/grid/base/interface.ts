@@ -9,6 +9,7 @@ import {
     FilterSettingsModel, SearchSettingsModel, InfiniteScrollSettingsModel, ResizeSettingsModel,
     DomVirtualizationSettingsModel, AdvancedFilterSettingsModel, FormulaSettingsModel, GridWebMcpSettingsModel
 } from './grid-model';
+import { HighlightSettingsModel } from '../models/highlight-settings';
 import { PageSettingsModel, AggregateRowModel, ColumnChooserSettingsModel } from '../models/models';
 import { FindSettingsModel } from './find-settings';
 import { RowDropSettingsModel, GroupSettingsModel, GridModel, EditSettingsModel, LoadingIndicatorModel } from './grid-model';
@@ -21,6 +22,7 @@ import { SentinelType, Offsets, RowSelectable, PinRow, SetRowHeight } from './ty
 import { CheckState, ColumnQueryModeType, HierarchyGridPrintMode, ClipMode, freezeMode, EmptyRecordMode } from './enum';
 import { ResponsiveDialogAction, RowRenderingDirection } from './enum';
 import { Edit } from '../actions/edit';
+import { Highlight } from '../actions/highlight';
 import { Formula, FormulaValue } from '../actions/formula';
 import { Selection } from '../actions/selection';
 import { Resize } from '../actions/resize';
@@ -237,6 +239,20 @@ export interface IGrid extends Component<HTMLElement> {
      * @default []
      */
     enableAutoFill?: boolean;
+
+    /**
+     * Enables or disables highlighting of cells or rows when data changes.
+     *
+     * @default false
+     */
+    enableHighlightOnDataChange?: boolean;
+
+    /**
+     * Specifies the highlightSettings for Grid.
+     *
+     * @default HighlightSettings
+     */
+    highlightSettings?: HighlightSettingsModel;
 
     /**
      * Specifies the pageSettings for Grid.
@@ -800,6 +816,8 @@ export interface IGrid extends Component<HTMLElement> {
 
     editModule?: Edit;
 
+    highlightModule?: Highlight;
+
     formulaModule?: Formula;
 
     selectionModule?: Selection;
@@ -1160,6 +1178,11 @@ export interface IGrid extends Component<HTMLElement> {
     isRowDomVirtualization?(): boolean;
     clearDomVirtualRowCache?(): void;
     recalcIndentWidth?(): void;
+    /**
+     * Flash (highlight) rows, columns or cells.
+     * @param options rowNodes and/or column fields to flash
+     */
+    flashCells?(options: FlashOptions): void;
     // public Events
     dataStateChange?: EmitType<DataStateChangeEventArgs>;
     exportGroupCaption?: EmitType<ExportGroupCaptionEventArgs>;
@@ -2829,6 +2852,10 @@ export interface IFilterCreate extends IFilterBase {
 export interface CellSaveArgs extends CellEditSameArgs {
     /** Defines the previous value of the cell. */
     previousValue?: string;
+    /** Defines the row index of the saved cell. */
+    rowIndex?: number;
+    /** Defines the data object of the row. */
+    data?: Object;
 }
 
 export interface BeforeDataBoundArgs {
@@ -3924,3 +3951,51 @@ export interface WebMcpToolExecuteEventArgs {
     cancellationResponse?: string;
 }
 
+export interface FlashOptions {
+    /** Rows to flash: row index, row element, row object or data record. */
+    rowNodes?: Array<number | Element | Object>;
+    /** Column fields to flash. Without rowNodes the whole column is flashed. */
+    columns?: string[];
+    /** Highlight settings for this call only. Missing values fall back to the grid's `highlightSettings`. */
+    highlightSettings?: HighlightSettingsModel;
+}
+
+/**
+ * @hidden
+ */
+export interface DataResponse extends NotifyArgs {
+    /** OData next-page URL from ODataAdaptor. */
+    '@odata.nextLink'?: string | null;
+    /** Generic REST API next-page URL or token. */
+    next?: string | null;
+    /** Indicates more data without an explicit token. */
+    hasMore?: boolean | null;
+    /** Azure token for Storage, Resource Manager, or Graph. */
+    continuationToken?: string | null;
+    /** AWS pagination key for DynamoDB scans or S3. */
+    LastEvaluatedKey?: string | null;
+    /** gRPC or Google-style API pagination token. */
+    'next_page_token'?: string | null;
+    /** Contains the raw response from the service. */
+    actual?: Object;
+    /** Normalized next-page token across response formats. */
+    nextToken?: string | null;
+    /** GraphQL pagination metadata with a next-page cursor. */
+    pageInfo?: {
+        /** Indicates if another GraphQL page exists. */
+        hasNextPage?: boolean;
+        /** GraphQL cursor after the current page. */
+        endCursor?: string | null;
+        /** GraphQL cursor before the current page. */
+        startCursor?: string | null;
+    };
+}
+
+/**
+ * @hidden
+ */
+export interface DataSetResult extends DataResponse {
+    result: Object[] | Group[];
+    count: number;
+    aggregates?: object;
+}

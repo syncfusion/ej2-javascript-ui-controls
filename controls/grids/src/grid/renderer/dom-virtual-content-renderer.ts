@@ -149,6 +149,8 @@ export class DomVirtualContentRenderer extends ContentRender implements IRendere
 
     public refreshContentRows(args: NotifyArgs = {}): void {
         const gObj: IGrid = this.parent;
+        let domVirtualStartIndex: number = -1;
+        let domVirtualEndIndex: number = -1;
         if (gObj.isRowDomVirtualization()) {
             if (!gObj.currentViewData || (gObj.currentViewData as Object[]).length === 0) { return; }
             if ( args.requestType && args.requestType !== 'dom-virtualscroll') {
@@ -196,6 +198,8 @@ export class DomVirtualContentRenderer extends ContentRender implements IRendere
             (<{startIndex: number, endIndex: number}>args).startIndex = startIndex + (isScrollRequest ? frozenOffset : 0);
             (<{startIndex: number, endIndex: number}>args).endIndex = endIndex + (isScrollRequest ? frozenOffset : 0);
             this.prevStartIndex = startIndex;
+            domVirtualStartIndex = startIndex;
+            domVirtualEndIndex = endIndex;
         }
         if (this.parent.enableVirtualization && !gObj.isInitialLoad && (args as { requestType?: string }).requestType !== 'dom-virtualscroll') {
             const startIndex: number = this.getStartIndex(this.currentScrollTop);
@@ -205,6 +209,9 @@ export class DomVirtualContentRenderer extends ContentRender implements IRendere
                 this.checkAndFetchCrossPageData(startIndex);
                 return;
             }
+        }
+        if (domVirtualStartIndex > -1) {
+            this.parent.notify(events.beforeDomVirtualRenderRows, { startIndex: domVirtualStartIndex, endIndex: domVirtualEndIndex });
         }
         super.refreshContentRows(args);
     }

@@ -29,27 +29,34 @@ import { OpenXmlAttribute } from '../../core/xml/model';
 // ---------------------------------------------------------------------------
 
 /**
- * Line spacing rule (`ST_LineSpacingRule`). §17.18.48
+ * Line spacing rule.
+ *
  * @public
  */
 export type LineSpacingRule = 'auto' | 'exact' | 'atLeast';
 /**
- * Tab stop justification / alignment (`ST_TabJc`). §17.18.83
- *
- * Prefer named members such as {@link TabJustification.Left} in authoring APIs.
- * Wire tokens are the member values and are unchanged for serialization.
+ * Specifies the alignment of a tab stop.
  *
  * @public
  */
 export enum TabJustification {
+    /** Specifies the left justification. */
     Left = 'left',
+    /** Specifies the center justification. */
     Center = 'center',
+    /** Specifies the right justification. */
     Right = 'right',
+    /** Specifies the decimal justification. */
     Decimal = 'decimal',
+    /** Specifies the bar justification. */
     Bar = 'bar',
+    /** Specifies the clear justification. */
     Clear = 'clear',
+    /** Specifies the num justification. */
     Num = 'num',
+    /** Specifies the start justification. */
     Start = 'start',
+    /** Specifies the end justification. */
     End = 'end'
 }
 /**
@@ -59,19 +66,22 @@ export enum TabJustification {
  */
 export type TabStopAlignment = TabJustification;
 /**
- * Tab stop leader character (`ST_TabTlc`). §17.18.84
- *
- * Prefer named members such as {@link TabLeader.Dot} / {@link TabLeader.NoLeader}.
- * Wire tokens are the member values and are unchanged for serialization.
+ * Specifies the leader character of a tab stop.
  *
  * @public
  */
 export enum TabLeader {
+    /** Specifies the no leader. */
     NoLeader = 'none',
+    /** Specifies the dot leader. */
     Dot = 'dot',
+    /** Specifies the heavy leader. */
     Heavy = 'heavy',
+    /** Specifies the hyphen leader. */
     Hyphen = 'hyphen',
+    /** Specifies the middle dot leader. */
     MiddleDot = 'middleDot',
+    /** Specifies the single leader. */
     Single = 'single'
 }
 /**
@@ -81,20 +91,26 @@ export enum TabLeader {
  */
 export type TabStopLeader = TabLeader;
 /**
- * A single tab stop (`w:tab` inside `w:tabs`). §17.3.1.37
+ * A single tab stop.
+ *
  * @public
  */
 export interface TabStop {
-    /** `@w:pos` — position in points (twips on the wire). */
+    /**
+     * Gets the position of the tab stop, in points.
+     */
     readonly position: number;
-    /** `@w:val` — alignment. */
+    /**
+     * Gets the alignment of the text at the tab stop.
+     */
     readonly alignment: TabJustification;
-    /** `@w:leader` — leader character. */
+    /**
+     * Gets the leader character that fills the space before the tab stop.
+     */
     readonly leader?: TabLeader;
 }
 /**
- * Mutable DocIO-style tab-stop entry backed by {@link TabStop} storage.
- * Distinct from run-level `w:r/w:tab` ({@link Tab}).
+ * Represents a tab stop of a paragraph.
  *
  * @public
  */
@@ -103,42 +119,61 @@ export class ParagraphTabStop {
     private justificationValue: TabJustification;
     private leaderValue: TabLeader;
     /**
-     * @param {number} position - The position.
-     * @param {TabJustification} justification - The justification.
-     * @param {TabLeader} leader - The leader.
+     * Initializes a new instance of the ParagraphTabStop class.
+     *
+     * @param {number} position - Specifies the position of the tab stop, in points.
+     * @param {TabJustification} justification - Specifies the alignment of the tab stop.
+     * @param {TabLeader} leader - Specifies the leader character of the tab stop.
      * @public
      */
     constructor(
+        /**
+         * Gets or sets the position.
+         */
         position: number = 0,
+        /**
+         * Gets or sets the justification.
+         */
         justification: TabJustification = TabJustification.Left,
+        /**
+         * Gets or sets the leader.
+         */
         leader: TabLeader = TabLeader.NoLeader
     ) {
         this.positionValue = position;
         this.justificationValue = justification;
         this.leaderValue = leader;
     }
-    /** Position in points. */
+    /**
+     * Gets or sets the position in points.
+     */
     get position(): number {
         return this.positionValue;
     }
     set position(value: number) {
         this.positionValue = value;
     }
-    /** Alignment / justification (`@w:val`). */
+    /**
+     * Gets or sets the alignment / justification.
+     */
     get justification(): TabJustification {
         return this.justificationValue;
     }
     set justification(value: TabJustification) {
         this.justificationValue = value;
     }
-    /** Alias of {@link ParagraphTabStop.justification}. */
+    /**
+     * Gets or sets the alignment.
+     */
     get alignment(): TabStopAlignment {
         return this.justificationValue;
     }
     set alignment(value: TabStopAlignment) {
         this.justificationValue = value;
     }
-    /** Leader character. */
+    /**
+     * Gets or sets the leader character.
+     */
     get leader(): TabLeader {
         return this.leaderValue;
     }
@@ -189,7 +224,9 @@ export class TabCollection {
     constructor(owner: ParagraphFormat) {
         this.owner = owner;
     }
-    /** Number of tab stops. */
+    /**
+     * Gets the number of tab stops.
+     */
     get count(): number {
         const stops: TabStop[] = this.owner.tabStops;
         return stops !== undefined ? stops.length : 0;
@@ -197,8 +234,8 @@ export class TabCollection {
     /**
      * Tab stop at index, or `undefined`.
      *
-     * @param {number} index - The index.
-     * @returns {ParagraphTabStop | undefined} The result.
+     * @returns {ParagraphTabStop | undefined} - Returns the ParagraphTabStop, or undefined.
+     * @param {number} index - Specifies the index.
      */
     item(index: number): ParagraphTabStop | undefined {
         const stops: TabStop[] = this.owner.tabStops;
@@ -209,23 +246,23 @@ export class TabCollection {
     }
     /**
      * Add a tab stop (points / justification / leader).
-     * Prefer {@link TabCollection.addTab} for DocIO-aligned naming.
+     * Prefer {@link TabCollection.addTab} for naming.
      *
-     * @param {number} position - The position.
-     * @param {TabJustification} justification - The justification.
-     * @param {TabLeader} leader - The leader.
-     * @returns {ParagraphTabStop} The result.
+     * @returns {ParagraphTabStop} - Returns the ParagraphTabStop.
+     * @param {number} position - Specifies the position.
+     * @param {TabJustification} justification - Specifies the justification.
+     * @param {TabLeader} leader - Specifies the leader.
      */
     add(position: number, justification?: TabJustification, leader?: TabLeader): ParagraphTabStop {
         return this.addTab(position, justification, leader);
     }
     /**
-     * DocIO-aligned add. Zero-arg adds a default left stop at position `0`.
+     * add. Zero-arg adds a default left stop at position `0`.
      *
-     * @param {number} position - The position.
-     * @param {TabJustification} justification - The justification.
-     * @param {TabLeader} leader - The leader.
-     * @returns {ParagraphTabStop} The result.
+     * @returns {ParagraphTabStop} - Returns the ParagraphTabStop.
+     * @param {number} position - Specifies the position.
+     * @param {TabJustification} justification - Specifies the justification.
+     * @param {TabLeader} leader - Specifies the leader.
      * @example
      * ```ts
      * pf.tabs.addTab();
@@ -248,8 +285,8 @@ export class TabCollection {
     /**
      * Remove the tab stop at `index` (`0…count-1`).
      *
-     * @param {number} index - The index.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {number} index - Specifies the index.
      * @throws RangeError when the index is out of range.
      */
     removeAt(index: number): void {
@@ -269,8 +306,8 @@ export class TabCollection {
      * Remove the first tab stop whose position equals `position` (points).
      * No-op when no matching stop exists.
      *
-     * @param {number} position - The position.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {number} position - Specifies the position.
      */
     removeByPosition(position: number): void {
         const stops: TabStop[] = this.owner.tabStops;
@@ -292,14 +329,16 @@ export class TabCollection {
     /**
      *  Remove all tab stops.
      *
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     *
+     * @public
      */
     clear(): void {
         this.owner.tabStops = undefined;
     }
 }
 /**
- * Live single paragraph border edge (`w:pBdr` child).
+ * Live single paragraph border edge.
  *
  * @public
  */
@@ -345,7 +384,9 @@ export class ParagraphBorderFace {
             && bag.bar === undefined;
         this.owner.writeBordersBag(empty ? undefined : bag);
     }
-    /** Line style. */
+    /**
+     * Gets or sets the line style.
+     */
     get borderType(): BorderStyle {
         const e: ParagraphBorder = this.read();
         return e !== undefined ? e.style : 'none';
@@ -359,7 +400,9 @@ export class ParagraphBorderFace {
             space: cur !== undefined ? cur.space : undefined
         });
     }
-    /** Hex RGB or `'auto'`. Setter also accepts a {@link Color} enum value. */
+    /**
+     * Gets or sets the color.
+     */
     get color(): string | Color {
         const e: ParagraphBorder = this.read();
         return e !== undefined && e.color !== undefined ? e.color : 'auto';
@@ -373,7 +416,9 @@ export class ParagraphBorderFace {
             space: cur !== undefined ? cur.space : undefined
         });
     }
-    /** Thickness in points (public); stored as eighths of a point. */
+    /**
+     * Gets or sets the thickness in points (public); stored as eighths of a point.
+     */
     get lineWidth(): number {
         const e: ParagraphBorder = this.read();
         return e !== undefined && e.size !== undefined ? e.size / 8 : 0;
@@ -387,7 +432,9 @@ export class ParagraphBorderFace {
             space: cur !== undefined ? cur.space : undefined
         });
     }
-    /** Space from text in points. */
+    /**
+     * Gets or sets the space from text in points.
+     */
     get space(): number {
         const e: ParagraphBorder = this.read();
         return e !== undefined && e.space !== undefined ? e.space : 0;
@@ -424,36 +471,54 @@ export class ParagraphBordersFace {
     constructor(owner: ParagraphFormat) {
         this.owner = owner;
     }
+    /**
+     * Gets the top paragraph border.
+     */
     get top(): ParagraphBorderFace {
         if (this.topFace === undefined) {
             this.topFace = new ParagraphBorderFace(this.owner, 'top');
         }
         return this.topFace;
     }
+    /**
+     * Gets the left paragraph border.
+     */
     get left(): ParagraphBorderFace {
         if (this.leftFace === undefined) {
             this.leftFace = new ParagraphBorderFace(this.owner, 'left');
         }
         return this.leftFace;
     }
+    /**
+     * Gets the bottom paragraph border.
+     */
     get bottom(): ParagraphBorderFace {
         if (this.bottomFace === undefined) {
             this.bottomFace = new ParagraphBorderFace(this.owner, 'bottom');
         }
         return this.bottomFace;
     }
+    /**
+     * Gets the right paragraph border.
+     */
     get right(): ParagraphBorderFace {
         if (this.rightFace === undefined) {
             this.rightFace = new ParagraphBorderFace(this.owner, 'right');
         }
         return this.rightFace;
     }
+    /**
+     * Gets the border drawn between consecutive paragraphs that have identical border settings.
+     */
     get between(): ParagraphBorderFace {
         if (this.betweenFace === undefined) {
             this.betweenFace = new ParagraphBorderFace(this.owner, 'between');
         }
         return this.betweenFace;
     }
+    /**
+     * Gets the bar border drawn on the outside edge of the paragraph.
+     */
     get bar(): ParagraphBorderFace {
         if (this.barFace === undefined) {
             this.barFace = new ParagraphBorderFace(this.owner, 'bar');
@@ -461,10 +526,10 @@ export class ParagraphBordersFace {
         return this.barFace;
     }
     /**
-     *  Stamp line style onto all outer edges.
+     * Sets the line style of all outer edges.
      *
-     * @param {BorderStyle} value - The value.
-     * @returns {void} Nothing is returned.
+     * @param {BorderStyle} value - Specifies the specifies the value.
+     * @returns {void} Nothing.
      */
     set borderType(value: BorderStyle) {
         this.top.borderType = value;
@@ -473,10 +538,10 @@ export class ParagraphBordersFace {
         this.right.borderType = value;
     }
     /**
-     *  Stamp color onto all outer edges (hex/`'auto'` or {@link Color}).
+     * Sets the color of all outer edges as a hexadecimal RGB string, 'auto', or a {@link Color} value.
      *
-     * @param {string | Color} value - The value.
-     * @returns {void} Nothing is returned.
+     * @param {string | Color} value - Specifies the specifies the value.
+     * @returns {void} Nothing.
      */
     set color(value: string | Color) {
         this.top.color = value;
@@ -485,10 +550,10 @@ export class ParagraphBordersFace {
         this.right.color = value;
     }
     /**
-     *  Stamp line width (points) onto all outer edges.
+     * Sets the line width of all outer edges, in points.
      *
-     * @param {number} value - The value.
-     * @returns {void} Nothing is returned.
+     * @param {number} value - Specifies the specifies the value.
+     * @returns {void} Nothing.
      */
     set lineWidth(value: number) {
         this.top.lineWidth = value;
@@ -497,10 +562,10 @@ export class ParagraphBordersFace {
         this.right.lineWidth = value;
     }
     /**
-     *  Stamp space from text (points) onto all outer edges.
+     * Sets the distance between the text and all outer edges, in points.
      *
-     * @param {number} value - The value.
-     * @returns {void} Nothing is returned.
+     * @param {number} value - Specifies the specifies the value.
+     * @returns {void} Nothing.
      */
     set space(value: number) {
         this.top.space = value;
@@ -579,21 +644,31 @@ export type BorderStyle =
     | 'outset'
     | 'inset';
 /**
- * A single paragraph border edge (`CT_Border`). §17.3.4
+ * A single paragraph border edge.
+ *
  * @public
  */
 export interface ParagraphBorder {
-    /** `@w:val` — border style (`ST_Border`). */
+    /**
+     * Gets the line style of the paragraph border.
+     */
     readonly style: BorderStyle;
-    /** `@w:color` — hex color or `'auto'`. */
+    /**
+     * Gets the color of the paragraph border.
+     */
     readonly color?: string;
-    /** `@w:sz` — border width in eighths-of-a-point. */
+    /**
+     * Gets the width of the paragraph border line, in points.
+     */
     readonly size?: number;
-    /** `@w:space` — space from text in points. */
+    /**
+     * Gets the space between the paragraph border and the text, in points.
+     */
     readonly space?: number;
 }
 /**
  * Paragraph borders (`w:pBdr`). §17.3.1.24
+ *
  * @public
  */
 export interface ParagraphBorders {
@@ -605,13 +680,15 @@ export interface ParagraphBorders {
     readonly bar?: ParagraphBorder;
 }
 /**
- * Shading pattern (`ST_Shd` subset). §17.18.78
+ * Shading pattern.
+ *
  * @public
  */
 export type ShadingPattern = 'clear' | 'solid' | 'horzStripe' | 'vertStripe' | 'reverseDiagStripe' | 'diagStripe' | 'horzCross' | 'diagCross' | 'thinHorzStripe' | 'thinVertStripe' | 'thinReverseDiagStripe' | 'thinDiagStripe' | 'thinHorzCross' | 'thinDiagCross' | 'pct5' | 'pct10' | 'pct12' | 'pct15' | 'pct20' | 'pct25' | 'pct30' | 'pct35' | 'pct37' | 'pct40' | 'pct45' | 'pct50' | 'pct55' | 'pct60' | 'pct62' | 'pct65' | 'pct70' | 'pct75' | 'pct80' | 'pct85' | 'pct87' | 'pct90' | 'pct95';
 /**
- * Paragraph text direction (`ST_TextDirection`). §17.18.93 / wml.xsd 798–813.
+ * Paragraph text direction. / wml.xsd 798–813.
  * Twelve schema tokens; unknown loaded values round-trip via the format raw slot.
+ *
  * @public
  */
 export type ParagraphTextDirection =
@@ -629,69 +706,94 @@ export type ParagraphTextDirection =
     | 'tbRlV';
 
 /**
- * Paragraph indentation bag (`w:ind`). §17.3.1.12
+ * Paragraph indentation bag.
  * Used by styles modeled payload codecs — not a `Paragraph` property surface.
  * Body authoring uses flat {@link ParagraphFormat} indent properties.
  * `left` may be negative (e.g. outdented list text).
+ *
  * @public
  */
 export interface ParagraphIndentation {
-    /** `@w:left` in points (twips on the wire); may be negative. */
+    /**
+     * Gets the left indent, in points. The value can be negative for outdented text.
+     */
     readonly left?: number;
-    /** `@w:right` in points (twips on the wire). */
+    /**
+     * Gets the right indent, in points.
+     */
     readonly right?: number;
-    /** `@w:firstLine` in points (twips on the wire). Mutually exclusive with `hanging`. */
+    /**
+     * Gets the first line.
+     */
     readonly firstLine?: number;
-    /** `@w:hanging` in points (twips on the wire). Mutually exclusive with `firstLine`. */
+    /**
+     * Gets the hanging indent, in points.
+     */
     readonly hanging?: number;
 }
 /**
- * Paragraph spacing bag (`w:spacing`). §17.3.1.33
+ * Paragraph spacing bag.
  * Used by styles modeled payload codecs — not a `Paragraph` property surface.
  * Body authoring uses flat {@link ParagraphFormat} spacing properties.
+ *
  * @public
  */
 export interface ParagraphSpacing {
-    /** `@w:before` — space before paragraph, in points (twips on the wire). */
+    /**
+     * Gets the spacing before the paragraph, in points.
+     */
     readonly before?: number;
-    /** `@w:after` — space after paragraph, in points (twips on the wire). */
+    /**
+     * Gets the spacing after the paragraph, in points.
+     */
     readonly after?: number;
     /**
-     * `@w:line` — line spacing in points (`w:lineRule` determines interpretation;
-     * twips on the wire). Prefer {@link ParagraphSpacing.lineSpacing} in styles authoring.
+     * Gets the line spacing value. Its meaning depends on the line spacing rule.
      */
     readonly line?: number;
     /**
-     * `@w:line` — line spacing in points (twips on the wire). Alias of
-     * {@link ParagraphSpacing.line} used by the styles feature codec and builtin catalog.
+     * Gets the line spacing.
      */
     readonly lineSpacing?: number;
-    /** `@w:lineRule` — how `line` / `lineSpacing` is interpreted. */
+    /**
+     * Gets the line rule.
+     */
     readonly lineRule?: LineSpacingRule;
-    /** `@w:beforeAutospacing` — ignore `before` and use automatic spacing. */
+    /**
+     * Gets a value indicating whether the before autospacing option is enabled.
+     */
     readonly beforeAutospacing?: boolean;
-    /** `@w:afterAutospacing` — ignore `after` and use automatic spacing. */
+    /**
+     * Gets a value indicating whether the after autospacing option is enabled.
+     */
     readonly afterAutospacing?: boolean;
 }
 /**
- * Paragraph shading bag (`w:shd`). §17.3.1.31
+ * Paragraph shading bag.
  * Used where a value-bag is required — not a `Paragraph` property surface.
  * Body authoring uses flat {@link ParagraphFormat} `backColor` / `foreColor` /
  * `shadingPattern`.
+ *
  * @public
  */
 export interface ParagraphShading {
-    /** `@w:fill` — background fill color (hex or `'auto'`). */
+    /**
+     * Gets the background fill color of the shading.
+     */
     readonly fill?: string;
-    /** `@w:color` — pattern foreground color (hex or `'auto'`). */
+    /**
+     * Gets the foreground color of the shading pattern.
+     */
     readonly color?: string;
-    /** `@w:val` — shading pattern. */
+    /**
+     * Gets the shading pattern applied to the paragraph.
+     */
     readonly pattern?: ShadingPattern;
 }
 
 /**
- * Baseline alignment for the paragraph's lines (`ST_TextAlignment`,
- * `w:textAlignment`). §17.3.1.39.
+ * Specifies how the text of a paragraph is aligned vertically relative to the line.
+ *
  * @public
  */
 export type BaselineAlignment = 'auto' | 'top' | 'center' | 'baseline' | 'bottom';
@@ -700,6 +802,7 @@ export type BaselineAlignment = 'auto' | 'top' | 'center' | 'baseline' | 'bottom
  * Host that owns a {@link ParagraphFormat} and receives mutation
  * notifications. Implemented by {@link Paragraph} — the host performs the
  * owner (detachment) check and invalidation.
+ *
  * @private
  */
 export interface ParagraphFormatHost {
@@ -707,6 +810,7 @@ export interface ParagraphFormatHost {
     /**
      * Optional effective resolver (Paragraph host). Style-hosted PF must omit this
      * so public getters stay direct/authored-only for style-chain walks.
+     *
      * @private
      */
     resolveEffectiveParagraphValue?(key: string): unknown;
@@ -982,8 +1086,8 @@ function validateHexColor(name: string, value: string): void {
 /**
  *  Ensure the internal indents record exists (does not notify).
  *
- * @param {ParagraphIndentsRecord | undefined} record - The record.
- * @returns {ParagraphIndentsRecord} The result.
+ * @param {ParagraphIndentsRecord | undefined} record - Specifies the record.
+ * @returns {ParagraphIndentsRecord} Returns the result.
  */
 function ensureIndents(record: ParagraphIndentsRecord | undefined): ParagraphIndentsRecord {
     return record === undefined ? {} : record;
@@ -1003,8 +1107,8 @@ function indentsRecordIsEmpty(record: ParagraphIndentsRecord): boolean {
 /**
  *  Ensure the internal spacing record exists (does not notify).
  *
- * @param {ParagraphSpacingRecord | undefined} record - The record.
- * @returns {ParagraphSpacingRecord} The result.
+ * @param {ParagraphSpacingRecord | undefined} record - Specifies the record.
+ * @returns {ParagraphSpacingRecord} Returns the result.
  */
 function ensureSpacing(record: ParagraphSpacingRecord | undefined): ParagraphSpacingRecord {
     return record === undefined ? {} : record;
@@ -1057,11 +1161,7 @@ const PARAGRAPH_FORMAT_DEFAULTS: { horizontalAlignment: 'start' | 'center' | 'en
 };
 
 /**
- * Direct paragraph formatting (`w:p/w:pPr`) — the only public
- * paragraph-formatting surface. One live instance per
- * {@link Paragraph}, lazily created via `paragraph.paragraphFormat`,
- * never null. Mirrors the .NET DocIO `WParagraphFormat` flat property
- * surface (ADR `docs/adr/2026-09-24-paragraph-format-facade.md`).
+ * Represents the formatting of a paragraph, such as alignment, indentation, and spacing.
  *
  * @example
  * ```ts
@@ -1071,7 +1171,6 @@ const PARAGRAPH_FORMAT_DEFAULTS: { horizontalAlignment: 'start' | 'center' | 'en
  * paragraph.paragraphFormat.backColor = 'D3D3D3';
  * paragraph.paragraphFormat.horizontalAlignment = 'end';
  * ```
- *
  * @public
  */
 export class ParagraphFormat {
@@ -1137,12 +1236,9 @@ export class ParagraphFormat {
     // ---- Group A: alignment (§2) ----
 
     /**
-     * Horizontal alignment of the paragraph (`w:jc`). `undefined` = inherit.
+     * Gets or sets the horizontal alignment of the paragraph.
      *
-     * Loaded directional `left`/`right` wording is surfaced as the neutral
-     * `start`/`end` without rewriting the stored value on a no-op save;
-     * unknown `w:jc` values (distribute-family) round-trip verbatim and this
-     * getter returns `undefined` for them.
+     * If undefined, the alignment is inherited from the style.
      *
      * @public
      */
@@ -1171,7 +1267,9 @@ export class ParagraphFormat {
 
     // ---- Group A: keeps and breaks (§9) ----
 
-    /** Keep paragraph with the next (`w:keepNext`). `undefined` = inherit. */
+    /**
+     * Gets or sets the keep paragraph with the next.
+     */
     get keepFollow(): boolean | undefined {
         if (this.keepNextValue !== undefined) {
             return this.keepNextValue;
@@ -1183,7 +1281,9 @@ export class ParagraphFormat {
         this.mutate();
     }
 
-    /** Keep all lines of the paragraph on one page (`w:keepLines`). */
+    /**
+     * Gets or sets the keep all lines of the paragraph on one page.
+     */
     get keepLines(): boolean | undefined {
         if (this.keepLinesValue !== undefined) {
             return this.keepLinesValue;
@@ -1195,7 +1295,9 @@ export class ParagraphFormat {
         this.mutate();
     }
 
-    /** Force this paragraph onto a new page (`w:pageBreakBefore`). */
+    /**
+     * Gets or sets the force this paragraph onto a new page.
+     */
     get pageBreakBefore(): boolean | undefined {
         if (this.pageBreakBeforeValue !== undefined) {
             return this.pageBreakBeforeValue;
@@ -1208,15 +1310,7 @@ export class ParagraphFormat {
     }
 
     /**
-     * DocIO-aligned page-break-after flag.
-     *
-     * There is no ECMA-376 `w:pageBreakAfter` on `w:pPr` (see
-     * `docs/specs/paragraph-formatting.md` § deliberate omissions). The typed flag
-     * is still stored for assign / clear / style resolve. On serialize, when the
-     * direct value is `true`, body writers emit a **following** paragraph whose
-     * only content is `w:r/w:br/@w:type="page"` after the content `w:p` — without
-     * inventing a non-schema pPr child and without placing the break run inside
-     * the content paragraph.
+     * Gets or sets a value indicating whether a page break is inserted after the paragraph.
      */
     get pageBreakAfter(): boolean | undefined {
         if (this.pageBreakAfterValue !== undefined) {
@@ -1229,7 +1323,9 @@ export class ParagraphFormat {
         this.mutate();
     }
 
-    /** Widow/orphan line control (`w:widowControl`). */
+    /**
+     * Gets or sets the widow/orphan line control.
+     */
     get widowControl(): boolean | undefined {
         if (this.widowControlValue !== undefined) {
             return this.widowControlValue;
@@ -1241,7 +1337,9 @@ export class ParagraphFormat {
         this.mutate();
     }
 
-    /** Right-to-left base flow (`w:bidi`). */
+    /**
+     * Gets or sets the right-to-left base flow.
+     */
     get bidi(): boolean | undefined {
         if (this.bidiValue !== undefined) {
             return this.bidiValue;
@@ -1254,9 +1352,7 @@ export class ParagraphFormat {
     }
 
     /**
-     * Outline/navigation level (`w:outlineLvl`): 0–8 = Heading 1–9,
-     * 9 = body text. `undefined` = inherit. Authoring an integer outside
-     * 0–9 throws `RangeError` (no silent clamp).
+     * Gets or sets the outline/navigation level: 0–8 = Heading 1–9, 9 = body text.
      */
     get outlineLevel(): number | undefined {
         if (this.outlineLevelValue !== undefined) {
@@ -1278,10 +1374,9 @@ export class ParagraphFormat {
     // ---- Group A: indents (§7; ADR D1/D2/D3) ----
 
     /**
-     * Left-of-flow indent in points (`w:ind/@w:left` authored; loaded
-     * `@w:start` preserved). Signed: negative values are legal outdents.
-     * Range ±1584 points; out-of-range throws `RangeError`.
-     * Setting a value drops a loaded `start`/`leftChars` twin (ADR D11).
+     * Gets or sets the left indent of the paragraph, in points.
+     *
+     * Negative values move the paragraph into the margin. The value ranges from -1584 to 1584.
      */
     get leftIndent(): number | undefined {
         if (this.indentsValue !== undefined) {
@@ -1312,9 +1407,9 @@ export class ParagraphFormat {
     }
 
     /**
-     * Right-of-flow indent in points (`@w:right` authored; loaded `@w:end`
-     * preserved). Signed; range ±1584 points. Setting a value drops a loaded
-     * `end`/`rightChars` twin.
+     * Gets or sets the right indent of the paragraph, in points.
+     *
+     * Negative values move the paragraph into the margin. The value ranges from -1584 to 1584.
      */
     get rightIndent(): number | undefined {
         if (this.indentsValue !== undefined) {
@@ -1344,12 +1439,9 @@ export class ParagraphFormat {
     }
 
     /**
-     * First-line indent in points, **signed** (ADR D3): positive = first-line
-     * indent (`@w:firstLine`); negative = hanging indent (`@w:hanging`,
-     * emitted as the absolute twips). Range ±1584 points. Setting a value
-     * drops a loaded `firstLineChars` twin. Loading a legacy `w:ind` that
-     * carries both `@w:firstLine` and `@w:hanging` is deterministic
-     * (firstLine wins) — the pair cannot be co-authored through this API.
+     * Gets or sets the first-line indent of the paragraph, in points.
+     *
+     * A positive value indents the first line, and a negative value creates a hanging indent. The value ranges from -1584 to 1584.
      */
     get firstLineIndent(): number | undefined {
         if (this.indentsValue !== undefined) {
@@ -1388,9 +1480,7 @@ export class ParagraphFormat {
     // ---- Group A: spacing (§8; ADR D4) ----
 
     /**
-     * Space above the paragraph in points (`@w:before`). Range 0–1584.
-     * User-set clears an explicit `beforeAutospacing` (set-path only, never
-     * on load). Setting a value drops a loaded `@w:beforeLines` twin.
+     * Gets or sets the spacing before the paragraph, in points. The value ranges from 0 to 1584.
      */
     get beforeSpacing(): number | undefined {
         if (this.spacingValue !== undefined && this.spacingValue.before !== undefined) {
@@ -1417,9 +1507,7 @@ export class ParagraphFormat {
     }
 
     /**
-     * Space below the paragraph in points (`@w:after`). Range 0–1584.
-     * User-set clears an explicit `afterAutospacing` and drops a loaded
-     * `@w:afterLines` twin.
+     * Gets or sets the spacing after the paragraph, in points. The value ranges from 0 to 1584.
      */
     get afterSpacing(): number | undefined {
         if (this.spacingValue !== undefined && this.spacingValue.after !== undefined) {
@@ -1445,7 +1533,9 @@ export class ParagraphFormat {
         this.mutate();
     }
 
-    /** Automatic spacing above (`@w:beforeAutospacing`). */
+    /**
+     * Gets or sets the automatic spacing above.
+     */
     get beforeAutospacing(): boolean | undefined {
         if (this.spacingValue !== undefined && this.spacingValue.beforeAutospacing !== undefined) {
             return this.spacingValue.beforeAutospacing;
@@ -1459,7 +1549,9 @@ export class ParagraphFormat {
         this.mutate();
     }
 
-    /** Automatic spacing below (`@w:afterAutospacing`). */
+    /**
+     * Gets or sets the automatic spacing below.
+     */
     get afterAutospacing(): boolean | undefined {
         if (this.spacingValue !== undefined && this.spacingValue.afterAutospacing !== undefined) {
             return this.spacingValue.afterAutospacing;
@@ -1474,9 +1566,7 @@ export class ParagraphFormat {
     }
 
     /**
-     * Line-grid spacing above in hundredths of a line (`@w:beforeLines`),
-     * round-trip slot for the East-Asian line-grid authoring style. Authored
-     * `beforeSpacing` drops a loaded twin.
+     * Gets or sets the before lines.
      */
     get beforeLines(): number | undefined {
         if (this.spacingValue !== undefined && this.spacingValue.beforeLines !== undefined) {
@@ -1491,7 +1581,9 @@ export class ParagraphFormat {
         this.mutate();
     }
 
-    /** Line-grid spacing below in hundredths of a line (`@w:afterLines`). */
+    /**
+     * Gets or sets the line-grid spacing below in hundredths of a line.
+     */
     get afterLines(): number | undefined {
         if (this.spacingValue !== undefined && this.spacingValue.afterLines !== undefined) {
             return this.spacingValue.afterLines;
@@ -1506,10 +1598,9 @@ export class ParagraphFormat {
     }
 
     /**
-     * Fixed/minimum line spacing in points (`@w:line` with
-     * `lineSpacingRule` `'atLeast'` or `'exact'`). Range 0.7–1584 points.
-     * Setting it clears {@link lineSpacingCount} — both are views of one
-     * `@line` slot (ADR D4).
+     * Gets or sets the line spacing of the paragraph, in points, when the line spacing rule is 'atLeast' or 'exact'.
+     *
+     * The value ranges from 0.7 to 1584.
      */
     get lineSpacing(): number | undefined {
         if (this.spacingValue !== undefined && this.spacingValue.line !== undefined
@@ -1539,10 +1630,9 @@ export class ParagraphFormat {
     }
 
     /**
-     * Interpretation rule for `@w:line`: `'auto'` (multiple of single
-     * spacing — use {@link lineSpacingCount}), `'exact'` (exactly the given
-     * height), `'atLeast'` (at least the given height). Default when
-     * `lineSpacing` is authored without a rule: `'exact'`.
+     * Gets or sets how the line spacing is interpreted.
+     *
+     * The value 'auto' uses a multiple of single spacing, 'exact' uses exactly the given height, and 'atLeast' uses at least the given height.
      */
     get lineSpacingRule(): LineSpacingRule | undefined {
         if (this.spacingValue !== undefined && this.spacingValue.lineRule !== undefined) {
@@ -1558,11 +1648,7 @@ export class ParagraphFormat {
     }
 
     /**
-     * Multiple-of-single line spacing (authoring view over
-     * `@line = round(n × 240)` + `@lineRule="auto"`), e.g. `1.5` or `2`.
-     * Range 0–100; mutually clears with {@link lineSpacing} (ADR D4).
-     * Getter returns `n` only when the stored rule is `'auto'` and `@line`
-     * is set; otherwise `undefined` (effective style may still resolve).
+     * Gets or sets the line spacing count.
      */
     get lineSpacingCount(): number | undefined {
         if (this.spacingValue !== undefined
@@ -1595,8 +1681,7 @@ export class ParagraphFormat {
     // ---- Group A: tabs (§11), borders (§12), shading (§13) ----
 
     /**
-     * Custom tab stops (`w:tabs`), assigned whole as an array. `undefined`
-     * clears explicit stops (style/default resolution may still supply some).
+     * Gets or sets the custom tab stops, assigned whole as an array.
      */
     get tabStops(): TabStop[] | undefined {
         if (this.tabStopsValue !== undefined) {
@@ -1610,8 +1695,7 @@ export class ParagraphFormat {
     }
 
     /**
-     * Live DocIO-style tab-stop collection. Mutates the same storage as
-     * {@link ParagraphFormat.tabStops}.
+     * Gets the collection of tab stops of the paragraph.
      */
     get tabs(): TabCollection {
         if (this.tabsCollection === undefined) {
@@ -1621,12 +1705,9 @@ export class ParagraphFormat {
     }
 
     /**
-     * Live paragraph borders (`w:pBdr`) facade — always a
-     * {@link ParagraphBordersFace} (aggregate `borderType` / `color` /
-     * `lineWidth` / `space`, plus `top` / `left` / `bottom` / `right` /
-     * `horizontal` / `vertical`). Never `undefined` and never a plain bag.
+     * Gets the borders of the paragraph.
      *
-     * Whole-bag replace or clear: {@link ParagraphFormat.setBorders}.
+     * To replace or clear all borders at once, use {@link ParagraphFormat.setBorders}.
      */
     get borders(): ParagraphBordersFace {
         if (this.bordersFace === undefined) {
@@ -1636,12 +1717,12 @@ export class ParagraphFormat {
     }
 
     /**
-     * Replace or clear the whole paragraph-borders bag (`w:pBdr`).
+     * Replace or clear the whole paragraph-borders bag.
      * Pass `undefined` to clear authored borders. Per-edge edits use
      * {@link ParagraphFormat.borders}.
      *
-     * @param {ParagraphBorders | undefined} value - The value.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {ParagraphBorders | undefined} value - Specifies the value.
      */
     setBorders(value: ParagraphBorders | undefined): void {
         this.bordersValue = value;
@@ -1671,16 +1752,9 @@ export class ParagraphFormat {
     }
 
     /**
-     * Background fill color (`w:shd/@w:fill`).
+     * Gets or sets the background color of the paragraph as a hexadecimal RGB string, 'auto', or a {@link Color} value.
      *
-     * - **Get (runtime)**: OOXML wire string — hex `RRGGBB`, `'auto'`, or the
-     *   default `''` when unset. Loaded wire values are preserved (never a
-     *   {@link Color} enum).
-     * - **Set**: hex string / `'auto'`, a {@link Color} enum value (converted to
-     *   hex immediately), or `undefined` to clear the authored fill.
-     *
-     * TypeScript 3.3 requires identical get/set types, so the declared type is
-     * `string | Color | undefined`; the getter always returns a string.
+     * Set to undefined to clear the background.
      */
     get backColor(): string | Color | undefined {
         if (this.shadingValue !== undefined && this.shadingValue.fill !== undefined) {
@@ -1704,16 +1778,9 @@ export class ParagraphFormat {
     }
 
     /**
-     * Pattern foreground color (`w:shd/@w:color`).
+     * Gets or sets the foreground color of the paragraph shading pattern as a hexadecimal RGB string, 'auto', or a {@link Color} value.
      *
-     * - **Get (runtime)**: OOXML wire string — hex `RRGGBB`, `'auto'`, or the
-     *   default `''` when unset. Loaded wire values are preserved (never a
-     *   {@link Color} enum).
-     * - **Set**: hex string / `'auto'`, a {@link Color} enum value (converted to
-     *   hex immediately), or `undefined` to clear.
-     *
-     * TypeScript 3.3 requires identical get/set types, so the declared type is
-     * `string | Color | undefined`; the getter always returns a string.
+     * Set to undefined to clear the color.
      */
     get foreColor(): string | Color | undefined {
         if (this.shadingValue !== undefined && this.shadingValue.color !== undefined) {
@@ -1769,10 +1836,7 @@ export class ParagraphFormat {
     // ---- Group A: misc on/off flags ----
 
     /**
-     * Suppress automatic hyphenation for this paragraph
-     * (`w:suppressAutoHyphens`, ECMA-376-1 §17.3.1.34 — the only
-     * hyphenation element; ADR D5). Foreign `w:suppressHyphenation` markup
-     * (not an ECMA-376 element) parks verbatim in `pPrExtra`.
+     * Gets or sets a value indicating whether automatic hyphenation is disabled for the paragraph.
      */
     get suppressAutoHyphens(): boolean {
         if (this.suppressAutoHyphensValue !== undefined) {
@@ -1785,7 +1849,9 @@ export class ParagraphFormat {
         this.mutate();
     }
 
-    /** Exclude this paragraph from line numbering (`w:suppressLineNumbers`). */
+    /**
+     * Gets or sets the exclude this paragraph from line numbering.
+     */
     get suppressLineNumbers(): boolean {
         if (this.suppressLineNumbersValue !== undefined) {
             return this.suppressLineNumbersValue;
@@ -1797,7 +1863,9 @@ export class ParagraphFormat {
         this.mutate();
     }
 
-    /** Ignore before/after spacing between same-style paragraphs (`w:contextualSpacing`). */
+    /**
+     * Gets or sets the ignore before/after spacing between same-style paragraphs.
+     */
     get contextualSpacing(): boolean {
         if (this.contextualSpacingValue !== undefined) {
             return this.contextualSpacingValue;
@@ -1809,7 +1877,9 @@ export class ParagraphFormat {
         this.mutate();
     }
 
-    /** Treat left/right indents as inside/outside for mirrored margins (`w:mirrorIndents`). */
+    /**
+     * Gets or sets the treat left/right indents as inside/outside for mirrored margins.
+     */
     get mirrorIndents(): boolean {
         if (this.mirrorIndentsValue !== undefined) {
             return this.mirrorIndentsValue;
@@ -1821,7 +1891,9 @@ export class ParagraphFormat {
         this.mutate();
     }
 
-    /** Auto-adjust right indent against the document grid (`w:adjustRightInd`). */
+    /**
+     * Gets or sets the auto-adjust right indent against the document grid.
+     */
     get adjustRightIndent(): boolean {
         if (this.adjustRightIndentValue !== undefined) {
             return this.adjustRightIndentValue;
@@ -1836,11 +1908,9 @@ export class ParagraphFormat {
     // ---- Group A: text direction (§15; ADR D11: 12 tokens) ----
 
     /**
-     * Physical text flow direction (`w:textDirection`,
-     * `ST_TextDirection` — all 12 tokens). Unknown loaded tokens round-trip
-     * verbatim (raw slot) and the getter returns `undefined` for them;
-     * authoring an invalid token throws
-     * `DocxError('content/invalid-text-direction', …)`.
+     * Gets or sets the direction in which the text of the paragraph flows.
+     *
+     * If undefined, the direction is inherited from the style.
      */
     get textDirection(): ParagraphTextDirection | undefined {
         if (this.textDirectionValue !== undefined) {
@@ -1867,11 +1937,7 @@ export class ParagraphFormat {
     // ---- Group B: baseline alignment (§16; ADR D6) ----
 
     /**
-     * How characters of different sizes align vertically on a line
-     * (`w:textAlignment`, `ST_TextAlignment`). Unknown loaded tokens
-     * round-trip verbatim and the getter returns `undefined` for them;
-     * authoring an invalid token throws
-     * `DocxError('content/invalid-baseline-alignment', …)`.
+     * Gets or sets the baseline alignment.
      */
     get baselineAlignment(): BaselineAlignment | undefined {
         if (this.baselineAlignmentValue !== undefined) {
@@ -2039,8 +2105,8 @@ export class ParagraphFormat {
      * Apply a partial delta. Uses setters — cross-property effects
      * (autospacing clearing, mutual line-slot clearing) apply.
      *
-     * @param {ParagraphFormatDelta} delta - The delta.
-     * @returns {void} Nothing is returned.
+     * @returns {void}
+     * @param {ParagraphFormatDelta} delta - Specifies the delta.
      * @public
      */
     assign(delta: ParagraphFormatDelta): void {
@@ -2160,7 +2226,7 @@ export class ParagraphFormat {
     /**
      * Clear all typed formatting. Does not clear `pPrExtra`.
      *
-     * @returns {void} Nothing is returned.
+     * @returns {void}
      * @public
      */
     clear(): void {
@@ -2350,6 +2416,30 @@ export class ParagraphFormat {
     buildPPrChildren(inject?: ParagraphPPrInject): OpenXmlElement[] {
         return buildPPrChildrenFromSnapshot(this.snapshot(), inject);
     }
+
+    /**
+     * Create an independent copy of this paragraph formatting.
+     * All properties are copied; no state is shared with the source.
+     *
+     * The cloned format is detached and has no host until hydrated or
+     * attached to another paragraph-format owner.
+     *
+     * @returns {ParagraphFormat} Cloned paragraph format.
+     * @public
+     */
+    clone(): ParagraphFormat {
+        const cloned: ParagraphFormat = new ParagraphFormat(undefined);
+        const snap: ParagraphFormatSnapshot = this.snapshot();
+        // Indent and spacing records are mutated in place by the setters, so they must not be shared.
+        cloned.hydrate({
+            ...snap,
+            indentsValue: snap.indentsValue === undefined ? undefined : { ...snap.indentsValue },
+            spacingValue: snap.spacingValue === undefined ? undefined : { ...snap.spacingValue },
+            tabStopsValue: snap.tabStopsValue === undefined ? undefined : snap.tabStopsValue.slice(),
+            pPrExtra: snap.pPrExtra.slice()
+        });
+        return cloned;
+    }
 }
 
 /**
@@ -2366,12 +2456,13 @@ function shadingHasEntries(shading: ParagraphShading): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// TASK-9020-C/D: parse + serialize codecs (CharacterFormat ownership pattern)
+// parse + serialize codecs (CharacterFormat ownership pattern)
 // ---------------------------------------------------------------------------
 
 /**
  * Optional inject hooks for paragraph-owned children that must sit at fixed
  * CT_PPrBase / CT_PPr positions inside the materialised `w:pPr` list.
+ *
  * @private
  */
 export interface ParagraphPPrInject {
@@ -2390,6 +2481,7 @@ export interface ParagraphPPrInject {
  * Modeled `w:pPr` children owned by {@link ParagraphFormat}.
  * `pStyle` / `numPr` / `sectPr` stay on {@link Paragraph}.
  * Foreign non-schema `suppressHyphenation` is NOT modeled (parked).
+ *
  * @private
  */
 const MODELED_PPR: Set<string> = new Set([
@@ -2425,6 +2517,7 @@ const MODELED_PPR: Set<string> = new Set([
  * Schema-known children that stay parked in `pPrExtra` (deferred features /
  * markup-compat). Drain into schema slots on serialize.
  * Mark `w:rPr` is owned by {@link Paragraph.breakCharacterFormat} (not parked).
+ *
  * @private
  */
 const PPR_EXTRA_ONLY: Set<string> = new Set([

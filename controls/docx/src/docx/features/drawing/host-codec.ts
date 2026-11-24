@@ -6,7 +6,7 @@
  * - DrawingML `a:graphic` / `a:graphicData`, `a:prstGeom` (`ST_ShapeType`)
  * - [MS-ODRAWXML] wordprocessingShape (`wps:wsp`)
  * - ECMA-376-3 Markup Compatibility AlternateContent Choice/Fallback
- * - ECMA-376-4 VML `w:pict` / `v:shape` Fallback (Policy B dual AC; TASK-8050)
+ * - ECMA-376-4 VML `w:pict` / `v:shape` Fallback (Policy B dual AC)
  * - VML main XSD: AG_Fill (`filled`/`fillcolor`), AG_ShapeAttributes
  *   (`stroked`/`strokecolor`/`strokeweight`), AG_StrokeAttributes / `v:stroke`,
  *   CT_Textbox (`@inset`, optional `w:txbxContent`)
@@ -164,17 +164,20 @@ export interface EncodeDrawingShapeInput {
      * Explicit horizontal position mode override. When true, `wp:positionH` is
      * rebuilt from {@link horizontalOrigin}/`posOffset`/`align` fields; when
      * false/undefined the residual position is preserved when available.
+     *
      * @private
      */
     readonly horizontalModeled?: boolean;
     /**
      * See {@link EncodeDrawingShapeInput.horizontalModeled}.
+     *
      * @private
      */
     readonly verticalModeled?: boolean;
     /**
      * Fill MVP for authored/rebuilt spPr: solid sRGB or none. When undefined and
      * a residual spPr fill exists, the residual fill element is preserved.
+     *
      * @private
      */
     readonly fill?: {
@@ -188,6 +191,7 @@ export interface EncodeDrawingShapeInput {
     /**
      * Line MVP for authored/rebuilt spPr. When undefined and a residual `a:ln`
      * exists, the residual line element is preserved.
+     *
      * @private
      */
     readonly line?: {
@@ -217,31 +221,33 @@ export interface EncodeDrawingShapeInput {
     readonly layoutDirty?: boolean;
     /**
      * Serialize a text box variant: emit `wps:txbx` (with `w:txbxContent`
-     * children) and `wps:bodyPr` on `wps:wsp` (TASK-8049).
+     * children) and `wps:bodyPr` on `wps:wsp`.
      *
      * `CT_WordprocessingShape` order: cNvPr? → cNvSpPr/cNvCnPr → spPr → style? →
      * extLst? → (txbx | linkedTxbx)? → bodyPr (minOccurs 1).
      * When undefined and the preserved host has a residual `wps:txbx`, the
      * residual txbx is cloned verbatim (body preserved, content not rebuilt).
+     *
      * @private
      */
     readonly txbxContent?: ReadonlyArray<OpenXmlElement> | undefined;
     /**
-     * Modeled `wps:bodyPr` (`CT_TextBodyProperties` — TASK-8049). Always emitted
+     * Modeled `wps:bodyPr` (`CT_TextBodyProperties`). Always emitted
      * (schema minOccurs=1) on the authored/rebuilt wsp; empty element when no
      * field is modeled.
      */
     readonly bodyPr?: OpenXmlElement | undefined;
     /**
-     * Nested child elements under top-level `wpg:wgp` (TASK-8051). When defined,
+     * Nested child elements under top-level `wpg:wgp`. When defined,
      * {@link buildGraphic} emits `a:graphicData @uri=WPG` + `wpg:wgp` instead of
      * a leaf `wps:wsp`. Empty array authors an empty group.
+     *
      * @private
      */
     readonly groupChildElements?: ReadonlyArray<OpenXmlElement> | undefined;
 }
 /**
- * Author / rebuild input for dual AC wordprocessing group host (TASK-8051).
+ * Author / rebuild input for dual AC wordprocessing group host.
  * Identity lives on `wp:docPr`; children are bare nested `wps:wsp` / `wpg:grpSp`.
  *
  * @private
@@ -575,7 +581,7 @@ function buildWpsShape(input: EncodeDrawingShapeInput): OpenXmlElement {
     if (residualStyle !== undefined) {
         children.push(cloneElement(residualStyle));
     }
-    // Text box (TASK-8049): modeled txbxContent when provided; residual txbx
+    // Text box: modeled txbxContent when provided; residual txbx
     // cloned verbatim when the rebuild did not model the body (structure dirt
     // from layout/wrap mutators must not drop textbox content). linkedTxbx is
     // OOS (GO) — residual clone preserves it; author path never emits it.
@@ -670,6 +676,7 @@ export function serializeTxbxContentBlocks(blocks: ReadonlyArray<TxbxBlock>): Op
 }
 /**
  * Block model alias for text box content (same core block union).
+ *
  * @private
  */
 export type TxbxBlock = BlockContent;
@@ -716,7 +723,7 @@ export function residualHasTxbx(host: OpenXmlElement | undefined): boolean {
     return false;
 }
 /**
- * Build top-level `wpg:wgp` group shape for graphicData (TASK-8051).
+ * Build top-level `wpg:wgp` group shape for graphicData.
  *
  * Top-level wgp has no `cNvPr` (identity lives on `wp:docPr`). Nested groups
  * use `wpg:grpSp` with `cNvPr` — authored via residual clone or nested
@@ -770,9 +777,9 @@ export function buildWpgGroup(input: EncodeDrawingShapeInput): OpenXmlElement {
     });
 }
 /**
- * Build a nested bare `wps:wsp` for group/canvas children (TASK-8051).
+ * Build a nested bare `wps:wsp` for group/canvas children.
  * Carries `wps:cNvPr` identity after `wps:cNvSpPr` (fixture / Word order used
- * by TASK-8051 tests). No dual AC wrapper — nested children are bare wsp.
+ * by tests). No dual AC wrapper — nested children are bare wsp.
  *
  * @param {EncodeDrawingShapeInput} input - The input.
  * @returns {OpenXmlElement} The result.
@@ -1108,7 +1115,7 @@ function buildDefaultPositionV(): OpenXmlElement {
  * Build modeled `wp:positionH` (`CT_PosH`).
  *
  * Tokens: `ST_RelFromH` / `ST_AlignH` are imported, not invented (GO Q1 —
- * `src/features/images/layout-types.ts`). Align XOR posOffset follows the
+ * the package sources). Align XOR posOffset follows the
  * `CT_PosH` schema choice. `ST_PositionOffset` is `xsd:int` (negative EMU
  * legal). Default origin `'column'`; offset default `0` (images parity).
  *
@@ -2325,7 +2332,7 @@ function buildVmlStrokeChild(input: EncodeDrawingShapeInput): OpenXmlElement | u
     return xmlElement(VML_NS, 'v', 'stroke', { attributes: strokeAttrs });
 }
 /**
- * Corpus-backed VML Fallback pict tree (Policy B dual AC — TASK-8050).
+ * Corpus-backed VML Fallback pict tree (Policy B dual AC).
  *
  * Emits `w:pict` > `v:shape` with style, fill/stroke attrs, optional `v:stroke`,
  * `w10:wrap` / `w10:anchorlock`, and `v:textbox` (cloned txbxContent) when modeled.
@@ -2479,7 +2486,7 @@ export function buildDrawingMlHost(input: EncodeDrawingShapeInput): OpenXmlEleme
 }
 /**
  * Author dual AC root: Choice(wps DrawingML) + Fallback(VML pict tree).
- * Policy B (GO Q2/Q3/Q7) — TASK-8050 corpus-backed VML Fallback.
+ * Policy B (GO Q2/Q3/Q7) corpus-backed VML Fallback.
  *
  * @param {EncodeDrawingShapeInput} input - The input.
  * @returns {OpenXmlElement} The result.
@@ -2515,7 +2522,7 @@ export function encodeAuthoredDrawingShape(input: EncodeDrawingShapeInput): Open
 }
 /**
  * Author dual AC root for a wordprocessing group: Choice(wpg DrawingML) +
- * Fallback(VML pict stub). Policy B — TASK-8051.
+ * Fallback(VML pict stub). Policy B.
  *
  * Top-level graphicData uri = WPG; body is `wpg:wgp` without cNvPr.
  * xmlns:wpg is declared on AlternateContent so Requires="wpg" resolves;
@@ -2910,7 +2917,7 @@ export function isDrawingAlternateContent(root: OpenXmlElement): boolean {
 }
 /**
  * True when residual is a nested bare drawing child (`wps:wsp` or `wpg:grpSp`)
- * rather than a top-level `w:drawing` / MC host (TASK-8051). Nested identity
+ * rather than a top-level `w:drawing` / MC host. Nested identity
  * lives on `wps:cNvPr` / `wpg:cNvPr`, not `wp:docPr`.
  *
  * @param {OpenXmlElement} root - The root.
@@ -2953,7 +2960,7 @@ export function readCNvPrIdentity(root: OpenXmlElement): DrawingDocPrIdentity {
 }
 /**
  * Deep-clone nested residual and patch `cNvPr` identity attributes only
- * (identity dirty on group/canvas children — TASK-8051).
+ * (identity dirty on group/canvas children).
  *
  * @param {OpenXmlElement} residual - The residual.
  * @param {DrawingDocPrIdentity} identity - The identity.

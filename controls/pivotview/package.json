@@ -24,21 +24,8 @@
 		"@syncfusion/ej2-pdf-export": "*",
 		"@syncfusion/ej2-popups": "*",
 		"@syncfusion/ej2-splitbuttons": "*",
-		"@syncfusion/ej2-svg-base": "*"
-	},
-	"devDependencies": {
-		"@syncfusion/ej2-staging": "^1.0.15",
-		"@types/chai": "^3.4.28",
-		"@types/es6-promise": "0.0.28",
-		"@types/jasmine": "2.8.9",
-		"@types/jasmine-ajax": "^3.1.27",
-		"@types/requirejs": "^2.1.26",
-		"es6-promise": "^3.2.1",
-		"gulp": "^3.9.1",
-		"gulp-sass": "^3.1.0",
-		"gulp-typescript": "^3.1.6",
-		"requirejs": "^2.3.3",
-		"typescript": "2.3.4"
+		"@syncfusion/ej2-svg-base": "*",
+		"markdown-spellcheck": "^1.3.1"
 	},
 	"keywords": [
 		"ej2",
@@ -101,8 +88,8 @@
 	},
 	"config": {
 		"ghooks": {
-			"pre-commit": "gulp pre-commit",
-			"pre-push": "gulp pre-push",
+			"pre-commit": "node .agent/tools/lint-changed.cjs --base HEAD",
+			"pre-push": "python3 .agent/tools/harness.py doctor",
 			"commit-msg": "gulp commit-msg"
 		}
 	},

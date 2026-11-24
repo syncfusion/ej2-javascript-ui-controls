@@ -2597,6 +2597,10 @@ export class FormDesigner {
     }
 
     private dropdownChange(event: Event): void {
+        if (this.pdfViewer.readOnlySettings.formFields) {
+            event.preventDefault();
+            return;
+        }
         const data: string = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         const formFieldsData: any = JSON.parse(data);
         let targetField: FormFieldModel = null;
@@ -2648,6 +2652,9 @@ export class FormDesigner {
     }
 
     public setCheckBoxState(event: Event): void {
+        if (this.pdfViewer.readOnlySettings.formFields) {
+            return;
+        }
         if ((Browser.isDevice) ? ((event.target as Element).classList.contains('') || (event.target as Element).classList.contains('e-pv-checkbox-outer-div') || (event.target as Element).classList.contains('e-pv-checkbox-div')) && (event.currentTarget as Element).classList.contains('e-pv-checkbox-outer-div') && !this.pdfViewer.designerMode : !this.pdfViewer.designerMode) {
             let isChecked: boolean = false;
             let checkTarget: Element;
@@ -2800,6 +2807,11 @@ export class FormDesigner {
     }
 
     private setRadioButtonState(event: Event): void {
+        if (this.pdfViewer.readOnlySettings.formFields) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
         const storedData: string = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         const formFieldsData: any = JSON.parse(storedData || '[]');
         const clickedKey: string = ((event.currentTarget as HTMLElement) && (event.currentTarget as HTMLElement).id || '').split('_')[0];
@@ -3126,6 +3138,10 @@ export class FormDesigner {
     }
 
     private getTextboxValue(event: Event): void {
+        if (this.pdfViewer.readOnlySettings.formFields) {
+            event.preventDefault();
+            return;
+        }
         const data: string = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         const formFieldsData: any = JSON.parse(data);
         let targetField: FormFieldModel = null;
@@ -3226,7 +3242,9 @@ export class FormDesigner {
     }
 
     private inputElementClick(event: Event): void {
-        (event.target as HTMLElement).focus();
+        if (!this.pdfViewer.readOnlySettings.formFields) {
+            (event.target as HTMLElement).focus();
+        }
     }
 
     private updateFormFieldSessions(field: FormFieldModel | PdfFormFieldBaseModel): void {
@@ -3740,6 +3758,9 @@ export class FormDesigner {
                         DropdownFieldSettings | RadioButtonFieldSettings | ListBoxFieldSettings |
                         SignatureFieldSettings | InitialFieldSettings | ButtonFieldSettings | BarcodeFieldSettings | FormFieldModel,
                         isCollection?: boolean, id?: string): HTMLElement {
+        if (this.pdfViewer.readOnlySettings.formFields) {
+            return null;
+        }
         const HTMLElement: HTMLElement = this.addField(formFieldType, options, isCollection, id, true);
         initializeTelemetryFeature('Form Field Add/Edit', 'PDFViewer');
         return HTMLElement;
@@ -3762,6 +3783,9 @@ export class FormDesigner {
                     SignatureFieldSettings | InitialFieldSettings | ButtonFieldSettings | BarcodeFieldSettings | FormFieldModel,
                     isCollection?: boolean, id?: string,
                     isAddedProgrammatically?: boolean): HTMLElement {
+        if (this.pdfViewer.readOnlySettings.formFields && isAddedProgrammatically) {
+            return null;
+        }
         const obj: PdfFormFieldBaseModel = {
             thickness: 1, bounds: { x: options.bounds.X, y: options.bounds.Y, width: options.bounds.Width, height: options.bounds.Height },
             fontFamily: !isNullOrUndefined((options as TextFieldSettings).fontFamily) ? (options as TextFieldSettings).fontFamily : 'Helvetica', fontSize: !isNullOrUndefined((options as TextFieldSettings).fontSize) ? (options as TextFieldSettings).fontSize : 10,
@@ -4332,6 +4356,10 @@ export class FormDesigner {
      */
     public setFormFieldMode(formFieldType: FormFieldType,
                             options?: Item[]): void {
+        if (this.pdfViewer.readOnlySettings.formFields) {
+            this.isSetFormFieldMode = false;
+            return;
+        }
         initializeTelemetryFeature('Form Field Add/Edit', 'PDFViewer');
         if (this.pdfViewer.selectedItems && !isNullOrUndefined(this.pdfViewer.selectedItems.annotations) &&
          this.pdfViewer.selectedItems.annotations.length > 0 && this.pdfViewerBase.activeElements &&
@@ -4462,6 +4490,9 @@ export class FormDesigner {
                            options: TextFieldSettings | PasswordFieldSettings | CheckBoxFieldSettings |
                            DropdownFieldSettings | RadioButtonFieldSettings | ListBoxFieldSettings | BarcodeFieldSettings |
                            SignatureFieldSettings | InitialFieldSettings | ButtonFieldSettings | FormFieldModel): void {
+        if (this.pdfViewer.readOnlySettings.formFields) {
+            return;
+        }
         const formField: PdfFormFieldBaseModel = this.getFormField(formFieldId);
         this.isFormFieldUpdated = true;
         const selectedItem: PdfFormFieldBaseModel = this.pdfViewer.selectedItems.formFields[0];
@@ -5767,6 +5798,9 @@ export class FormDesigner {
      * @returns {void}
      */
     public deleteFormField(formFieldId: string | object, addAction: boolean = true): void {
+        if (this.pdfViewer.readOnlySettings.formFields) {
+            return;
+        }
         const formField: PdfFormFieldBaseModel = this.getFormField(formFieldId);
         if (isNullOrUndefined(formField) && formFieldId) {
             const data: string = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
@@ -8403,6 +8437,9 @@ export class FormDesigner {
         pickerBtn.addEventListener('click', (e: Event) => {
             e.preventDefault();
             e.stopPropagation();
+            if (this.pdfViewer.readOnlySettings.formFields) {
+                return;
+            }
             openNativePicker();
         });
         pickerBtn.addEventListener('keydown', (e: KeyboardEvent) => {

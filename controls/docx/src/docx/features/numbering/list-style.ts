@@ -62,87 +62,145 @@ function numberingCatalog(document: WordDocument): NumberingCatalog {
  * @public
  */
 export enum ListType {
+    /** Specifies the bulleted type. */
     Bulleted = 'bulleted',
+    /** Specifies the numbered type. */
     Numbered = 'numbered',
 }
 
 /**
- * Number / bullet pattern for a list level (`w:numFmt`).
+ * Number / bullet pattern for a list level.
  *
  * @public
  */
 export enum ListPatternType {
+    /** Specifies the arabic type. */
     Arabic = 'arabic',
+    /** Specifies the leading zero type. */
     LeadingZero = 'leadingZero',
+    /** Specifies the letter type. */
     Letter = 'letter',
+    /** Specifies the letter low type. */
     LetterLow = 'letterLow',
+    /** Specifies the roman type. */
     Roman = 'roman',
+    /** Specifies the roman low type. */
     RomanLow = 'romanLow',
+    /** Specifies the ordinal type. */
     Ordinal = 'ordinal',
+    /** Specifies the ordinal text type. */
     OrdinalText = 'ordinalText',
+    /** Specifies the cardinal text type. */
     CardinalText = 'cardinalText',
+    /** Specifies the bullet type. */
     Bullet = 'bullet',
+    /** Specifies the no number type. */
     NoNumber = 'noNumber',
+    /** Specifies the far east type. */
     FarEast = 'farEast',
+    /** Specifies the special type. */
     Special = 'special',
+    /** Specifies the hebrew1 type. */
     Hebrew1 = 'hebrew1',
+    /** Specifies the hebrew2 type. */
     Hebrew2 = 'hebrew2',
+    /** Specifies the hindi arabic type. */
     HindiArabic = 'hindiArabic',
+    /** Specifies the hindi cardinal text type. */
     HindiCardinalText = 'hindiCardinalText',
+    /** Specifies the hindi letter1 type. */
     HindiLetter1 = 'hindiLetter1',
+    /** Specifies the hindi letter2 type. */
     HindiLetter2 = 'hindiLetter2',
+    /** Specifies the chinese counting type. */
     ChineseCounting = 'chineseCounting',
+    /** Specifies the chinese counting thousand type. */
     ChineseCountingThousand = 'chineseCountingThousand',
+    /** Specifies the chinese legal simplified type. */
     ChineseLegalSimplified = 'chineseLegalSimplified',
+    /** Specifies the japanese counting type. */
     JapaneseCounting = 'japaneseCounting',
+    /** Specifies the japanese digital ten thousand type. */
     JapaneseDigitalTenThousand = 'japaneseDigitalTenThousand',
+    /** Specifies the japanese legal type. */
     JapaneseLegal = 'japaneseLegal',
+    /** Specifies the korean counting type. */
     KoreanCounting = 'koreanCounting',
+    /** Specifies the korean digital type. */
     KoreanDigital = 'koreanDigital',
+    /** Specifies the korean digital2 type. */
     KoreanDigital2 = 'koreanDigital2',
+    /** Specifies the korean legal type. */
     KoreanLegal = 'koreanLegal',
+    /** Specifies the aiueo type. */
     Aiueo = 'aiueo',
+    /** Specifies the aiueo full width type. */
     AiueoFullWidth = 'aiueoFullWidth',
+    /** Specifies the iroha type. */
     Iroha = 'iroha',
+    /** Specifies the iroha full width type. */
     IrohaFullWidth = 'irohaFullWidth',
+    /** Specifies the ganada type. */
     Ganada = 'ganada',
+    /** Specifies the chosung type. */
     Chosung = 'chosung',
+    /** Specifies the decimal enclosed circle type. */
     DecimalEnclosedCircle = 'decimalEnclosedCircle',
+    /** Specifies the decimal full width type. */
     DecimalFullWidth = 'decimalFullWidth',
+    /** Specifies the decimal half width type. */
     DecimalHalfWidth = 'decimalHalfWidth',
+    /** Specifies the decimal enclosed fullstop type. */
     DecimalEnclosedFullstop = 'decimalEnclosedFullstop',
+    /** Specifies the decimal enclosed paren type. */
     DecimalEnclosedParen = 'decimalEnclosedParen',
+    /** Specifies the decimal enclosed circle chinese type. */
     DecimalEnclosedCircleChinese = 'decimalEnclosedCircleChinese',
+    /** Specifies the ideograph enclosed circle type. */
     IdeographEnclosedCircle = 'ideographEnclosedCircle',
+    /** Specifies the ideograph traditional type. */
     IdeographTraditional = 'ideographTraditional',
+    /** Specifies the ideograph zodiac type. */
     IdeographZodiac = 'ideographZodiac',
+    /** Specifies the ideograph zodiac traditional type. */
     IdeographZodiacTraditional = 'ideographZodiacTraditional',
+    /** Specifies the taiwanese counting type. */
     TaiwaneseCounting = 'taiwaneseCounting',
+    /** Specifies the taiwanese counting thousand type. */
     TaiwaneseCountingThousand = 'taiwaneseCountingThousand',
+    /** Specifies the taiwanese digital type. */
     TaiwaneseDigital = 'taiwaneseDigital',
+    /** Specifies the none type. */
     None = 'none',
+    /** Specifies the custom type. */
     Custom = 'custom',
 }
 
 /**
- * Character inserted after the list label (`w:suff`).
+ * Character inserted after the list label.
  *
  * @public
  */
 export enum FollowCharacterType {
+    /** Specifies the tab type. */
     Tab = 'tab',
+    /** Specifies the space type. */
     Space = 'space',
+    /** Specifies the nothing type. */
     Nothing = 'nothing',
 }
 
 /**
- * Horizontal alignment of the list number (`w:lvlJc`).
+ * Horizontal alignment of the list number.
  *
  * @public
  */
 export enum ListNumberAlignment {
+    /** Specifies the left alignment. */
     Left = 'left',
+    /** Specifies the center alignment. */
     Center = 'center',
+    /** Specifies the right alignment. */
     Right = 'right',
 }
 
@@ -408,9 +466,9 @@ function replaceInd(pPr: OpenXmlElement, ind: OpenXmlElement): OpenXmlElement {
  * Nested prior-level tokens (`%1` in level 2's `%1.%2.%3.`) belong in the prefix.
  * When `levelNumber` is omitted, falls back to the first `%n` (legacy).
  *
- * @param {string | undefined} lvlText - The lvl text.
- * @param {number} levelNumber - The level number.
- * @returns {Object} The result.
+ * @param {string | undefined} lvlText - Specifies the lvl text.
+ * @param {number} levelNumber - Specifies the level number.
+ * @returns {Object} Returns the result.
  */
 function splitLevelText(
     lvlText: string | undefined,
@@ -449,12 +507,12 @@ function rebuildLevelText(prefix: string, body: string, suffix: string): string 
 }
 
 /**
- * DocIO encodes prior-level placeholders in `NumberPrefix`/`NumberSuffix` as
+ * Word encodes prior-level placeholders in `NumberPrefix`/`NumberSuffix` as
  * U+0000..U+0008 (level 0..8). OOXML `w:lvlText` uses `%1`..`%9`. Raw NULs are
  * illegal in XML 1.0 attributes and corrupt the package — convert both ways.
  *
- * @param {string} value - The value.
- * @returns {string} The result.
+ * @param {string} value - Specifies the value.
+ * @returns {string} Returns the result.
  */
 function docioLevelPlaceholdersToOoxml(value: string): string {
     let result: string = '';
@@ -492,7 +550,7 @@ function ooxmlLevelPlaceholdersToDocio(value: string): string {
 // ---------------------------------------------------------------------------
 
 /**
- * Live list level facade over a {@link NumberingLevel}.
+ * Represents a level of a list and its formatting.
  *
  * @public
  */
@@ -517,16 +575,23 @@ export class ListLevel implements CharacterFormatHost, ParagraphFormatHost {
         this.hydrateFormatsFromLevel();
     }
 
-    /** Owning list style. */
+    /**
+     * Gets the owning list style.
+     */
     get listStyle(): ListStyle {
         return this.owner;
     }
 
-    /** Zero-based level index. */
+    /**
+     * Gets the zero-based level index.
+     */
     get levelNumber(): number {
         return this.level.ilvl;
     }
 
+    /**
+     * Gets or sets the numbering pattern type of the list level.
+     */
     get patternType(): ListPatternType {
         return numFmtToPattern(this.level.numFmt);
     }
@@ -550,6 +615,9 @@ export class ListLevel implements CharacterFormatHost, ParagraphFormatHost {
         this.markDirty();
     }
 
+    /**
+     * Gets or sets the number at which the numbering of the list level starts.
+     */
     get startAt(): number {
         const s: number = this.level.start;
         return s !== undefined ? s : 1;
@@ -562,6 +630,9 @@ export class ListLevel implements CharacterFormatHost, ParagraphFormatHost {
         this.markDirty();
     }
 
+    /**
+     * Gets or sets the level text pattern that defines how the number is displayed (for example, `%1.`).
+     */
     get levelText(): string {
         const t: string = this.level.lvlText;
         return t !== undefined ? t : '';
@@ -574,6 +645,9 @@ export class ListLevel implements CharacterFormatHost, ParagraphFormatHost {
         this.markDirty();
     }
 
+    /**
+     * Gets or sets the text that is displayed before the number of the list level.
+     */
     get numberPrefix(): string {
         return ooxmlLevelPlaceholdersToDocio(splitLevelText(this.level.lvlText, this.level.ilvl).prefix);
     }
@@ -591,6 +665,9 @@ export class ListLevel implements CharacterFormatHost, ParagraphFormatHost {
         this.markDirty();
     }
 
+    /**
+     * Gets or sets the text that is displayed after the number of the list level.
+     */
     get numberSuffix(): string {
         return ooxmlLevelPlaceholdersToDocio(splitLevelText(this.level.lvlText, this.level.ilvl).suffix);
     }
@@ -608,6 +685,9 @@ export class ListLevel implements CharacterFormatHost, ParagraphFormatHost {
         this.markDirty();
     }
 
+    /**
+     * Gets or sets the bullet character used when the list level is a bullet list.
+     */
     get bulletCharacter(): string {
         if (this.level.numFmt !== 'bullet') {
             return '';
@@ -624,6 +704,9 @@ export class ListLevel implements CharacterFormatHost, ParagraphFormatHost {
         this.markDirty();
     }
 
+    /**
+     * Gets or sets the character that follows the number or bullet of the list level.
+     */
     get followCharacter(): FollowCharacterType {
         const suff: OpenXmlElement = this.level.findExtra('suff');
         const val: string = suff !== undefined ? wValAttribute(suff) : undefined;
@@ -649,6 +732,9 @@ export class ListLevel implements CharacterFormatHost, ParagraphFormatHost {
         this.markDirty();
     }
 
+    /**
+     * Gets or sets the alignment of the number or bullet within its allotted space.
+     */
     get numberAlignment(): ListNumberAlignment {
         const jc: string = this.level.lvlJc;
         if (jc === 'center') {
@@ -667,6 +753,9 @@ export class ListLevel implements CharacterFormatHost, ParagraphFormatHost {
         this.markDirty();
     }
 
+    /**
+     * Gets or sets the tab space, in points, between the number and the text.
+     */
     get tabSpaceAfter(): number {
         const pPr: OpenXmlElement = this.level.findExtra('pPr');
         if (pPr === undefined) {
@@ -720,6 +809,9 @@ export class ListLevel implements CharacterFormatHost, ParagraphFormatHost {
         this.markDirty();
     }
 
+    /**
+     * Gets or sets the position, in points, of the number or bullet relative to the left margin.
+     */
     get numberPosition(): number {
         const ind: OpenXmlElement = findInd(this.level.findExtra('pPr'));
         const left: number = twipAttr(ind, 'left');
@@ -749,6 +841,9 @@ export class ListLevel implements CharacterFormatHost, ParagraphFormatHost {
         this.markDirty();
     }
 
+    /**
+     * Gets or sets the position, in points, of the text relative to the left margin.
+     */
     get textPosition(): number {
         const ind: OpenXmlElement = findInd(this.level.findExtra('pPr'));
         const left: number = twipAttr(ind, 'left');
@@ -777,6 +872,9 @@ export class ListLevel implements CharacterFormatHost, ParagraphFormatHost {
         this.markDirty();
     }
 
+    /**
+     * Gets or sets the zero-based index of the list level after which the numbering of this level restarts.
+     */
     get restartLevel(): number {
         const el: OpenXmlElement = this.level.findExtra('lvlRestart');
         const val: string = el !== undefined ? wValAttribute(el) : undefined;
@@ -796,6 +894,9 @@ export class ListLevel implements CharacterFormatHost, ParagraphFormatHost {
         this.markDirty();
     }
 
+    /**
+     * Gets or sets a value indicating whether the numbers of this level are displayed in Arabic numerals, even if the previous levels use another numbering style.
+     */
     get isLegalStyleNumbering(): boolean {
         return this.level.isLgl === true;
     }
@@ -807,6 +908,9 @@ export class ListLevel implements CharacterFormatHost, ParagraphFormatHost {
         this.markDirty();
     }
 
+    /**
+     * Gets or sets the name of the paragraph style that is linked to the list level.
+     */
     get linkedParagraphStyleName(): string {
         const el: OpenXmlElement = this.level.findExtra('pStyle');
         const val: string = el !== undefined ? wValAttribute(el) : undefined;
@@ -828,10 +932,16 @@ export class ListLevel implements CharacterFormatHost, ParagraphFormatHost {
         this.markDirty();
     }
 
+    /**
+     * Gets the character formatting of the number or bullet of the list level.
+     */
     get characterFormat(): CharacterFormat {
         return this.characterFormatValue;
     }
 
+    /**
+     * Gets the paragraph formatting of the paragraphs that use the list level.
+     */
     get paragraphFormat(): ParagraphFormat {
         return this.paragraphFormatValue;
     }
@@ -1035,9 +1145,9 @@ const listStyleByAbstract: WeakMap<object, ListStyle> = new WeakMap<object, List
  * @param {ListType} listType - The list type.
  * @param {string} styleName - The style name.
  * @returns {ListStyle} The result.
- * @public
+ * @private
  */
-export function addListStyle(document: WordDocument, listType: ListType, styleName: string): ListStyle {
+function addListStyle(document: WordDocument, listType: ListType, styleName: string): ListStyle {
     if (typeof listType !== 'string' || !isListType(listType)) {
         throw new InvalidArgumentError('listType must be ListType.Bulleted or ListType.Numbered');
     }

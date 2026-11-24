@@ -899,6 +899,7 @@ export class Edit implements IAction {
         for (let i: number = 0; i < formObjects.length; i++) {
             const formObj: FormValidator = formObjects[parseInt(i.toString(), 10)];
             if (formObj && formObj.element && !formObj.isDestroyed) {
+                formObj.element.removeEventListener('submit', this.preventFormSubmit);
                 formObj.destroy();
                 const parentIns: IGrid = getParentIns(this.parent);
                 if (parentIns.isReact && this.parent.editSettings.mode === 'Dialog'
@@ -1188,6 +1189,7 @@ export class Edit implements IAction {
      * @hidden
      */
     public createFormObj(form: HTMLFormElement, rules: Object): FormValidator {
+        form.addEventListener('submit', this.preventFormSubmit);
         return new FormValidator(form, {
             rules: rules as { [name: string]: { [rule: string]: Object } },
             locale: this.parent.locale,
@@ -1216,6 +1218,11 @@ export class Edit implements IAction {
                 this.parent.notify(events.valCustomPlacement, args);
             }
         });
+    }
+
+    // Stops implicit form submission (e.g. Enter in a single edit input) so the Grid alone handles edit save.
+    private preventFormSubmit(e: Event): void {
+        e.preventDefault();
     }
 
     private valErrorPlacement(inputElement: HTMLElement, error: HTMLElement): void {

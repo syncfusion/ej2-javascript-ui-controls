@@ -4174,8 +4174,8 @@ export class AnnotationRenderer {
         annotation.reviewHistory.add(this.addReviewCollections(reviewDetails, annotation.bounds));
         annotation._dictionary.set('NM', freeTextAnnotation.annotName.toString());
         if (freeTextAnnotation.calloutLines) {
-            const points: any = (typeof (freeTextAnnotation.calloutLines) === 'string') ?
-                JSON.parse(freeTextAnnotation.calloutLines) : freeTextAnnotation.calloutLines;
+            const points: Point[] = typeof freeTextAnnotation.calloutLines === 'string' ?
+                JSON.parse(freeTextAnnotation.calloutLines) as Point[] : freeTextAnnotation.calloutLines;
             annotation.calloutLines = [];
             for (let index: number = 0; index < points.length; index++) {
                 const x: number = this.convertPixelToPoint(points[parseInt(index.toString(), 10)].x);

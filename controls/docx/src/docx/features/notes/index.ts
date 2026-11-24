@@ -1,12 +1,13 @@
 import { DetachedObjectError, DocxError } from '../../core/errors/docx-error';
 import { parseBodyBlocks, serializeBodyBlocks } from '../document/body-blocks';
+import { detachedBodyBlockParseContext, BodyBlockParseContext } from '../../core/registry/block-handlers';
 import { WordDocument, FeaturePartState } from '../document/document';
 import { FeatureMultiPackagePart } from '../document/feature-multi-package-part';
 import { FeatureRunLeaf } from '../document/feature-run-leaf';
 import { BodyItem } from '../document/body-item';
 import { bodyItemToBlock, projectBlockToBodyItem } from '../document/body-item-adapters';
 import { SubSuperScript } from '../document/character-format';
-import { BlockContent, Paragraph, ParagraphOwner } from '../document/paragraph';
+import { BlockContent, Paragraph } from '../document/paragraph';
 import { FeatureRunParagraphItem, ParagraphItem, TextRange } from '../document/text-range';
 import { elementChildren, isWml, wmlAttr, wmlElement } from '../document/wml';
 import { allocateRelationshipId, OpcRelationship, RelationshipId } from '../../core/opc/relationships';
@@ -14,10 +15,10 @@ import { partByName, relationshipsForPart, OpcPackage, PackagePart } from '../..
 import { partName, partNameKey, resolveInternalTarget, PartName } from '../../core/opc/part-name';
 import { featureId, isFeatureRegistered, registerFeature, registerFeatureMultiPartHandler, registerFeatureRunLeafHandler, replaceOrAddPackagePart, visitParagraphsInDocumentOrder } from '../../core/registry/index';
 import { FeatureMultiPartLoadContext } from '../../core/registry/multi-part-handlers';
-import { parseXml, serializeXml, WML_TRANSITIONAL_NAMESPACE, OpenXmlElement } from '../../core/xml/index';
+import { parseXml, serializeXml, closePartNamespaces, WML_TRANSITIONAL_NAMESPACE, OpenXmlElement } from '../../core/xml/index';
 import { Table as TableFeature } from '../tables/index';
 import { createTable, TABLES_FEATURE_ID } from '../tables/index';
-import { ContentControl, ContentControlType, createBlockContentControl, CONTENT_CONTROLS_FEATURE_ID, BlockContentControl } from '../content-controls/index';
+import { ContentControlType, createBlockContentControl, CONTENT_CONTROLS_FEATURE_ID, BlockContentControl } from '../content-controls/index';
 import { FeatureId } from '../../core/registry/feature-registry';
 import { OpenXmlAttribute } from '../../core/xml/model';
 const NOTES: FeatureId = featureId('notes');
@@ -124,7 +125,7 @@ function firstParagraphText(blocks: ReadonlyArray<BlockContent>): string | undef
     }
     return undefined;
 }
-const detachedParagraphOwner: ParagraphOwner = {
+const detachedParseContext: BodyBlockParseContext = {
     assertAttachedParagraph(): void {
         return;
     },
@@ -136,41 +137,38 @@ const detachedParagraphOwner: ParagraphOwner = {
  * Paragraph owner scoped to one footnote or endnote catalog entry.
  * Membership is checked against the live entry blocks.
  */
-class NotePartOwner implements ParagraphOwner {
-    private readonly WordDocument: WordDocument;
-    private readonly kind: NoteKind;
-    private readonly noteId: number;
-    constructor(WordDocument: WordDocument, kind: NoteKind, noteId: number) {
-        this.WordDocument = WordDocument;
-        this.kind = kind;
-        this.noteId = noteId;
-    }
-    assertAttachedParagraph(target: Paragraph): void {
-        const catalog: NotesCatalog = notesFor(this.WordDocument);
-        const entry: NoteEntry = catalog.normalEntry(this.kind, this.noteId);
-        if (entry === undefined) {
-            throw new DetachedObjectError('Note part is no longer loaded');
+/**
+ * Parse context for note entries that validates paragraph membership
+ * against the live catalog entry.
+ *
+ * @param {WordDocument} WordDocument - The document.
+ * @param {NoteKind} kind - The note kind.
+ * @param {number} noteId - The note id.
+ * @returns {BodyBlockParseContext} The result.
+ * @private
+ */
+function parseContextForNote(WordDocument: WordDocument, kind: NoteKind, noteId: number): BodyBlockParseContext {
+    return {
+        assertAttachedParagraph(target: Paragraph): void {
+            const catalog: NotesCatalog = notesFor(WordDocument);
+            const entry: NoteEntry = catalog.normalEntry(kind, noteId);
+            if (entry === undefined) {
+                throw new DetachedObjectError('Note part is no longer loaded');
+            }
+            const found: boolean = entry.blocks.some((block: BlockContent) => block.type === 'paragraph' && block.paragraph === target);
+            if (!found) {
+                throw new DetachedObjectError('This paragraph is no longer in its note');
+            }
+        },
+        owningDocument(): WordDocument {
+            return WordDocument;
         }
-        const found: boolean = entry.blocks.some((block: BlockContent) => block.type === 'paragraph' && block.paragraph === target);
-        if (!found) {
-            throw new DetachedObjectError('This paragraph is no longer in its note');
-        }
-    }
-    /**
-     * @returns {WordDocument} The result.
-     * @private
-     */
-    owningDocument(): WordDocument {
-        return this.WordDocument;
-    }
-}
-function ownerForNote(WordDocument: WordDocument, kind: NoteKind, noteId: number): NotePartOwner {
-    return new NotePartOwner(WordDocument, kind, noteId);
+    };
 }
 /**
  * Bind a feature body block (table, content control, â€¦) to the owning WordDocument when
  * the value exposes `bindDocument`. Mirrors Body without exporting that helper
- * from WordDocument.ts.
+ * from the owning module.
  *
  * @param {unknown} value - The value.
  * @param {WordDocument} WordDocument - The word document.
@@ -198,12 +196,11 @@ function releaseFeatureBlockContent(value: unknown): void {
     }
 }
 function attachNoteParagraphs(WordDocument: WordDocument, kind: NoteKind, entry: NoteEntry): void {
-    const owner: NotePartOwner = ownerForNote(WordDocument, kind, entry.noteId);
+    // Only attach if the note part is loaded as a Body
+    // Otherwise attachment happens when the note is accessed
+    // (Notes don't have pre-loaded Body instances like sections do)
     for (const block of entry.blocks) {
-        if (block.type === 'paragraph') {
-            block.paragraph.attach(owner);
-        }
-        else if (block.type === 'feature') {
+        if (block.type === 'feature') {
             bindDocumentToFeatureBlock(block.value, WordDocument);
         }
     }
@@ -218,7 +215,7 @@ function detachNoteBlocks(blocks: ReadonlyArray<BlockContent>): void {
         }
     }
 }
-function blocksWithSimpleText(text: string, owner: ParagraphOwner = detachedParagraphOwner): BlockContent[] {
+function blocksWithSimpleText(text: string, parseCtx: BodyBlockParseContext = detachedParseContext): BlockContent[] {
     return parseBodyBlocks([
         wmlElement('p', {
             children: [
@@ -227,7 +224,7 @@ function blocksWithSimpleText(text: string, owner: ParagraphOwner = detachedPara
                 })
             ]
         })
-    ], owner);
+    ], parseCtx);
 }
 function defaultSeparatorEntries(kind: NoteKind): NoteEntry[] {
     const childName: NoteKind = entryLocalName(kind);
@@ -353,9 +350,9 @@ function serializeNotePart(state: NotePartState): Uint8Array {
     }
     const root: OpenXmlElement = wmlElement(rootLocalName(state.kind), {
         attributes: state.rootExtra.attributes,
-        namespaceDeclarations: state.rootExtra.namespaceDeclarations.length > 0
+        namespaceDeclarations: closePartNamespaces(state.rootExtra.namespaceDeclarations.length > 0
             ? state.rootExtra.namespaceDeclarations
-            : [{ prefix: 'w', namespaceUri: WML }],
+            : [{ prefix: 'w', namespaceUri: WML }], children, state.rootExtra.attributes),
         children
     });
     return utf8.encode(serializeXml(root));
@@ -383,7 +380,7 @@ function parseNotePart(part: PackagePart, relationship: OpcRelationship, kind: N
         entries.push({
             noteId,
             noteType: noteType != null ? noteType : 'normal',
-            blocks: parseBodyBlocks(child.children, detachedParagraphOwner),
+            blocks: parseBodyBlocks(child.children, detachedParseContext),
             preservedXml: undefined
         });
     }
@@ -562,7 +559,7 @@ export class NotesCatalog implements FeatureMultiPackagePart {
         }
         const noteId: number = allocateNoteId(part.entries);
         const blocks: BlockContent[] = this.boundDocument !== undefined
-            ? blocksWithSimpleText(text, ownerForNote(this.boundDocument, kind, noteId))
+            ? blocksWithSimpleText(text, parseContextForNote(this.boundDocument, kind, noteId))
             : blocksWithSimpleText(text);
         part.entries = [
             ...part.entries,
@@ -697,7 +694,7 @@ export class NotesCatalog implements FeatureMultiPackagePart {
         }
         detachNoteBlocks(entry.blocks);
         if (this.boundDocument !== undefined) {
-            entry.blocks = blocksWithSimpleText(text, ownerForNote(this.boundDocument, kind, noteId));
+            entry.blocks = blocksWithSimpleText(text, parseContextForNote(this.boundDocument, kind, noteId));
         }
         else {
             entry.blocks = blocksWithSimpleText(text);
@@ -727,15 +724,18 @@ export class NotesCatalog implements FeatureMultiPackagePart {
             throw new RangeError(`Body item index ${String(index)} is out of range`);
         }
         const block: BlockContent = bodyItemToBlock(item);
-        if (block.type === 'paragraph') {
-            block.paragraph.attach(ownerForNote(document, kind, noteId));
-        }
-        else if (block.type === 'feature') {
+        if (block.type === 'feature') {
             bindDocumentToFeatureBlock(block.value, document);
         }
+        // Paragraph attachment happens when the note is accessed (lazy loading)
         const next: BlockContent[] = entry.blocks.slice();
         next.splice(index, 0, block);
         entry.blocks = next;
+        // Give an inserted paragraph its note owner right away so it is mutable (appendText, ...)
+        // before the note is re-read.
+        if (block.type === 'paragraph') {
+            block.paragraph.attach(parseContextForNote(document, kind, noteId));
+        }
         this.markPartDirty(kind);
         return item;
     }
@@ -816,8 +816,8 @@ export class NotesCatalog implements FeatureMultiPackagePart {
     }): Paragraph {
         const WordDocument: WordDocument = this.requireBoundDocument();
         const entry: NoteEntry = this.requireNormalEntry(kind, noteId);
-        const owner: NotePartOwner = ownerForNote(WordDocument, kind, noteId);
-        const paragraph: Paragraph = new Paragraph(owner);
+        // Notes have no Body: the paragraph is owned by a note-scoped context.
+        const paragraph: Paragraph = new Paragraph(parseContextForNote(this.requireBoundDocument(), kind, noteId));
         this.insertBodyItemAtForNote(kind, noteId, entry.blocks.length, paragraph);
         if ((options == null ? undefined : options.style) !== undefined) {
             // Route through the styles facade so built-in ids/names resolve.
@@ -854,12 +854,12 @@ export class NotesCatalog implements FeatureMultiPackagePart {
      * @param {NoteKind} kind - The kind.
      * @param {number} noteId - The note id.
      * @param {ContentControlType} type - The type.
-     * @returns {ContentControl} The result.
+     * @returns {BlockContentControl} The result.
      * @throws DocxError when the note is unknown or the catalog is unbound.
      *
      * @private
      */
-    appendBlockContentControlToNote(kind: NoteKind, noteId: number, type?: ContentControlType): ContentControl {
+    appendBlockContentControlToNote(kind: NoteKind, noteId: number, type?: ContentControlType): BlockContentControl {
         this.requireBoundDocument();
         const entry: NoteEntry = this.requireNormalEntry(kind, noteId);
         const sdt: BlockContentControl = createBlockContentControl(type);
@@ -1068,7 +1068,7 @@ function loadCatalog(pkg: OpcPackage, mainPartName: PartName): NotesCatalog {
     return new NotesCatalog(parts);
 }
 function usedRelationshipIds(WordDocument: WordDocument): Set<string> {
-    const main: PartName = partName('/word/WordDocument.xml');
+    const main: PartName = partName('/word/document.xml');
     const used: Set<string> = new Set<string>();
     for (const rel of relationshipsForPart(WordDocument.opcPackage(), main).items) {
         used.add(rel.id);

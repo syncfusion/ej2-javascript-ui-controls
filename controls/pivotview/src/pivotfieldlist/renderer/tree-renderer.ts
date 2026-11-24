@@ -15,6 +15,7 @@ import { MaskedTextBox, MaskChangeEventArgs, TextBox } from '@syncfusion/ej2-inp
 import { PivotUtil } from '../../base/util';
 import { IOlapField } from '../../base/olap/engine';
 import { PivotView } from '../../pivotview/base/pivotview';
+import { buildFolderTree, filterFolderTree, isNestedFolderMode, IFolderTree, IFolderField } from './field-folder';
 import { DataManager, Predicate, Query } from '@syncfusion/ej2-data';
 
 /**
@@ -38,6 +39,9 @@ export class TreeViewRenderer implements IAction {
     private isSearching: boolean = false;
     private parentIDs: string[] = [];
     private isSpaceKey: boolean = false;
+    private isFolderSearching: boolean = false;
+    private reportedOlapFolders: { [name: string]: boolean } = {};
+    private folderTree: IFolderTree;
     private olapFieldListData: { [key: string]: Object }[] = [];
 
     /** Constructor for render module
@@ -162,7 +166,8 @@ export class TreeViewRenderer implements IAction {
             nodeDragStop: this.dragStop.bind(this),
             drawNode: this.updateTreeNode.bind(this),
             nodeExpanding: this.updateNodeIcon.bind(this),
-            nodeCollapsed: this.updateNodeIcon.bind(this),
+            nodeExpanded: this.folderExpandChange.bind(this, true),
+            nodeCollapsed: this.folderCollapsed.bind(this),
             nodeSelected: (args: NodeSelectEventArgs) => {
                 removeClass([args.node], 'e-active');
                 args.cancel = true;
@@ -176,6 +181,23 @@ export class TreeViewRenderer implements IAction {
         if (!isNullOrUndefined(dragEle.querySelector('.' + cls.FIELD_LIST_CLASS))) {
             (getInstance(dragEle.querySelector('.' + cls.FIELD_LIST_CLASS) as HTMLElement, TreeView) as TreeView)['dragObj']
                 .enableAutoScroll = false;
+        }
+    }
+    private folderCollapsed(args: NodeExpandEventArgs): void {
+        this.updateNodeIcon(args);
+        this.folderExpandChange(false, args);
+    }
+    private folderExpandChange(expanded: boolean, args: NodeExpandEventArgs): void {
+        if (this.parent.dataType !== 'pivot' || this.isFolderSearching || !args.node) {
+            return;
+        }
+        const id: string = args.node.getAttribute('data-uid');
+        if (id && this.folderTree && this.folderTree.folderFields[id as string]) {
+            if (expanded) {
+                this.parent.expandedFolders[id as string] = true;
+            } else {
+                delete this.parent.expandedFolders[id as string];
+            }
         }
     }
     private updateNodeIcon(args: NodeExpandEventArgs): void {
@@ -206,6 +228,9 @@ export class TreeViewRenderer implements IAction {
             else {
                 allowDrag = true;
             }
+        }
+        if (args.nodeData.isFolder) {
+            this.renderFolderNode(args);
         }
         if (!isNullOrUndefined(args.nodeData.pid)) {
             addClass([args.node], cls.FIELD_TREE_CHILD);
@@ -252,6 +277,71 @@ export class TreeViewRenderer implements IAction {
                 }
             }
         }
+    }
+    private renderFolderNode(args: DrawNodeEventArgs): void {
+        const text: HTMLElement = args.node.querySelector('.' + cls.TEXT_CONTENT_CLASS);
+        const state: string = args.nodeData.folderState as string;
+        if (text && !text.querySelector('.e-pivot-folder-state')) {
+            text.insertBefore(createElement('span', {
+                className: 'e-pivot-folder-state e-pivot-folder-' + state,
+                attrs: { 'aria-hidden': 'true' }
+            }), text.querySelector('.e-list-text'));
+        }
+        args.node.setAttribute('aria-description', state === 'all' ? 'All fields selected' :
+            state === 'some' ? 'Some fields selected' : 'No fields selected');
+    }
+    private refreshFolderStates(): void {
+        if (!this.folderTree || !this.fieldTable || !this.treeViewElement) {
+            return;
+        }
+        for (const folderId of Object.keys(this.folderTree.folderFields)) {
+            const li: HTMLElement = this.treeViewElement.querySelector('[data-uid="' + folderId + '"]');
+            if (!li) {
+                continue;
+            }
+            const ids: string[] = this.folderTree.folderFields[folderId as string];
+            let count: number = 0;
+            for (const id of ids) {
+                if (this.parent.pivotFieldList[id as string] && this.parent.pivotFieldList[id as string].isSelected) {
+                    count++;
+                }
+            }
+            const state: string = count === 0 ? 'none' : (count === ids.length ? 'all' : 'some');
+            const indicator: HTMLElement = li.querySelector('.e-pivot-folder-state');
+            if (indicator) {
+                indicator.className = 'e-pivot-folder-state e-pivot-folder-' + state;
+            }
+            li.setAttribute('aria-description', state === 'all' ? 'All fields selected' :
+                state === 'some' ? 'Some fields selected' : 'No fields selected');
+        }
+    }
+    private getNestedFolderData(sortOrder: string, fieldSet: { [key: string]: { isSelected?: boolean } }): { [key: string]: Object }[] {
+        const fields: IFolderField[] = [];
+        for (const key of Object.keys(this.parent.pivotFieldList || {})) {
+            const member: IField = this.parent.pivotFieldList[key as string];
+            fields.push({ id: member.id, pid: member.pid, caption: member.caption,
+                isSelected: fieldSet ? fieldSet[key as string].isSelected : member.isSelected });
+        }
+        if (!isNestedFolderMode(fields)) {
+            this.folderTree = undefined;
+            return undefined;
+        }
+        this.folderTree = buildFolderTree(fields, sortOrder);
+        for (const invalid of this.folderTree.invalid) {
+            this.parent.actionObj.actionName = events.folderPathError;
+            this.parent.actionFailureMethod(new Error('Invalid folder path "' + invalid[1] + '" for field "' + invalid[0] + '".'));
+        }
+        for (const folderId of Object.keys(this.parent.expandedFolders)) {
+            if (!this.folderTree.folderFields[folderId as string]) {
+                delete this.parent.expandedFolders[folderId as string];
+            }
+        }
+        for (const node of this.folderTree.data) {
+            if (node.isFolder && this.parent.expandedFolders[node.id as string]) {
+                node.expanded = true;
+            }
+        }
+        return this.folderTree.data;
     }
     private updateOlapTreeNode(args: DrawNodeEventArgs): boolean {
         let allowDrag: boolean = false;
@@ -403,6 +493,8 @@ export class TreeViewRenderer implements IAction {
                 this.isSearching = true;
                 this.promptVisibility(this.fieldTable.fields.dataSource.length === 0);
             }
+        } else if (this.folderTree) {
+            this.searchFolders(e.value);
         } else {
             this.parent.pivotCommon.eventBase.searchTreeNodes(e, this.fieldTable, true);
             const liList: HTMLElement[] = [].slice.call(this.fieldTable.element.querySelectorAll('li')) as HTMLElement[];
@@ -411,6 +503,26 @@ export class TreeViewRenderer implements IAction {
             this.isSearching = disabledList.length > 0 ? true : false;
             this.nonSearchList = disabledList;
         }
+    }
+
+    private searchFolders(term: string): void {
+        let data: { [key: string]: Object }[];
+        if (term === '') {
+            this.isFolderSearching = false;
+            data = this.getNestedFolderData(this.fieldListSort, undefined);
+        } else {
+            this.isFolderSearching = true;
+            const result: { data: { [key: string]: Object }[]; expanded: string[] } = filterFolderTree(this.folderTree, term);
+            data = result.data;
+            for (const node of data) {
+                node.expanded = result.expanded.indexOf(node.id as string) > -1;
+            }
+        }
+        this.fieldTable.fields = {
+            dataSource: data, id: 'id', text: 'caption', isChecked: 'isSelected', parentID: 'pid', iconCss: 'spriteCssClass'
+        };
+        this.fieldTable.dataBind();
+        this.promptVisibility(data.length === 0);
     }
 
     private promptVisibility(isPromptVisible: boolean): void {
@@ -481,44 +593,54 @@ export class TreeViewRenderer implements IAction {
     }
 
     private dragStart(args: DragAndDropEventArgs): void {
-        if ((args.event.target as HTMLElement).classList.contains(cls.DRAG_CLASS) &&
-            !(args.event.target as HTMLElement).classList.contains(cls.DRAG_DISABLE_CLASS)) {
-            const fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(args.draggedNode.getAttribute('data-uid'), this.parent);
-            const dragEventArgs: FieldDragStartEventArgs = {
-                fieldName: fieldInfo.fieldName, fieldItem: fieldInfo.fieldItem, axis: fieldInfo.axis,
-                dataSourceSettings: this.parent.dataSourceSettings, cancel: false
-            };
-            const control: PivotView | PivotFieldList = this.parent.isPopupView ? this.parent.pivotGridModule : this.parent;
-            control.trigger(events.fieldDragStart, dragEventArgs, (observedArgs: FieldDragStartEventArgs) => {
-                if (!observedArgs.cancel) {
-                    this.parent.isDragging = true;
-                    addClass([args.draggedNode.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.SELECTED_NODE_CLASS);
-                    let data: IField;
-                    if (this.parent.dataType === 'olap') {
-                        data = this.parent.olapEngineModule.fieldList[args.draggedNode.getAttribute('data-uid')];
-                    } else {
-                        data = this.parent.engineModule.fieldList[args.draggedNode.getAttribute('data-uid')];
-                    }
-                    const axis: string[] = [cls.ROW_AXIS_CLASS, cls.COLUMN_AXIS_CLASS, cls.FILTER_AXIS_CLASS];
-                    if (data && data.aggregateType === 'CalculatedField') {
-                        for (const axisContent of axis) {
-                            addClass([this.parentElement.querySelector('.' + axisContent)], cls.NO_DRAG_CLASS);
-                        }
-                    }
-                    const dragItem: HTMLElement = args.clonedNode;
-                    if (dragItem && (this.parent.getModuleName() === 'pivotfieldlist' &&
-                        this.parent.renderMode) === 'Popup') {
-                        dragItem.style.zIndex = (this.parent.dialogRenderer.fieldListDialog.zIndex + 1).toString();
-                    }
-                } else {
-                    this.parent.isDragging = false;
-                    args.cancel = true;
-                }
-            });
-        } else {
+        const target: HTMLElement = args.event.target as HTMLElement;
+        const fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(args.draggedNode.getAttribute('data-uid'), this.parent);
+        if (fieldInfo.fieldItem && fieldInfo.fieldItem.allowDragAndDrop === false) {
             this.parent.isDragging = false;
             args.cancel = true;
+            return;
         }
+        if (target.closest('.' + cls.CHECKBOX_CONTAINER)) {
+            this.parent.isDragging = false;
+            args.cancel = true;
+            return;
+        }
+        if (target.classList.contains(cls.DRAG_DISABLE_CLASS)) {
+            this.parent.isDragging = false;
+            args.cancel = true;
+            return;
+        }
+        const dragEventArgs: FieldDragStartEventArgs = {
+            fieldName: fieldInfo.fieldName, fieldItem: fieldInfo.fieldItem, axis: fieldInfo.axis,
+            dataSourceSettings: this.parent.dataSourceSettings, cancel: false
+        };
+        const control: PivotView | PivotFieldList = this.parent.isPopupView ? this.parent.pivotGridModule : this.parent;
+        control.trigger(events.fieldDragStart, dragEventArgs, (observedArgs: FieldDragStartEventArgs) => {
+            if (!observedArgs.cancel) {
+                this.parent.isDragging = true;
+                addClass([args.draggedNode.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.SELECTED_NODE_CLASS);
+                let data: IField;
+                if (this.parent.dataType === 'olap') {
+                    data = this.parent.olapEngineModule.fieldList[args.draggedNode.getAttribute('data-uid')];
+                } else {
+                    data = this.parent.engineModule.fieldList[args.draggedNode.getAttribute('data-uid')];
+                }
+                const axis: string[] = [cls.ROW_AXIS_CLASS, cls.COLUMN_AXIS_CLASS, cls.FILTER_AXIS_CLASS];
+                if (data && data.aggregateType === 'CalculatedField') {
+                    for (const axisContent of axis) {
+                        addClass([this.parentElement.querySelector('.' + axisContent)], cls.NO_DRAG_CLASS);
+                    }
+                }
+                const dragItem: HTMLElement = args.clonedNode;
+                if (dragItem && (this.parent.getModuleName() === 'pivotfieldlist' &&
+                    this.parent.renderMode) === 'Popup') {
+                    dragItem.style.zIndex = (this.parent.dialogRenderer.fieldListDialog.zIndex + 1).toString();
+                }
+            } else {
+                this.parent.isDragging = false;
+                args.cancel = true;
+            }
+        });
     }
 
     // private getFieldDragEventArgs(dragEventArgs: FieldDragStartEventArgs): FieldDragStartEventArgs | Deferred {
@@ -567,7 +689,8 @@ export class TreeViewRenderer implements IAction {
             const target: HTMLElement = this.getButton(targetID);
             const axisPanel: HTMLElement = closest(target, '.' + cls.DROPPABLE_CLASS) as HTMLElement;
             const droppableElement: HTMLElement = closest(args.target, '.' + cls.DROPPABLE_CLASS) as HTMLElement;
-            if (target && axisPanel === droppableElement) {
+            if (target && axisPanel === droppableElement &&
+                !droppableElement.classList.contains(cls.VALUE_AXIS_CLASS)) {
                 const pivotButtons: HTMLElement[] = [].slice.call(axisPanel.querySelectorAll('.' + cls.PIVOT_BUTTON_CLASS));
                 const dropTarget: HTMLElement = closest(args.target, '.' + cls.PIVOT_BUTTON_WRAPPER_CLASS) as HTMLElement;
                 let sourcePosition: number;
@@ -627,6 +750,20 @@ export class TreeViewRenderer implements IAction {
         }
         const list: { [key: string]: Object } = this.parent.pivotFieldList;
         const selectedNode: { [key: string]: Object; } = list[id as string] as { [key: string]: Object };
+        if (!isNullOrUndefined(args) && isNullOrUndefined(selectedNode) && this.folderTree && this.folderTree.folderFields[id as string]) {
+            const target: HTMLElement = args.event && args.event.target as HTMLElement;
+            const onToggleIcon: boolean = !!target &&
+                (target.classList.contains(cls.COLLAPSIBLE) || target.classList.contains(cls.EXPANDABLE));
+            const action: string = (args.event as KeyboardEventArgs).action;
+            if (!onToggleIcon && (!action || action === 'enter')) {
+                if (node.getAttribute('aria-expanded') === 'true') {
+                    this.fieldTable.collapseAll([node]);
+                } else {
+                    this.fieldTable.expandAll([node]);
+                }
+            }
+            return;
+        }
         if (!isNullOrUndefined(args)) {
             this.isSpaceKey = (args.event as KeyboardEventArgs).action && (args.event as KeyboardEventArgs).action === 'space';
             if (isNullOrUndefined(selectedNode) || node.classList.contains(cls.ICON_DISABLE) || (args.event.target &&
@@ -655,6 +792,8 @@ export class TreeViewRenderer implements IAction {
         const parentNode: Element = node.closest('.' + cls.FIELD_TREE_PARENT);
         if (isChecked) {
             let isMeasureField: boolean = false;
+            const isCalculatedField: boolean = selectedNode.type === 'CalculatedField' ||
+                selectedNode.aggregateType === 'CalculatedField' || selectedNode.isCalculatedField === true;
             if (selectedNode.type === 'number') {
                 isMeasureField = true;
             } else if (this.parent.dataType === 'olap') {
@@ -681,6 +820,13 @@ export class TreeViewRenderer implements IAction {
                     }
                     this.updateSelectedNodes(node, 'check');
                     const addNode: IFieldOptions = this.parent.pivotCommon.dataSourceUpdate.getNewField(id, fieldInfo.fieldItem);
+                    if (isCalculatedField && this.parent.dataType === 'pivot') {
+                        addNode.type = 'CalculatedField';
+                    } else if (isMeasureField && this.parent.dataType === 'pivot') {
+                        addNode.type = 'Sum';
+                        addNode.instanceId = undefined;
+                        PivotUtil.getOrGenerateInstanceId(addNode, this.parent.dataSourceSettings.values.length);
+                    }
                     this.updateReportSettings(addNode, observedArgs);
                     this.updateNodeStateChange(id, selectedNode, isChecked);
                 } else {
@@ -700,7 +846,7 @@ export class TreeViewRenderer implements IAction {
                         removeClass([parentNode.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
                     }
                     this.updateSelectedNodes(node, 'uncheck');
-                    this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport(id);
+                    this.parent.pivotCommon.dataSourceUpdate.removeAllFieldInstances(id);
                     if (this.parent.dataType === 'pivot' && this.parent.showValuesButton && this.parent.dataSourceSettings.values.length > 1 &&
                         fieldInfo && fieldInfo.position < this.parent.dataSourceSettings.valueIndex &&
                         ((this.parent.dataSourceSettings.valueAxis === 'row' && fieldInfo.axis === 'rows') ||
@@ -804,6 +950,7 @@ export class TreeViewRenderer implements IAction {
             }
             this.updateDataSource();
         }
+        this.refreshFolderStates();
         const selectedLi: HTMLElement = this.treeViewElement.querySelector('[data-uid="' + id + '"]');
         selectedLi.focus();
         removeClass([selectedLi], 'e-hover');
@@ -919,6 +1066,10 @@ export class TreeViewRenderer implements IAction {
 
     private getUpdatedData(): { [key: string]: Object }[] {
         const treeData: { [key: string]: Object }[] = this.getTreeData();
+        if (this.folderTree) {
+            this.fieldTable.sortOrder = 'None';
+            return treeData;
+        }
         const expandedNodes: string[] = this.fieldTable.expandedNodes;
         this.updateExpandedNodes(treeData, expandedNodes);
         return this.applySorting(treeData, this.fieldListSort);
@@ -926,12 +1077,14 @@ export class TreeViewRenderer implements IAction {
     private getTreeData(axis?: number): { [key: string]: Object }[] {
         let data: { [key: string]: Object }[] = [];
         if (this.parent.dataType === 'olap') {
+            this.reportOlapFolderPaths();
             data = this.getOlapTreeData(axis) as { [key: string]: Object; }[];
             if (this.isSearching && this.olapFieldListData.length > 0) {
                 data = this.performeSearching(this.fieldSearch.value) as { [key: string]: Object; }[];
             }
         } else {
             const keys: string[] = this.parent.pivotFieldList ? Object.keys(this.parent.pivotFieldList) : [];
+            this.folderTree = undefined;
             const treeDataInfo: { [key: string]: { id?: string; pid?: string; caption?: string; isSelected?: boolean;
                 hasChildren?: boolean } } = {};
             for (const key of keys) {
@@ -961,6 +1114,10 @@ export class TreeViewRenderer implements IAction {
                     treeDataInfo[item.name].isSelected = true;
                 }
             }
+            const nested: { [key: string]: Object }[] = this.getNestedFolderData(this.fieldListSort, treeDataInfo);
+            if (nested) {
+                return nested;
+            }
             const members: string[] = Object.keys(treeDataInfo);
             for (const member of members) {
                 const obj: { [key: string]: Object } = treeDataInfo[member as string] as { [key: string]: Object };
@@ -968,6 +1125,17 @@ export class TreeViewRenderer implements IAction {
             }
         }
         return data;
+    }
+    private reportOlapFolderPaths(): void {
+        const mapping: IFieldOptions[] = this.parent.dataSourceSettings.fieldMapping || [];
+        for (const field of mapping) {
+            if (typeof field.groupName === 'string' && field.groupName !== '' && !this.reportedOlapFolders[field.name]) {
+                this.reportedOlapFolders[field.name] = true;
+                this.parent.actionObj.actionName = events.folderPathError;
+                this.parent.actionFailureMethod(new Error('Folder path "' + field.groupName + '" for field "' + field.name +
+                    '" is ignored: OLAP display folders are provider-owned.'));
+            }
+        }
     }
     private getOlapTreeData(axis?: number): { [key: string]: Object }[] {
         let data: { [key: string]: Object }[] = [];

@@ -3,7 +3,7 @@
  *
  * The project's TypeScript `lib` is intentionally capped at ES5 + ES2015
  * (see `tsconfig.json`); `Object.values` / `Object.entries` are ES2017
- * (`lib.es2017.object.d.ts`) and must not be relied on directly. These
+ * (the type declarations) and must not be relied on directly. These
  * helpers provide the same semantics using only `Object.keys` (ES5).
  *
  * @private

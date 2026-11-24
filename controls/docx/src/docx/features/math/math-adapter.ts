@@ -37,6 +37,8 @@ class MathRunText extends TextRange {
  *
  * @param {CharacterFormat} format - The format.
  * @returns {void} Nothing is returned.
+ *
+ * @private
  */
 export function applyMathFonts(format: CharacterFormat): void {
     format.fontName = 'Cambria Math';

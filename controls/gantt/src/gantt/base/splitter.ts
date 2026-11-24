@@ -69,7 +69,8 @@ export class Splitter {
             },
             resizing: (args: ResizingEventArgs) => {
                 this.parent.trigger('splitterResizing', args);
-                if (this.parent.timelineModule.isZoomToFit && this.parent.timelineModule.updateTimelineAfterZooming) {
+                if (this.parent.timelineModule && this.parent.timelineModule.isZoomToFit
+                    && this.parent.timelineModule.updateTimelineAfterZooming) {
                     this.parent.timelineModule.updateTimelineAfterZooming(this.parent.timelineModule.timelineEndDate, true);
                 }
             },
@@ -89,7 +90,8 @@ export class Splitter {
                         this.splitterObject.paneSettings[1].size = null;
                         this.splitterObject.paneSettings[1].size = this.getSpliterPositionInPercentage(this.splitterPreviousPositionChart);
                     }
-                    if (this.parent.timelineSettings.viewEndDate === 'auto' && this.parent.timelineModule.updateTimelineAfterZooming) {
+                    if (this.parent.timelineSettings.viewEndDate === 'auto' && this.parent.timelineModule
+                        && this.parent.timelineModule.updateTimelineAfterZooming) {
                         this.parent.timelineModule.updateTimelineAfterZooming(this.parent.timelineModule.timelineEndDate, true);
                     }
                     callBackPromise.resolve(splitterResizedArgs);
@@ -206,7 +208,8 @@ export class Splitter {
             this.splitterObject.paneSettings[0].size = splitterPosition;
         }
         this.isSplitterResized = false;
-        if (this.parent.timelineSettings.viewEndDate === 'auto' && this.parent.timelineModule.updateTimelineAfterZooming) {
+        if (this.parent.timelineSettings.viewEndDate === 'auto' && this.parent.timelineModule
+            && this.parent.timelineModule.updateTimelineAfterZooming) {
             this.parent.timelineModule.updateTimelineAfterZooming(this.parent.timelineModule.timelineEndDate, true);
         }
     }

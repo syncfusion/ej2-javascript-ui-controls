@@ -4,9 +4,9 @@ import { DetachedObjectError } from '../../core/errors/docx-error';
 import { WordDocument, Body } from '../document/document';
 import { FeatureBlock } from '../document/feature-block';
 import { FeatureInline } from '../document/feature-inline';
-import { Paragraph, BlockContent, ParagraphOwner } from '../document/paragraph';
-import { BodyItem, BlockContentControlBodyItem } from '../document/body-item';
-import { projectBlockToBodyItem, registerBodyItemAdapter, FeatureBodyBlock } from '../document/body-item-adapters';
+import { Paragraph, BlockContent } from '../document/paragraph';
+import { BodyItem } from '../document/body-item';
+import { projectBlockToBodyItem, bodyItemToBlock, registerBodyItemAdapter, FeatureBodyBlock } from '../document/body-item-adapters';
 import { registerTypedCollectionHooks } from '../document/typed-body-collections';
 import {
     CharacterFormat,
@@ -17,14 +17,12 @@ import { Color, colorFromWire, colorToHexWire } from '../document/color';
 import { EntityType } from '../document/entity-type';
 import { LocaleIDs, localeIdFromBcp47, localeIdToBcp47 } from '../document/locale-ids';
 import { ParagraphItemCollection, ParagraphItemCollectionHost } from '../document/paragraph-item-collection';
-import { ParagraphItem, ParagraphItemOwner } from '../document/paragraph-item';
+import { ParagraphItem, ParagraphItemOwner, isDirectInlineFeatureItem } from '../document/paragraph-item';
 import {
-    ConcreteParagraphItem,
     FeatureInlineParagraphItem,
     FeatureRunParagraphItem,
     OpaqueParagraphItem,
-    RunOwner,
-    serializeRun,
+    serializeTextRange,
     serializeParagraphItems,
     TextRange,
     parseTextRangeGroup,
@@ -42,7 +40,7 @@ import {
     visitBlocksInDocumentOrder,
     FeatureId
 } from '../../core/registry/index';
-import { BodyBlockParseContext, detachedBodyBlockParseContext } from '../../core/registry/block-handlers';
+import { BodyBlockParseContext } from '../../core/registry/block-handlers';
 import { serializeFeatureInline, tryParseFeatureInline } from '../../core/registry/inline-handlers';
 import { NamespaceDeclaration, OpenXmlAttribute, OpenXmlChild, OpenXmlElement } from '../../core/xml/index';
 import { enumValues } from '../../core/compat/object-compat';
@@ -73,60 +71,88 @@ const DEFAULT_UNCHECKED_SYMBOL_TEXT: string = '\u2610';
  */
 type LockWireValue = 'sdtLocked' | 'contentLocked' | 'unlocked' | 'sdtContentLocked';
 /**
- * Authorable content-control kinds (customer public surface).
- *
- * Non-authorable kinds from load (equation, group, …) are preserved via residual XML.
+ * Specifies the type of a content control.
  *
  * @public
  */
 export enum ContentControlType {
+    /** Specifies the rich text type. */
     RichText = 'richText',
+    /** Specifies the text type. */
     Text = 'plainText',
+    /** Specifies the picture type. */
     Picture = 'picture',
+    /** Specifies the combo box type. */
     ComboBox = 'comboBox',
+    /** Specifies the drop down list type. */
     DropDownList = 'dropDownList',
+    /** Specifies the date type. */
     Date = 'date',
+    /** Specifies the check box type. */
     CheckBox = 'checkbox'
 }
 /**
- * [MS-DOCX] `ST_SdtAppearance` — `w15:appearance/@w15:val`.
+ * Specifies the appearance of a content control.
+ *
  * @public
  */
 export enum ContentControlAppearance {
+    /** Specifies the bounding box appearance. */
     BoundingBox = 'boundingBox',
+    /** Specifies the tags appearance. */
     Tags = 'tags',
+    /** Specifies the hidden appearance. */
     Hidden = 'hidden'
 }
 /**
- * Calendar systems for date content controls (`w:calendar/@w:val`).
+ * Calendar systems for date content controls.
+ *
  * @public
  */
 export enum CalendarType {
+    /** Specifies the gregorian type. */
     Gregorian = 'gregorian',
+    /** Specifies the hijri type. */
     Hijri = 'hijri',
+    /** Specifies the hebrew type. */
     Hebrew = 'hebrew',
+    /** Specifies the taiwan type. */
     Taiwan = 'taiwan',
+    /** Specifies the japan type. */
     Japan = 'japan',
+    /** Specifies the thai type. */
     Thai = 'thai',
+    /** Specifies the korea type. */
     Korea = 'korea',
+    /** Specifies the saka type. */
     Saka = 'saka',
+    /** Specifies the gregorian arabic type. */
     GregorianArabic = 'gregorianArabic',
+    /** Specifies the gregorian middle east french type. */
     GregorianMiddleEastFrench = 'gregorianMiddleEastFrench',
+    /** Specifies the gregorian transliterated english type. */
     GregorianTransliteratedEnglish = 'gregorianTransliteratedEnglish',
+    /** Specifies the gregorian transliterated french type. */
     GregorianTransliteratedFrench = 'gregorianTransliteratedFrench',
+    /** Specifies the gregorian us locale type. */
     GregorianUsLocale = 'gregorianUsLocale'
 }
 /**
- * How mapped date data is stored (`ST_SdtDateMappingType`).
+ * How mapped date data is stored.
+ *
  * @public
  */
 export enum ContentControlDateStorageFormat {
+    /** Specifies the date storage date format. */
     DateStorageDate = 'date',
+    /** Specifies the date storage date time format. */
     DateStorageDateTime = 'dateTime',
+    /** Specifies the date storage text format. */
     DateStorageText = 'text'
 }
 /**
  * Checkbox symbol (`w14:checkedState` / `w14:uncheckedState`) — mutable stable identity.
+ *
  * @public
  */
 export class ContentControlCheckBoxState {
@@ -157,7 +183,11 @@ export class ContentControlCheckBoxState {
             this.onChange();
         }
     }
-    /** Font name for the checkbox glyph. @public */
+    /**
+     * Gets or sets the font name for the checkbox glyph.
+     *
+     * @public
+     */
     get font(): string | undefined {
         return this.fontValue;
     }
@@ -165,7 +195,11 @@ export class ContentControlCheckBoxState {
         this.fontValue = value;
         this.dirty();
     }
-    /** Glyph code point / short-hex value. @public */
+    /**
+     * Gets or sets the glyph code point / short-hex value.
+     *
+     * @public
+     */
     get value(): string | undefined {
         return this.valueValue;
     }
@@ -176,13 +210,18 @@ export class ContentControlCheckBoxState {
 }
 /**
  * Combo-box or drop-down list entry.
+ *
  * @public
  */
 export class ContentControlListItem {
     private displayTextValue: string | undefined;
     private valueValue: string | undefined;
     private onChange: (() => void) | undefined;
-    /** @public */
+    /**
+     * Initializes a new instance of the ContentControlListItem class.
+     *
+     * @public
+     */
     constructor() {
         this.displayTextValue = undefined;
         this.valueValue = undefined;
@@ -202,7 +241,11 @@ export class ContentControlListItem {
             this.onChange();
         }
     }
-    /** Display label. @public */
+    /**
+     * Gets or sets the display label.
+     *
+     * @public
+     */
     get displayText(): string | undefined {
         return this.displayTextValue;
     }
@@ -210,7 +253,11 @@ export class ContentControlListItem {
         this.displayTextValue = value;
         this.dirty();
     }
-    /** Stored value. @public */
+    /**
+     * Gets or sets the stored value.
+     *
+     * @public
+     */
     get value(): string | undefined {
         return this.valueValue;
     }
@@ -221,6 +268,7 @@ export class ContentControlListItem {
 }
 /**
  * Mutable list of {@link ContentControlListItem} with stable identity.
+ *
  * @public
  */
 export class ContentControlListItemCollection {
@@ -252,15 +300,19 @@ export class ContentControlListItemCollection {
             this.onChange();
         }
     }
-    /** Number of list items. @public */
+    /**
+     * Gets the number of list items.
+     *
+     * @public
+     */
     get count(): number {
         return this.items.length;
     }
     /**
      *  Item at zero-based index. @public
      *
-     * @param {number} index - The index.
-     * @returns {ContentControlListItem} The result.
+     * @returns {ContentControlListItem} - Returns the ContentControlListItem.
+     * @param {number} index - Specifies the index.
      */
     getItem(index: number): ContentControlListItem {
         if (index < 0 || index >= this.items.length) {
@@ -270,18 +322,20 @@ export class ContentControlListItemCollection {
         return this.items[index];
     }
     /**
-     *  Snapshot array (copy). @public
+     * Creates a copy of the list items in the collection as an array.
      *
-     * @returns {ContentControlListItem[]} The result.
+     * @returns {ContentControlListItem[]} Returns a copy of the list items as an array.
+     * @public
      */
     toArray(): ContentControlListItem[] {
         return this.items.slice();
     }
     /**
-     *  Add a list item. @public
+     * Adds a list item to the end of the collection.
      *
-     * @param {ContentControlListItem} item - The item.
+     * @param {ContentControlListItem} item - Specifies the list item to add.
      * @returns {void} Nothing is returned.
+     * @public
      */
     add(item: ContentControlListItem): void {
         if (this.onChange !== undefined) {
@@ -291,9 +345,10 @@ export class ContentControlListItemCollection {
         this.dirty();
     }
     /**
-     *  Remove all items. @public
+     * Removes all the list items from the collection.
      *
      * @returns {void} Nothing is returned.
+     * @public
      */
     clear(): void {
         this.items.length = 0;
@@ -356,7 +411,7 @@ function locksToWire(
     return undefined;
 }
 /**
- * Structured document tag properties (`w:sdtPr`).
+ * Structured document tag properties.
  *
  * @public
  */
@@ -544,8 +599,8 @@ export class ContentControlProperties {
     /**
      * Drop type-specific payloads that do not belong to `type`.
      *
-     * @param {ContentControlType | undefined} type - The type.
-     * @returns {void} Nothing is returned.
+     * @param {ContentControlType | undefined} type - Specifies the type.
+     * @returns {void} Nothing.
      */
     private clearPayloadsForType(type: ContentControlType | undefined): void {
         if (type !== 'checkbox') {
@@ -608,6 +663,7 @@ export class ContentControlProperties {
     }
     /**
      * Gets or sets whether the content-control definition is locked.
+     *
      * @public
      */
     get lockContentControl(): boolean {
@@ -622,6 +678,7 @@ export class ContentControlProperties {
     }
     /**
      * Gets or sets whether the content inside the control is locked.
+     *
      * @public
      */
     get lockContents(): boolean {
@@ -660,6 +717,7 @@ export class ContentControlProperties {
     }
     /**
      * Gets or sets the content-control kind.
+     *
      * @public
      */
     get type(): ContentControlType | undefined {
@@ -672,7 +730,8 @@ export class ContentControlProperties {
         this.markDirty();
     }
     /**
-     * Gets or sets whether the control is removed after contents are edited once (`w:temporary`).
+     * Gets or sets whether the control is removed after contents are edited once.
+     *
      * @public
      */
     get isTemporary(): boolean {
@@ -698,6 +757,7 @@ export class ContentControlProperties {
     }
     /**
      * Gets or sets how the control chrome is shown.
+     *
      * @public
      */
     get appearance(): ContentControlAppearance | undefined {
@@ -709,6 +769,7 @@ export class ContentControlProperties {
     }
     /**
      * Gets or sets the border/chrome color (`Color` API).
+     *
      * @public
      */
     get color(): Color | undefined {
@@ -738,6 +799,7 @@ export class ContentControlProperties {
     }
     /**
      * Gets or sets whether a checkbox control is checked.
+     *
      * @public
      */
     get isChecked(): boolean {
@@ -756,21 +818,24 @@ export class ContentControlProperties {
         }
     }
     /**
-     * Checked-state symbol (stable identity).
+     * Gets the checked-state symbol (stable identity).
+     *
      * @public
      */
     get checkedState(): ContentControlCheckBoxState {
         return this.checkedStateValue;
     }
     /**
-     * Unchecked-state symbol (stable identity).
+     * Gets the unchecked-state symbol (stable identity).
+     *
      * @public
      */
     get uncheckedState(): ContentControlCheckBoxState {
         return this.uncheckedStateValue;
     }
     /**
-     * Full date/time stored value.
+     * Gets or sets the full date/time stored value.
+     *
      * @public
      */
     get fullDate(): string | undefined {
@@ -786,7 +851,8 @@ export class ContentControlProperties {
         this.markDirty();
     }
     /**
-     * Display format pattern for the date.
+     * Gets or sets the display format pattern for the date.
+     *
      * @public
      */
     get dateDisplayFormat(): string | undefined {
@@ -802,7 +868,8 @@ export class ContentControlProperties {
         this.markDirty();
     }
     /**
-     * Locale used for date display.
+     * Gets or sets the locale used for date display.
+     *
      * @public
      */
     get dateDisplayLocale(): LocaleIDs | undefined {
@@ -818,7 +885,8 @@ export class ContentControlProperties {
         this.markDirty();
     }
     /**
-     * How mapped date data is stored.
+     * Gets or sets the date storage format.
+     *
      * @public
      */
     get dateStorageFormat(): ContentControlDateStorageFormat | undefined {
@@ -834,7 +902,8 @@ export class ContentControlProperties {
         this.markDirty();
     }
     /**
-     * Calendar system for the date control.
+     * Gets or sets the calendar system for the date control.
+     *
      * @public
      */
     get dateCalendarType(): CalendarType | undefined {
@@ -850,14 +919,16 @@ export class ContentControlProperties {
         this.markDirty();
     }
     /**
-     * Combo-box / drop-down list items (stable identity).
+     * Gets the combo-box / drop-down list items (stable identity).
+     *
      * @public
      */
     get contentControlListItems(): ContentControlListItemCollection {
         return this.contentControlListItemsValue;
     }
     /**
-     * Last selected list value.
+     * Gets or sets the last selected list value.
+     *
      * @public
      */
     get lastValue(): string | undefined {
@@ -875,7 +946,8 @@ export class ContentControlProperties {
         this.markDirty();
     }
     /**
-     * Whether a plain-text control accepts multiple lines (`w:text/@w:multiLine`).
+     * Gets or sets a value indicating whether a plain-text control accepts multiple lines.
+     *
      * @public
      */
     get multiline(): boolean | undefined {
@@ -1174,6 +1246,46 @@ function parseColorFields(el: OpenXmlElement): {
         themeShade: attributeByLocalName(el, 'themeShade')
     };
 }
+/**
+ * Clone a ContentControlProperties object.
+ *
+ * All properties are copied independently; the result is detached.
+ *
+ * @param {ContentControlProperties} source - Properties to clone
+ * @returns {ContentControlProperties} Cloned properties
+ * @private
+ */
+function cloneContentControlProperties(source: ContentControlProperties): ContentControlProperties {
+    const cloned: ContentControlProperties = new ContentControlProperties({
+        tag: source.tag,
+        title: source.title,
+        id: source.id,
+        lockContentControl: source.lockContentControl,
+        lockContents: source.lockContents,
+        placeholderDocPart: source.placeholderDocPart,
+        dataBinding: source.dataBinding,
+        type: source.type,
+        temporary: source.temporary,
+        appearance: source.appearance,
+        color: source.color,
+        themeColor: source.themeColor,
+        themeTint: source.themeTint,
+        themeShade: source.themeShade,
+        isChecked: source.isChecked,
+        checkedState: source.checkedState,
+        uncheckedState: source.uncheckedState,
+        fullDate: source.fullDate,
+        dateDisplayFormat: source.dateDisplayFormat,
+        dateDisplayLocale: source.dateDisplayLocale,
+        dateStorageFormat: source.dateStorageFormat,
+        dateCalendarType: source.dateCalendarType,
+        listItems: source.contentControlListItems.asReadonly(),
+        lastValue: source.lastValue,
+        multiline: source.multiline
+    });
+    return cloned;
+}
+
 function parseContentControlProperties(sdtPr: OpenXmlElement | undefined): ContentControlProperties | undefined {
     if (sdtPr === undefined || !isWml(sdtPr, 'sdtPr')) {
         return undefined;
@@ -1510,8 +1622,8 @@ function serializeColor(properties: ContentControlProperties): OpenXmlElement | 
  * MS `appearance`/`color` after `temporary` and the kind choice last among
  * modeled members, then residual unknowns.
  *
- * @param {ContentControlProperties} properties - The properties.
- * @returns {OpenXmlElement} The result.
+ * @param {ContentControlProperties} properties - Specifies the properties.
+ * @returns {OpenXmlElement} Returns the result.
  */
 function buildSdtPrFromProperties(properties: ContentControlProperties): OpenXmlElement {
     const children: OpenXmlElement[] = [];
@@ -1578,15 +1690,15 @@ function buildSdtPrFromProperties(properties: ContentControlProperties): OpenXml
 }
 // ── Inline content helpers ──────────────────────────────────────────────────
 type ContentControlInlineItem =
-    | { readonly type: 'item'; readonly item: ConcreteParagraphItem }
+    | { readonly type: 'item'; readonly item: ParagraphItem }
     | { readonly type: 'opaque'; readonly xml: OpenXmlElement }
     | FeatureInlineContent;
-const detachedRunOwner: RunOwner = {
+const detachedRunOwner: ParagraphItemOwner = {
     assertAttachedItem(): void {
         return;
     }
 };
-function parseInlineContent(children: ReadonlyArray<OpenXmlChild>, owner: RunOwner): ContentControlInlineItem[] {
+function parseInlineContent(children: ReadonlyArray<OpenXmlChild>, owner: ParagraphItemOwner): ContentControlInlineItem[] {
     const inlines: ContentControlInlineItem[] = [];
     for (const child of children) {
         if (child.kind !== 'element') {
@@ -1598,7 +1710,7 @@ function parseInlineContent(children: ReadonlyArray<OpenXmlChild>, owner: RunOwn
             // including feature run leaves like Pictures, breaks, symbols, etc.
             // The owner is undefined here; it will be set when items are attached to the
             // inline content control's collection.
-            const groupItems: ConcreteParagraphItem[] = parseTextRangeGroup(element, undefined);
+            const groupItems: ParagraphItem[] = parseTextRangeGroup(element, undefined);
             for (const item of groupItems) {
                 inlines.push({ type: 'item', item });
             }
@@ -1632,500 +1744,115 @@ function serializeInlineContent(inlines: ReadonlyArray<ContentControlInlineItem>
 }
 function releaseBlockContent(blocks: ReadonlyArray<BlockContent>): void {
     for (const content of blocks) {
-        if (content.type === 'feature' && content.value instanceof ContentControl) {
+        if (content.type === 'feature' && content.value instanceof BlockContentControl) {
             content.value.releaseContent();
         }
     }
 }
 function releaseInlineContent(inlines: ReadonlyArray<ContentControlInlineItem>): void {
     for (const inline of inlines) {
-        if (inline.type === 'feature' && inline.value instanceof ContentControl) {
+        if (inline.type === 'feature' && inline.value instanceof InlineContentControl) {
             inline.value.releaseContent();
         }
     }
 }
-// ── ContentControl ───────────────────────────────────────────────────
+// ── Stateless SDT helpers ────────────────────────────────────────────
 /**
- * Structured document tag (`w:sdt`) base — shared properties, facades, and
- * serialize hooks for block and inline content controls.
+ * Hydrates the SDT end-mark character format from `w:sdtEndPr/w:rPr`.
  *
- * Prefer {@link BlockContentControl} / {@link InlineContentControl} for new
- * code. This class remains the shared base and legacy facade surface.
- *
- * @public
+ * @param {CharacterFormat} format - Target character format.
+ * @param {OpenXmlElement} sdtEndPr - Raw `w:sdtEndPr` element.
+ * @returns {void} Nothing is returned.
+ * @private
  */
-export class ContentControl implements FeatureInline, FeatureBlock, ContentControlPropertiesOwner, CharacterFormatHost {
-    /**
-     * Marks this instance as a block-level body content control when present on the body surface.
-     * Satisfies {@link BlockContentControlBodyItem} for direct {@link BodyItem} assignability.
-     */
-    readonly isBlockLevel?: boolean;
-    /**
-     * Typed `w:sdtPr` view. Always present after construction for authoring;
-     * load path may start without modeled properties until ensureProperties.
-     */
-    private propertiesValue: ContentControlProperties | undefined;
-    /** Raw load-path `sdtPr` when present — preferred for lossless rewrite. */
-    private readonly sdtPr: OpenXmlElement | undefined;
-    private sdtEndPrRaw: OpenXmlElement | undefined;
-    private readonly preservedXml: OpenXmlElement | undefined;
-    private documentOwner: WordDocument | undefined;
-    /** When true, rebuild `sdtPr` from {@link properties} (author / dirty path). */
-    private rebuildSdtPr: boolean;
-    /** When true, rebuild `sdtEndPr` from {@link breakCharacterFormat}. */
-    private rebuildSdtEndPr: boolean;
-    private readonly breakCharacterFormatInstance: CharacterFormat;
-    private breakFormatDirty: boolean;
-
-    /**
-     * @param {ContentControlProperties | undefined} properties - The properties.
-     * @param {OpenXmlElement | undefined} sdtPr - The sdt pr.
-     * @param {OpenXmlElement | undefined} sdtEndPr - The sdt end pr.
-     * @param {OpenXmlElement | undefined} preservedXml - The preserved xml.
-     * @param {boolean} rebuildSdtPr - The rebuild sdt pr.
-     * @private
-     */
-    constructor(
-        properties: ContentControlProperties | undefined,
-        sdtPr: OpenXmlElement | undefined,
-        sdtEndPr: OpenXmlElement | undefined,
-        preservedXml: OpenXmlElement | undefined,
-        rebuildSdtPr: boolean = false
-    ) {
-        this.propertiesValue = properties;
-        this.sdtPr = sdtPr;
-        this.sdtEndPrRaw = sdtEndPr;
-        this.preservedXml = preservedXml;
-        this.documentOwner = undefined;
-        this.rebuildSdtPr = rebuildSdtPr;
-        this.rebuildSdtEndPr = false;
-        this.breakFormatDirty = false;
-        this.breakCharacterFormatInstance = new CharacterFormat(this);
-        if (sdtEndPr !== undefined) {
-            this.hydrateBreakCharacterFormat(sdtEndPr);
+function hydrateBreakCharacterFormat(format: CharacterFormat, sdtEndPr: OpenXmlElement): void {
+    for (const child of elementChildren(sdtEndPr)) {
+        if (isWml(child, 'rPr')) {
+            const snap: CharacterFormatSnapshot = parseCharacterFormat(child);
+            format.hydrate(snap);
+            return;
         }
-        if (this.propertiesValue !== undefined) {
-            this.propertiesValue.bindOwner(this);
-        }
-    }
-
-    /**
-     * Always-defined typed property bag (created on first access when missing).
-     *
-     * @public
-     */
-    get contentControlProperties(): ContentControlProperties {
-        return this.ensureProperties();
-    }
-
-    /**
-     * Gets the typed property bag for this content control.
-     *
-     * @public
-     */
-    get properties(): ContentControlProperties | undefined {
-        return this.propertiesValue;
-    }
-
-    /**
-     * Character formatting for the SDT end mark (`w:sdtEndPr/w:rPr`).
-     *
-     * @public
-     */
-    get breakCharacterFormat(): CharacterFormat {
-        return this.breakCharacterFormatInstance;
-    }
-
-    /**
-     * @returns {void} Nothing is returned.
-     * @private
-     */
-    notifyCharacterFormatMutation(): void {
-        this.breakFormatDirty = true;
-        this.rebuildSdtEndPr = true;
-    }
-
-    private hydrateBreakCharacterFormat(sdtEndPr: OpenXmlElement): void {
-        for (const child of elementChildren(sdtEndPr)) {
-            if (isWml(child, 'rPr')) {
-                const snap: CharacterFormatSnapshot = parseCharacterFormat(child);
-                this.breakCharacterFormatInstance.hydrate(snap);
-                this.breakFormatDirty = false;
-                this.rebuildSdtEndPr = false;
-                return;
-            }
-        }
-    }
-
-    private serializeSdtEndPr(): OpenXmlElement | undefined {
-        if (this.rebuildSdtEndPr || this.breakFormatDirty) {
-            const rPrChildren: OpenXmlElement[] = this.breakCharacterFormatInstance.buildRPrChildren();
-            if (rPrChildren.length === 0 && this.sdtEndPrRaw === undefined) {
-                return undefined;
-            }
-            return wmlElement('sdtEndPr', {
-                children: [wmlElement('rPr', { children: rPrChildren })]
-            });
-        }
-        return this.sdtEndPrRaw;
-    }
-
-    /**
-     * @returns {void} Nothing is returned.
-     * @private
-     * Prefer modeled rebuild after any user-facing property write.
-     */
-    markSdtPrDirty(): void {
-        this.rebuildSdtPr = true;
-    }
-
-    /**
-     *  @private
-     *
-     * @returns {void} Nothing is returned.
-     */
-    synchronizeCheckboxContent(): void {
-        return;
-    }
-
-    /**
-     * Ensure a properties bag exists so facade setters can write fields on
-     * controls that loaded without a complete `sdtPr` model.
-     *
-     * @returns {ContentControlProperties} The result.
-     */
-    protected ensureProperties(): ContentControlProperties {
-        if (this.propertiesValue === undefined) {
-            this.propertiesValue = new ContentControlProperties({});
-            this.propertiesValue.bindOwner(this);
-        }
-        return this.propertiesValue;
-    }
-
-    /**
-     * Gets or sets the friendly display name shown as the content-control title in Word.
-     *
-     * @public
-     */
-    get title(): string | undefined {
-        return this.propertiesValue == null ? undefined : this.propertiesValue.title;
-    }
-    set title(value: string | undefined) {
-        this.ensureProperties().title = value;
-    }
-
-    /**
-     * Gets or sets the programmatic tag used to identify this content control in code.
-     *
-     * @public
-     */
-    get tag(): string | undefined {
-        return this.propertiesValue == null ? undefined : this.propertiesValue.tag;
-    }
-    set tag(value: string | undefined) {
-        this.ensureProperties().tag = value;
-    }
-
-    /**
-     * Gets or sets whether the content-control definition is locked.
-     *
-     * @public
-     */
-    get lockContentControl(): boolean {
-        return this.ensureProperties().lockContentControl;
-    }
-    set lockContentControl(value: boolean) {
-        this.ensureProperties().lockContentControl = value;
-    }
-
-    /**
-     * Gets or sets whether the content inside the control is locked.
-     *
-     * @public
-     */
-    get lockContents(): boolean {
-        return this.ensureProperties().lockContents;
-    }
-    set lockContents(value: boolean) {
-        this.ensureProperties().lockContents = value;
-    }
-
-    /**
-     * Gets or sets the placeholder document-part name used when the control shows placeholder content.
-     *
-     * @public
-     */
-    get placeholderText(): string | undefined {
-        return this.propertiesValue == null ? undefined : this.propertiesValue.placeholderDocPart;
-    }
-    set placeholderText(value: string | undefined) {
-        this.ensureProperties().placeholderDocPart = value;
-    }
-
-    /**
-     * Gets or sets the content-control kind.
-     *
-     * @public
-     */
-    get type(): ContentControlType | undefined {
-        return this.propertiesValue == null ? undefined : this.propertiesValue.type;
-    }
-    set type(value: ContentControlType | undefined) {
-        this.ensureProperties().type = value;
-    }
-
-    /**
-     * Gets or sets whether the control is removed after its contents are edited once.
-     *
-     * @public
-     */
-    get isTemporary(): boolean {
-        return this.ensureProperties().isTemporary;
-    }
-    set isTemporary(value: boolean) {
-        this.ensureProperties().isTemporary = value;
-    }
-
-    /**
-     * Gets or sets how the control chrome is shown.
-     *
-     * @public
-     */
-    get appearance(): ContentControlAppearance | undefined {
-        return this.propertiesValue == null ? undefined : this.propertiesValue.appearance;
-    }
-    set appearance(value: ContentControlAppearance | undefined) {
-        this.ensureProperties().appearance = value;
-    }
-
-    /**
-     * Gets or sets the border/chrome color for the content control.
-     *
-     * @public
-     */
-    get color(): Color | undefined {
-        return this.propertiesValue == null ? undefined : this.propertiesValue.color;
-    }
-    set color(value: Color | undefined) {
-        this.ensureProperties().color = value;
-    }
-
-    /**
-     * Gets or sets whether a checkbox control is checked.
-     *
-     * @public
-     */
-    get isChecked(): boolean {
-        return this.ensureProperties().isChecked;
-    }
-    set isChecked(value: boolean) {
-        this.ensureProperties().isChecked = value;
-    }
-
-    /**
-     * Checked-state symbol (stable identity).
-     *
-     * @public
-     */
-    get checkedState(): ContentControlCheckBoxState {
-        return this.ensureProperties().checkedState;
-    }
-
-    /**
-     * Unchecked-state symbol (stable identity).
-     *
-     * @public
-     */
-    get uncheckedState(): ContentControlCheckBoxState {
-        return this.ensureProperties().uncheckedState;
-    }
-
-    /**
-     * Full date/time stored value.
-     *
-     * @public
-     */
-    get fullDate(): string | undefined {
-        return this.propertiesValue == null ? undefined : this.propertiesValue.fullDate;
-    }
-    set fullDate(value: string | undefined) {
-        this.ensureProperties().fullDate = value;
-    }
-
-    /**
-     * Display format pattern for the date.
-     *
-     * @public
-     */
-    get dateDisplayFormat(): string | undefined {
-        return this.propertiesValue == null ? undefined : this.propertiesValue.dateDisplayFormat;
-    }
-    set dateDisplayFormat(value: string | undefined) {
-        this.ensureProperties().dateDisplayFormat = value;
-    }
-
-    /**
-     * Locale used for date display.
-     *
-     * @public
-     */
-    get dateDisplayLocale(): LocaleIDs | undefined {
-        return this.propertiesValue == null ? undefined : this.propertiesValue.dateDisplayLocale;
-    }
-    set dateDisplayLocale(value: LocaleIDs | undefined) {
-        this.ensureProperties().dateDisplayLocale = value;
-    }
-
-    /**
-     * How mapped date data is stored.
-     *
-     * @public
-     */
-    get dateStorageFormat(): ContentControlDateStorageFormat | undefined {
-        return this.propertiesValue == null ? undefined : this.propertiesValue.dateStorageFormat;
-    }
-    set dateStorageFormat(value: ContentControlDateStorageFormat | undefined) {
-        this.ensureProperties().dateStorageFormat = value;
-    }
-
-    /**
-     * Calendar system for the date control.
-     *
-     * @public
-     */
-    get dateCalendarType(): CalendarType | undefined {
-        return this.propertiesValue == null ? undefined : this.propertiesValue.dateCalendarType;
-    }
-    set dateCalendarType(value: CalendarType | undefined) {
-        this.ensureProperties().dateCalendarType = value;
-    }
-
-    /**
-     * Combo-box / drop-down list items (stable identity).
-     *
-     * @public
-     */
-    get contentControlListItems(): ContentControlListItemCollection {
-        return this.ensureProperties().contentControlListItems;
-    }
-
-    /**
-     * Gets or sets the last selected value for a combo-box or drop-down list control.
-     *
-     * @public
-     */
-    get lastValue(): string | undefined {
-        return this.propertiesValue == null ? undefined : this.propertiesValue.lastValue;
-    }
-    set lastValue(value: string | undefined) {
-        this.ensureProperties().lastValue = value;
-    }
-
-    /**
-     * Gets or sets whether a plain-text content control accepts multiple lines of text.
-     *
-     * @public
-     */
-    get multiline(): boolean | undefined {
-        return this.propertiesValue == null ? undefined : this.propertiesValue.multiline;
-    }
-    set multiline(value: boolean | undefined) {
-        this.ensureProperties().multiline = value;
-    }
-
-    /**
-     * Compatibility: block children projected as BodyItem[] (block controls only).
-     *
-     * @public
-     */
-    get blockContentControl(): ReadonlyArray<BodyItem> | undefined {
-        return undefined;
-    }
-
-    /**
-     * Compatibility: inline bag children (inline controls only).
-     *
-     * @public
-     */
-    get inlineContentControl(): ReadonlyArray<ContentControlInlineItem> | undefined {
-        return undefined;
-    }
-
-    /**
-     * @returns {void} Nothing is returned.
-     * @private
-     */
-    releaseContent(): void {
-        return;
-    }
-
-    /**
-     * @param {WordDocument} document - The document.
-     * @returns {void} Nothing is returned.
-     * @private
-     * Bind owning document so nested content can mutate.
-     */
-    bindDocument(document: WordDocument): void {
-        this.documentOwner = document;
-    }
-
-    /**
-     * @returns {WordDocument} The result.
-     * @private
-     */
-    owningDocument(): WordDocument {
-        if (this.documentOwner === undefined) {
-            throw new DetachedObjectError('This content control is not bound to a document');
-        }
-        return this.documentOwner;
-    }
-
-    /**
-     * @param {OpenXmlElement[]} contentChildren - The content children.
-     * @returns {OpenXmlElement} The result.
-     * @private
-     */
-    protected buildSdtShell(contentChildren: OpenXmlElement[]): OpenXmlElement {
-        if (this.preservedXml !== undefined) {
-            return this.preservedXml;
-        }
-        const children: OpenXmlElement[] = [];
-        if (this.rebuildSdtPr && this.propertiesValue !== undefined) {
-            children.push(buildSdtPrFromProperties(this.propertiesValue));
-        }
-        else if (this.sdtPr !== undefined) {
-            children.push(this.sdtPr);
-        }
-        else if (this.propertiesValue !== undefined) {
-            children.push(buildSdtPrFromProperties(this.propertiesValue));
-        }
-        const endPr: OpenXmlElement = this.serializeSdtEndPr();
-        if (endPr !== undefined) {
-            children.push(endPr);
-        }
-        children.push(wmlElement('sdtContent', { children: contentChildren }));
-        return wmlElement('sdt', { children });
-    }
-
-    /**
-     * @returns {OpenXmlElement} The result.
-     * @private
-     */
-    toOpenXml(): OpenXmlElement {
-        return this.buildSdtShell([]);
     }
 }
 
 /**
- * Block-level structured document tag (`w:sdt` / `CT_SdtBlock`).
+ * Builds a complete `w:sdt` element from a control's preserved state.
  *
- * Owns a nested {@link Body} whose {@link Body.items} are the live DOM for
- * `w:sdtContent` children. Public identity is this instance (BodyItem).
+ * @param {OpenXmlElement | undefined} preservedXml - Verbatim `w:sdt` kept for lossless round trip.
+ * @param {OpenXmlElement | undefined} sdtPr - Raw load-path `w:sdtPr`.
+ * @param {ContentControlProperties} properties - Modeled properties.
+ * @param {boolean} rebuildSdtPr - Whether `w:sdtPr` is rebuilt from `properties`.
+ * @param {CharacterFormat} breakFormat - SDT end-mark character format.
+ * @param {OpenXmlElement | undefined} sdtEndPr - Raw load-path `w:sdtEndPr`.
+ * @param {boolean} breakFormatDirty - Whether `w:sdtEndPr` is rebuilt from `breakFormat`.
+ * @param {OpenXmlElement[]} contentChildren - Serialized `w:sdtContent` children.
+ * @returns {OpenXmlElement} The `w:sdt` element.
+ * @private
+ */
+function buildSdtElement(
+    preservedXml: OpenXmlElement | undefined,
+    sdtPr: OpenXmlElement | undefined,
+    properties: ContentControlProperties,
+    rebuildSdtPr: boolean,
+    breakFormat: CharacterFormat,
+    sdtEndPr: OpenXmlElement | undefined,
+    breakFormatDirty: boolean,
+    contentChildren: OpenXmlElement[]
+): OpenXmlElement {
+    if (preservedXml !== undefined) {
+        return preservedXml;
+    }
+    const children: OpenXmlElement[] = [];
+    if (rebuildSdtPr) {
+        children.push(buildSdtPrFromProperties(properties));
+    }
+    else if (sdtPr !== undefined) {
+        children.push(sdtPr);
+    }
+    let endPr: OpenXmlElement | undefined = sdtEndPr;
+    if (breakFormatDirty) {
+        const rPrChildren: OpenXmlElement[] = breakFormat.buildRPrChildren();
+        endPr = rPrChildren.length === 0 && sdtEndPr === undefined
+            ? undefined
+            : wmlElement('sdtEndPr', { children: [wmlElement('rPr', { children: rPrChildren })] });
+    }
+    if (endPr !== undefined) {
+        children.push(endPr);
+    }
+    children.push(wmlElement('sdtContent', { children: contentChildren }));
+    return wmlElement('sdt', { children });
+}
+
+/**
+ * Any structured document tag (`w:sdt`): a {@link BlockContentControl} or an
+ * {@link InlineContentControl}. Type-only union; there is no shared runtime class.
+ * Typed `w:sdtPr` values live on `contentControlProperties`.
  *
  * @public
  */
-export class BlockContentControl extends ContentControl implements BlockContentControlBodyItem, ParagraphOwner {
-    readonly isBlockLevel: boolean = true;
+export type ContentControl = BlockContentControl | InlineContentControl;
+
+/**
+ * Block-level structured document tag (`w:sdt` / `CT_SdtBlock`).
+ *
+ * A {@link BodyItem} that owns a nested {@link Body} whose {@link Body.items} are the
+ * live DOM for `w:sdtContent` children. Settings are exposed through
+ * {@link BlockContentControl.contentControlProperties}.
+ *
+ * @public
+ */
+export class BlockContentControl extends BodyItem implements FeatureBlock, ContentControlPropertiesOwner, CharacterFormatHost {
+    private readonly contentControlPropertiesInstance: ContentControlProperties;
+    /** Raw load-path `sdtPr` when present — preferred for lossless rewrite. */
+    private readonly sdtPr: OpenXmlElement | undefined;
+    private readonly sdtEndPrRaw: OpenXmlElement | undefined;
+    private readonly preservedXml: OpenXmlElement | undefined;
+    private documentOwner: WordDocument | undefined;
+    /** When true, `sdtPr` is rebuilt from {@link contentControlProperties}. */
+    private rebuildSdtPr: boolean;
+    /** When true, `sdtEndPr` is rebuilt from {@link breakCharacterFormat}. */
+    private breakFormatDirty: boolean;
+    private readonly breakCharacterFormatInstance: CharacterFormat;
     private readonly bodyInstance: Body;
 
     /**
@@ -2139,6 +1866,9 @@ export class BlockContentControl extends ContentControl implements BlockContentC
      * @private
      */
     constructor(
+        /**
+         * Gets or sets the properties.
+         */
         properties: ContentControlProperties | undefined,
         sdtPr: OpenXmlElement | undefined,
         sdtEndPr: OpenXmlElement | undefined,
@@ -2147,7 +1877,20 @@ export class BlockContentControl extends ContentControl implements BlockContentC
         rebuildSdtPr: boolean = false,
         document?: WordDocument
     ) {
-        super(properties, sdtPr, sdtEndPr, preservedXml, rebuildSdtPr);
+        super();
+        this.contentControlPropertiesInstance = properties !== undefined ? properties : new ContentControlProperties({});
+        this.contentControlPropertiesInstance.bindOwner(this);
+        this.sdtPr = sdtPr;
+        this.sdtEndPrRaw = sdtEndPr;
+        this.preservedXml = preservedXml;
+        this.documentOwner = undefined;
+        this.rebuildSdtPr = rebuildSdtPr || (properties !== undefined && sdtPr === undefined);
+        this.breakFormatDirty = false;
+        this.breakCharacterFormatInstance = new CharacterFormat(this);
+        if (sdtEndPr !== undefined) {
+            hydrateBreakCharacterFormat(this.breakCharacterFormatInstance, sdtEndPr);
+            this.breakFormatDirty = false;
+        }
         this.bodyInstance = new Body(document, blocks != null ? blocks : []);
         // Nested body paragraphs attach via Body constructor; re-bind CC as owner for assertAttached.
         for (const block of this.bodyInstance.rawBlocks()) {
@@ -2158,7 +1901,64 @@ export class BlockContentControl extends ContentControl implements BlockContentC
     }
 
     /**
-     * Nested body for block content-control children (`w:sdtContent`).
+     * Always-defined, stable typed `w:sdtPr` model. Every content-control setting
+     * (`title`, `tag`, `type`, `isChecked`, …) is read and written through it.
+     *
+     * @public
+     */
+    get contentControlProperties(): ContentControlProperties {
+        return this.contentControlPropertiesInstance;
+    }
+
+    /**
+     * Gets the character formatting for the SDT end mark.
+     *
+     * @public
+     */
+    get breakCharacterFormat(): CharacterFormat {
+        return this.breakCharacterFormatInstance;
+    }
+
+    /**
+     * @returns {void} Nothing is returned.
+     * @private
+     */
+    notifyCharacterFormatMutation(): void {
+        this.breakFormatDirty = true;
+    }
+
+    /**
+     * @returns {void} Nothing is returned.
+     * @private
+     * Prefer modeled rebuild after any user-facing property write.
+     */
+    markSdtPrDirty(): void {
+        this.rebuildSdtPr = true;
+    }
+
+    /**
+     * @returns {WordDocument} The bound document.
+     * @private
+     */
+    owningDocument(): WordDocument {
+        if (this.documentOwner === undefined) {
+            throw new DetachedObjectError('This content control is not bound to a document');
+        }
+        return this.documentOwner;
+    }
+
+    /**
+     * Block controls hold nested block content, so there is no checkbox content to refresh.
+     *
+     * @returns {void} Nothing is returned.
+     * @private
+     */
+    synchronizeCheckboxContent(): void {
+        return;
+    }
+
+    /**
+     * Gets the nested body for block content-control children.
      *
      * @public
      */
@@ -2167,7 +1967,7 @@ export class BlockContentControl extends ContentControl implements BlockContentC
     }
 
     /**
-     * Projected public children (compat with prior APIs).
+     * Gets the projected public children (compat with prior APIs).
      *
      * @public
      */
@@ -2181,6 +1981,7 @@ export class BlockContentControl extends ContentControl implements BlockContentC
         }
         return out;
     }
+
 
     /**
      * @returns {void} Nothing is returned.
@@ -2196,13 +1997,13 @@ export class BlockContentControl extends ContentControl implements BlockContentC
      * @private
      */
     bindDocument(document: WordDocument): void {
-        super.bindDocument(document);
+        this.documentOwner = document;
         this.bodyInstance.setOwningDocument(document);
         for (const block of this.bodyInstance.rawBlocks()) {
             if (block.type === 'paragraph') {
                 block.paragraph.attach(this);
             }
-            if (block.type === 'feature' && block.value instanceof ContentControl) {
+            if (block.type === 'feature' && block.value instanceof BlockContentControl) {
                 block.value.bindDocument(document);
             }
         }
@@ -2231,51 +2032,165 @@ export class BlockContentControl extends ContentControl implements BlockContentC
      * @private
      */
     toOpenXml(): OpenXmlElement {
-        return this.buildSdtShell(serializeBodyBlocks(this.bodyInstance.rawBlocks()));
+        return buildSdtElement(
+            this.preservedXml, this.sdtPr, this.contentControlPropertiesInstance, this.rebuildSdtPr,
+            this.breakCharacterFormatInstance, this.sdtEndPrRaw, this.breakFormatDirty,
+            serializeBodyBlocks(this.bodyInstance.rawBlocks())
+        );
+    }
+
+    /**
+     * Create an independent copy of this block content control.
+     * Properties, formatting, and block content are cloned.
+     *
+     * All content blocks are recursively cloned; properties are copied independently.
+     * The cloned control is detached and ready for attachment or import.
+     *
+     * @returns {BlockContentControl} Cloned block content control.
+     * @public
+     */
+    clone(): BlockContentControl {
+        // Clone properties if present
+        const clonedProperties: ContentControlProperties | undefined = cloneContentControlProperties(this.contentControlPropertiesInstance);
+
+        // Clone all body blocks recursively; the constructor takes ownership of them.
+        const clonedBlocks: BlockContent[] = [];
+        for (const block of this.bodyInstance.rawBlocks()) {
+            const item: BodyItem | undefined = projectBlockToBodyItem(block);
+            if (item !== undefined) {
+                clonedBlocks.push(bodyItemToBlock(item.clone()));
+            } else {
+                // Opaque (unmodeled) blocks are preserved as-is.
+                clonedBlocks.push(block);
+            }
+        }
+
+        return new BlockContentControl(
+            clonedProperties,
+            this.sdtPr,
+            this.sdtEndPrRaw,
+            clonedBlocks,
+            this.preservedXml,
+            false
+        );
     }
 }
 
 /**
- * Inline (run-level) structured document tag (`w:sdt` / `CT_SdtRun`).
+ * Represents an inline content control.
  *
- * Owns a {@link ParagraphItemCollection} for `w:sdtContent` children.
- * Projected as a public paragraph item via EntityType unwrap.
+ * A {@link ParagraphItem} stored directly in {@link Paragraph.items}. It owns a
+ * {@link ParagraphItemCollection} for `w:sdtContent` children. Settings are exposed
+ * through {@link InlineContentControl.contentControlProperties}.
  *
  * @public
  */
-export class InlineContentControl extends ContentControl implements FeatureInline, ParagraphItemOwner, ParagraphItemCollectionHost {
+export class InlineContentControl extends ParagraphItem
+    implements FeatureInline, ParagraphItemCollectionHost, ContentControlPropertiesOwner, CharacterFormatHost {
     /**
-     * Discriminator for paragraph-item projection (`projectPublicItem`).
+     * Gets the entity type.
      *
      * @public
      */
     readonly entityType: EntityType.InlineContentControl = EntityType.InlineContentControl;
+    private readonly contentControlPropertiesInstance: ContentControlProperties;
+    /** Raw load-path `sdtPr` when present — preferred for lossless rewrite. */
+    private readonly sdtPr: OpenXmlElement | undefined;
+    private readonly sdtEndPrRaw: OpenXmlElement | undefined;
+    private readonly preservedXml: OpenXmlElement | undefined;
+    private documentOwner: WordDocument | undefined;
+    /** When true, `sdtPr` is rebuilt from {@link contentControlProperties}. */
+    private rebuildSdtPr: boolean;
+    /** When true, `sdtEndPr` is rebuilt from {@link breakCharacterFormat}. */
+    private breakFormatDirty: boolean;
+    private readonly breakCharacterFormatInstance: CharacterFormat;
     private readonly paragraphItemsInstance: ParagraphItemCollection;
-    private itemOwner: ParagraphItemOwner | undefined;
 
     /**
      * @param {ContentControlProperties | undefined} properties - The properties.
      * @param {OpenXmlElement | undefined} sdtPr - The sdt pr.
      * @param {OpenXmlElement | undefined} sdtEndPr - The sdt end pr.
-     * @param {ReadonlyArray<ConcreteParagraphItem> | undefined} initialItems - The initial items.
+     * @param {ReadonlyArray<ParagraphItem> | undefined} initialItems - The initial items.
      * @param {OpenXmlElement | undefined} preservedXml - The preserved xml.
      * @param {boolean} rebuildSdtPr - The rebuild sdt pr.
      * @private
      */
     constructor(
+        /**
+         * Gets or sets the properties.
+         */
         properties: ContentControlProperties | undefined,
         sdtPr: OpenXmlElement | undefined,
         sdtEndPr: OpenXmlElement | undefined,
-        initialItems: ReadonlyArray<ConcreteParagraphItem> | undefined,
+        initialItems: ReadonlyArray<ParagraphItem> | undefined,
         preservedXml: OpenXmlElement | undefined,
         rebuildSdtPr: boolean = false
     ) {
-        super(properties, sdtPr, sdtEndPr, preservedXml, rebuildSdtPr);
+        super();
+        this.contentControlPropertiesInstance = properties !== undefined ? properties : new ContentControlProperties({});
+        this.contentControlPropertiesInstance.bindOwner(this);
+        this.sdtPr = sdtPr;
+        this.sdtEndPrRaw = sdtEndPr;
+        this.preservedXml = preservedXml;
+        this.documentOwner = undefined;
+        this.rebuildSdtPr = rebuildSdtPr || (properties !== undefined && sdtPr === undefined);
+        this.breakFormatDirty = false;
+        this.breakCharacterFormatInstance = new CharacterFormat(this);
+        if (sdtEndPr !== undefined) {
+            hydrateBreakCharacterFormat(this.breakCharacterFormatInstance, sdtEndPr);
+            this.breakFormatDirty = false;
+        }
         this.paragraphItemsInstance = new ParagraphItemCollection(this);
-        this.itemOwner = undefined;
         if (initialItems !== undefined && initialItems.length > 0) {
             this.paragraphItemsInstance.hydrate(initialItems);
         }
+    }
+
+    /**
+     * Always-defined, stable typed `w:sdtPr` model. Every content-control setting
+     * (`title`, `tag`, `type`, `isChecked`, …) is read and written through it.
+     *
+     * @public
+     */
+    get contentControlProperties(): ContentControlProperties {
+        return this.contentControlPropertiesInstance;
+    }
+
+    /**
+     * Character formatting for the SDT end mark (`w:sdtEndPr/w:rPr`).
+     *
+     * @public
+     */
+    get breakCharacterFormat(): CharacterFormat {
+        return this.breakCharacterFormatInstance;
+    }
+
+    /**
+     * @returns {void} Nothing is returned.
+     * @private
+     */
+    notifyCharacterFormatMutation(): void {
+        this.breakFormatDirty = true;
+    }
+
+    /**
+     * @returns {void} Nothing is returned.
+     * @private
+     * Prefer modeled rebuild after any user-facing property write.
+     */
+    markSdtPrDirty(): void {
+        this.rebuildSdtPr = true;
+    }
+
+    /**
+     * @returns {WordDocument} The bound document.
+     * @private
+     */
+    owningDocument(): WordDocument {
+        if (this.documentOwner === undefined) {
+            throw new DetachedObjectError('This content control is not bound to a document');
+        }
+        return this.documentOwner;
     }
 
     /**
@@ -2317,6 +2232,7 @@ export class InlineContentControl extends ContentControl implements FeatureInlin
     /**
      * Compatibility bags for legacy tests. Now wraps all items generically.
      *  Internal legacy compatibility; prefer `paragraphItems` instead.
+     *
      * @public
      * @private
      */
@@ -2325,6 +2241,9 @@ export class InlineContentControl extends ContentControl implements FeatureInlin
         for (const item of this.paragraphItemsInstance) {
             if (item instanceof TextRange) {
                 out.push({ type: 'item', item });
+            }
+            else if (item instanceof InlineContentControl) {
+                out.push({ type: 'feature', featureId: CONTENT_CONTROLS, value: item });
             }
             else if (item instanceof FeatureInlineParagraphItem) {
                 out.push({
@@ -2351,19 +2270,12 @@ export class InlineContentControl extends ContentControl implements FeatureInlin
     }
 
     /**
-     * @private
-     */
-    get owner(): ParagraphItemOwner | undefined {
-        return this.itemOwner;
-    }
-
-    /**
      * @param {ParagraphItemOwner} owner - The owner.
      * @returns {void} Nothing is returned.
      * @private
      */
     attach(owner: ParagraphItemOwner): void {
-        this.itemOwner = owner;
+        super.attach(owner);
         this.paragraphItemsInstance.reattachAll();
     }
 
@@ -2373,18 +2285,7 @@ export class InlineContentControl extends ContentControl implements FeatureInlin
      */
     detach(): void {
         this.paragraphItemsInstance.detachAll();
-        this.itemOwner = undefined;
-    }
-
-    /**
-     * @param {ParagraphItem} target - The target.
-     * @returns {void} Nothing is returned.
-     * @private
-     */
-    assertAttachedItem(target: ParagraphItem): void {
-        if (!this.paragraphItemsInstance.containsIdentity(target as ConcreteParagraphItem)) {
-            throw new DetachedObjectError('Paragraph item is not in this content control');
-        }
+        super.detach();
     }
 
     /**
@@ -2396,6 +2297,17 @@ export class InlineContentControl extends ContentControl implements FeatureInlin
     }
 
     /**
+     * @param {ParagraphItem} target - The target.
+     * @returns {void} Nothing is returned.
+     * @private
+     */
+    assertAttachedItem(target: ParagraphItem): void {
+        if (!this.paragraphItemsInstance.containsIdentity(target as ParagraphItem)) {
+            throw new DetachedObjectError('Paragraph item is not in this content control');
+        }
+    }
+
+    /**
      * @returns {void} Nothing is returned.
      * @private
      */
@@ -2403,9 +2315,6 @@ export class InlineContentControl extends ContentControl implements FeatureInlin
         for (const item of this.paragraphItemsInstance) {
             if (item instanceof InlineContentControl) {
                 item.releaseContent();
-            }
-            else if (item instanceof FeatureInlineParagraphItem && item.value instanceof ContentControl) {
-                item.value.releaseContent();
             }
         }
     }
@@ -2416,8 +2325,8 @@ export class InlineContentControl extends ContentControl implements FeatureInlin
      * @returns {void} Nothing is returned.
      */
     synchronizeCheckboxContent(): void {
-        const properties: ContentControlProperties = this.properties;
-        if (properties === undefined || properties.type !== 'checkbox') {
+        const properties: ContentControlProperties = this.contentControlPropertiesInstance;
+        if (properties.type !== 'checkbox') {
             return;
         }
         const state: ContentControlCheckBoxState = properties.isChecked ? properties.checkedState : properties.uncheckedState;
@@ -2431,8 +2340,8 @@ export class InlineContentControl extends ContentControl implements FeatureInlin
                 symbol = String.fromCodePoint(codePoint);
             }
         }
-        const items: ConcreteParagraphItem[] = [...this.paragraphItemsInstance];
-        const first: ConcreteParagraphItem = items.length === 1 ? items[0] : undefined;
+        const items: ParagraphItem[] = [...this.paragraphItemsInstance];
+        const first: ParagraphItem = items.length === 1 ? items[0] : undefined;
         if (first instanceof TextRange) {
             first.text = symbol;
             return;
@@ -2456,13 +2365,10 @@ export class InlineContentControl extends ContentControl implements FeatureInlin
      * @private
      */
     bindDocument(document: WordDocument): void {
-        super.bindDocument(document);
+        this.documentOwner = document;
         for (const item of this.paragraphItemsInstance) {
-            if (item instanceof ContentControl) {
+            if (item instanceof InlineContentControl) {
                 item.bindDocument(document);
-            }
-            else if (item instanceof FeatureInlineParagraphItem && item.value instanceof ContentControl) {
-                item.value.bindDocument(document);
             }
         }
         this.synchronizeCheckboxContent();
@@ -2473,19 +2379,85 @@ export class InlineContentControl extends ContentControl implements FeatureInlin
      * @private
      */
     toOpenXml(): OpenXmlElement {
-        return this.buildSdtShell(serializeParagraphItems(this.paragraphItemsInstance.snapshot()));
+        return buildSdtElement(
+            this.preservedXml, this.sdtPr, this.contentControlPropertiesInstance, this.rebuildSdtPr,
+            this.breakCharacterFormatInstance, this.sdtEndPrRaw, this.breakFormatDirty,
+            serializeParagraphItems(this.paragraphItemsInstance.snapshot())
+        );
+    }
+
+    /**
+     * Create an independent copy of this inline content control.
+     * Properties, formatting, and content items are cloned.
+     *
+     * All paragraph items are recursively cloned; properties are copied independently.
+     * The cloned control is detached and ready for attachment or import.
+     *
+     * @returns {InlineContentControl} Cloned inline content control.
+     * @public
+     */
+    clone(): InlineContentControl {
+        // Clone properties if present
+        const clonedProperties: ContentControlProperties | undefined = cloneContentControlProperties(this.contentControlPropertiesInstance);
+
+        // Clone all paragraph items recursively
+        const clonedItems: ParagraphItem[] = [];
+        for (const item of this.paragraphItemsInstance) {
+            // TextRange cloning is straightforward
+            if (item instanceof TextRange) {
+                clonedItems.push(item.clone());
+                continue;
+            }
+
+            // Recursively clone nested InlineContentControl
+            if (item instanceof InlineContentControl) {
+                clonedItems.push(item.clone());
+                continue;
+            }
+
+            // For feature items, try to clone the wrapped value if it's a ContentControl
+            if (item instanceof FeatureInlineParagraphItem) {
+                const featureValue: FeatureInline = item.value;
+                if (featureValue instanceof InlineContentControl) {
+                    clonedItems.push(new FeatureInlineParagraphItem(item.featureId, featureValue.clone()));
+                    continue;
+                }
+                // Other feature items (Picture, Field, etc.) are preserved as-is for now
+                // They will be fully cloned in future sessions
+                clonedItems.push(item);
+                continue;
+            }
+
+            // For all other item types (Break, Symbol, Tab, OpaqueParagraphItem, etc.),
+            // preserve as-is. These are either simple value types or unmodeled content.
+            clonedItems.push(item);
+        }
+
+        // Create new control with cloned properties and items
+        const cloned: InlineContentControl = new InlineContentControl(
+            clonedProperties,
+            this.sdtPr,
+            this.sdtEndPrRaw,
+            clonedItems,
+            this.preservedXml,
+            false
+        );
+
+        return cloned;
     }
 }
 
-function bagsToParagraphItems(inlines: ReadonlyArray<ContentControlInlineItem>): ConcreteParagraphItem[] {
-    const items: ConcreteParagraphItem[] = [];
+function bagsToParagraphItems(inlines: ReadonlyArray<ContentControlInlineItem>): ParagraphItem[] {
+    const items: ParagraphItem[] = [];
     for (const inline of inlines) {
         if (inline.type === 'item') {
             items.push(inline.item);
             continue;
         }
         if (inline.type === 'feature') {
-            items.push(new FeatureInlineParagraphItem(inline.featureId, inline.value));
+            items.push(isDirectInlineFeatureItem(inline.value)
+                ? inline.value
+                : new FeatureInlineParagraphItem(inline.featureId, inline.value));
             continue;
         }
         items.push(new OpaqueParagraphItem(inline.xml));
@@ -2513,50 +2485,49 @@ function splitSdtChildren(element: OpenXmlElement): {
     }
     return { sdtPr, sdtEndPr, sdtContent };
 }
-function parseContentControl(element: OpenXmlElement, mode: 'block' | 'inline', ctx: BodyBlockParseContext): ContentControl | undefined {
+function parseBlockContentControl(element: OpenXmlElement, ctx: BodyBlockParseContext): BlockContentControl | undefined {
     if (!isWml(element, 'sdt')) {
         return undefined;
     }
     const { sdtPr, sdtEndPr, sdtContent } = splitSdtChildren(element);
-    const properties: ContentControlProperties = parseContentControlProperties(sdtPr);
     if (sdtContent === undefined && sdtPr === undefined && sdtEndPr === undefined) {
-        if (mode === 'block') {
-            return new BlockContentControl(undefined, undefined, undefined, [], element);
-        }
+        return new BlockContentControl(undefined, undefined, undefined, [], element);
+    }
+    const blocks: BlockContent[] = sdtContent !== undefined ? parseBodyBlocks(sdtContent.children, ctx) : [];
+    return new BlockContentControl(parseContentControlProperties(sdtPr), sdtPr, sdtEndPr, blocks, undefined);
+}
+function parseInlineContentControl(element: OpenXmlElement): InlineContentControl | undefined {
+    if (!isWml(element, 'sdt')) {
+        return undefined;
+    }
+    const { sdtPr, sdtEndPr, sdtContent } = splitSdtChildren(element);
+    if (sdtContent === undefined && sdtPr === undefined && sdtEndPr === undefined) {
         return new InlineContentControl(undefined, undefined, undefined, [], element);
     }
-    if (mode === 'block') {
-        const blocks: BlockContent[] = sdtContent !== undefined ? parseBodyBlocks(sdtContent.children, ctx) : [];
-        return new BlockContentControl(properties, sdtPr, sdtEndPr, blocks, undefined);
-    }
     const inlines: ContentControlInlineItem[] = sdtContent !== undefined ? parseInlineContent(sdtContent.children, detachedRunOwner) : [];
-    return new InlineContentControl(properties, sdtPr, sdtEndPr, bagsToParagraphItems(inlines), undefined);
+    return new InlineContentControl(parseContentControlProperties(sdtPr), sdtPr, sdtEndPr, bagsToParagraphItems(inlines), undefined);
 }
-function contentControlsFromBlocks(blocks: ReadonlyArray<BlockContent | BodyItem>): ContentControl[] {
-    const found: ContentControl[] = [];
+function contentControlsFromBlocks(blocks: ReadonlyArray<BlockContent | BodyItem>): BlockContentControl[] {
+    const found: BlockContentControl[] = [];
     for (const block of blocks) {
-        if (block instanceof ContentControl) {
+        if (block instanceof BlockContentControl) {
             found.push(block);
             continue;
         }
         if (typeof block === 'object' && block !== null && 'type' in block) {
             const candidate: { type?: unknown; value?: unknown; } = block as { type?: unknown; value?: unknown };
-            if (candidate.type === 'feature' && candidate.value instanceof ContentControl) {
+            if (candidate.type === 'feature' && candidate.value instanceof BlockContentControl) {
                 found.push(candidate.value);
             }
         }
     }
     return found;
 }
-function contentControlsFromInlines(inlines: ReadonlyArray<ParagraphItem>): ContentControl[] {
-    const found: ContentControl[] = [];
+function contentControlsFromInlines(inlines: ReadonlyArray<ParagraphItem>): InlineContentControl[] {
+    const found: InlineContentControl[] = [];
     for (const inline of inlines) {
         if (inline instanceof InlineContentControl) {
             found.push(inline);
-            continue;
-        }
-        if (inline instanceof FeatureInlineParagraphItem && inline.value instanceof ContentControl) {
-            found.push(inline.value);
         }
     }
     return found;
@@ -2658,15 +2629,15 @@ export function registerContentControlsFeature(): void {
     registerFeatureInlineHandler({
         featureId: CONTENT_CONTROLS,
         wmlLocalName: 'sdt',
-        tryParse(element: OpenXmlElement): ContentControl | undefined {
-            return parseContentControl(element, 'inline', detachedBodyBlockParseContext());
+        tryParse(element: OpenXmlElement): InlineContentControl | undefined {
+            return parseInlineContentControl(element);
         }
     });
     registerFeatureBlockHandler({
         featureId: CONTENT_CONTROLS,
         wmlLocalName: 'sdt',
-        tryParse(element: OpenXmlElement, ctx: BodyBlockParseContext): ContentControl | undefined {
-            return parseContentControl(element, 'block', ctx);
+        tryParse(element: OpenXmlElement, ctx: BodyBlockParseContext): BlockContentControl | undefined {
+            return parseBlockContentControl(element, ctx);
         }
     });
     registerFeatureBlockParagraphWalker({
@@ -2679,27 +2650,27 @@ export function registerContentControlsFeature(): void {
     });
     registerBodyItemAdapter({
         project(block: FeatureBodyBlock): BodyItem {
-            if (block.featureId === CONTENT_CONTROLS && block.value instanceof ContentControl) {
-                return block.value as BodyItem;
+            if (block.featureId === CONTENT_CONTROLS && block.value instanceof BlockContentControl) {
+                return block.value;
             }
             return undefined;
         },
-        toBlock(item: BodyItem): { type: 'feature'; featureId: FeatureId; value: ContentControl; } {
-            if (item instanceof ContentControl) {
+        toBlock(item: BodyItem): { type: 'feature'; featureId: FeatureId; value: BlockContentControl; } {
+            if (item instanceof BlockContentControl) {
                 return { type: 'feature', featureId: CONTENT_CONTROLS, value: item };
             }
             return undefined;
         },
         isInstance(item: unknown): item is BodyItem {
-            return item instanceof BlockContentControl || item instanceof ContentControl;
+            return item instanceof BlockContentControl;
         }
     });
     registerTypedCollectionHooks({
         isBlockContentControl(item: BodyItem): boolean {
-            return item instanceof BlockContentControl || (item instanceof ContentControl && item.isBlockLevel === true);
+            return item instanceof BlockContentControl;
         },
         createBlockContentControl(): BodyItem {
-            return createBlockContentControl() as BodyItem;
+            return createBlockContentControl();
         }
     });
 }
@@ -2708,20 +2679,20 @@ export function registerContentControlsFeature(): void {
  * Block-level SDTs in a block list, in document order.
  *
  * @param {ReadonlyArray<BlockContent | BodyItem>} blocks - The blocks.
- * @returns {ReadonlyArray<ContentControl>} The result.
+ * @returns {ReadonlyArray<BlockContentControl>} The result.
  * @private
  */
-export function structuredDocumentTagsInBlocks(blocks: ReadonlyArray<BlockContent | BodyItem>): ReadonlyArray<ContentControl> {
+export function structuredDocumentTagsInBlocks(blocks: ReadonlyArray<BlockContent | BodyItem>): ReadonlyArray<BlockContentControl> {
     return contentControlsFromBlocks(blocks);
 }
 /**
  * Run-level SDTs in a paragraph, in document order.
  *
  * @param {Paragraph} paragraph - The paragraph.
- * @returns {ReadonlyArray<ContentControl>} The result.
+ * @returns {ReadonlyArray<InlineContentControl>} The result.
  * @private
  */
-export function structuredDocumentTagsInParagraph(paragraph: Paragraph): ReadonlyArray<ContentControl> {
+export function structuredDocumentTagsInParagraph(paragraph: Paragraph): ReadonlyArray<InlineContentControl> {
     return contentControlsFromInlines(paragraph.items.toArray());
 }
 /**
@@ -2731,14 +2702,8 @@ export function structuredDocumentTagsInParagraph(paragraph: Paragraph): Readonl
  * @returns {Object} The result.
  * @private
  */
-export function isStructuredDocumentTagInline(
-    inline: ParagraphItem
-): inline is FeatureInlineParagraphItem & { value: ContentControl } {
-    return (
-        inline instanceof FeatureInlineParagraphItem &&
-        inline.featureId === CONTENT_CONTROLS &&
-        inline.value instanceof ContentControl
-    );
+export function isStructuredDocumentTagInline(inline: ParagraphItem): inline is InlineContentControl {
+    return inline instanceof InlineContentControl;
 }
 /**
  * Feature id constant for the content-controls module (used by host features
@@ -2761,12 +2726,12 @@ export const CONTENT_CONTROLS_FEATURE_ID: FeatureId = CONTENT_CONTROLS;
 export function isBlockContentControl(block: BodyItem | BlockContent | unknown): block is {
     readonly type: 'feature';
     readonly featureId: typeof CONTENT_CONTROLS;
-    readonly value: ContentControl;
+    readonly value: BlockContentControl;
 } {
     if (block instanceof BlockContentControl) {
         return true;
     }
-    if (block instanceof ContentControl && block.isBlockLevel === true) {
+    if (block instanceof BlockContentControl) {
         return true;
     }
     if (typeof block !== 'object' || block === null) {
@@ -2779,8 +2744,7 @@ export function isBlockContentControl(block: BodyItem | BlockContent | unknown):
     };
     return (candidate.type === 'feature' &&
         candidate.featureId === CONTENT_CONTROLS &&
-        candidate.value instanceof ContentControl &&
-        (candidate.value instanceof BlockContentControl || candidate.value.isBlockLevel === true));
+        candidate.value instanceof BlockContentControl);
 }
 
 /**
@@ -2790,8 +2754,8 @@ export function isBlockContentControl(block: BodyItem | BlockContent | unknown):
  * @returns {*} The result.
  * @private
  */
-export function isBlockContentControlBodyItem(value: unknown): value is ContentControl {
-    return value instanceof BlockContentControl || (value instanceof ContentControl && value.isBlockLevel === true);
+export function isBlockContentControlBodyItem(value: unknown): value is BlockContentControl {
+    return value instanceof BlockContentControl;
 }
 registerAlwaysOnBodyFeatureBootstrap(() => {
     registerContentControlsFeature();

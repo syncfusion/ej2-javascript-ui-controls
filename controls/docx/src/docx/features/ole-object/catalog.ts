@@ -1,6 +1,6 @@
 /**
- * OLE object multi-package-part catalog (TASK-8054 embed + TASK-8055 link +
- * TASK-8056 icon/preview media).
+ * OLE object multi-package-part catalog (embed + link +
+ * icon/preview media).
  *
  * Owns the embedded-package bytes for OLE objects (`word/embeddings/*`),
  * external link targets, and optional icon/preview media
@@ -25,7 +25,7 @@
  * - **Orphan GC at save** — a part with no referencing `w:object` in the
  *   document is removed together with its relationship and content-type
  *   override (parity with the images module).
- * - **Linked objects (TASK-8055)** — external relationships only
+ * - **Linked objects** — external relationships only
  *   (`TargetMode="External"`); **no part** is created for the OLE link.
  *   Icon media for a link is still an internal image part.
  *
@@ -49,7 +49,7 @@ import { OLE_OBJECT_LINK_LONG_PATH_RELATIONSHIP_TYPE, OLE_OBJECT_RELATIONSHIP_TY
 import { ContentTypeRecord } from '../../core/opc/content-types';
 /**
  * Minimal structural view of an OLE object the catalog needs for the
- * pending-embed / pending-link lifecycle (keeps `catalog.ts` free of an
+ * pending-embed / pending-link lifecycle (keeps the owning module free of an
  * index import; `OleObject` satisfies this structurally).
  *
  * @private
@@ -62,7 +62,7 @@ export interface PendingEmbedHost {
 }
 /**
  * Minimal structural view for pending icon media materialization
- * (TASK-8056). Distinct from {@link PendingEmbedHost} so embed/link and
+ * Distinct from {@link PendingEmbedHost} so embed/link and
  * icon can materialize independently on the same object.
  *
  * @private
@@ -112,7 +112,7 @@ export interface OleObjectPartEntry {
 }
 /**
  * One icon/preview media part linked from the Main Document part
- * (TASK-8056; ECMA-376-1 §15.2.14 Image Part; VML `v:imagedata`).
+ * (ECMA-376-1 §15.2.14 Image Part; VML `v:imagedata`).
  *
  * @private
  */
@@ -153,7 +153,7 @@ interface OleObjectExternalEntry {
 }
 /**
  * Package catalog for embedded OLE object parts, linked external targets,
- * and icon/preview media parts (TASK-8056).
+ * and icon/preview media parts.
  *
  * Loaded from Main-WordDocument relationships of the transitional `oleObject`
  * type (and the long-path link variant on load only) plus image
@@ -250,7 +250,7 @@ export class OleObjectCatalog implements FeatureMultiPackagePart {
     }
     /**
      * Icon/preview image bytes for a main-document image relationship id
-     * (TASK-8056). Returns `undefined` when the id is not an icon media entry.
+     * Returns `undefined` when the id is not an icon media entry.
      *
      * @param {string} relationshipId - The relationship id.
      * @returns {Uint8Array | undefined} The result.
@@ -343,7 +343,7 @@ export class OleObjectCatalog implements FeatureMultiPackagePart {
      * @returns {void} Nothing is returned.
      * @private
      * Record icon/preview media intent without allocating package
-     * ids (TASK-8056; images `registerPendingImage` pattern). Bytes must
+     * ids (images `registerPendingImage` pattern). Bytes must
      * already be sniffed as PNG or JPEG by the caller.
      */
     registerPendingIcon(object: PendingIconHost, bytes: Uint8Array, contentType: ImageType): void {
@@ -432,7 +432,7 @@ export class OleObjectCatalog implements FeatureMultiPackagePart {
      * @returns {void} Nothing is returned.
      * @private
      * Queue removal of an icon media part + image relationship
-     * (TASK-8056). Shared media (hash-deduped) is removed only when this is
+     * Shared media (hash-deduped) is removed only when this is
      * the last catalog reference; callers must not remove shared icons while
      * other objects still reference the same relationship id.
      */
@@ -560,7 +560,7 @@ export class OleObjectCatalog implements FeatureMultiPackagePart {
      * @returns {Object} The result.
      * @private
      * Allocate (or reuse via sha256) an icon media part + image
-     * relationship (TASK-8056; images `allocatePart` + hash-dedupe pattern).
+     * relationship (images `allocatePart` + hash-dedupe pattern).
      */
     allocateIconPart(bytes: Uint8Array, contentType: ImageType, usedRelIds: ReadonlySet<string>, usedPartNames: ReadonlySet<string>): {
         entry: OleIconPartEntry;
@@ -845,7 +845,7 @@ function contentTypeForIconPart(part: PackagePart): ImageType | undefined {
 /**
  * Load the OLE-object catalog from Main-WordDocument relationships of the
  * `oleObject` type (and the long-path link variant) plus PNG/JPEG image
- * relationships used as OLE icon/preview media (TASK-8056).
+ * relationships used as OLE icon/preview media.
  *
  * Internal oleObject targets load embedded parts; external targets load
  * link target strings only (no part). Image relationships with PNG/JPEG
@@ -863,7 +863,7 @@ export function loadOleObjectCatalog(pkg: OpcPackage, mainPartName: PartName): O
     const iconEntries: Map<PartName, OleIconPartEntry> = new Map<PartName, OleIconPartEntry>();
     for (const rel of rels.items) {
         if (isOleObjectRelationshipType(rel.type)) {
-            // External targets are linked objects (TASK-8055); store the target string only.
+            // External targets are linked objects; store the target string only.
             if (rel.targetMode === TargetMode.External) {
                 externalByRelationshipId.set(rel.id, {
                     relationshipId: rel.id,
@@ -893,7 +893,7 @@ export function loadOleObjectCatalog(pkg: OpcPackage, mainPartName: PartName): O
             });
             continue;
         }
-        // TASK-8056: PNG/JPEG image relationships are candidates for icon media.
+        // PNG/JPEG image relationships are candidates for icon media.
         if (!isImageRelationshipType(rel.type) || rel.targetMode === TargetMode.External) {
             continue;
         }

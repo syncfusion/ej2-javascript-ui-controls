@@ -6,9 +6,10 @@
  * @private
  */
 
-import { applyCharacterDeclarations } from './css-paragraph-style-builder.js';
-import { WordDocument } from '../document/document.js';
-import { cssToCharacterFormat, CharacterFormatDelta } from './css-character-format-converter.js';
+import { applyCharacterDeclarations } from './css-paragraph-style-builder';
+import { WordDocument } from '../document/document';
+import { cssToCharacterFormat, CharacterFormatDelta } from './css-character-format-converter';
+import { CharacterStyle } from '../styles/style-base';
 
 /**
  * @private
@@ -26,10 +27,10 @@ export class CSSCharacterStyleCache {
     /**
      * Gets or creates a character style for a CSS class selector.
      * Returns the style ID to use in w:rStyle, or undefined if no style was created.
-     * 
-     * @param className - The CSS class name (e.g., 'red-text', 'bold-italic')
-     * @param styles - The CSS properties for this class
-     * @returns The style ID to use, or undefined if creation failed
+     *
+     * @param {string} className - The CSS class name (e.g., 'red-text', 'bold-italic')
+     * @param {Record<string, string>} styles - The CSS properties for this class
+     * @returns {string | undefined} The style ID to use, or undefined if creation failed
      * @private
      */
     getOrCreateCharacterStyle(className: string, styles: Record<string, string>): string | undefined {
@@ -50,14 +51,14 @@ export class CSSCharacterStyleCache {
 
         // Convert CSS properties to CharacterFormat
         const delta: CharacterFormatDelta = cssToCharacterFormat(styles);
-        
+
         if (Object.keys(delta).length === 0) {
             return undefined;
         }
 
         // Create character style
-        const styleId = this._createCharacterStyle(className, styles);
-        
+        const styleId: string = this._createCharacterStyle(className, styles);
+
         if (styleId) {
             this._styleCache.set(className, styleId);
         }
@@ -68,17 +69,22 @@ export class CSSCharacterStyleCache {
     /**
      * Creates a new character style in styles.xml
      *
+     * @param {string} className - The class name.
+     * @param {Record<string, string>} styles - The styles.
+     * @returns {string | undefined} The result of the operation.
      * @private
      */
     private _createCharacterStyle(className: string, styles: Record<string, string>): string | undefined {
         try {
-            const styleId = className.replace(/[^A-Za-z0-9_-]+/g, '_');
-            const existing = this._document.styles.getCharacterStyle(styleId);
-            const style = existing ? existing : this._document.styles.addCharacterStyle(styleId);
+            const styleId: string = className.replace(/[^A-Za-z0-9_-]+/g, '_');
+            const existing: CharacterStyle = this._document.styles.getCharacterStyle(styleId);
+            const style: CharacterStyle = existing ? existing : this._document.styles.addCharacterStyle(styleId);
             const d: Record<string, string> = {};
             for (const key of Object.keys(styles)) {
-                const v = styles[key];
+                // eslint-disable-next-line security/detect-object-injection
+                const v: string = styles[key];
                 if (typeof v === 'string' && v.trim() !== '') {
+                    // eslint-disable-next-line security/detect-object-injection
                     d[key] = v.trim().toLowerCase();
                 }
             }

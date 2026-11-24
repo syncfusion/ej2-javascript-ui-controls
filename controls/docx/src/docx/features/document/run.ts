@@ -64,6 +64,7 @@ const BreakType: { Page: 'page'; Column: 'column'; Line: 'line'; TextWrappingBre
 };
 /**
  * Break kind for `w:br`.
+ *
  * @public
  */
 type BreakTypeValue = (typeof BreakType)[keyof typeof BreakType];
@@ -108,6 +109,7 @@ const BreakClearType: { None: 'none'; Left: 'left'; Right: 'right'; All: 'all'; 
 };
 /**
  * Text-wrapping clear for a wrapping break (`ST_BrClear`).
+ *
  * @public
  */
 type BreakClearTypeValue = (typeof BreakClearType)[keyof typeof BreakClearType];
@@ -241,7 +243,7 @@ interface RunHydrateData extends CharacterFormatSnapshot {
  * WordprocessingML run (`w:r`).
  *
  * Character formatting lives on {@link Run.characterFormat} only
- * (`docs/specs/run-character-format.md` Rev 2 / TASK-9019).
+ * (the format specification Rev 2).
  *
  * @public
  */
@@ -261,6 +263,7 @@ class Run implements CharacterFormatHost {
     }
     /**
      * Character formatting for this run (`w:rPr`). Lazily constructed; never null.
+     *
      * @public
      */
     get characterFormat(): CharacterFormat {

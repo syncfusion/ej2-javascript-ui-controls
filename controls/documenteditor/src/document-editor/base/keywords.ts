@@ -401,6 +401,7 @@ export const columnCountProperty: string[] = ['columnCount', 'colc'];
 export const isAfterTableMarkProperty: string[] = ['isAfterTableMark', 'atm'];
 export const incrementalOps: string[] = ['iOps'];
 export const hiddenProperty: string[] = ['hidden', 'hdn'];
+export const specVanishProperty: string[] = ['specVanish', 'spv'];
 export const editingPointsProperty: string[] = ['editingpoints', 'ep'];
 export const childShapeProperty: string[] = ['childShapes', 'csh'];
 export const offsetXValue: string[] = ['offsetXValue', 'oxv'];

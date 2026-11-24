@@ -13,6 +13,7 @@ import { Slide } from '../../slideimplementation/slide';
 import { findAllRegExpInHaystack, findAllStringInHaystack, findRegExpInHaystack, findStringInHaystack } from './find-in-haystack';
 import { buildHaystack } from './haystack';
 import { AnchoredMatch, ParagraphHaystack } from './types';
+import { TextSelection } from './text-selection';
 import { TextFindMatch } from './text-find-match';
 import { iterTextBodiesOnShape, TextBodySurface } from './walk-text-bodies';
 import { arrayAt } from '../../util/es5-compat';
@@ -30,7 +31,7 @@ import { Paragraph } from '../paragraph';
  * @returns {TextFindMatch[]} The result.
  */
 export function findAllStringOnSlide(slide: Slide, slideIndex: number, needle: string, caseSensitive: boolean,
-                                     wholeWord: boolean): TextFindMatch[] {
+                                     wholeWord: boolean, publicSlide?: Slide): TextFindMatch[] {
     const out: TextFindMatch[] = [];
     const iterSlideSurfacesResult: any[] = Array.from(iterSlideSurfaces(slide));// eslint-disable-line
     for (let i: number = 0; i < iterSlideSurfacesResult.length; i++) {
@@ -45,7 +46,7 @@ export function findAllStringOnSlide(slide: Slide, slideIndex: number, needle: s
             const hits: ReadonlyArray<AnchoredMatch> = findAllStringInHaystack(haystack, needle, caseSensitive, wholeWord);
             for (let k: number = 0; k < hits.length; k++) {
                 const hit: AnchoredMatch = arrayAt(hits, k);
-                out.push(toMatch(hit, slide, slideIndex, surface, p));
+                out.push(toMatch(hit, publicSlide === undefined ? slide : publicSlide, slideIndex, surface, p));
 
             }
         }
@@ -65,7 +66,7 @@ export function findAllStringOnSlide(slide: Slide, slideIndex: number, needle: s
  * @returns {TextFindMatch | undefined} The result.
  */
 export function findStringOnSlide(slide: Slide, slideIndex: number, needle: string, caseSensitive: boolean,
-                                  wholeWord: boolean): TextFindMatch | undefined {
+                                  wholeWord: boolean, publicSlide?: Slide): TextFindMatch | undefined {
     const iterSlideSurfacesResult: any[] = Array.from(iterSlideSurfaces(slide));// eslint-disable-line
     for (let i: number = 0; i < iterSlideSurfacesResult.length; i++) {
         const surface: any = arrayAt(iterSlideSurfacesResult, i);// eslint-disable-line
@@ -78,7 +79,7 @@ export function findStringOnSlide(slide: Slide, slideIndex: number, needle: stri
             const haystack: ParagraphHaystack = buildHaystack(paragraph, p);
             const hit: AnchoredMatch = findStringInHaystack(haystack, needle, caseSensitive, wholeWord);
             if (hit !== undefined) {
-                return toMatch(hit, slide, slideIndex, surface, p);
+                return toMatch(hit, publicSlide === undefined ? slide : publicSlide, slideIndex, surface, p);
             }
         }
 
@@ -94,7 +95,7 @@ export function findStringOnSlide(slide: Slide, slideIndex: number, needle: stri
  * @param {RegExp} regex - The regex value.
  * @returns {TextFindMatch[]} The result.
  */
-export function findAllRegExpOnSlide(slide: Slide, slideIndex: number, regex: RegExp): TextFindMatch[] {
+export function findAllRegExpOnSlide(slide: Slide, slideIndex: number, regex: RegExp, publicSlide?: Slide): TextFindMatch[] {
     const out: TextFindMatch[] = [];
     const iterSlideSurfacesResult: any[] = Array.from(iterSlideSurfaces(slide));// eslint-disable-line
     for (let i: number = 0; i < iterSlideSurfacesResult.length; i++) {
@@ -109,7 +110,7 @@ export function findAllRegExpOnSlide(slide: Slide, slideIndex: number, regex: Re
             const hits: ReadonlyArray<AnchoredMatch> = findAllRegExpInHaystack(haystack, regex);
             for (let k: number = 0; k < hits.length; k++) {
                 const hit: any = arrayAt(hits, k);// eslint-disable-line
-                out.push(toMatch(hit, slide, slideIndex, surface, p));
+                out.push(toMatch(hit, publicSlide === undefined ? slide : publicSlide, slideIndex, surface, p));
 
             }
         }
@@ -126,7 +127,7 @@ export function findAllRegExpOnSlide(slide: Slide, slideIndex: number, regex: Re
  * @param {RegExp} regex - The regex value.
  * @returns {TextFindMatch | undefined} The result.
  */
-export function findRegExpOnSlide(slide: Slide, slideIndex: number, regex: RegExp): TextFindMatch | undefined {
+export function findRegExpOnSlide(slide: Slide, slideIndex: number, regex: RegExp, publicSlide?: Slide): TextFindMatch | undefined {
     const iterSlideSurfacesResult: any[] = Array.from(iterSlideSurfaces(slide));// eslint-disable-line
     for (let i: number = 0; i < iterSlideSurfacesResult.length; i++) {
         const surface: any = arrayAt(iterSlideSurfacesResult, i);// eslint-disable-line
@@ -139,7 +140,7 @@ export function findRegExpOnSlide(slide: Slide, slideIndex: number, regex: RegEx
             const haystack: ParagraphHaystack = buildHaystack(paragraph, p);
             const hit: AnchoredMatch = findRegExpInHaystack(haystack, regex);
             if (hit !== undefined) {
-                return toMatch(hit, slide, slideIndex, surface, p);
+                return toMatch(hit, publicSlide === undefined ? slide : publicSlide, slideIndex, surface, p);
             }
         }
 
@@ -255,25 +256,17 @@ function* iterSlideSurfaces(slide: Slide): IterableIterator<TextBodySurface> {
  * @returns {TextFindMatch} The result.
  */
 function toMatch(hit: AnchoredMatch, slide: Slide, slideIndex: number, surface: TextBodySurface, paragraphIndex: number): TextFindMatch {
-    const base: TextFindMatch = {
-        text: hit.text,
+    return new TextSelection(
+        hit.text,
         slideIndex,
         slide,
-        shape: surface.shape,
+        surface,
         paragraphIndex,
-        startOffset: hit.start,
-        endOffset: hit.end,
-        startTextPartIndex: hit.startTextPartIndex,
-        startTextPartOffset: hit.startTextPartOffset,
-        endTextPartIndex: hit.endTextPartIndex,
-        endTextPartOffset: hit.endTextPartOffset
-    };
-    if (surface.tableRow !== undefined && surface.tableColumn !== undefined) {
-        return {
-            ...base,
-            tableRow: surface.tableRow,
-            tableColumn: surface.tableColumn
-        };
-    }
-    return base;
+        hit.start,
+        hit.end,
+        hit.startTextPartIndex,
+        hit.startTextPartOffset,
+        hit.endTextPartIndex,
+        hit.endTextPartOffset
+    );
 }

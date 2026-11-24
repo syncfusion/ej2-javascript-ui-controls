@@ -1,5 +1,5 @@
 /**
- * Watermark parse pipeline (TASK-8061).
+ * Watermark parse pipeline.
  *
  * Walks header parts once, classifies conservative VML watermark shapes,
  * builds {@link TextWatermark} / {@link PictureWatermark} models with residual

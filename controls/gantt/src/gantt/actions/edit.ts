@@ -2491,7 +2491,7 @@ export class Edit {
                 this.parent.treeGrid.endEdit();
             }
             this.parent.chartRowsModule.refreshRecords(this.parent.editedRecords);
-            if (!this.parent.allowTaskbarOverlap && this.parent.showOverAllocation) {
+            if (!this.parent.allowTaskbarOverlap && this.parent.showOverAllocation && !(this.parent as any).enableDomVirtualization) {
                 this.parent.contentHeight = this.parent['element'].getElementsByClassName('e-content')[0].children[0]['offsetHeight'];
                 this.parent.ganttChartModule.chartBodyContent.style.height = this.parent.contentHeight + 'px';
                 this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);

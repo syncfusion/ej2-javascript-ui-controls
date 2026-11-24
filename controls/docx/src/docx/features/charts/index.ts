@@ -2,7 +2,7 @@
  * Chart support for Word documents.
  *
  * @remarks
- * A chart is a paragraph item created with <see cref="Paragraph.appendChart">Paragraph.appendChart</see>.
+ * A chart is a paragraph item created with {@link Paragraph.appendChart}.
  * The document owns the chart lifecycle; the chart formatting model (title area, chart area, plot area,
  * legend, axes, series, data labels) is owned by `@syncfusion/ej2-xlsx` and exposed unchanged.
  *
@@ -16,12 +16,14 @@
 
 /**
  * Live chart paragraph item.
+ *
  * @public
  */
 export { Chart } from './chart';
 
 /**
  * Chart data accessor for cell-level read/write operations.
+ *
  * @public
  */
 export { ChartData } from './chart-data';
@@ -35,6 +37,7 @@ export { ChartData } from './chart-data';
  * returned by the live `Chart` getters as-is (`chartTitleArea`, `chartArea`,
  * `plotArea`, `legend`, axes, `series`). New ej2-xlsx chart members therefore
  * reach ej2-docx users without any change here.
+ *
  * @public
  */
 export {
@@ -47,29 +50,15 @@ export {
 // Feature Registration & Initialization
 // ============================================================================
 
-/**
- * Register chart feature.
- *
- * Optional - binds `appendChart()` to Paragraph.prototype.
- * Charts work without explicit registration, but you can call this
- * at application startup to ensure the feature is initialized.
- *
- * Synchronous - no async preload required.
- *
- * ```typescript
- * registerChartsFeature();  // No await needed
- * const chart = para.appendChart(ChartType.ColumnClustered, 500, 300);
- * ```
- *
- * @public
- */
-export { registerChartsFeature } from './register';
+// Side-effect: registers the chart feature with the document model.
+import './register';
 
 /**
  * Reset chart feature (test-only utility).
+ *
  * @private
  */
-export { resetChartsFeatureForTests } from './register';
+export { resetChartsFeatureForTests, registerChartsFeature } from './register';
 
 // ============================================================================
 // DO NOT EXPORT:

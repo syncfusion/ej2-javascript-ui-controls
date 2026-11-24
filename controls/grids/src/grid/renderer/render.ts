@@ -2,7 +2,7 @@ import { L10n, NumberFormatOptions } from '@syncfusion/ej2-base';
 import { remove, resetBlazorTemplate, blazorTemplates, getValue } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend, DateFormatOptions } from '@syncfusion/ej2-base';
 import { DataManager, Group, Query, Deferred, Predicate, DataUtil } from '@syncfusion/ej2-data';
-import { IGrid, NotifyArgs, IValueFormatter, GroupEventArgs, PageEventArgs } from '../base/interface';
+import { IGrid, NotifyArgs, IValueFormatter, GroupEventArgs, PageEventArgs, DataResponse } from '../base/interface';
 import { ValueFormatter } from '../services/value-formatter';
 import { RenderType, CellType, Action } from '../base/enum';
 import { ReturnType } from '../base/type';
@@ -890,10 +890,14 @@ export class Render {
             && !(!isNullOrUndefined(args) && args.requestType === 'infiniteScroll')) {
             this.parent.destroyTemplate(['groupSettings_captionTemplate']);
         }
-        this.parent.notify(
-            events.dataReady,
-            extend({ count: dataArgs.count, result: dataArgs.result, aggregates: dataArgs.aggregates, loadSummaryOnEmpty: false },
-                   args));
+        const dataReadyArgs: DataResponse | NotifyArgs = extend(
+            { count: dataArgs.count, result: dataArgs.result, aggregates: dataArgs.aggregates, loadSummaryOnEmpty: false },
+            args);
+        if (gObj.enableInfiniteScrolling &&
+            gObj.infiniteScrollSettings && gObj.infiniteScrollSettings.enableCountLessMode) {
+            this.setCountLessModeData(dataReadyArgs, dataArgs);
+        }
+        this.parent.notify(events.dataReady, dataReadyArgs);
         if ((gObj.groupSettings.columns.length || (args && args.requestType === 'ungrouping'))
             && (args && args.requestType !== 'filtering' && args.requestType !== 'sorting')) {
             this.headerRenderer.refreshUI();
@@ -1006,6 +1010,23 @@ export class Render {
         this.contentRenderer.renderTable();
         this.parent.isAutoGen = true;
         this.parent.notify(events.autoCol, {});
+    }
+
+    private setCountLessModeData(dataReadyArgs: DataResponse | NotifyArgs, dataArgs: ReturnType): void {
+        const responseData: DataResponse = dataArgs as DataResponse;
+        const dataAsRecord: DataResponse = !isNullOrUndefined(responseData.actual) ?
+            responseData.actual as unknown as DataResponse : responseData;
+        const pageInfo: NonNullable<DataResponse['pageInfo']> = dataAsRecord.pageInfo || {};
+        const nextToken: string | null = dataAsRecord['@odata.nextLink'] as string ||
+            dataAsRecord.next || dataAsRecord.continuationToken ||
+            dataAsRecord.LastEvaluatedKey || dataAsRecord['next_page_token'] ||
+            pageInfo.endCursor || null;
+        (dataReadyArgs as DataResponse).nextToken = nextToken;
+        if (typeof dataAsRecord.hasMore === 'boolean') {
+            (dataReadyArgs as DataResponse).hasMore = dataAsRecord.hasMore;
+        } else if (typeof pageInfo.hasNextPage === 'boolean') {
+            (dataReadyArgs as DataResponse).hasMore = pageInfo.hasNextPage;
+        }
     }
 
     private iterateComplexColumns(obj: Object, field: string, split: Object): void {

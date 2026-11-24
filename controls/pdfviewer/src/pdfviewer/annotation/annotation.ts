@@ -555,6 +555,12 @@ export class Annotation {
      */
     public setAnnotationMode(type: AnnotationType, dynamicStampItem?: DynamicStampItem, signStampItem?: SignStampItem,
                              standardBusinessStampItem?: StandardBusinessStampItem): void {
+        if (this.pdfViewer.readOnlySettings.comments && type === 'StickyNotes') {
+            return;
+        }
+        if (this.pdfViewer.readOnlySettings.annotations && type !== 'None') {
+            return;
+        }
         const allowServerDataBind: boolean = this.pdfViewer.allowServerDataBinding;
         this.pdfViewer.enableServerDataBinding(false);
         // R-4 / R-3: Any annotation tool selection that does not land on the
@@ -753,6 +759,10 @@ export class Annotation {
     }
 
     public deleteAnnotation(): void {
+        const selectedSign: PdfAnnotationBaseModel = this.pdfViewer.selectedItems.annotations[0];
+        if (this.pdfViewer.readOnlySettings.annotations && !(selectedSign && this.pdfViewerBase.checkSignatureFormField(selectedSign.id))) {
+            return;
+        }
         if (this.textMarkupAnnotationModule) {
             if (this.textMarkupAnnotationModule.currentTextMarkupAnnotation &&
                 this.textMarkupAnnotationModule.currentTextMarkupAnnotation.shapeAnnotationType !== 'Redaction') {
@@ -797,6 +807,9 @@ export class Annotation {
             if (type === 'Path' || annotation.formFieldAnnotationType === 'SignatureField' || annotation.formFieldAnnotationType === 'InitialField' || type === 'HandWrittenSignature' || type === 'SignatureText' || type === 'SignatureImage') {
                 const inputFields: HTMLElement = document.getElementById(annotation.id);
                 if (inputFields && (inputFields as HTMLInputElement).disabled) {
+                    isReadOnly = true;
+                }
+                if (this.pdfViewer.readOnlySettings.formFields) {
                     isReadOnly = true;
                 }
             }
@@ -2442,6 +2455,9 @@ export class Annotation {
                 this.triggerAnnotationPropChange(actionObject.annotation, false, false, false, false);
                 break;
             case 'Addition':
+                if (this.pdfViewer.readOnlySettings.formFields && actionObject.annotation.formFieldAnnotationType) {
+                    break;
+                }
                 if (this.pdfViewer.formDesigner && actionObject.annotation.formFieldAnnotationType) {
                     this.pdfViewer.formDesigner.deleteFormField(actionObject.undoElement.id, false);
                 } else {
@@ -2541,6 +2557,9 @@ export class Annotation {
                 }
                 break;
             case 'Delete':
+                if (this.pdfViewer.readOnlySettings.formFields && actionObject.annotation.formFieldAnnotationType) {
+                    break;
+                }
                 if (this.pdfViewer.formDesigner && actionObject.annotation.formFieldAnnotationType) {
                     actionObject.undoElement.bounds.x = actionObject.undoElement.wrapper.bounds.x;
                     actionObject.undoElement.bounds.y = actionObject.undoElement.wrapper.bounds.y;
@@ -2934,6 +2953,9 @@ export class Annotation {
                 this.pdfViewer.renderDrawing();
                 break;
             case 'FormDesigner Properties Change':
+                if (this.pdfViewer.readOnlySettings.formFields) {
+                    break;
+                }
                 // I5: per-slot button action delta — replay only the slot that changed, not
                 // the entire field. The modifiedProperty carries 'buttonAction:<slot>' and the
                 // undoElement holds the previous per-slot snapshot.
@@ -2952,6 +2974,9 @@ export class Annotation {
                 this.updateFormFieldPropertiesChanges(actionObject.undoElement.formFieldAnnotationType, actionObject.undoElement);
                 break;
             case 'FormField Value Change':
+                if (this.pdfViewer.readOnlySettings.formFields) {
+                    break;
+                }
                 if (actionObject.annotation.formFieldAnnotationType) {
                     if (actionObject.annotation.formFieldAnnotationType === 'RadioButton') {
                         this.updateFormFieldValueChange(actionObject.annotation.formFieldAnnotationType, actionObject.undoElement, false);
@@ -3102,6 +3127,9 @@ export class Annotation {
                 this.triggerAnnotationPropChange(actionObject.annotation, false, false, false, false);
                 break;
             case 'Addition':
+                if (this.pdfViewer.readOnlySettings.formFields && actionObject.annotation.formFieldAnnotationType) {
+                    break;
+                }
                 if (this.pdfViewer.formDesigner && actionObject.annotation.formFieldAnnotationType) {
                     actionObject.redoElement.bounds.x = actionObject.redoElement.wrapper.bounds.x;
                     actionObject.redoElement.bounds.y = actionObject.redoElement.wrapper.bounds.y;
@@ -3180,6 +3208,9 @@ export class Annotation {
                 }
                 break;
             case 'Delete':
+                if (this.pdfViewer.readOnlySettings.formFields && actionObject.annotation.formFieldAnnotationType) {
+                    break;
+                }
                 if (this.pdfViewer.formDesigner && actionObject.annotation.formFieldAnnotationType) {
                     this.pdfViewer.formDesigner.deleteFormField(actionObject.redoElement.id, false);
                 } else {
@@ -3507,6 +3538,9 @@ export class Annotation {
                 this.pdfViewer.renderDrawing();
                 break;
             case 'FormDesigner Properties Change':
+                if (this.pdfViewer.readOnlySettings.formFields) {
+                    break;
+                }
                 // I5: per-slot button action redo — replay only the slot that changed.
                 if (actionObject.modifiedProperty &&
                     actionObject.modifiedProperty.indexOf('buttonAction:') === 0 &&
@@ -3523,6 +3557,9 @@ export class Annotation {
                 this.updateFormFieldPropertiesChanges(actionObject.redoElement.formFieldAnnotationType, actionObject.redoElement);
                 break;
             case 'FormField Value Change':
+                if (this.pdfViewer.readOnlySettings.formFields) {
+                    break;
+                }
                 if (actionObject.annotation.formFieldAnnotationType) {
                     if (actionObject.annotation.formFieldAnnotationType === 'RadioButton') {
                         this.updateFormFieldValueChange(actionObject.annotation.formFieldAnnotationType, actionObject.undoElement, true);
@@ -5276,6 +5313,9 @@ export class Annotation {
      * @returns {void}
      */
     public onAnnotationMouseUp(): void {
+        if (this.pdfViewer.readOnlySettings.annotations) {
+            return;
+        }
         if (this.pdfViewer.selectedItems.annotations.length !== 0 && this.pdfViewer.selectedItems.annotations[0] &&
             this.pdfViewer.selectedItems.annotations[0].annotationSettings &&
             (!((this.pdfViewer.selectedItems.annotations[0].annotationSettings as any).isLock) ||
@@ -5769,6 +5809,9 @@ export class Annotation {
     }
 
     private enableBasedOnType(): void {
+        if (this.pdfViewer.readOnlySettings.annotations) {
+            return;
+        }
         let isLock: boolean = false;
         const annotation: any = this.pdfViewer.selectedItems.annotations[0];
         if (annotation && annotation.annotationSettings) {
@@ -6894,6 +6937,9 @@ export class Annotation {
     }
 
     private deletComment(commentDiv: HTMLElement): void {
+        if (this.pdfViewer.readOnlySettings.comments) {
+            return;
+        }
         if (commentDiv.parentElement.firstChild === commentDiv) {
             this.deleteAnnotation();
         } else {
@@ -6924,6 +6970,23 @@ export class Annotation {
         }
     }
 
+    private isSameAnnotationForMove(annotation: any, currentAnnotation: any): boolean {
+        if (isNullOrUndefined(annotation) || isNullOrUndefined(currentAnnotation)) {
+            return false;
+        }
+        // Primary: annotationId <-> annotName / annotationId (all annotation types)
+        const incomingId: string = annotation.annotationId;
+        if (!isNullOrUndefined(incomingId) && incomingId !== '') {
+            return incomingId === currentAnnotation.annotName ||
+                incomingId === currentAnnotation.annotationId;
+        }
+        // Fallback: uniqueKey <-> id (types that carry uniqueKey)
+        if (!isNullOrUndefined(annotation.uniqueKey) && !isNullOrUndefined(currentAnnotation.id)) {
+            return annotation.uniqueKey === currentAnnotation.id;
+        }
+        return false;
+    }
+
     /**
      * Updates the existing properties of the specified annotation object.
      *
@@ -6936,6 +6999,9 @@ export class Annotation {
      */
 
     public editAnnotation(annotation: any): void {
+        if (this.pdfViewer.readOnlySettings.annotations) {
+            return;
+        }
         let currentAnnotation: any;
         let annotationId: string;
         let annotationType: string;
@@ -7063,7 +7129,11 @@ export class Annotation {
             // Handle cross-page annotation move via pageNumber property update
             const currentAnnotationPageNumber: number = !isNullOrUndefined(currentAnnotation.pageNumber) ?
                 currentAnnotation.pageNumber : currentAnnotation.pageIndex;
-            if (!isNullOrUndefined(annotation.pageNumber) && annotation.pageNumber !== currentAnnotationPageNumber) {
+            const isSameAnnotation: boolean = this.isSameAnnotationForMove(annotation, currentAnnotation);
+            const isCrossPageMove: boolean = isSameAnnotation &&
+                !isNullOrUndefined(annotation.pageNumber) &&
+                annotation.pageNumber !== currentAnnotationPageNumber;
+            if (isCrossPageMove) {
                 const movePerformed: boolean = this.moveAnnotationAcrossPages(currentAnnotation, annotation, false, true);
                 pageNumber = currentAnnotationPageNumber;
                 if (movePerformed) {
@@ -7101,7 +7171,7 @@ export class Annotation {
                     }
                 }
             }
-            if (annotation && annotation.note !== '' && annotation.note !== undefined) {
+            if (!this.pdfViewer.readOnlySettings.comments && annotation && annotation.note !== '' && annotation.note !== undefined) {
                 if (annotationType) {
                     currentAnnotation.note = annotation.note;
                     this.pdfViewer.annotationModule.stickyNotesAnnotationModule.
@@ -7121,20 +7191,20 @@ export class Annotation {
                     this.isEdited = true;
                 }
             }
-            if (annotation.commentId && annotation.editComment && annotation.commentType === 'edit') {
+            if (!this.pdfViewer.readOnlySettings.comments && annotation.commentId && annotation.editComment && annotation.commentType === 'edit') {
                 this.editComments(annotation.commentId, annotation.editComment);
                 this.isEdited = true;
             }
-            if (annotation.replyComment && annotation.commentType === 'add') {
+            if (!this.pdfViewer.readOnlySettings.comments && annotation.replyComment && annotation.commentType === 'add') {
                 this.addReplyComments(currentAnnotation, annotation.replyComment, annotation.commentType);
                 this.pdfViewer.annotationCollection[0].note = annotation.note;
                 this.isEdited = true;
             }
-            if (annotation.nextComment && annotation.commentType === 'next') {
+            if (!this.pdfViewer.readOnlySettings.comments && annotation.nextComment && annotation.commentType === 'next') {
                 this.addReplyComments(annotation, annotation.nextComment, annotation.commentType);
                 this.isEdited = true;
             }
-            if (isNullOrUndefined(annotation.commentId) && annotation.commentType === 'delete') {
+            if (!this.pdfViewer.readOnlySettings.comments && isNullOrUndefined(annotation.commentId) && annotation.commentType === 'delete') {
                 const repliesDiv: any = (this.pdfViewer.element as HTMLElement).querySelectorAll('.e-pv-more-options-button');
                 for (let i: number = 0; i < repliesDiv.length; i++) {
                     if (repliesDiv[parseInt(i.toString(), 10)].style.visibility === 'visible') {
@@ -7149,7 +7219,7 @@ export class Annotation {
                     }
                 }
             }
-            if (annotation.comments && annotation.commentType === 'delete') {
+            if (!this.pdfViewer.readOnlySettings.comments && annotation.comments && annotation.commentType === 'delete') {
                 const repliesDiv: any = (this.pdfViewer.element as HTMLElement).querySelectorAll('.e-pv-more-options-button');
                 if (repliesDiv && annotation.commentId) {
                     for (let i: number = 0; i < annotation.comments.length; i++) {
@@ -10673,6 +10743,9 @@ export class Annotation {
     CustomStampSettings |WebLinkSettings| DocumentLinkSettings | CloudSettings | CalloutSettings,
                          dynamicStampItem?: DynamicStampItem, signStampItem?: SignStampItem,
                          standardBusinessStampItem?: StandardBusinessStampItem): void {
+        if (this.pdfViewer.readOnlySettings.annotations) {
+            return;
+        }
         initializeTelemetryFeature('Annotation Add/Edit', 'PDFViewer');
         //Initialize the bounds and pageNumber
         const offset: IPoint = { x: 1, y: 1 };

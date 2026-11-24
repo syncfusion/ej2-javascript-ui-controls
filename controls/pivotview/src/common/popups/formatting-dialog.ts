@@ -6,7 +6,7 @@ import { IAction, NumberFormattingEventArgs, PivotActionInfo } from '../base/int
 import * as events from '../../common/base/constant';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { CalculatedFieldSettingsModel, FormatSettingsModel } from '../../model/datasourcesettings-model';
-import { FieldItemInfo, IFormatSettings } from '../../base/engine';
+import { FieldItemInfo, IFormatSettings, IFieldOptions, PivotEngine } from '../../base/engine';
 import { PivotUtil } from '../../base/util';
 
 /**
@@ -105,12 +105,28 @@ export class NumberFormatting implements IAction {
             format.push(this.newFormat[i as number].name);
         }
         for (let j: number = 0; j < this.parent.dataSourceSettings.values.length; j++) {
-            if (format.indexOf(this.parent.dataSourceSettings.values[j as number].name) === -1) {
+            // For a value field added multiple times to the values axis, an entry keyed by the
+            // instance identifier is maintained so that each instance can be formatted
+            // independently; the field-name entry acts as the shared (fallback) format.
+            const valueField: IFieldOptions = this.parent.dataSourceSettings.values[j as number] as IFieldOptions;
+            const instanceId: string = (this.parent.dataType === 'pivot' && this.parent.engineModule &&
+                (this.parent.engineModule as PivotEngine).valueFieldHasDuplicates && valueField.instanceId) ?
+                valueField.instanceId as string : undefined;
+            if (instanceId && format.indexOf(instanceId) === -1) {
                 formatObject = {
-                    name: this.parent.dataSourceSettings.values[j as number].name, format: 'N0',
+                    name: instanceId, format: 'N0',
                     useGrouping: true
                 };
                 this.newFormat.push(formatObject);
+                format.push(instanceId);
+            }
+            if (format.indexOf(valueField.name) === -1) {
+                formatObject = {
+                    name: valueField.name, format: 'N0',
+                    useGrouping: true
+                };
+                this.newFormat.push(formatObject);
+                format.push(valueField.name);
             }
         }
         this.renderControls();
@@ -215,13 +231,28 @@ export class NumberFormatting implements IAction {
             valueFields.push({
                 index: 0, name: this.parent.localeObj.getConstant('AllValues'), field: this.parent.localeObj.getConstant('AllValues')
             });
+            const engineModule: PivotEngine = this.parent.engineModule as PivotEngine;
+            const captionCounts: { [key: string]: number } = {};
             for (let i: number = 0; i < this.parent.dataSourceSettings.values.length; i++) {
                 let caption: string = this.parent.dataSourceSettings.values[i as number].caption ||
                 this.parent.dataSourceSettings.values[i as number].name;
+                // A value field added multiple times to the values axis is listed once per
+                // instance and keyed by its instance identifier so that each instance can be
+                // formatted independently through the dialog.
+                const instanceId: string = (this.parent.dataType === 'pivot' && engineModule &&
+                    (engineModule as { valueFieldHasDuplicates?: boolean }).valueFieldHasDuplicates &&
+                    (this.parent.dataSourceSettings.values[i as number] as IFieldOptions).instanceId) ?
+                    (this.parent.dataSourceSettings.values[i as number] as IFieldOptions).instanceId as string : undefined;
+                if (instanceId) {
+                    captionCounts[caption as string] = (captionCounts[caption as string] || 0) + 1;
+                    if (captionCounts[caption as string] > 1) {
+                        caption = caption + ' (' + captionCounts[caption as string] + ')';
+                    }
+                }
                 caption = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(caption) : caption;
                 valueFields.push({
                     index: i + 1, name: caption,
-                    field: this.parent.dataSourceSettings.values[i as number].name
+                    field: instanceId ? instanceId : this.parent.dataSourceSettings.values[i as number].name
                 });
             }
             valuesDropDown = new DropDownList({
@@ -422,8 +453,14 @@ export class NumberFormatting implements IAction {
         }
         const valuesDropDown: DropDownList = getInstance(select('#' + this.parent.element.id + '_FormatValueDrop', this.parent.element), DropDownList) as DropDownList;
         if (valuesDropDown.value === this.parent.localeObj.getConstant('AllValues')) {
+            const hasDuplicates: boolean = (this.parent.engineModule as PivotEngine) &&
+                (this.parent.engineModule as PivotEngine).valueFieldHasDuplicates ? true : false;
             for (let i: number = 0; i < this.parent.dataSourceSettings.values.length; i++) {
-                this.insertFormat(this.parent.dataSourceSettings.values[i as number].name, text);
+                // With duplicate value instances the format key must be the instance id
+                // (a name key would be ignored by the engine's per-instance resolution)
+                this.insertFormat(hasDuplicates ? ((this.parent.dataSourceSettings.values[i as number] as IFieldOptions).instanceId ||
+                    this.parent.dataSourceSettings.values[i as number].name) :
+                    this.parent.dataSourceSettings.values[i as number].name, text);
             }
         } else {
             this.insertFormat(valuesDropDown.value.toString(), text);

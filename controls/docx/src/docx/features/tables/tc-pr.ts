@@ -16,19 +16,19 @@ const ZERO_CELL_MARGINS: TableCellMargins = {
     right: twipsToPoint(0)
 };
 /**
- * Vertical merge setting on `w:tcPr/w:vMerge` (`ST_Merge`).
+ * Specifies how a table cell is merged vertically with adjacent cells.
  *
  * @public
  */
 export type VerticalMerge = 'restart' | 'continue';
 /**
- * Cell text direction (`ST_TextDirection` subset used by TASK-8004).
+ * Cell text direction.
  *
  * @public
  */
 export type TableCellTextDirection = 'lr' | 'rl' | 'tb' | 'btLr' | 'lrV' | 'rlV';
 /**
- * Cell vertical alignment (`w:vAlign` / `ST_VerticalJc` public subset; omit `both`).
+ * Cell vertical alignment.
  *
  * - {@link TableCellVerticalAlignment.Top}: top of the cell (default).
  * - {@link TableCellVerticalAlignment.Center}: middle of the cell.
@@ -37,8 +37,11 @@ export type TableCellTextDirection = 'lr' | 'rl' | 'tb' | 'btLr' | 'lrV' | 'rlV'
  * @public
  */
 export enum TableCellVerticalAlignment {
+    /** Specifies the top alignment. */
     Top = 'top',
+    /** Specifies the center alignment. */
     Center = 'center',
+    /** Specifies the bottom alignment. */
     Bottom = 'bottom'
 }
 function findWmlChild(parent: OpenXmlElement, localName: string): OpenXmlElement | undefined {
@@ -401,8 +404,8 @@ const TEXT_DIRECTIONS: Set<string> = new Set<string>(['lr', 'rl', 'tb', 'btLr', 
 /**
  *  Map full ST_TextDirection tokens onto the public cell subset when possible.
  *
- * @param {string | undefined} raw - The raw.
- * @returns {TableCellTextDirection | undefined} The result.
+ * @param {string | undefined} raw - Specifies the raw.
+ * @returns {TableCellTextDirection | undefined} Returns the result.
  */
 function mapTextDirection(raw: string | undefined): TableCellTextDirection | undefined {
     if (raw === undefined) {

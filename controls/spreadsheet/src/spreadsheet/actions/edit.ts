@@ -2110,15 +2110,17 @@ export class Edit {
         }
         if (value) {
             const range: Range = document.createRange();
-            if (value.indexOf(')') === value.length - 1) {
-                range.setStart(el.childNodes[0], this.curEndPos);
-                range.setEnd(el.childNodes[0], this.curEndPos);
-            } else {
-                range.setStart(el.childNodes[0], this.curEndPos);
-                range.setEnd(el.childNodes[0], this.curEndPos);
+            if (el.childNodes[0] && el.childNodes[0].textContent && el.childNodes[0].textContent.length >= this.curEndPos) {
+                if (value.indexOf(')') === value.length - 1) {
+                    range.setStart(el.childNodes[0], this.curEndPos);
+                    range.setEnd(el.childNodes[0], this.curEndPos);
+                } else {
+                    range.setStart(el.childNodes[0], this.curEndPos);
+                    range.setEnd(el.childNodes[0], this.curEndPos);
+                }
+                selection.removeAllRanges();
+                selection.addRange(range);
             }
-            selection.removeAllRanges();
-            selection.addRange(range);
         }
         const sheetIdx: number = this.editCellData.sheetIndex;
         if (sheetIdx !== this.parent.activeSheetIndex) {

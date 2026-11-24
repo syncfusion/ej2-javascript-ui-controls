@@ -14,7 +14,7 @@ import { partName, PartName } from '../../core/opc/part-name';
 import { PackagePart } from '../../core/opc/package';
 import { featureId, isFeatureRegistered, registerFeature, registerFeatureMaterializeHandler, registerFeaturePartHandler, visitParagraphsInDocumentOrder } from '../../core/registry/index';
 import { FeaturePartLoadContext } from '../../core/registry/part-handlers';
-import { decodeXmlBytes, parseXml, serializeXml, WML_TRANSITIONAL_NAMESPACE, OpenXmlChild, OpenXmlElement } from '../../core/xml/index';
+import { decodeXmlBytes, parseXml, serializeXml, closePartNamespaces, WML_TRANSITIONAL_NAMESPACE, OpenXmlChild, OpenXmlElement, NamespaceDeclaration } from '../../core/xml/index';
 import { AbstractNumbering, MultiLevelType, createDefaultAbstractNumbering, parseAbstractNumbering } from './abstract-numbering';
 import { createNumberingInstance, NumberingInstance, parseNumberingInstance } from './numbering-instance';
 import { ListFormat } from './list-format';
@@ -73,6 +73,8 @@ export class NumberingPart implements FeaturePackagePart {
     /** numFmt (e.g. 'upperLetter') for each pending HTML numbered instance. */
     private readonly pendingHtmlNumFmt: Map<number, string>;
     private numIdMacAtCleanupValue: number | undefined;
+    private readonly rootNamespaceDeclarations: ReadonlyArray<NamespaceDeclaration>;
+    private readonly rootAttributes: ReadonlyArray<OpenXmlAttribute>;
     private dirty: boolean;
     /**
      * @param {Object} init - The init.
@@ -86,6 +88,8 @@ export class NumberingPart implements FeaturePackagePart {
         readonly numberings?: ReadonlyArray<NumberingInstance>;
         readonly numIdMacAtCleanup?: number;
         readonly dirty: boolean;
+        readonly rootNamespaceDeclarations?: ReadonlyArray<NamespaceDeclaration>;
+        readonly rootAttributes?: ReadonlyArray<OpenXmlAttribute>;
     }) {
         this.rootPrefix = [...(init.rootPrefix != null ? init.rootPrefix : [])];
         this.rootSuffix = [...(init.rootSuffix != null ? init.rootSuffix : [])];
@@ -105,6 +109,8 @@ export class NumberingPart implements FeaturePackagePart {
             this.numberingById.set(num.numId, num);
         }
         this.numIdMacAtCleanupValue = init.numIdMacAtCleanup;
+        this.rootNamespaceDeclarations = init.rootNamespaceDeclarations != null ? init.rootNamespaceDeclarations : [];
+        this.rootAttributes = init.rootAttributes != null ? init.rootAttributes : [];
         this.pendingNumIds = new Set();
         this.pendingDecimalNumIds = new Set();
         this.pendingHtmlDecimalNumIds = new Set();
@@ -130,8 +136,8 @@ export class NumberingPart implements FeaturePackagePart {
     /**
      *  Lookup abstract definition by id.
      *
-     * @param {number} abstractNumId - The abstract num id.
-     * @returns {AbstractNumbering | undefined} The result.
+     * @param {number} abstractNumId - Specifies the abstract num id.
+     * @returns {AbstractNumbering | undefined} Returns the result.
      */
     getAbstractNumbering(abstractNumId: number): AbstractNumbering | undefined {
         return this.abstractById.get(abstractNumId);
@@ -139,8 +145,8 @@ export class NumberingPart implements FeaturePackagePart {
     /**
      *  Lookup numbering instance by id.
      *
-     * @param {number} numId - The num id.
-     * @returns {NumberingInstance | undefined} The result.
+     * @param {number} numId - Specifies the num id.
+     * @returns {NumberingInstance | undefined} Returns the result.
      */
     getNumbering(numId: number): NumberingInstance | undefined {
         return this.numberingById.get(numId);
@@ -148,8 +154,8 @@ export class NumberingPart implements FeaturePackagePart {
     /**
      *  Lookup picture bullet by id.
      *
-     * @param {number} numPicBulletId - The num pic bullet id.
-     * @returns {NumberingPictureBullet | undefined} The result.
+     * @param {number} numPicBulletId - Specifies the num pic bullet id.
+     * @returns {NumberingPictureBullet | undefined} Returns the result.
      */
     getPictureBullet(numPicBulletId: number): NumberingPictureBullet | undefined {
         return this.pictureById.get(numPicBulletId);
@@ -157,8 +163,8 @@ export class NumberingPart implements FeaturePackagePart {
     /**
      *  Whether a numbering instance id exists in the catalog (including pending).
      *
-     * @param {number} numId - The num id.
-     * @returns {boolean} The result.
+     * @param {number} numId - Specifies the num id.
+     * @returns {boolean} Returns the result.
      */
     hasInstance(numId: number): boolean {
         return this.numberingById.has(numId) || this.pendingNumIds.has(numId);
@@ -166,11 +172,12 @@ export class NumberingPart implements FeaturePackagePart {
     /**
      * Ensure a numbering instance exists, creating a nine-level default definition when absent.
      *
-     * @param {number} numId - The num id.
-     * @param {string | string} format - List format used when creating a new abstract numbering definition.
+     * @param {number} numId - Specifies the num id.
+     * @param {Object} format - Specifies the list format used when creating a new abstract numbering definition.
      *   `'bullet'` (default) produces the standard bullet pattern; `'decimal'` produces the
      *   cycling `decimal` / `lowerLetter` / `lowerRoman` pattern. Has no effect if the
      *   instance already exists.
+     * @param {string} htmlNumFmt - The html num fmt.
      * @returns {void} Nothing is returned.
      */
     ensureInstance(numId: number, format: 'bullet' | 'decimal' | 'html-decimal' = 'bullet', htmlNumFmt: string = 'decimal'): void {
@@ -181,8 +188,8 @@ export class NumberingPart implements FeaturePackagePart {
             return;
         }
         const abstractNumId: number = this.nextAbstractNumId();
-        const abstract = createDefaultAbstractNumbering(abstractNumId, format, htmlNumFmt);
-        const instance = createNumberingInstance(numId, abstractNumId);
+        const abstract: AbstractNumbering = createDefaultAbstractNumbering(abstractNumId, format, htmlNumFmt);
+        const instance: NumberingInstance = createNumberingInstance(numId, abstractNumId);
         this.abstractNumberingList.push(abstract);
         this.abstractById.set(abstractNumId, abstract);
         this.numberingList.push(instance);
@@ -192,7 +199,7 @@ export class NumberingPart implements FeaturePackagePart {
     /**
      * Allocate a new bullet list instance id with a nine-level bullet definition on materialize.
      *
-     * @returns {number} The result.
+     * @returns {number} Returns the result.
      */
     createBulletInstance(): number {
         const numId: number = this.nextNumId();
@@ -205,10 +212,11 @@ export class NumberingPart implements FeaturePackagePart {
      * The cycling pattern (`decimal` / `lowerLetter` / `lowerRoman`) is materialized at
      * save time when the paragraph's `numbering` property is set.
      *
+     * @param {string} numFmt - The num fmt.
      * @returns {number} The result.
      */
     createHtmlDecimalInstance(numFmt: string = 'decimal'): number {
-        const numId = this.nextNumId();
+        const numId: number = this.nextNumId();
         this.pendingHtmlDecimalNumIds.add(numId);
         this.pendingNumIds.add(numId);
         this.pendingHtmlNumFmt.set(numId, numFmt);
@@ -365,7 +373,8 @@ export class NumberingPart implements FeaturePackagePart {
         }
         children.push(...this.rootSuffix);
         const root: OpenXmlElement = wmlElement('numbering', {
-            namespaceDeclarations: [{ prefix: 'w', namespaceUri: WML_TRANSITIONAL_NAMESPACE }],
+            attributes: this.rootAttributes,
+            namespaceDeclarations: closePartNamespaces(this.rootNamespaceDeclarations, children, this.rootAttributes),
             children
         });
         return utf8.encode(serializeXml(root));
@@ -499,7 +508,9 @@ function loadNumberingPart(part: PackagePart | undefined): NumberingPart {
         ...(parsed.numIdMacAtCleanup !== undefined
             ? { numIdMacAtCleanup: parsed.numIdMacAtCleanup }
             : {}),
-        dirty: false
+        dirty: false,
+        rootNamespaceDeclarations: root.namespaceDeclarations,
+        rootAttributes: root.attributes
     });
 }
 let registered: boolean = false;
@@ -572,8 +583,7 @@ export function numberingFor(document: WordDocument): NumberingPart {
     return empty;
 }
 /**
- * List kind used when creating a default nine-level definition.
- * Maps only to existing {@link NumberingPart.ensureInstance} formats — not free-form ST_NumberFormat.
+ * Specifies the type of list that is created.
  *
  * @public
  */

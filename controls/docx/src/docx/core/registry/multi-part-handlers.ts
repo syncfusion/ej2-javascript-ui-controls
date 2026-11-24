@@ -4,7 +4,9 @@ import { partByName, relationshipsForPart, withAddedPart, withContentTypeOverrid
 import { partName, PartName } from '../opc/part-name';
 import { ResourceLimitOverrides } from '../security/limits';
 import { FeatureId } from './feature-registry';
-/** @public */
+/**
+ * @public
+ */
 export interface FeatureMultiPartLoadContext {
     readonly mainPartName: PartName;
     readonly limits?: ResourceLimitOverrides | undefined;
@@ -150,7 +152,9 @@ export function applyFeatureMultiParts(
     return next;
 }
 /**
- *  @public Helpers for feature modules implementing {@link FeatureMultiPackagePart}.
+ * Helpers for feature modules implementing {@link FeatureMultiPackagePart}.
+ *
+ * @private
  *
  * @param {OpcPackage} pkg - The pkg.
  * @param {PartName} mainPartName - The main part name.

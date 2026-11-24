@@ -1,5 +1,6 @@
 /**
  * Public TextFrame owned by Shape.
+ *
  * @packageDocumentation
  */
 import {
@@ -11,6 +12,7 @@ import {
 
 /**
  * Owner hooks for {@link TextFrame} / {@link InternalMargin}.
+ *
  * @private
  */
 export interface TextFrameOwner {
@@ -65,7 +67,8 @@ export interface TextFrameOwner {
 }
 
 /**
- * Internal text-frame margins in points (`wps:bodyPr` lIns/tIns/rIns/bIns).
+ * Internal text-frame margins in points.
+ *
  * @public
  */
 export class InternalMargin {
@@ -81,7 +84,8 @@ export class InternalMargin {
     }
 
     /**
-     * Distance between the text and the left shape boundary, in points.
+     * Gets or sets the distance between the text and the left shape boundary, in points.
+     *
      * @public
      */
     get left(): number {
@@ -96,7 +100,8 @@ export class InternalMargin {
     }
 
     /**
-     * Distance between the text and the top shape boundary, in points.
+     * Gets or sets the distance between the text and the top shape boundary, in points.
+     *
      * @public
      */
     get top(): number {
@@ -111,7 +116,8 @@ export class InternalMargin {
     }
 
     /**
-     * Distance between the text and the right shape boundary, in points.
+     * Gets or sets the distance between the text and the right shape boundary, in points.
+     *
      * @public
      */
     get right(): number {
@@ -126,7 +132,8 @@ export class InternalMargin {
     }
 
     /**
-     * Distance between the text and the bottom shape boundary, in points.
+     * Gets or sets the distance between the text and the bottom shape boundary, in points.
+     *
      * @public
      */
     get bottom(): number {
@@ -142,7 +149,8 @@ export class InternalMargin {
 }
 
 /**
- * Text frame body properties (`wps:bodyPr` vertical direction + anchor + insets).
+ * Text frame body properties.
+ *
  * @public
  */
 export class TextFrame {
@@ -160,7 +168,8 @@ export class TextFrame {
     }
 
     /**
-     * Text direction (`wps:bodyPr/@vert`).
+     * Gets or sets the text direction.
+     *
      * @public
      */
     get textDirection(): TextDirection {
@@ -179,7 +188,8 @@ export class TextFrame {
     }
 
     /**
-     * Vertical text alignment inside the frame (`wps:bodyPr/@anchor`).
+     * Gets or sets the vertical text alignment inside the frame.
+     *
      * @public
      */
     get textVerticalAlignment(): TextVerticalAlignment {
@@ -198,8 +208,8 @@ export class TextFrame {
     }
 
     /**
-     * Internal margins between the shape boundary and its text (points).
-     * The returned object is owned by the text frame for the shape lifetime.
+     * Gets the internal margins between the shape boundary and its text (points). The returned object is owned by the text frame for the shape lifetime.
+     *
      * @public
      */
     get internalMargin(): InternalMargin {

@@ -217,7 +217,7 @@ export function createMinimalAbstractNumbering(abstractNumId: number, format: 'b
     });
 }
 /**
- * Default nine-level abstract numbering definition following the DocIO
+ * Default nine-level abstract numbering definition following the standard
  * `ListStyle.CreateDefListLevels` repeating pattern.
  *
  * - **bullet:** ilvl 0/3/6 = `\uf0b7`/Symbol, ilvl 1/4/7 = `o`/Courier New,
@@ -225,19 +225,20 @@ export function createMinimalAbstractNumbering(abstractNumId: number, format: 'b
  * - **decimal:** cycling `decimal`/`lowerLetter`/`lowerRoman`; level text `%N.`;
  *   same indent ladder.
  *
- * `multiLevelType` is set to `hybridMultilevel` to match DocIO output.
+ * `multiLevelType` is set to `hybridMultilevel` to match Word output.
  *
  * @param {number} abstractNumId - The abstract num id.
  * @param {string | string} format - The format.
+ * @param {string} htmlNumFmt - The html num fmt.
  * @returns {AbstractNumbering} The result.
  * @private
  */
 export function createDefaultAbstractNumbering(abstractNumId: number, format: 'bullet' | 'decimal' | 'html-decimal', htmlNumFmt: string = 'decimal'): AbstractNumbering {
     const levels: NumberingLevel[] = [];
-    for (let ilvl = 0; ilvl < 9; ilvl++) {
+    for (let ilvl: number = 0; ilvl < 9; ilvl++) {
         levels.push(format === 'bullet' ? createDefaultBulletLevel(ilvl)
             : format === 'html-decimal' ? createHtmlDecimalLevel(ilvl, htmlNumFmt)
-            : createDefaultNumberedLevel(ilvl));
+                : createDefaultNumberedLevel(ilvl));
     }
     return new AbstractNumbering({
         abstractNumId,

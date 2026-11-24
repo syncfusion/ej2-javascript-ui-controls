@@ -69,22 +69,21 @@ export class TypedBodyItemCollection<T extends BodyItem> implements Iterable<T> 
     }
 
     /**
-     * Append a new item of this type (uses the registered factory when no
-     * `item` is passed), or append the given instance.
+     * Appends a new item of this type to the end of the collection. The item is created by the registered factory when no `item` is passed.
      *
-     * @param {T} item - The item.
-     * @returns {T} The result.
+     * @param {T} item - Specifies the item to append. When omitted, a new item is created by the registered factory.
+     * @returns {T} Returns the appended item.
      */
     add(item?: T): T {
         return this.insert(this.count, item);
     }
 
     /**
-     * Insert at a typed index (`0…count` inclusive).
+     * Inserts an item of this type at the specified typed index (`0…count` inclusive).
      *
-     * @param {number} index - The index.
-     * @param {T} item - The item.
-     * @returns {T} The result.
+     * @param {number} index - Specifies the zero-based typed index at which the item is inserted.
+     * @param {T} item - Specifies the item to insert. When omitted, a new item is created by the registered factory.
+     * @returns {T} Returns the inserted item.
      * @throws RangeError when `index` is outside `0…count`.
      * @throws TypeError when no factory is registered and `item` is omitted.
      */
@@ -111,9 +110,9 @@ export class TypedBodyItemCollection<T extends BodyItem> implements Iterable<T> 
     }
 
     /**
-     * Remove by instance identity.
+     * Removes the specified item from the collection by instance identity.
      *
-     * @param {T} item - The item.
+     * @param {T} item - Specifies the item to remove.
      * @returns {void} Nothing is returned.
      */
     remove(item: T): void {
@@ -125,10 +124,11 @@ export class TypedBodyItemCollection<T extends BodyItem> implements Iterable<T> 
     }
 
     /**
-     * Remove at a typed index.
+     * Removes the item at the specified typed index.
      *
-     * @param {number} index - The index.
+     * @param {number} index - Specifies the zero-based typed index of the item to remove.
      * @returns {void} Nothing is returned.
+     * @throws RangeError when `index` is outside the collection.
      */
     removeAt(index: number): void {
         const typed: T[] = this.list();
@@ -141,10 +141,10 @@ export class TypedBodyItemCollection<T extends BodyItem> implements Iterable<T> 
     }
 
     /**
-     * Typed index of `item`, or `-1`.
+     * Gets the typed index of the specified item, or `-1` when the item is not in the collection.
      *
-     * @param {T} item - The item.
-     * @returns {number} The result.
+     * @param {T} item - Specifies the item to locate.
+     * @returns {number} Returns the zero-based typed index of the item, or `-1`.
      */
     indexOf(item: T): number {
         const typed: T[] = this.list();
@@ -157,18 +157,18 @@ export class TypedBodyItemCollection<T extends BodyItem> implements Iterable<T> 
     }
 
     /**
-     * Snapshot of items of this type in document order.
+     * Creates a snapshot array of the items of this type in document order.
      *
-     * @returns {T[]} The result.
+     * @returns {T[]} Returns a copy of the items as an array.
      */
     toArray(): T[] {
         return this.list();
     }
 
     /**
-     * Invoke `fn` for each item of this type.
+     * Invokes the specified callback for each item of this type.
      *
-     * @param {Function} fn - The fn.
+     * @param {Function} fn - Specifies the callback that receives each item and its typed index.
      * @returns {void} Nothing is returned.
      */
     forEach(fn: (item: T, index: number) => void): void {
@@ -179,10 +179,10 @@ export class TypedBodyItemCollection<T extends BodyItem> implements Iterable<T> 
     }
 
     /**
-     * True when at least one item of this type satisfies `predicate`.
+     * Determines whether at least one item of this type satisfies the specified predicate.
      *
-     * @param {Function} predicate - The predicate.
-     * @returns {boolean} The result.
+     * @param {Function} predicate - Specifies the condition to test each item against.
+     * @returns {boolean} Returns `true` when at least one item satisfies the predicate; otherwise, `false`.
      */
     some(predicate: (item: T, index: number) => boolean): boolean {
         const items: T[] = this.list();
@@ -195,10 +195,10 @@ export class TypedBodyItemCollection<T extends BodyItem> implements Iterable<T> 
     }
 
     /**
-     * Items of this type that satisfy `predicate`.
+     * Gets the items of this type that satisfy the specified predicate.
      *
-     * @param {Function} predicate - The predicate.
-     * @returns {T[]} The result.
+     * @param {Function} predicate - Specifies the condition to test each item against.
+     * @returns {T[]} Returns the items that satisfy the predicate.
      */
     filter(predicate: (item: T, index: number) => boolean): T[] {
         const items: T[] = this.list();
@@ -212,10 +212,10 @@ export class TypedBodyItemCollection<T extends BodyItem> implements Iterable<T> 
     }
 
     /**
-     * First item of this type that satisfies `predicate`, or `undefined`.
+     * Gets the first item of this type that satisfies the specified predicate.
      *
-     * @param {Function} predicate - The predicate.
-     * @returns {T | undefined} The result.
+     * @param {Function} predicate - Specifies the condition to test each item against.
+     * @returns {T | undefined} Returns the first matching item, or `undefined` when none matches.
      */
     find(predicate: (item: T, index: number) => boolean): T | undefined {
         const items: T[] = this.list();
@@ -228,10 +228,10 @@ export class TypedBodyItemCollection<T extends BodyItem> implements Iterable<T> 
     }
 
     /**
-     * Map items of this type with `fn`.
+     * Projects the items of this type to a new array by using the specified callback.
      *
-     * @param {Function} fn - The fn.
-     * @returns {U[]} The result.
+     * @param {Function} fn - Specifies the callback that converts each item and its typed index.
+     * @returns {U[]} Returns the array of converted values.
      */
     map<U>(fn: (item: T, index: number) => U): U[] {
         const items: T[] = this.list();

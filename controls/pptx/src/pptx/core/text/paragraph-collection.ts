@@ -96,7 +96,8 @@ export function createParagraphCollection(
     removeParagraphNode: (paragraph: Paragraph) => void,
     removeParagraphAt: (index: number) => void
 ): ParagraphCollection {
-    return new Proxy([] as unknown as ParagraphCollection, {
+    const target: Paragraph[] = [];
+    return new Proxy(target as unknown as ParagraphCollection, {
         /**
          *
          * @param {ParagraphCollection} _target - The _target value.
@@ -154,6 +155,7 @@ export function createParagraphCollection(
          * @returns {*} The result.
          */
         ownKeys() : Array<string | symbol> {
+            target.length = getParagraphs().length;
             return Reflect.ownKeys(getParagraphs()).filter(
                 (key: string | number | symbol): key is string | symbol => typeof key !== 'number'
             );
@@ -165,6 +167,11 @@ export function createParagraphCollection(
          * @returns {*} The result.
          */
         getOwnPropertyDescriptor(_target: ParagraphCollection, prop: string | symbol): PropertyDescriptor | undefined {
+            if (prop === 'length') {
+                const length: number = getParagraphs().length;
+                target.length = length;
+                return { value: length, writable: true, enumerable: false, configurable: false };
+            }
             const paragraphs: ReadonlyArray<Paragraph> = getParagraphs();
             const descriptor: TypedPropertyDescriptor<unknown> = Reflect.getOwnPropertyDescriptor(paragraphs, prop);
             if (descriptor === undefined) {

@@ -3422,11 +3422,14 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     /**
-     * Refreshes the layout.
+     * Refreshes the layout and republishes the File menu / Backstage button width.
+     * Browsers without `ResizeObserver` must call this after a hidden container (for example a dialog) is shown.
      *
      * @returns {void}
      */
     public refreshLayout(): void {
+        if (this.ribbonFileMenuModule) { this.ribbonFileMenuModule.refreshWidth(); }
+        if (this.ribbonBackstageModule) { this.ribbonBackstageModule.refreshWidth(); }
         this.resizeHandler();
     }
     /**

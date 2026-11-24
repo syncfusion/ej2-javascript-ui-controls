@@ -1,6 +1,6 @@
 import { isNullOrUndefined, remove, extend, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { Query, Predicate } from '@syncfusion/ej2-data';
-import { IGrid, IAction, NotifyArgs, InfiniteScrollArgs, CellFocusArgs, KeyboardEventArgs, IModelGenerator, SaveEventArgs, AddEventArgs } from '../base/interface';
+import { IGrid, IAction, NotifyArgs, InfiniteScrollArgs, DataResponse, CellFocusArgs, KeyboardEventArgs, IModelGenerator, SaveEventArgs, AddEventArgs } from '../base/interface';
 import { RowModelGenerator } from '../services/row-model-generator';
 import { RowRenderer } from '../renderer/row-renderer';
 import { ServiceLocator } from '../services/service-locator';
@@ -70,7 +70,7 @@ export class InfiniteScroll implements IAction {
     /** @hidden */
     public infiniteDetailDestroy: boolean = false;
     /** @hidden */
-    private hasMoreData: boolean = true;
+    private hasMoreData: boolean | undefined = true;
     /** @hidden */
     private isRequestPending: boolean = false;
 
@@ -734,6 +734,15 @@ export class InfiniteScroll implements IAction {
     }
 
     private dataSourceModified(): void {
+        if (this.isNormaledit && this.isEdit) {
+            this.isEdit = false;
+            this.editRowIndex = this.empty as number;
+            this.virtualInfiniteData = {};
+            if (this.parent.editModule) {
+                (<{ previousVirtualData?: Object }>this.parent.editModule).previousVirtualData = {};
+            }
+            this.parent.isEdit = false;
+        }
         this.resetInfiniteBlocks({ requestType: this.empty as Action }, true);
     }
 
@@ -747,23 +756,27 @@ export class InfiniteScroll implements IAction {
         return initial ? pageSize * this.parent.infiniteScrollSettings.initialBlocks : pageSize;
     }
 
-    private resultLength(e: NotifyArgs): number {
+    private resultLength(e: DataResponse): number {
         const result: Object[] = e && ((e as unknown) as { result?: Object[] }).result as Object[];
         return result && result.length ? result.length : 0;
     }
 
-    private applyCountLessEndDetection(e: NotifyArgs): void {
+    private applyCountLessEndDetection(e: DataResponse): void {
         if (!this.isCountLessMode() && !e) {
             return;
         }
         const resultLength: number = this.resultLength(e);
         const requestCount: number = this.requestCount(e);
-        this.hasMoreData = resultLength === requestCount;
+        if (typeof e.hasMore === 'boolean') {
+            this.hasMoreData = e.hasMore;
+        } else {
+            this.hasMoreData = resultLength === requestCount || !isNullOrUndefined(e.nextToken);
+        }
         this.parent.isLastRecordLoaded = !this.hasMoreData;
         this.isRequestPending = false;
     }
 
-    private onDataReady(e: NotifyArgs): void {
+    private onDataReady(e: DataResponse): void {
         if (!isNullOrUndefined(e.count) && e.requestType !== 'infiniteScroll') {
             this.maxPage = Math.ceil(e.count / this.parent.pageSettings.pageSize);
         }

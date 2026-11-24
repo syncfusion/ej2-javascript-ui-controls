@@ -140,6 +140,7 @@ export * from './core/import-export/xml-document';
 export * from './core/import-export/xml-writer';
 export * from './core/layers/layer-collection';
 export * from './core/layers/layer';
+export * from './core/layers/layer-radio-group';
 export * from './core/list/pdf-list-item';
 export * from './core/list/pdf-list';
 export * from './core/security/encryptor';

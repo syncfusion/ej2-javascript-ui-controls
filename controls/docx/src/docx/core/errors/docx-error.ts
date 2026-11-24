@@ -3,7 +3,7 @@ import { DocxErrorCode } from './error-codes';
 /**
  * Optional cause bag for {@link DocxError} constructors.
  * Kept local so product emit does not depend on ej2-xlsx typings.
- * Aligns with the global ambient `ErrorOptions` in `src/ts33-compat.ts`.
+ * Aligns with the global ambient `ErrorOptions` in the package sources.
  *
  * @private
  */
