@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BaseEventArgs } from '@syncfusion/ej2-base';
 import { ItemModel } from '@syncfusion/ej2-navigations';
-import { PopupType, ExcelFormat, View, NavigationDirection } from './type';
+import { PopupType, ExcelFormat, View, NavigationDirection, TimelineView, SummaryRenderType, SummaryRenderMode } from './type';
 import { ResourcesModel, ViewsModel } from '../models/models';
 import { Worksheets } from '@syncfusion/ej2-excel-export';
 
@@ -36,6 +36,87 @@ export interface ActionEventArgs extends ToolbarActionArgs {
     promise?: Promise<boolean>;
     /** False when triggered programmatically via changeSelectedResource(), true when triggered by user interaction. Only set for requestType 'resourceChange'/'resourceChanged'. */
     isUserInitiated?: boolean;
+    /** Previous zoom preset key. Set when `requestType === 'zoomChange'`. */
+    previousLevel?: string;
+    /** Target zoom preset key. Set when `requestType === 'zoomChange'`. */
+    currentLevel?: string;
+    /** Resources affected by a fix or unfix. Set when `requestType` is `resourceFix`, `resourceFixed`, `resourceUnfix` or `resourceUnfixed`. */
+    fixedResources?: ResourceDetails[];
+    /** Zero-based position in the fixed region after the change. */
+    fixedIndex?: number;
+    /** Complete fixed list before the change, in region order. */
+    previousFixedResources?: ResourceDetails[];
+    /** Complete fixed list after the change, in region order. */
+    currentFixedResources?: ResourceDetails[];
+    /** What caused the fixed state change. */
+    cause?: 'user' | 'dataRefresh';
+}
+
+/**
+ * Represents a single Timeline zoom preset.
+ *
+ * A preset inherits every knob available on `ViewsModel` and adds a
+ * stable `key` that consumers use to select the preset via
+ * `Schedule.zoomLevel`. The `option` field is constrained at runtime
+ * to the Timeline subset accepted by Timeline Zoom — see the
+ * `TimelineView` type alias.
+ */
+export interface ZoomLevel extends ViewsModel {
+    /**
+     * Stable identifier for the zoom preset. Consumers reference
+     * presets by this key through the `Schedule.zoomLevel` property.
+     */
+    key: string;
+    /**
+     * The Timeline sub-view this preset activates. See the
+     * `TimelineView` type alias for the accepted values.
+     */
+    option?: TimelineView;
+}
+
+/**
+ * Identifies how the horizontal anchor offset for a Timeline Zoom
+ * transition was captured.
+ *
+ * * `viewport` (default) — anchor sits at the viewport horizontal
+ *   center.
+ * * `cursor` — anchor sits under the mouse cursor that triggered a
+ *   Ctrl+Wheel zoom.
+ * * `pinch` — anchor sits at the midpoint between two pointers.
+ *
+ * The source is informational only; `Schedule.restoreZoomAnchor`
+ * reads `viewportOffset` directly.
+ *
+ * @private
+ */
+export type ZoomAnchorSource = 'viewport' | 'cursor' | 'pinch';
+
+/**
+ * Captured viewport anchor for one Timeline Zoom preset transition.
+ *
+ * @private
+ */
+export interface ZoomAnchorSnapshot {
+    /**
+     * Semantic DateTime under the anchor point, with sub-slot
+     * precision preserved. Written into `selectedDate` during the
+     * transition so the new `renderDates` contain it.
+     */
+    centerDateTime: Date;
+    /**
+     * Horizontal pixel offset (relative to the content-wrap's left
+     * edge) used as the anchor at capture time.
+     */
+    viewportOffset: number;
+    /**
+     * Vertical scroll position to restore verbatim on the new layout.
+     */
+    scrollTop: number;
+    /**
+     * Origin of the anchor offset. Defaults to `'viewport'` when the
+     * snapshot is produced without an explicit source.
+     */
+    anchorSource?: ZoomAnchorSource;
 }
 
 /** @deprecated */
@@ -229,6 +310,78 @@ export interface RenderCellEventArgs extends BaseEventArgs {
     groupIndex?: number;
 }
 
+/** An interface that holds the visible hours of a view, in the same format as `startHour` and `endHour`. */
+export interface SummaryVisibleHours {
+    /** Returns the start hour of the view, for example `09:00`. */
+    startHour: string;
+    /** Returns the end hour of the view, for example `18:00`. */
+    endHour: string;
+}
+
+/** An interface that holds options to render the summary row, summary column, their label cells and the grand total. */
+export interface RenderSummaryCellEventArgs extends BaseEventArgs {
+    /** Returns `Initial` after the layout is rendered (cells are blank) and `Refresh` after the events are rendered or refreshed. */
+    mode: SummaryRenderMode;
+    /** Returns the type of the summary element that is currently being rendered. */
+    renderType: SummaryRenderType;
+    /** Returns the summary cell element. The application can add text or custom content to it. */
+    element: HTMLElement;
+    /** Defines the text applied to the element as plain text after the event, when no template is set. */
+    text: string;
+    /** Returns the start of the time range covered by the cell. */
+    startTime?: Date;
+    /** Returns the end of the time range covered by the cell. The end is exclusive. */
+    endTime?: Date;
+    /** Returns the visible hours of the view, so that a cell can count only the working time. */
+    visibleHours?: SummaryVisibleHours;
+    /** Returns the dates shown inside the cell. Hidden days are excluded. */
+    shownDates?: Date[];
+    /** Returns the resource group index of the cell. */
+    groupIndex?: number;
+    /** Returns the resource record of the cell. */
+    resourceData?: Record<string, any>;
+    /** Returns the raw event records of the occurrences in the cell range and resource scope. It is empty in the `Initial` mode. */
+    eventData?: Record<string, any>[];
+    /** Returns the level index of the group summary parent row. It is set only for the `GroupSummary` render type. */
+    groupLevel?: number;
+    /** Returns the `name` of the resource level of the group summary parent row. It is set only for the `GroupSummary` render type. */
+    resourceName?: string;
+    /** Returns whether the group summary parent row is collapsed. It is set only for the `GroupSummary` render type. */
+    isCollapsed?: boolean;
+    /** Returns the resource records of all descendants of the group summary parent row. It is set only for the `GroupSummary` render type. */
+    childResourceData?: Record<string, any>[];
+}
+
+/** An interface that holds options of the event triggered when a summary cell is clicked. */
+export interface SummaryCellClickEventArgs extends BaseEventArgs {
+    /** Returns the type of the summary element that was clicked. */
+    renderType: SummaryRenderType;
+    /** Returns the summary element that was clicked. */
+    element: HTMLElement;
+    /** Returns the start of the time range covered by the cell. */
+    startTime?: Date;
+    /** Returns the end of the time range covered by the cell. The end is exclusive. */
+    endTime?: Date;
+    /** Returns the resource group index of the cell. */
+    groupIndex?: number;
+    /** Returns the resource record of the cell. */
+    resourceData?: Record<string, any>;
+    /** Returns the raw event records of the occurrences in the cell. */
+    eventData?: Record<string, any>[];
+    /** Returns the level index of the group summary parent row. It is set only for the `GroupSummary` render type. */
+    groupLevel?: number;
+    /** Returns the `name` of the resource level of the group summary parent row. It is set only for the `GroupSummary` render type. */
+    resourceName?: string;
+    /** Returns whether the group summary parent row is collapsed. It is set only for the `GroupSummary` render type. */
+    isCollapsed?: boolean;
+    /** Returns the resource records of all descendants of the group summary parent row. It is set only for the `GroupSummary` render type. */
+    childResourceData?: Record<string, any>[];
+    /** Returns the original browser event. */
+    event?: MouseEvent | KeyboardEvent;
+    /** Not used by the Scheduler. It is reserved for consistency with the cell click event. */
+    cancel: boolean;
+}
+
 /** An interface that holds options to control resize action on appointments. */
 export interface ResizeEventArgs extends BaseEventArgs {
     /** Returns the resize element. */
@@ -407,6 +560,20 @@ export interface ResourceDetails {
     resourceId?: string;
     /** It returns the Name of current resource in compact mode. */
     resourceName?: string;
+    /** Returns `true` when the resource row is in the fixed region. Available in the resource header template. */
+    isFixed?: boolean;
+    /** Returns the zero-based position of the resource row in the fixed region. Available in the resource header template. */
+    fixedIndex?: number;
+    /** Returns `true` when the user can pin the resource row now. Available in the resource header template. */
+    canPin?: boolean;
+    /** Returns `true` when the row is the root of a fixed block and can be unpinned. Available in the resource header template. */
+    canUnpin?: boolean;
+    /** Returns the names of the ancestor resources, outermost first. Available in the resource header template. */
+    path?: string[];
+    /** Pins the resource row with its subtree, raising the `resourceFix` and `resourceFixed` action events. Available in the resource header template. */
+    pin?: () => void;
+    /** Returns the fixed block to the scrolling region, raising the `resourceUnfix` and `resourceUnfixed` events. Available in the resource header template. */
+    unpin?: () => void;
 }
 
 /** An interface that represents time zone and display text for scheduler.  */
@@ -830,4 +997,55 @@ export interface WebMcpTool {
 export interface WebMcpToolResponse {
     content: { type: string; text: string }[];
     isError?: boolean;
+}
+
+/** @private */
+export interface EventSpacingValues {
+    gap: number | null;
+    leadingSpace: number | null;
+    trailingSpace: number | null;
+}
+
+/**
+ * The resolved gap between levels, the space before the first level and the space after the last level of an event track, in pixels.
+ *
+ * @private
+ */
+export interface SpacingFrame {
+    gap: number;
+    lead: number;
+    trail: number;
+}
+
+/**
+ * The spacing frame of a Month, Timeline or TimelineYear track. `reserve` is true while the trailing space is unset,
+ * so the slot of the more indicator stays reserved as it does without event spacing.
+ *
+ * @private
+ */
+export interface RowFrame extends SpacingFrame {
+    reserve: boolean;
+}
+
+/**
+ * The inline offset and width of one full-width event column, as CSS values. The drag clone uses it to match the dropped event.
+ *
+ * @private
+ */
+export interface CloneFrame {
+    offset: string;
+    width: string;
+}
+
+/**
+ * The level layout of an event track on its block axis: the top of each level, how many levels are visible,
+ * the top of the more indicator (null when it is not shown) and the height that fits all levels.
+ *
+ * @private
+ */
+export interface StackLayout {
+    top: (index: number) => number;
+    visible: number;
+    indicatorTop: number | null;
+    height: number;
 }

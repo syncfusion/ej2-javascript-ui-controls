@@ -257,6 +257,14 @@ export class DialogRenderer {
         }
         parent.clonedFieldList = PivotUtil.getClonedFieldList(parent.pivotFieldList);
     }
+    /**
+     * @returns {void}
+     * @hidden
+     */
+    public closeFieldList(): void {
+        this.onCloseFieldList();
+    }
+
     private onCloseFieldList(args?: MouseEventArgs, isDeferLayoutEnabled?: boolean): void {
         if ((this.parent.allowDeferLayoutUpdate || isDeferLayoutEnabled) && (!this.parent.isPopupView ||
             (this.parent.pivotGridModule && this.parent.pivotGridModule.actionObj.actionName !== '') || this.parent.actionObj.actionName !== '')) {

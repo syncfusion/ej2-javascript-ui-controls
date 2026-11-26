@@ -17,6 +17,7 @@ import {
     RibbonTabId,
     RibbonHost
 } from './types';
+import { applyMobileIconOnly } from './home-tab';
 import { localize } from '../localization/localization';
 
 /**
@@ -267,12 +268,12 @@ export function buildZoomGroup(host: RibbonHost): RibbonGroupModel {
  * @returns {RibbonTabModel} Tab model
  */
 export function buildViewTab(host: RibbonHost): RibbonTabModel {
-    return {
+    return applyMobileIconOnly({
         id: RibbonTabId.View,
         header: localize(host.locale, 'View'),
         groups: [
             buildShowGroup(host),
             buildZoomGroup(host)
         ]
-    };
+    }, host);
 }

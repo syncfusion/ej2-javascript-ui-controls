@@ -16,7 +16,7 @@
  * `CT_PresetGeometry2D` `@prst` required (`~2088`).
  */
 /**
- * Frozen map of public auto-shape kind names.
+ * Public auto-shape kinds (string enum; string literals are rejected at compile time).
  *
  * @remarks
  * Covers the five kinds requested for {@link ShapeCollection.addShape}:
@@ -46,25 +46,25 @@
  * ```
  */
 import { arrayIncludes, objectValues, objectGet } from '../util/es5-compat';
-export const AutoShapeType: Readonly<Record<string, string>> = Object.freeze({
+export enum AutoShapeType {
     /** Rectangle → wire `rect`. */
-    Rectangle: 'Rectangle' as 'Rectangle',
+    Rectangle = 'Rectangle',
     /** Oval → wire `ellipse`. */
-    Oval: 'Oval' as 'Oval',
+    Oval = 'Oval',
     /**
      * Circle → wire `ellipse` (no `circle` in `ST_ShapeType`).
      * Use equal `width` and `height` for a visual circle.
      */
-    Circle: 'Circle' as 'Circle',
+    Circle = 'Circle',
     /** Arc → wire `arc`. */
-    Arc: 'Arc' as 'Arc',
+    Arc = 'Arc',
     /** Straight line auto-shape → wire `line` as `p:sp` + `prstGeom` (not `p:cxnSp`). */
-    Line: 'Line' as 'Line'
-});
+    Line = 'Line'
+}
 /**
  * One public predefined auto-shape kind identifier.
  */
-export type AutoShapeTypeValue = 'Rectangle' | 'Oval' | 'Circle' | 'Arc' | 'Line';
+export type AutoShapeTypeValue = AutoShapeType;
 /**
  * OOXML `ST_ShapeType` tokens emitted by this API for `a:prstGeom/@prst`.
  *

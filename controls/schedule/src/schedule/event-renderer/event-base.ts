@@ -3,9 +3,9 @@
 import { isNullOrUndefined, closest, extend, EventHandler, setStyleAttribute } from '@syncfusion/ej2-base';
 import { createElement, prepend, append, addClass, removeClass } from '@syncfusion/ej2-base';
 import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
-import { EventFieldsMapping, EventClickArgs, CellClickEventArgs, TdData, SelectEventArgs, InlineClickArgs, CallbackFunction } from '../base/interface';
+import { EventFieldsMapping, EventClickArgs, CellClickEventArgs, TdData, SelectEventArgs, InlineClickArgs, CallbackFunction, SpacingFrame } from '../base/interface';
 import { Schedule } from '../base/schedule';
-import { View } from '../base/type';
+import { View, EventPlacement } from '../base/type';
 import { ResourcesModel } from '../models/resources-model';
 import { generate, getDateFromRecurrenceDateString } from '../../recurrence-editor/date-generator';
 import { CalendarType } from '../../common/calendar-util';
@@ -1530,7 +1530,8 @@ export class EventBase {
         }
     }
 
-    public addCellHeight(selector: string, eventHeight: number, eventGap: number, headerHeight: number, indHeight: number, isScrollUpdate: boolean = true): void {
+    public addCellHeight(selector: string, eventHeight: number, eventGap: number, headerHeight: number, indHeight: number, isScrollUpdate: boolean = true,
+                         spacing?: SpacingFrame): void {
         if (this.parent.activeViewOptions.maxEventsPerRow && !this.parent.rowAutoHeight) {
             const rows: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(selector));
             const weekNumberRows: HTMLElement[] = this.parent.showWeekNumber
@@ -1539,6 +1540,11 @@ export class EventBase {
             for (const row of rows) {
                 let height: number = (this.parent.activeViewOptions.maxEventsPerRow *
                     ((eventHeight + (this.parent.currentView === 'Month' ? eventGap : 2)))) + headerHeight + indHeight;
+                if (spacing) {
+                    // leading + k * level + (k - 1) * gap + trailing, then the header and the indicator slot as before
+                    const levels: number = this.parent.activeViewOptions.maxEventsPerRow;
+                    height = spacing.lead + levels * eventHeight + (levels - 1) * spacing.gap + spacing.trail + headerHeight + indHeight;
+                }
                 const monthHeaderHeight: NodeListOf<HTMLElement> = this.parent.element.querySelectorAll('.' + cls.MONTH_HEADER_CLASS);
                 if (weekNumberRows.length > 0) {
                     setStyleAttribute(weekNumberRows[rows.indexOf(row)].firstElementChild as HTMLElement, { 'height': height + 'px' });
@@ -1642,6 +1648,72 @@ export class EventBase {
             type === 'before' ? 'quickInfoBufferBefore' : 'quickInfoBufferAfter');
         const unit: string = this.parent.localeObj.getConstant(minutes === 1 ? 'minute' : 'minutes');
         return prefix + ': ' + minutes + ' ' + unit;
+    }
+
+    private invalidPlacementWarned: { [key: string]: boolean } = {};
+
+    /**
+     * Resolves the event placement mode of the current view: view value, component value, then the view default.
+     *
+     * @returns {EventPlacement} Returns the resolved mode, or null when the view does not support placement.
+     * @private
+     */
+    public getEventPlacement(): EventPlacement {
+        const option: string = this.parent.currentView;
+        const isTimeline: boolean = option.indexOf('Timeline') === 0;
+        if (!isTimeline && option !== 'Month') {
+            return null;
+        }
+        const valid: (value: string) => boolean = (value: string): boolean => value === 'Exact' || value === 'Slot';
+        const viewValue: EventPlacement = this.parent.activeViewOptions ? this.parent.activeViewOptions.eventPlacement : null;
+        const componentValue: EventPlacement = this.parent.eventSettings.placement;
+        [viewValue, componentValue].forEach((value: EventPlacement, index: number) => {
+            const key: string = option + index + String(value);
+            if (!isNullOrUndefined(value) && !valid(value) && !this.invalidPlacementWarned[`${key}`]) {
+                this.invalidPlacementWarned[`${key}`] = true;
+                console.warn(`[WARNING] :: Invalid event placement "${value as string}" in ${index === 0 ? 'views' : 'eventSettings'} ` +
+                    `for the "${option}" view. It is ignored.`);
+            }
+        });
+        if (valid(viewValue)) { return viewValue; }
+        if (valid(componentValue)) { return componentValue; }
+        const hasTimeScale: boolean = this.parent.activeViewOptions ? this.parent.activeViewOptions.timeScale.enable : this.parent.timeScale.enable;
+        return ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'].indexOf(option) > -1 && hasTimeScale ? 'Exact' : 'Slot';
+    }
+
+    /**
+     * Tells whether events are drawn and edited by their true times inside a day cell in the current view.
+     * It is the single check shared by the renderers, drag and resize. Exact must be set explicitly (REQ-PLACE-002).
+     * Grouped Timeline year has month cells and is covered by `isExactGroupedYear`.
+     *
+     * @returns {boolean} Returns true when the current view is an Exact day-cell view.
+     * @private
+     */
+    public isExactDayCellView(): boolean {
+        const explicit: string = this.parent.activeViewOptions.eventPlacement || this.parent.eventSettings.placement;
+        if (explicit !== 'Exact' || this.getEventPlacement() !== 'Exact') {
+            return false;
+        }
+        const view: string = this.parent.currentView;
+        if (view === 'Month' || view === 'TimelineMonth') {
+            return true;
+        }
+        if (view === 'TimelineYear') {
+            return this.parent.activeViewOptions.group.resources.length === 0;
+        }
+        return ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'].indexOf(view) > -1 && !this.parent.activeViewOptions.timeScale.enable;
+    }
+
+    /**
+     * Tells whether the current view is Timeline year with resource groups (month cells) in Exact placement.
+     *
+     * @returns {boolean} Returns true for grouped Timeline year in Exact placement.
+     * @private
+     */
+    public isExactGroupedYear(): boolean {
+        const explicit: string = this.parent.activeViewOptions.eventPlacement || this.parent.eventSettings.placement;
+        return this.parent.currentView === 'TimelineYear' && this.parent.activeViewOptions.group.resources.length > 0 &&
+            !this.parent.uiStateValues.isGroupAdaptive && explicit === 'Exact' && this.getEventPlacement() === 'Exact';
     }
 
     /**

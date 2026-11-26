@@ -196,7 +196,12 @@ export class PdfTreeGridLayouter extends ElementLayouter {
         totalDetail.push({ height: totalHeight, pageNumber: pageNumber });
         const groupedHeights: Record<number, number[]> = {};
         if (rowDetails.length > 0) {
-            this.headerHeight = rowDetails[0].height;
+            const headerRows: number = this.treegrid.headerRowCount > 0 ? this.treegrid.headerRowCount : 1;
+            let headerHeightSum: number = 0;
+            for (let i: number = 0; i < headerRows && i < rowDetails.length; i++) {
+                headerHeightSum += rowDetails[i as number].height;
+            }
+            this.headerHeight = headerHeightSum;
         }
         rowDetails.forEach((row: any) => {
             if (!groupedHeights[row.pageNumber]) {
@@ -247,7 +252,10 @@ export class PdfTreeGridLayouter extends ElementLayouter {
     }
 
     private drawHeader(): void {
-        this.drawRow(this.treegrid.rows.getRow(0));
+        const headerRows: number = this.treegrid.headerRowCount > 0 ? this.treegrid.headerRowCount : 1;
+        for (let i: number = 0; i < headerRows; i++) {
+            this.drawRow(this.treegrid.rows.getRow(i));
+        }
     }
 
     private reArrangePages(layoutPages: TemporaryDictionary<PdfPage, number[]>): void {
@@ -358,19 +366,27 @@ export class PdfTreeGridLayouter extends ElementLayouter {
                     }
                     let size: SizeF = new SizeF(column.width, height);
                     if (cell.columnSpan > 1) {
-                        size = new SizeF(cell.width, height);
-                        i += cell.columnSpan;
+                        const cellWidth: number = cell.getCellWidth;
+                        size = new SizeF(cellWidth, height);
+                        i += cell.columnSpan - 1;
+                    }
+                    if (cell.rowSpan > 1) {
+                        size = new SizeF(size.width, height * cell.rowSpan);
                     }
                     if (!this.checkIfDefaultFormat(column.format) && this.checkIfDefaultFormat(cell.style.format)) {
                         cell.style.format = column.format;
                     }
-                    cell.draw(this.currentGraphics, new RectangleF(location, size), cancelSpans, leftAdjustment);
+                    if (!cell.isRowMergeContinue) {
+                        cell.draw(this.currentGraphics, new RectangleF(location, size), cancelSpans, leftAdjustment);
+                    }
                     /* eslint-disable-next-line */
                     if (row.treegrid.style.allowHorizontalOverflow && (cell.columnSpan > this.cellEndIndex || i + cell.columnSpan > this.cellEndIndex + 1) && this.cellEndIndex < row.cells.count - 1) {
                         row.rowOverflowIndex = this.cellEndIndex;
                     }
-                    location.x += column.width;
+                    location.x += cell.columnSpan > 1 ? cell.getCellWidth : column.width;
                     leftAdjustment = 0;
+                } else if (cell.isRowMergeContinue) {
+                    location.x += column.width;
                 }
             }
             this.currentBounds.y += height;
@@ -419,7 +435,7 @@ export class PdfTreeGridLayouter extends ElementLayouter {
             }
             cell.draw(this.currentGraphics, new RectangleF(location, size), cancelSpans, leftAdjustment);
             result.isFinish = (!result.isFinish) ? result.isFinish : cell.finishedDrawingCell;
-            location.x += column.width;
+            location.x += cell.columnSpan > 1 ? cell.getCellWidth : column.width;
             leftAdjustment = 0;
             this.currentBounds.y += this.treegridHeight > 0 ? this.treegridHeight : height;
             result.bounds = new RectangleF(new PointF(result.bounds.x, result.bounds.y), new SizeF(location.x, location.y));

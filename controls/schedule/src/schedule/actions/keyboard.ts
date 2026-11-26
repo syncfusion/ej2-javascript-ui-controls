@@ -47,6 +47,8 @@ export class KeyboardInteraction {
         delete: 'delete',
         backspace: 'backspace',
         home: 'home',
+        ctrlHome: 'ctrl+home',
+        ctrlEnd: 'ctrl+end',
         pageUp: 'pageup',
         pageDown: 'pagedown',
         tab: 'tab',
@@ -77,6 +79,14 @@ export class KeyboardInteraction {
     private keyActionHandler(e: KeyboardEventArgs): void {
         const target: HTMLElement = e.target as HTMLElement;
         if (e.action === 'home' && target && ['INPUT', 'TEXTAREA', 'SELECT'].indexOf(target.tagName) > -1 && target.closest('.e-quick-popup-wrapper')) {
+            return;
+        }
+        if (this.parent.groupSummaryModule && ['downArrow', 'upArrow', 'leftArrow', 'rightArrow'].indexOf(e.action) > -1 &&
+            this.parent.groupSummaryModule.processKey(e)) {
+            return;
+        }
+        if (this.parent.summaryModule && ['downArrow', 'upArrow', 'leftArrow', 'rightArrow'].indexOf(e.action) > -1 &&
+            this.parent.summaryModule.processKey(e)) {
             return;
         }
         switch (e.action) {
@@ -124,6 +134,12 @@ export class KeyboardInteraction {
             break;
         case 'home':
             this.focusFirstCell();
+            break;
+        case 'ctrlHome':
+        case 'ctrlEnd':
+            if (this.parent.fixedRowsModule && this.parent.fixedRowsModule.focusEdge(e.action === 'ctrlEnd', e.target as HTMLElement)) {
+                e.preventDefault();
+            }
             break;
         case 'tab':
         case 'shiftTab':
@@ -235,8 +251,9 @@ export class KeyboardInteraction {
         if (this.parent.activeViewOptions.readonly || this.parent.currentView === 'MonthAgenda' || !this.initialTarget) { return; }
         if ((e.event.target as HTMLElement).classList.contains(cls.WORK_CELLS_CLASS) && e.event.which !== 3) {
             this.parent.removeSelectedClass();
-            EventHandler.add(this.parent.getContentTable(), 'mousemove', this.onMouseSelection, this);
-            EventHandler.add(this.parent.getContentTable(), 'mouseup mouseleave', this.onMoveUp, this);
+            const cellTable: HTMLTableElement = this.getCellTable(this.initialTarget);
+            EventHandler.add(cellTable, 'mousemove', this.onMouseSelection, this);
+            EventHandler.add(cellTable, 'mouseup mouseleave', this.onMoveUp, this);
         }
         if ((e.event.target as HTMLElement).classList.contains(cls.ALLDAY_CELLS_CLASS) && e.event.which !== 3) {
             this.parent.removeSelectedClass();
@@ -269,14 +286,22 @@ export class KeyboardInteraction {
         }
     }
 
+    private getCellTable(cell: Element): HTMLTableElement {
+        const fixedTable: Element = cell ? closest(cell, '.' + cls.FIXED_CONTENT_TABLE_CLASS) : null;
+        return (fixedTable || this.parent.getContentTable()) as HTMLTableElement;
+    }
     private getClosestCell(e: Event): HTMLTableCellElement {
         return closest(<Element>e.target, '.' + cls.WORK_CELLS_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS) as HTMLTableCellElement;
     }
     private onMoveUp(e: Event): void {
         const appointments: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS)) as Element[];
         removeClass(appointments, 'e-allow-select');
-        EventHandler.remove(this.parent.getContentTable(), 'mousemove', this.onMouseSelection);
-        EventHandler.remove(this.parent.getContentTable(), 'mouseup mouseleave', this.onMoveUp);
+        [this.parent.getContentTable(), this.parent.element.querySelector('.' + cls.FIXED_CONTENT_TABLE_CLASS)].forEach((table: Element) => {
+            if (table) {
+                EventHandler.remove(table, 'mousemove', this.onMouseSelection);
+                EventHandler.remove(table, 'mouseup mouseleave', this.onMoveUp);
+            }
+        });
         if ((e.target as HTMLElement).classList.contains(cls.ALLDAY_CELLS_CLASS)) {
             const allDayRow: HTMLTableRowElement = <HTMLTableRowElement>this.parent.getAllDayRow();
             EventHandler.remove(allDayRow, 'mousemove', this.onMouseSelection);
@@ -391,7 +416,7 @@ export class KeyboardInteraction {
         return cellDetails;
     }
     private getCells(isInverseTable: boolean, start: HTMLTableCellElement, end: HTMLTableCellElement): HTMLTableCellElement[] {
-        const tableEle: HTMLTableElement = this.parent.getContentTable() as HTMLTableElement;
+        const tableEle: HTMLTableElement = this.getCellTable(start);
         const isTimelineYear: boolean = this.parent.currentView === 'TimelineYear';
         const query: string = isTimelineYear && !isInverseTable ? '.' + cls.WORK_CELLS_CLASS + ':not(.' + cls.OTHERMONTH_CLASS + ')' : 'td';
         let cells: HTMLTableCellElement[] = [].slice.call(tableEle.querySelectorAll(query));
@@ -765,7 +790,7 @@ export class KeyboardInteraction {
         return targetCell;
     }
     private processLeftRight(target: HTMLTableCellElement): KeyEventArgs {
-        const tableEle: HTMLTableElement = (this.parent.currentView === 'Year' ? target.closest('tbody') : this.parent.getContentTable()) as HTMLTableElement;
+        const tableEle: HTMLTableElement = (this.parent.currentView === 'Year' ? target.closest('tbody') : this.getCellTable(target)) as HTMLTableElement;
         const curRowIndex: number = (target.parentNode as HTMLTableRowElement).sectionRowIndex;
         const key: KeyEventArgs = {
             element: tableEle,

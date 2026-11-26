@@ -1,0 +1,43 @@
+{
+	"name": "@syncfusion/ej2-xlsx-renderer",
+	"version": "35.1.37",
+	"description": "Feature-rich JavaScript library to convert Excel workbooks to PDF documents while preserving workbook structure, worksheet layout, formatting, charts, images, shapes, tables, and other workbook elements",
+	"author": "Syncfusion Inc.",
+	"license": "SEE LICENSE IN license",
+	"keywords": [
+		"ej2",
+		"syncfusion",
+		"xlsx-renderer",
+		"excel-to-pdf",
+		"excel",
+		"pdf",
+		"conversion",
+		"document-processing"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/syncfusion/ej2-javascript-ui-controls.git"
+	},
+	"homepage": "https://www.syncfusion.com/javascript-ui-controls",
+	"main": "./dist/ej2-xlsx-renderer.umd.min.js",
+	"module": "./index.js",
+	"es2015": "./dist/es6/ej2-xlsx-renderer.es5.js",
+	"readme": "ReadMe.md",
+	"dependencies": {
+		"@syncfusion/ej2-base": "*",
+		"@syncfusion/ej2-pdf": "*",
+		"@syncfusion/ej2-xlsx": "*",
+		"markdown-spellcheck": "^1.3.1"
+	},
+	"scripts": {
+		"build": "gulp build"
+	},
+	"config": {
+		"ghooks": {
+			"pre-commit": "gulp pre-commit",
+			"pre-push": "gulp pre-push",
+			"commit-msg": "gulp commit-msg"
+		}
+	},
+	"typings": "index.d.ts"
+}

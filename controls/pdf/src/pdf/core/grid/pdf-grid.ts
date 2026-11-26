@@ -2473,23 +2473,26 @@ export class PdfGrid {
         return chunks;
     }
     /**
-     * Computes the height of each grid row based on its content and style.
+     * Measures the text height available within a grid cell.
      *
      * @private
-     * @param {string} text text to measure.
-     * @param {PdfFont} font font to measure.
-     * @param {number} availableWidth width to measure.
-     * @returns {number} Computed cell heights.
+     * @param {string} text Cell text.
+     * @param {PdfFont} font Cell font.
+     * @param {number} availableWidth Available cell width.
+     * @returns {number} Measured text height.
      */
     _measureCellTextHeight(text: string, font: PdfFont, availableWidth: number): number {
         if (text.length === 0 || availableWidth <= 0) {
             return 0;
         }
-        const singleLineSize: { width: number; height: number } = font.measureString(text);
+        const format: PdfStringFormat = new PdfStringFormat();
+        format.complexScript = true;
+        const singleLineSize: { width: number; height: number } =
+            font.measureString(text, format);
         if (singleLineSize.width <= availableWidth + 1e-6) {
             return singleLineSize.height;
         }
-        return font.measureString(text, availableWidth, true).height;
+        return font.measureString(text, availableWidth, format).height;
     }
     _computeRowHeights(allRows: PdfGridRow[], columnWidths: number[], descriptor: _PdfBuiltInDescriptor): number[] {
         const rowHeights: number[] = allRows.map((row: PdfGridRow) => {
@@ -3202,7 +3205,8 @@ export class PdfGrid {
                         contentHeight = childGrid._computeTotalGridHeight(innerWidth);
                     } else if (this._getCellText(cell.value).length > 0) {
                         const textValue: string = this._getCellText(cell.value);
-                        const font: PdfFont = this._defaultFont;
+                        const font: PdfFont = this._resolveTextProperties(cell, row, colCursor - 1).font ||
+                            this._defaultFont;
                         const format: PdfStringFormat = new PdfStringFormat();
                         if (contentWidth > 0) {
                             const measured: { width: number; height: number } = font.measureString(textValue,

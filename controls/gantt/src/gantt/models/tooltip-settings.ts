@@ -13,6 +13,15 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public showTooltip: boolean;
 
     /**
+     * Specifies whether split-task segments display segment-specific tooltip content.
+     * When disabled, hovering a segment displays the complete task tooltip.
+     *
+     * @default false
+     */
+    @Property(false)
+    public showSegmentTooltip: boolean;
+
+    /**
      * Defines tooltip template for taskbar elements.
      *
      * @default null
@@ -56,4 +65,14 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
      */
     @Property()
     public timeline: string | Function;
+
+    /**
+     * Defines the template for the S-Curve tooltip.
+     * The template receives the hovered point: field, name, date, percentage and value.
+     *
+     * @default null
+     * @aspType string
+     */
+    @Property()
+    public sCurve: string | Function;
 }

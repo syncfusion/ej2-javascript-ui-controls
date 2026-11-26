@@ -1,7 +1,7 @@
 import { ChildProperty, compile as baseTemplateComplier, setValue, Internationalization, isUndefined } from '@syncfusion/ej2-base';
 import { extend as baseExtend, isNullOrUndefined, getValue, classList, NumberFormatOptions } from '@syncfusion/ej2-base';
 import { setStyleAttribute, addClass, attributes, remove, createElement, DateFormatOptions, removeClass } from '@syncfusion/ej2-base';
-import { isObject, IKeyValue, select, selectAll } from '@syncfusion/ej2-base';
+import { isObject, IKeyValue, select, selectAll, closest } from '@syncfusion/ej2-base';
 import {
     IPosition, IGrid, IValueFormatter, IRow, ICell, IExpandedRow, PdfExportProperties,
     ExcelExportProperties, DataStateChangeEventArgs, RowDropEventArgs
@@ -930,7 +930,17 @@ export function getFilterMenuPostion(target: Element, dialogObj: Dialog, parent?
  * @hidden
  */
 export function getZIndexCalcualtion(args: { popup: Popup }, dialogObj: Dialog): void {
-    args.popup.element.style.zIndex = (dialogObj.zIndex + 1).toString();
+    args.popup.element.style.zIndex = ((dialogObj ? dialogObj.zIndex : 1000) + 1).toString();
+}
+
+/**
+ * @param {Dialog} dialogObj - Defines the filter dialog, which is not available when the filter UI is hosted in the tool panel
+ * @param {Element} target - Defines an element rendered inside the filter UI
+ * @returns {Element} - Returns the element that contains the filter UI
+ * @hidden
+ */
+export function getFilterDlgElement(dialogObj: Dialog, target: Element): Element {
+    return dialogObj ? dialogObj.element : closest(target, '.e-flmenu');
 }
 
 /**
@@ -939,12 +949,13 @@ export function getZIndexCalcualtion(args: { popup: Popup }, dialogObj: Dialog):
  * @param {Column} column - Defines the column
  * @param {string} columnType - Defines the column type
  * @param {Dialog} dlgObj - Defines the dialog
+ * @param {Element} dlgElement - Defines the element that contains the filter UI when there is no dialog
  * @returns {void}
  * @hidden
  */
 export function toggleFilterUI(
     operator: string, columnUid: string, column: Column | ColumnModel, columnType: string,
-    dlgObj: Dialog
+    dlgObj: Dialog, dlgElement?: Element
 ): void {
     if (isNullOrUndefined(column.filterTemplate)) {
         let columnID: string = '';
@@ -954,12 +965,13 @@ export function toggleFilterUI(
             columnID = 'numberui-' + columnUid;
         } else if (columnType === 'boolean') {
             columnID = 'bool-ui-' + columnUid;
-        } else if (columnType === 'date' || columnType === 'datetime') {
+        } else if (columnType === 'date' || columnType === 'datetime'  || columnType === 'dateonly') {
             columnID = 'dateui-' + columnUid;
         }
         const isMultiSelect: boolean = operator === 'in' || operator === 'notin';
-        const multiselectParent: HTMLElement = parentsUntil(dlgObj.element.querySelector(`#multiselect${columnID}`), 'e-control-wrapper') as HTMLElement;
-        const singleInputParent: HTMLElement = parentsUntil(dlgObj.element.querySelector(`#${columnID}`), 'e-popup-flmenu') as HTMLElement;
+        const root: Element = dlgObj ? dlgObj.element : dlgElement;
+        const multiselectParent: HTMLElement = parentsUntil(root.querySelector(`#multiselect${columnID}`), 'e-control-wrapper') as HTMLElement;
+        const singleInputParent: HTMLElement = parentsUntil(root.querySelector(`#${columnID}`), 'e-popup-flmenu') as HTMLElement;
         if (multiselectParent) {
             multiselectParent.style.display = isMultiSelect ? 'inline-flex' : 'none';
         }
@@ -2195,6 +2207,10 @@ export function getCellsByTableName(gObj: IGrid, col: Column, rowIndex: number):
         return rowCellArgs.elements;
     }
     else {
+        if (gObj.isRowDomVirtualization()) {
+            const domRow: Element = gObj.getRowByIndex(rowIndex);
+            return domRow ? [].slice.call(domRow.getElementsByClassName(literals.rowCell)) : [];
+        }
         return [].slice.call(gObj.getDataRows()[parseInt(rowIndex.toString(), 10)].getElementsByClassName(literals.rowCell));
     }
 }

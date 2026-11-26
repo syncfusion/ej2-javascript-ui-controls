@@ -304,6 +304,28 @@ export const detailLists: {[key: string]: ItemDetails} = {
         }
     },
     // eslint-disable-next-line camelcase
+    column_chooser_reorder: {
+        type: 'column_chooser_reorder',
+        logType: 'warn',
+        check(): CheckOptions {
+            return { success: true };
+        },
+        generateMessage(args: { reason: string }): string {
+            return WARNING + ': COLUMN CHOOSER REORDERING IGNORED \n' + args.reason;
+        }
+    },
+    // eslint-disable-next-line camelcase
+    toolpanel_columns_zone: {
+        type: 'toolpanel_columns_zone',
+        logType: 'warn',
+        check(): CheckOptions {
+            return { success: true };
+        },
+        generateMessage(args: { reason: string }): string {
+            return WARNING + ': COLUMNS TOOL PANEL \n' + args.reason;
+        }
+    },
+    // eslint-disable-next-line camelcase
     exporting_begin: {
         type: 'exporting_begin',
         logType: 'info',
@@ -387,6 +409,39 @@ export const detailLists: {[key: string]: ItemDetails} = {
         generateMessage(args: Object, parent: IGrid,  options: string): string {
             return ERROR + `: COLUMN TYPE MISSING-\n  ${options} column type was invalid or not defined.` +
             `Please go through below help link: ${DOC_URL}/grid/columns/#column-type`;
+        }
+    },
+    // eslint-disable-next-line camelcase
+    sidebar_duplicate_panel: {
+        type: 'sidebar_duplicate_panel',
+        logType: 'warn',
+        check(): CheckOptions {
+            return { success: true };
+        },
+        generateMessage(args: {id: string}): string {
+            return WARNING + `: duplicate tool panel id '${args.id}'.`;
+        }
+    },
+    // eslint-disable-next-line camelcase
+    sidebar_panel_not_found: {
+        type: 'sidebar_panel_not_found',
+        logType: 'warn',
+        check(): CheckOptions {
+            return { success: true };
+        },
+        generateMessage(args: {id: string}): string {
+            return WARNING + `: tool panel id '${args.id}' not found.`;
+        }
+    },
+    // eslint-disable-next-line camelcase
+    sidebar_invalid_position: {
+        type: 'sidebar_invalid_position',
+        logType: 'warn',
+        check(): CheckOptions {
+            return { success: true };
+        },
+        generateMessage(args: {position: string}): string {
+            return WARNING + `: invalid side bar position '${args.position}'.`;
         }
     },
     // eslint-disable-next-line camelcase

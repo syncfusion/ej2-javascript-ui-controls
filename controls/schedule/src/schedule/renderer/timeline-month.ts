@@ -40,6 +40,9 @@ export class TimelineMonth extends Month {
     }
 
     public setContentHeight(content: HTMLElement, leftPanelElement: HTMLElement, height: number): void {
+        if (this.parent.fixedRowsModule && this.parent.height !== 'auto') {
+            height = this.parent.fixedRowsModule.adjustHeight(height);
+        }
         if (leftPanelElement) {
             leftPanelElement.style.height = formatUnit(height - this.getScrollXIndent(content));
         }
@@ -73,6 +76,9 @@ export class TimelineMonth extends Month {
         }
         const contentTd: Element = createElement('td');
         this.element.querySelector('tbody').appendChild(contentTr);
+        if (this.parent.fixedRowsModule) {
+            this.parent.fixedRowsModule.renderRegion(contentTr);
+        }
         const wrap: HTMLElement = createElement('div', { className: cls.CONTENT_WRAP_CLASS });
         wrap.appendChild(this.renderContentArea());
         wrap.appendChild(this.createEventTable(this.getRowCount()));

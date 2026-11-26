@@ -32,6 +32,55 @@ export const HOME_FONT_SIZES: string[] = [
 ];
 
 /**
+ * Whether the viewport is phone-sized. Only then do Home groups get their own overflow
+ * menu (as in the Document Editor); desktop group models are left exactly as before.
+ *
+ * @returns {boolean} True for small screens
+ * @private
+ */
+export function isMobileViewport(): boolean {
+    return typeof window !== 'undefined' && typeof window.matchMedia === 'function' &&
+        window.matchMedia('(max-width: 767.98px)').matches;
+}
+
+/**
+ * Phones using the Simplified layout show icon-only commands (names stay in the tooltips);
+ * the Classic layout keeps its labels.
+ *
+ * @param {RibbonHost} host - Editor ribbon host
+ * @returns {boolean} True when buttons should be icon-only
+ * @private
+ */
+export function isMobileIconOnly(host: RibbonHost): boolean {
+    return isMobileViewport() && host.ribbonLayout !== 'Classic';
+}
+
+/**
+ * Forces button / drop-down items of a tab to the small (icon-only) size on phones in
+ * Simplified layout. Desktop and Classic models are returned untouched.
+ *
+ * @param {RibbonTabModel} tab - Tab model
+ * @param {RibbonHost} host - Editor ribbon host
+ * @returns {RibbonTabModel} The same tab model
+ * @private
+ */
+export function applyMobileIconOnly(tab: RibbonTabModel, host: RibbonHost): RibbonTabModel {
+    if (!isMobileIconOnly(host)) {
+        return tab;
+    }
+    (tab.groups || []).forEach((group: RibbonGroupModel): void => {
+        (group.collections || []).forEach((collection: { items?: RibbonItemModel[] }): void => {
+            (collection.items || []).forEach((item: RibbonItemModel): void => {
+                if (item.type === RibbonItemType.Button || item.type === RibbonItemType.DropDown) {
+                    item.allowedSizes = RibbonItemSize.Small;
+                }
+            });
+        });
+    });
+    return tab;
+}
+
+/**
  * Builds a Home button item.
  *
  * @param {string} id - Stable item id
@@ -123,14 +172,18 @@ function fontFormatItem(
     content: string,
     tooltip: string,
     cssClass: string,
-    pressed: boolean
+    pressed: boolean,
+    iconOnly: boolean = false
 ): RibbonItemModel {
     return {
         id,
         type: RibbonItemType.Button,
         allowedSizes: RibbonItemSize.Small,
+        // Phones: B / I / U / S live in the group's "..." menu; the glyph is drawn by CSS, so the
+        // text label is dropped there (otherwise it renders next to the glyph, twice).
+        ...(iconOnly ? { displayOptions: DisplayMode.Overflow } : {}),
         buttonSettings: {
-            content,
+            content: iconOnly ? '' : content,
             cssClass: 'ej2-pptx-ribbon-format ' + cssClass + (pressed ? ' ej2-pptx-ribbon-format--on' : ''),
             htmlAttributes: {
                 'aria-label': tooltip,
@@ -155,6 +208,7 @@ export function buildClipboardGroup(host: RibbonHost): RibbonGroupModel {
         id: RibbonGroupId.Clipboard,
         header: localize(host.locale, 'Clipboard'),
         isCollapsible: true,
+        ...(isMobileViewport() ? { enableGroupOverflow: true, overflowHeader: localize(host.locale, 'Clipboard') } : {}),
         collections: [
             {
                 items: [
@@ -184,11 +238,13 @@ export function buildClipboardGroup(host: RibbonHost): RibbonGroupModel {
  */
 export function buildFontGroup(host?: RibbonHost): RibbonGroupModel {
     const locale: string | undefined = host ? host.locale : undefined;
+    // Phones in Simplified layout move B / I / U / S into the group menu; Classic keeps them inline.
+    const iconOnly: boolean = !!host && isMobileIconOnly(host);
     const readOnly: RibbonItemModel = {
         id: RibbonItemId.FontReadOnly,
         type: RibbonItemType.Button,
         allowedSizes: RibbonItemSize.Small,
-        displayOptions: DisplayMode.Simplified,
+        displayOptions: iconOnly ? DisplayMode.Overflow : DisplayMode.Simplified,
         disabled: true,
         buttonSettings: { content: localize(locale, 'ReadOnly'), iconCss: 'e-icons e-lock' }
     };
@@ -198,20 +254,21 @@ export function buildFontGroup(host?: RibbonHost): RibbonGroupModel {
         header: '<span class="e-icons e-lock ej2-pptx-ribbon-group-lock" aria-hidden="true"></span>' +
             localize(locale, 'FontReadOnly'),
         isCollapsible: true,
+        ...(iconOnly ? { overflowHeader: localize(locale, 'FontReadOnly') } : {}),
         orientation: ItemOrientation.Row,
         collections: [
             {
                 items: [
-                    fontComboItem(RibbonItemId.FontFamily, HOME_FONT_FAMILIES, '', '150px', 'Font family'),
-                    fontComboItem(RibbonItemId.FontSize, HOME_FONT_SIZES, '', '64px', 'Font size')
+                    fontComboItem(RibbonItemId.FontFamily, HOME_FONT_FAMILIES, '', isMobileViewport() ? '120px' : '150px', 'Font family'),
+                    fontComboItem(RibbonItemId.FontSize, HOME_FONT_SIZES, '', isMobileViewport() ? '56px' : '64px', 'Font size')
                 ]
             },
             {
                 items: [
-                    fontFormatItem(RibbonItemId.FontBold, 'B', localize(locale, 'Bold'), 'ej2-pptx-ribbon-format--b', false),
-                    fontFormatItem(RibbonItemId.FontItalic, 'I', localize(locale, 'Italic'), 'ej2-pptx-ribbon-format--i', false),
-                    fontFormatItem(RibbonItemId.FontUnderline, 'U', localize(locale, 'Underline'), 'ej2-pptx-ribbon-format--u', false),
-                    fontFormatItem(RibbonItemId.FontStrikethrough, 'S', localize(locale, 'Strikethrough'), 'ej2-pptx-ribbon-format--s', false),
+                    fontFormatItem(RibbonItemId.FontBold, 'B', localize(locale, 'Bold'), 'ej2-pptx-ribbon-format--b', false, iconOnly),
+                    fontFormatItem(RibbonItemId.FontItalic, 'I', localize(locale, 'Italic'), 'ej2-pptx-ribbon-format--i', false, iconOnly),
+                    fontFormatItem(RibbonItemId.FontUnderline, 'U', localize(locale, 'Underline'), 'ej2-pptx-ribbon-format--u', false, iconOnly),
+                    fontFormatItem(RibbonItemId.FontStrikethrough, 'S', localize(locale, 'Strikethrough'), 'ej2-pptx-ribbon-format--s', false, iconOnly),
                     readOnly
                 ]
             }
@@ -226,12 +283,12 @@ export function buildFontGroup(host?: RibbonHost): RibbonGroupModel {
  * @returns {RibbonTabModel} Tab model
  */
 export function buildHomeTab(host: RibbonHost): RibbonTabModel {
-    return {
+    return applyMobileIconOnly({
         id: RibbonTabId.Home,
         header: localize(host.locale, 'Home'),
         groups: [
             buildClipboardGroup(host),
             buildFontGroup(host)
         ]
-    };
+    }, host);
 }

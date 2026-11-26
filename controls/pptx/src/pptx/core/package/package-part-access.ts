@@ -12,6 +12,7 @@
  * @internal
  */
 import { SecurityLimits } from '../security/limits';
+import { OoxmlElement } from '../xml/dom';
 import { OpcPackage, PackagePart } from './package-model';
 import { PackageRelationship } from './relationships';
 import { arrayAt } from '../util/es5-compat';
@@ -118,6 +119,11 @@ export interface PackagePartAccess {
      * Iterates current package parts (for size / media accounting).
      */
     iterateParts(): IterableIterator<PackagePart>;
+    /**
+     * Live `p:presentation` root, when this access was created from a document.
+     * Save flushes this root, so notes-master registration must mutate it.
+     */
+    readonly presentationRoot?: OoxmlElement;
 }
 /**
  * Builds live part access closures over a package.
@@ -127,9 +133,12 @@ export interface PackagePartAccess {
  * @param {OpcPackage} pkg - Mutable package owned by the document.
  * @returns {PackagePartAccess} Access used by optional feature modules (notes write-back / create, …).
  */
-export function createPackagePartAccess(pkg: OpcPackage): PackagePartAccess {
+export function createPackagePartAccess(pkg: OpcPackage, presentationRoot?: () => OoxmlElement): PackagePartAccess {
     return {
         limits: pkg.limits,
+        get presentationRoot(): OoxmlElement | undefined {
+            return presentationRoot === undefined ? undefined : presentationRoot();
+        },
         getRelationships: (sourcePartName: string = '/') => {
             const key: string = sourcePartName === '' ? '/' : sourcePartName;
             const rels: Array<PackageRelationship> = pkg.partRelationships.get(key);

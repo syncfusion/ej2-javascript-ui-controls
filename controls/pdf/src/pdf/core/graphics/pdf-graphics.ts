@@ -6,6 +6,7 @@ import { _PdfDictionary, _PdfReference, _PdfName } from './../pdf-primitives';
 import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfCjkStandardFont, PdfFont, PdfFontStyle, PdfStandardFont, PdfTrueTypeFont } from './../fonts/pdf-standard-font';
 import { _PdfStringLayouter, _PdfStringLayoutResult, _LineInfo, _LineType, _StringTokenizer } from './../fonts/string-layouter';
+import { _OtfGlyphInfo, _OtfGlyphInfoList } from './../fonts/complex-script';
 import { PdfTextAlignment, _PdfGraphicsUnit, PdfTextDirection, PdfSubSuperScript, PdfBlendMode, PdfLineJoin, PdfLineCap, PdfDashStyle, PdfFillMode, PathPointType, PdfRotationAngle } from './../enumerator';
 import { PdfStringFormat, PdfVerticalAlignment } from './../fonts/pdf-string-format';
 import { PdfTemplate } from './pdf-template';
@@ -2912,6 +2913,10 @@ export class PdfGraphics {
      */
     _drawUnicodeLine(lineInfo: _LineInfo, width: number, font: PdfFont, format: PdfStringFormat): void {
         const line: string = lineInfo._text;
+        if (lineInfo._openTypeGlyphList) {
+            this._drawShapedGlyphs(lineInfo, font as PdfTrueTypeFont, format);
+            return;
+        }
         const rtl: boolean = (format !== null && typeof format !== 'undefined' && format.rightToLeft);
         const useWordSpace: boolean = (format !== null && typeof format !== 'undefined' && format.wordSpacing > 0);
         const ttfFont: PdfTrueTypeFont = font as PdfTrueTypeFont;
@@ -3050,6 +3055,73 @@ export class PdfGraphics {
             token = _bytesToString(bytes as Uint8Array);
         }
         return token;
+    }
+    /**
+     * Draws a shaped glyph list produced by the complex-script pipeline.
+     *
+     * @private
+     * @param {_LineInfo} lineInfo Laid out line carrying the retained shaped glyph list.
+     * @param {PdfTrueTypeFont} font Unicode TrueType font in use.
+     * @param {PdfStringFormat} format Optional string format.
+     * @returns {void} nothing.
+     */
+    _drawShapedGlyphs(lineInfo: _LineInfo, font: PdfTrueTypeFont, format?: PdfStringFormat): void {
+        if (font === null || typeof font === 'undefined' || !(font._fontInternal instanceof _UnicodeTrueTypeFont)) {
+            return;
+        }
+        const glyphList: _OtfGlyphInfoList = lineInfo._openTypeGlyphList;
+        if (glyphList === null || typeof glyphList === 'undefined' || glyphList._length === 0) {
+            return;
+        }
+        const internal: _UnicodeTrueTypeFont = font._fontInternal as _UnicodeTrueTypeFont;
+        const rtl: boolean = lineInfo._bidiLevels !== null && typeof lineInfo._bidiLevels !== 'undefined' &&
+            lineInfo._bidiLevels.length > 0 && lineInfo._bidiLevels[0] === 2;
+        const scale: number = 0.001 * font.size;
+        const charSpacing: number = (format !== null && typeof format !== 'undefined') ? format.characterSpacing : 0;
+        for (let i: number = 0; i < glyphList._length; i++) {
+            const glyph: _OtfGlyphInfo = rtl ?
+                glyphList._glyphs[glyphList._length - 1 - i] :
+                glyphList._glyphs[<number>i];
+            if (glyph._unsupportedGlyph && glyph._index === 0 && glyph._characters.trim() === '') {
+                continue;
+            }
+            internal._setSymbols(glyph._characters);
+            internal._setShapedGlyph(glyph._index, glyph._characters);
+        }
+        let currentX: number = 0;
+        let lastTlmX: number = 0;
+        let lastTlmY: number = 0;
+        for (let i: number = 0; i < glyphList._length; i++) {
+            const glyph: _OtfGlyphInfo = rtl ?
+                glyphList._glyphs[glyphList._length - 1 - i] :
+                glyphList._glyphs[<number>i];
+            if (glyph._unsupportedGlyph && glyph._index === 0 && glyph._characters.trim() === '') {
+                continue;
+            }
+            const targetX: number = currentX + (glyph._leadingX * scale);
+            const targetY: number = glyph._leadingY * scale;
+            const dx: number = targetX - lastTlmX;
+            const dy: number = targetY - lastTlmY;
+            if (dx !== 0 || dy !== 0) {
+                this._sw._startNextLine(dx, dy);
+                lastTlmX = targetX;
+                lastTlmY = targetY;
+            }
+            internal._setSymbols(glyph._characters);
+            this._sw._showText(this._glyphsToPdfString(String.fromCharCode(glyph._index)));
+            currentX += (glyph._width + glyph._xAdvance) * scale + charSpacing;
+        }
+    }
+    /**
+     * Converts a string of 16-bit glyph identifiers into a PDF-safe literal.
+     *
+     * @private
+     * @param {string} value - Glyph identifier string.
+     * @returns {string} PDF-safe literal string.
+     */
+    private _glyphsToPdfString(value: string): string {
+        const bytes: Uint8Array = _stringToUnicodeArray(value);
+        return _bytesToString(bytes as Uint8Array);
     }
     /**
      * Computes the vertical offset needed to achieve the requested vertical alignment.

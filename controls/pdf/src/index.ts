@@ -95,6 +95,7 @@ export * from './pdf/core/fonts/string-layouter';
 export * from './pdf/core/fonts/ttf-reader';
 export * from './pdf/core/fonts/ttf-table';
 export * from './pdf/core/fonts/unicode-true-type-font';
+export * from './pdf/core/fonts/complex-script';
 export * from './pdf/core/form/field';
 export * from './pdf/core/form/form';
 export * from './pdf/core/form/pdf-barcode-field';

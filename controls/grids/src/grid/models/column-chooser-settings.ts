@@ -83,4 +83,13 @@ export class ColumnChooserSettings extends ChildProperty<ColumnChooserSettings> 
      */
     @Property(0)
     public immediateModeDelay ?: number;
+
+    /**
+     * If set to true, the columns can be reordered by drag and drop (or Alt + Up/Down arrow keys) in the column chooser.
+     * It requires the grid `allowReordering` property to be enabled and the `Reorder` module to be injected.
+     *
+     * @default false
+     */
+    @Property(false)
+    public allowReordering: boolean;
 }

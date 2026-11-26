@@ -10,6 +10,8 @@ export * from './base/util';
 export * from './models/models';
 export * from './actions/resize';
 export * from './actions/drag';
+export * from './actions/fixed-rows';
+export * from './summary/summary';
 export * from './renderer/header-renderer';
 export * from './renderer/view-base';
 export * from './renderer/day';

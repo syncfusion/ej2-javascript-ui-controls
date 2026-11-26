@@ -1,7 +1,7 @@
 import { IGrid, IFilterMUI, EJ2Intance, IFilterCreate, IFilterWrite } from '../base/interface';
 import { Column } from '../models/column';
 import { FilterSettings } from '../base/grid';
-import { eventPromise, getZIndexCalcualtion, toggleFilterUI } from '../base/util';
+import { eventPromise, getZIndexCalcualtion, toggleFilterUI, getFilterDlgElement } from '../base/util';
 import { ServiceLocator } from '../services/service-locator';
 import { Query, DataManager, DataUtil, Deferred } from '@syncfusion/ej2-data';
 import { CheckBoxSelection, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
@@ -29,6 +29,7 @@ export class BooleanFilterUI implements IFilterMUI {
     private dropInstance: DropDownList;
     private multiSelectCheckBoxInstance: MultiSelect;
     private dialogObj: Dialog;
+    private dlgElement: Element;
     private dropdownOpen: Function;
     private dropdownComplete: Function;
     private multiSelectDropdownOpen: Function;
@@ -47,15 +48,18 @@ export class BooleanFilterUI implements IFilterMUI {
     public create(args: IFilterCreate): void {
         this.elem = this.parent.createElement('input', { className: 'e-flmenu-input', id: 'bool-ui-' + args.column.uid });
         args.target.appendChild(this.elem);
+        this.dlgElement = getFilterDlgElement(args.dialogObj, args.target);
         this.multiSelectElement = this.parent.createElement('input', { className: 'multiselect-input', id: 'multiselectbool-ui-' + args.column.uid });
         args.target.appendChild(this.multiSelectElement);
         this.createDropDownList(args);
         this.createMultiSelectDropDown(args);
-        toggleFilterUI(args.getOptrInstance.dropOptr.value as string, args.column.uid, args.column, args.column.type, args.dialogObj);
+        toggleFilterUI(args.getOptrInstance.dropOptr.value as string, args.column.uid, args.column, args.column.type, args.dialogObj,
+                       this.dlgElement);
     }
 
     public write(args: IFilterWrite): void {
-        const operatorDropdown : DropDownList = this.parent.filterModule.filterModule.getOperatorDropdown();
+        const operatorDropdown : DropDownList = args.getOptrInstance ? args.getOptrInstance.dropOptr :
+            this.parent.filterModule.filterModule.getOperatorDropdown();
         const dropdownObject: DropDownList = this.getBooleanInstance(args.column.uid);
         const multiSelectObject: MultiSelect = this.getMultiSelectInstance(args.column.uid);
         if (operatorDropdown .value === 'in' || operatorDropdown .value === 'notin') {
@@ -151,11 +155,11 @@ export class BooleanFilterUI implements IFilterMUI {
     }
 
     private getBooleanInstance(uid: string): DropDownList {
-        return (<EJ2Intance>document.querySelector(`#bool-ui-${uid}`)).ej2_instances[0];
+        return this.dropInstance || (<EJ2Intance>document.querySelector(`#bool-ui-${uid}`)).ej2_instances[0];
     }
 
     private getMultiSelectInstance(uid: string): MultiSelect {
-        return (<EJ2Intance>document.querySelector(`#multiselectbool-ui-${uid}`)).ej2_instances[0];
+        return this.multiSelectCheckBoxInstance || (<EJ2Intance>document.querySelector(`#multiselectbool-ui-${uid}`)).ej2_instances[0];
     }
 
     private openPopup(args: { popup: Popup }): void {
@@ -168,7 +172,8 @@ export class BooleanFilterUI implements IFilterMUI {
         };
     }
 
-    public destroy(): void {
+    public destroy(args?: { element?: Element }): void {
+        if (args && args.element && this.dlgElement && args.element !== this.dlgElement) { return; }
         this.parent.off(events.filterMenuClose, this.destroy);
         this.parent.off(events.destroy, this.destroy);
         if (this.dropInstance && !this.dropInstance.isDestroyed) {

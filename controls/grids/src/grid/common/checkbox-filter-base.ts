@@ -17,6 +17,7 @@ import { Input } from '@syncfusion/ej2-inputs';
 import { createSpinner, hideSpinner,     showSpinner } from '@syncfusion/ej2-popups';
 import { getFilterMenuPostion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, getColumnByForeignKeyValue, getListHeight, infiniteRemoveElements, infiniteAppendElements } from '../base/util';
 import { InputArgs } from '@syncfusion/ej2-inputs';
+import { renderToolPanelFooter, resetToolPanelHost } from './tool-panel-filter-host';
 import { SearchSettingsModel } from '../base/grid-model';
 import { IXLFilter, FilterStateObj } from '../common/filter-interface';
 import { DataResult, EJ2Intance } from '../base/interface';
@@ -37,6 +38,8 @@ export class CheckBoxFilterBase {
     protected isFiltered: boolean | number;
     protected dlg: Element;
     protected dialogObj: Dialog;
+    private toolPanelBtns: Button[] = [];
+    private toolPanelClasses: string[] = [];
     protected cBox: HTMLElement;
     protected spinner: HTMLElement;
     protected searchBox: Element;
@@ -154,7 +157,9 @@ export class CheckBoxFilterBase {
                     }
                 }];
             } else {
-                (<{ footerTemplate?: null }>(this.dialogObj as DialogModel)).footerTemplate = null;
+                if (this.dialogObj) {
+                    (<{ footerTemplate?: null }>(this.dialogObj as DialogModel)).footerTemplate = null;
+                }
                 return null;
             }
         }
@@ -194,7 +199,7 @@ export class CheckBoxFilterBase {
         EventHandler.add(this.dlg, 'click', this.clickHandler, this);
         EventHandler.add(this.dlg, 'keyup', this.keyupHandler, this);
         this.searchHandler = debounce(this.searchBoxKeyUp, 200);
-        const elem: Element = this.dialogObj.element.querySelector('.e-searchinput');
+        const elem: Element = this.getDlgElement().querySelector('.e-searchinput');
         if (elem) {
             EventHandler.add(elem, 'keyup', this.searchHandler, this);
             EventHandler.add(elem, 'input', this.searchHandler, this);
@@ -204,7 +209,7 @@ export class CheckBoxFilterBase {
     private unWireEvents(): void {
         EventHandler.remove(this.dlg, 'click', this.clickHandler);
         EventHandler.remove(this.dlg, 'keyup', this.keyupHandler);
-        const elem: Element = this.dialogObj.element.querySelector('.e-searchinput');
+        const elem: Element = this.getDlgElement().querySelector('.e-searchinput');
         if (elem) {
             EventHandler.remove(elem, 'keyup', this.searchHandler);
             EventHandler.remove(elem, 'input', this.searchHandler);
@@ -263,7 +268,7 @@ export class CheckBoxFilterBase {
         if (isNullOrUndefined(this.sInput)) { return; }
         if (isNullOrUndefined(e) || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown' && e.key !== 'Tab' && !(e.key === 'Tab' && e.shiftKey))) {
             if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-                this.parent.showMaskRow(undefined, this.dialogObj.element);
+                this.parent.showMaskRow(undefined, this.getDlgElement());
             }
             if (this.isCheckboxFilterTemplate) {
                 this.parent.notify('refreshCheckbox', { event: e });
@@ -394,48 +399,52 @@ export class CheckBoxFilterBase {
             options.cancel = args.cancel;
             return;
         }
-        this.dialogObj = new Dialog({
-            visible: false, content: this.sBox as HTMLElement,
-            close: this.closeDialog.bind(this),
-            enableRtl: this.parent.enableRtl,
-            width: (!isNullOrUndefined(parentsUntil(options.target, 'e-bigger')))
-                || this.parent.element.classList.contains('e-device') ? 260 : 255,
-            target: this.parent.element, animationSettings:
-                { effect: 'None' },
-            created: this.dialogCreated.bind(this),
-            open: this.dialogOpen.bind(this),
-            cssClass: this.getDialogCssClass()
-        });
-        const dialogButtons: Object[] = this.getDialogButtons();
-        this.dialogObj.buttons = dialogButtons;
-        const isStringTemplate: string = 'isStringTemplate';
-        this.dialogObj[`${isStringTemplate}`] = true;
-        this.renderResponsiveFilter(options);
-        const dialogLabel: string = this.parent.filterSettings && (<{type: string}>this.parent.filterSettings).type === 'CheckBox' ?
-            this.getLocalizedLabel('CheckBoxFilterDialogARIA') : this.getLocalizedLabel('ExcelFilterDialogARIA');
-        this.dlg.setAttribute('aria-label', dialogLabel);
-        if (options.isResponsiveFilter) {
-            const responsiveCnt: HTMLElement = document.querySelector('.e-responsive-dialog > .e-dlg-content > .e-mainfilterdiv');
-            responsiveCnt.appendChild(this.dlg);
+        if (options.isToolPanel) {
+            this.renderToolPanel(options);
         } else {
-            this.parent.element.appendChild(this.dlg);
+            this.dialogObj = new Dialog({
+                visible: false, content: this.sBox as HTMLElement,
+                close: this.closeDialog.bind(this),
+                enableRtl: this.parent.enableRtl,
+                width: (!isNullOrUndefined(parentsUntil(options.target, 'e-bigger')))
+                    || this.parent.element.classList.contains('e-device') ? 260 : 255,
+                target: this.parent.element, animationSettings:
+                    { effect: 'None' },
+                created: this.dialogCreated.bind(this),
+                open: this.dialogOpen.bind(this),
+                cssClass: this.getDialogCssClass()
+            });
+            const dialogButtons: Object[] = this.getDialogButtons();
+            this.dialogObj.buttons = dialogButtons;
+            const isStringTemplate: string = 'isStringTemplate';
+            this.dialogObj[`${isStringTemplate}`] = true;
+            this.renderResponsiveFilter(options);
+            const dialogLabel: string = this.parent.filterSettings && (<{type: string}>this.parent.filterSettings).type === 'CheckBox' ?
+                this.getLocalizedLabel('CheckBoxFilterDialogARIA') : this.getLocalizedLabel('ExcelFilterDialogARIA');
+            this.dlg.setAttribute('aria-label', dialogLabel);
+            if (options.isResponsiveFilter) {
+                const responsiveCnt: HTMLElement = document.querySelector('.e-responsive-dialog > .e-dlg-content > .e-mainfilterdiv');
+                responsiveCnt.appendChild(this.dlg);
+            } else {
+                this.parent.element.appendChild(this.dlg);
+            }
+            this.dialogObj.appendTo(this.dlg as HTMLElement);
+            this.dialogObj.element.style.maxHeight = options.isResponsiveFilter ? 'none' : this.options.height + 'px';
+            this.dialogObj.show();
+            if ((this.parent as IGrid) && (this.parent as IGrid).filterSettings && ((this.parent as IGrid).filterSettings.type === 'CheckBox'
+                || (this.options.column && this.options.column.filter && this.options.column.filter.type === 'CheckBox')) &&
+                ((this.parent as IGrid).getContent().firstElementChild as HTMLElement).offsetHeight < this.dialogObj.element.offsetHeight &&
+                !parentsUntil(this.parent.element, 'e-gantt-dialog')) {
+                resetDialogAppend((this.parent as IGrid), this.dialogObj);
+            }
+            const content: HTMLElement = this.dialogObj.element.querySelector('.e-dlg-content');
+            content.appendChild(this.sBox);
         }
-        this.dialogObj.appendTo(this.dlg as HTMLElement);
-        this.dialogObj.element.style.maxHeight = options.isResponsiveFilter ? 'none' : this.options.height + 'px';
-        this.dialogObj.show();
-        if ((this.parent as IGrid) && (this.parent as IGrid).filterSettings && ((this.parent as IGrid).filterSettings.type === 'CheckBox'
-            || (this.options.column && this.options.column.filter && this.options.column.filter.type === 'CheckBox')) &&
-            ((this.parent as IGrid).getContent().firstElementChild as HTMLElement).offsetHeight < this.dialogObj.element.offsetHeight &&
-            !parentsUntil(this.parent.element, 'e-gantt-dialog')) {
-            resetDialogAppend((this.parent as IGrid), this.dialogObj);
-        }
-        const content: HTMLElement = this.dialogObj.element.querySelector('.e-dlg-content');
-        content.appendChild(this.sBox);
         this.wireEvents();
         if (!(this.parent as IGrid).enableAdaptiveUI) {
             if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer'
                 && !this.infiniteRenderMod) {
-                this.parent.showMaskRow(undefined, this.dialogObj.element);
+                this.parent.showMaskRow(undefined, this.getDlgElement());
             }
             if (this.infiniteRenderMod && this.parent.filterSettings && this.parent.filterSettings.loadingIndicator === 'Shimmer') {
                 this.showMask();
@@ -455,6 +464,31 @@ export class CheckBoxFilterBase {
             showSpinner(this.spinner);
         }
         this.getAllData();
+    }
+
+    private renderToolPanel(options: IFilterArgs): void {
+        const host: HTMLElement = options.target as HTMLElement;
+        this.dlg = host;
+        this.toolPanelClasses = ['e-checkboxfilter', 'e-filter-popup'].concat(this.getDialogCssClass().split(' ')).filter((c: string) => !!c);
+        host.setAttribute('data-uid', this.options.column.uid);
+        host.classList.add(...this.toolPanelClasses);
+        host.appendChild(this.sBox);
+        const buttons: { click: (e: MouseEvent) => void, buttonModel: { content: string, cssClass: string, isPrimary: boolean } }[] =
+            this.getDialogButtons() as never[] || [];
+        this.toolPanelBtns = renderToolPanelFooter(host, buttons.map((b: { click: (e: MouseEvent) => void,
+            buttonModel: { content: string, cssClass: string, isPrimary: boolean } }) => ({
+            content: b.buttonModel.content, cssClass: b.buttonModel.cssClass, isPrimary: b.buttonModel.isPrimary, click: b.click
+        })));
+    }
+
+    private getDlgElement(): HTMLElement {
+        return this.dialogObj ? this.dialogObj.element : this.dlg as HTMLElement;
+    }
+
+    private getOkButton(): Button {
+        if (this.options.isResponsiveFilter) { return null; }
+        if (this.options.isToolPanel) { return this.toolPanelBtns[0] || null; }
+        return this.dialogObj.buttons.length ? (<{ btnObj?: Button }>(this.dialogObj as DialogModel)).btnObj[0] : null;
     }
 
     private renderResponsiveFilter(options: IFilterArgs): void {
@@ -491,7 +525,7 @@ export class CheckBoxFilterBase {
         if (this.infiniteRenderMod && this.infinitePermenantLocalData.length && !this.options.isRemote) {
             (this.options.dataSource as DataManager).dataSource.json = this.infinitePermenantLocalData;
         }
-        if (this.dialogObj && !this.dialogObj.isDestroyed) {
+        if (this.options && this.options.isToolPanel ? !!this.dlg : this.dialogObj && !this.dialogObj.isDestroyed) {
             this.isBlanks = false;
             const filterTemplateCol: Column[] = (this.options.columns as Column[]).filter((col: Column) => col.getFilterItemTemplate());
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -502,7 +536,8 @@ export class CheckBoxFilterBase {
             if ((this.parent.isReact || this.parent.isVue) && this.parent.destroyTemplate !== undefined) {
                 clearReactVueTemplates(this.parent, ['filterItemTemplate']);
             }
-            this.parent.notify(events.filterMenuClose, { field: this.options.field });
+            this.parent.notify(events.filterMenuClose, {
+                field: this.options.field, element: this.getDlgElement(), isToolPanel: this.options.isToolPanel });
             this.unWireEvents();
             if (this.searchInputArgs && this.searchInputArgs.element && this.searchInputArgs.element.parentElement) {
                 Input.destroy(this.searchInputArgs);
@@ -511,14 +546,20 @@ export class CheckBoxFilterBase {
             this.searchInputArgs = null;
             this.sInput = null;
             if (this.parent.isReact && this.options.column.filter && typeof (this.options.column.filter.itemTemplate) !== 'string'
+             && !this.options.isToolPanel
              && (this.options.column.filter.type === 'CheckBox' || this.options.column.filter.type === 'Excel')) {
                 this.dialogObj.element.querySelector('.e-dlg-content').innerHTML = '';
             }
-            this.dialogObj.destroy();
-            if (this.dialogObj['dlgClosedBy'] === 'escape') {
+            if (this.options.isToolPanel) {
+                resetToolPanelHost(this.dlg as HTMLElement, this.toolPanelBtns, this.toolPanelClasses);
+                this.toolPanelBtns = [];
+            } else {
+                this.dialogObj.destroy();
+            }
+            if (this.dialogObj && this.dialogObj['dlgClosedBy'] === 'escape') {
                 (this.parent as IGrid).isColumnMenuFilterClosing = true;
             }
-            if (this.dlg && this.dlg.parentElement) {
+            if (this.dlg && this.dlg.parentElement && !this.options.isToolPanel) {
                 remove(this.dlg);
                 if (!(this.parent && (this.parent as IGrid).showColumnChooser)) {
                     let gridPopup: HTMLElement = document.getElementById(this.parent.element.id + '_e-popup');
@@ -530,6 +571,9 @@ export class CheckBoxFilterBase {
             }
             this.dlg = null;
             this.parent.notify(events.filterDialogClose, {});
+            if (this.options.isToolPanel && this.options.toolPanelClose) {
+                this.options.toolPanelClose();
+            }
         }
     }
 
@@ -636,7 +680,7 @@ export class CheckBoxFilterBase {
             }
         }
         let optr: string = 'equal';
-        const ddlValue: EJ2Intance = (this.dialogObj.element.querySelector('.e-dropdownlist') as EJ2Intance);
+        const ddlValue: EJ2Intance = (this.getDlgElement().querySelector('.e-dropdownlist') as EJ2Intance);
         if (ddlValue) {
             this.options.operator = optr = ddlValue.ej2_instances[0].value as string;
         }
@@ -1274,7 +1318,7 @@ export class CheckBoxFilterBase {
                 (this.dlg.querySelector('.e-dlg-content') as HTMLElement).style.overflow = 'hidden';
             }
             const backgroundColor: string = this.isExcel && !wrapperElem.children.length && !this.dlg.classList.contains('e-excelfilter') ?
-                '' : getComputedStyle(this.dlg.querySelector('.e-dlg-content')).backgroundColor;
+                '' : getComputedStyle((this.dlg.querySelector('.e-dlg-content') || this.dlg)).backgroundColor;
             maskList.style.cssText = 'width: ' + computedStyle.width + '; min-height: ' + computedStyle.minHeight + '; height: ' +
             height + 'px; margin: ' + computedStyle.margin + '; border-style: ' + computedStyle.borderStyle + '; border-width: '
             + computedStyle.borderWidth + '; border-color: ' + computedStyle.borderColor + '; position: absolute; background-color: ' +
@@ -1314,15 +1358,15 @@ export class CheckBoxFilterBase {
     }
 
     private removeMask(): void {
-        const maskLists: NodeListOf<Element> = this.dialogObj.element.querySelectorAll('.e-mask-ftrchk');
+        const maskLists: NodeListOf<Element> = this.getDlgElement().querySelectorAll('.e-mask-ftrchk');
         if (maskLists.length) {
             for (let i: number = 0; i < maskLists.length; i++) {
                 remove(maskLists[i as number]);
             }
         }
-        const maskParent: HTMLElement = this.dialogObj.element.querySelector('.e-checkboxlist.e-masklist');
+        const maskParent: HTMLElement = this.getDlgElement().querySelector('.e-checkboxlist.e-masklist');
         if (maskParent) {
-            remove(this.dialogObj.element.querySelector('.e-checkboxlist.e-masklist'));
+            remove(this.getDlgElement().querySelector('.e-checkboxlist.e-masklist'));
         }
     }
 
@@ -1466,7 +1510,7 @@ export class CheckBoxFilterBase {
             }
         }).catch(() => {
             if (this.infiniteRenderMod && this.parent.filterSettings && this.parent.filterSettings.loadingIndicator === 'Shimmer') {
-                this.parent.showMaskRow(undefined, this.dialogObj.element);
+                this.parent.showMaskRow(undefined, this.getDlgElement());
             }
         });
     }
@@ -1624,11 +1668,7 @@ export class CheckBoxFilterBase {
             element: this.cBox,
             type: this.options.type,
             format: this.options.type,
-            btnObj: this.options.isResponsiveFilter
-                ? null
-                : this.dialogObj.buttons.length
-                    ? (<{ btnObj?: Button }>(this.dialogObj as DialogModel)).btnObj[0]
-                    : null,
+            btnObj: this.getOkButton(),
             searchBox: this.searchBox
         };
         this.parent.notify(events.beforeCheckboxfilterRenderer, args1);
@@ -1895,9 +1935,8 @@ export class CheckBoxFilterBase {
         if (this.cBox.querySelector('.e-add-current')) {
             cnt -= 1;
         }
-        let btn: Button;
-        if (!this.options.isResponsiveFilter && this.dialogObj.buttons.length) {
-            btn = (<{ btnObj?: Button }>(this.dialogObj as DialogModel)).btnObj[0];
+        const btn: Button = this.getOkButton();
+        if (btn) {
             btn.disabled = false;
         }
         const input: HTMLInputElement = elem.previousSibling as HTMLInputElement;
@@ -1949,10 +1988,7 @@ export class CheckBoxFilterBase {
     private createFilterItems(data: Object[], isInitial?: boolean, args1?: CheckBoxBeforeRenderer): void {
         const moduleName : Function = (<{ getModuleName?: Function }>this.options.dataManager.adaptor).getModuleName;
         const cBoxes: Element = this.parent.createElement('div');
-        let btn: Button; let disabled: boolean = false;
-        if (!this.options.isResponsiveFilter && this.dialogObj.buttons.length) {
-            btn = (<{ btnObj?: Button }>(this.dialogObj as DialogModel)).btnObj[0];
-        }
+        const btn: Button = this.getOkButton(); let disabled: boolean = false;
         let nullCounter: number = -1;
         let key: string = 'ejValue';
         if (!args1.executeQuery) {

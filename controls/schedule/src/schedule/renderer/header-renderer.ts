@@ -71,6 +71,17 @@ export class HeaderRenderer {
         }
     }
 
+    private getDateRangeButton(): HTMLElement {
+        return this.toolbarObj && this.toolbarObj.element ?
+            this.toolbarObj.element.querySelector('.e-date-range .e-tbar-btn') as HTMLElement : null;
+    }
+    private updateDateRangeExpanded(expanded: boolean): void {
+        const rangeBtn: HTMLElement = this.getDateRangeButton();
+        if (rangeBtn) {
+            rangeBtn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        }
+    }
+
     public renderHeader(): void {
         this.element = createElement('div', { className: cls.TOOLBAR_CONTAINER });
         const toolbarEle: Element = createElement('div', { className: cls.HEADER_TOOLBAR });
@@ -112,7 +123,8 @@ export class HeaderRenderer {
 
     public updateItems(): void {
         if (this.toolbarObj) {
-            const items: ItemModel[] = this.getItems();
+            const items: ItemModel[] = (this.parent.toolbarItems && this.parent.toolbarItems.length > 0) ?
+                this.getToolbarItems() : this.getItems();
             this.parent.trigger(events.actionBegin, { requestType: 'toolbarItemRendering', items: items }, (args: ActionEventArgs) => {
                 this.toolbarObj.items = args.items;
                 this.toolbarObj.dataBind();
@@ -200,6 +212,9 @@ export class HeaderRenderer {
             return;
         }
         selEle.firstElementChild.setAttribute('aria-haspopup', 'true');
+        if (!selEle.firstElementChild.hasAttribute('aria-expanded')) {
+            selEle.firstElementChild.setAttribute('aria-expanded', 'false');
+        }
         const textEle: Element = selEle.querySelector('.e-tbar-btn-text');
         if (this.parent.activeViewOptions.dateRangeTemplate) {
             textEle.textContent = '';
@@ -352,7 +367,8 @@ export class HeaderRenderer {
                     items.push({...tbItem, ...propItem});
                     break;
                 case 'Views':
-                    if (!isNullOrUndefined(this.parent.views) && this.parent.views.length > 1) {
+                    if (!this.isZoomActive() &&
+                        !isNullOrUndefined(this.parent.views) && this.parent.views.length > 1) {
                         for (const view of this.parent.views) {
                             tbItem = this.getItemObject(view);
                             tbItem.align = propItem.align ? propItem.align : item.align;
@@ -404,12 +420,27 @@ export class HeaderRenderer {
                 items.push({ align: 'Right', type: 'Separator', cssClass: 'e-schedule-seperator' });
             }
         }
-        if (!isNullOrUndefined(this.parent.views) && this.parent.views.length > 1) {
+        // Suppress the view-selection buttons when Zoom mode is
+        // active. `Previous`, `Next`, `Today`, and `DateRangeText`
+        // remain in the rendered items list above.
+        if (!this.isZoomActive() &&
+            !isNullOrUndefined(this.parent.views) && this.parent.views.length > 1) {
             for (const item of this.parent.views) {
                 items.push(this.getItemObject(item));
             }
         }
         return items;
+    }
+
+    /**
+     * Returns `true` when Zoom mode is active (i.e. the consumer has
+     * supplied a non-empty `zoomLevels` array).
+     *
+     * @returns {boolean} `true` when Zoom mode is active.
+     * @private
+     */
+    private isZoomActive(): boolean {
+        return !isNullOrUndefined(this.parent.zoomLevels) && this.parent.zoomLevels.length > 0;
     }
 
     private getItemObject(item: View | ViewsModel): ItemModel {
@@ -515,7 +546,13 @@ export class HeaderRenderer {
             position: { X: 'left', Y: 'bottom' },
             collision: {X: 'fit'},
             viewPortElement: this.element,
-            enableRtl: this.parent.enableRtl
+            enableRtl: this.parent.enableRtl,
+            open: (): void => {
+                this.updateDateRangeExpanded(true);
+            },
+            close: (): void => {
+                this.updateDateRangeExpanded(false);
+            }
         });
         const calendarView: CalendarView = this.getCalendarView();
         const isDisplayDate: boolean = this.parent.currentView === 'Month' &&

@@ -637,3 +637,13 @@ export type DependencyType =
     'SS' |
     'FF' |
     'SF';
+
+/**
+ * Defines the available S-Curve dataset types.
+ *
+ * ```props
+ * * Progress - Represents cumulative task progress values.
+ * * Duration - Represents cumulative task duration values.
+ * ```
+ */
+export type SCurveField = 'Progress' | 'Duration';

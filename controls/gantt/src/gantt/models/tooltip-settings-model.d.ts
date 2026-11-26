@@ -13,6 +13,14 @@ export interface TooltipSettingsModel {
     showTooltip?: boolean;
 
     /**
+     * Specifies whether split-task segments display segment-specific tooltip content.
+     * When disabled, hovering a segment displays the complete task tooltip.
+     *
+     * @default false
+     */
+    showSegmentTooltip?: boolean;
+
+    /**
      * Defines tooltip template for taskbar elements.
      *
      * @default null
@@ -51,5 +59,14 @@ export interface TooltipSettingsModel {
      * @aspType string
      */
     timeline?: string | Function;
+
+    /**
+     * Defines the template for the S-Curve tooltip.
+     * The template receives the hovered point: field, name, date, percentage and value.
+     *
+     * @default null
+     * @aspType string
+     */
+    sCurve?: string | Function;
 
 }

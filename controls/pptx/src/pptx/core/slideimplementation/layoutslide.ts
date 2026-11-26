@@ -22,6 +22,8 @@ import { ColorMapping } from '../theme/color-mapping';
 import { Shape } from '../shapes/shape';
 import { OoxmlElement } from '../xml/index';
 import { MasterSlide } from './masterslide';
+import { HeadersFooters } from '../headers-footers/header-footer';
+
 import { DirectSlideBackground, readDirectBackground } from '../presentation/background';
 /**
  * Construction options for {@link LayoutSlide}.
@@ -283,6 +285,29 @@ export class LayoutSlide {
      * @throws {Error} When `shapesPerSlide` or `groupNestingDepth` is exceeded.
      * @returns {ShapeCollection} The result.
      */
+    /**
+     * Header, footer, date and time, and slide number on this layout.
+     *
+     * @remarks Direct `p:hf` and placeholders on this layout part.
+     * @returns {HeadersFooters} Live entries.
+     */
+    /**
+     * Invokes the layout mutation hook so a slide visibility edit is flushed.
+     *
+     * @internal
+     * @returns {() => void} Hook.
+     */
+    notifyMutated(): () => void {
+        const hook: (() => void) | undefined = this.onMutate;
+        return (): void => {
+            if (hook !== undefined) {
+                hook();
+            }
+        };
+    }
+    get headersFooters(): HeadersFooters {
+        return new HeadersFooters(this._root, this._limits, this.partName, this._root, this.onMutate, undefined, 'layout', undefined, this.master.getRoot());
+    }
     get shapes(): ShapeCollection {
         return bindShapeCollection(() => walkSlideShapeTree(this._root, this._limits, this.partName, this.mediaAccess, this.onMutate), {
             addTextBox: (options?: AddTextBoxOptions): Shape => {

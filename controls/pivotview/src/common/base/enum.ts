@@ -90,7 +90,8 @@ export type PdfBorderStyle =
  * Load :- Allows to load any report from the report list.
  * Grid :- Allows to show the pivot table.
  * Chart :- Allows to show the pivot chart with specific type from the built-in list.
- * Exporting :- Allow set of options to export the pivot table as PDF/Excel/CSV and the pivot chart as PDF and image format such as PNG, JPEG, SVG.
+ * Exporting :- Allow set of options to export the pivot table as PDF/Excel/CSV/HTML and the pivot chart as PDF and image format such as PNG, JPEG, SVG.
+ * Print :- Prints the currently visible pivot view.
  * Sub-total :- Allow set of options to show or hide the sub totals in the pivot table. The subtotals will not be displayed in the pivot chart by default.
  * Grand Total :- Allow set of options to show or hides the grand totals in the pivot table. By default, the grand totals will not be displayed in the pivot chart.
  * Conditional Formatting :- Allows to show the conditional formatting pop-up to apply formatting to the values.
@@ -124,8 +125,10 @@ export type ToolbarItems =
      * You can do this by selecting the checkbox at the bottom of the list.
      */
     'Chart' |
-    /** Allow set of options to export the pivot table as PDF/Excel/CSV and the pivot chart as PDF and image format such as PNG, JPEG, SVG. */
+    /** Allow set of options to export the pivot table as PDF/Excel/CSV/HTML and the pivot chart as PDF and image format such as PNG, JPEG, SVG. */
     'Export' |
+    /** Prints the currently visible pivot view. */
+    'Print' |
     /** Allow set of options to show or hide the sub totals in the pivot table. The subtotals will not be displayed in the pivot chart by default. */
     'SubTotal' |
     /** Allow set of options to show or hides the grand totals in the pivot table. By default, the grand totals will not be displayed in the pivot chart. */
@@ -145,7 +148,9 @@ export type ToolbarItems =
      */
     'NumberFormatting' |
     /** Allow options to show the conditional formatting and the number formatting pop-up that used to apply formatting to the values in the component. */
-    'Formatting';
+    'Formatting' |
+    /** Expands or restores the entire PivotView. Added only when explicitly listed in the toolbar. */
+    'FullScreen';
 
 /**
  * It defines the view port as either table or chart or both table and chart. The available options are:
@@ -1220,6 +1225,15 @@ export type FlatTotalsPosition =
     /** Displays the aggregate row below the records. */
     'Bottom';
 
+/** Specifies an image format for exporting the current PivotView composition. */
+export type ImageExportType =
+    /** Exports the current PivotView composition as a PNG image. */
+    'PNG' |
+    /** Exports the current PivotView composition as a JPEG image. */
+    'JPEG' |
+    /** Exports the current PivotView composition as an SVG image. */
+    'SVG';
+
 /**
  * Specifies the available export formats for pivot table data.
  * The available export options are:
@@ -1231,3 +1245,16 @@ export type ExportType =
     'Excel' |
     /** Exports the data in CSV (Comma-Separated Values) format. The data is flattened into a plain tabular format without pivot-specific features. */
     'CSV';
+
+/**
+ * Defines the direction in which the running totals are accumulated.
+ * ```props
+ * Row :- Accumulates the values from left to right across the columns of each row.
+ * Column :- Accumulates the values from top to bottom down the rows of each column.
+ * ```
+ */
+export type RunningTotalDirection =
+    /** Accumulates the values from left to right across the columns of each row. */
+    'Row' |
+    /** Accumulates the values from top to bottom down the rows of each column. */
+    'Column';

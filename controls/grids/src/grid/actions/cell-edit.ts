@@ -11,7 +11,7 @@ import { Column } from '../models/column';
 import * as literals from '../base/string-literals';
 import { BatchEdit } from './batch-edit';
 import { NormalEdit } from './normal-edit';
-import { CellSelectionMode, SelectionSettingsModel } from '../base';
+import { CellSelectionMode, IEdit, SelectionSettingsModel } from '../base';
 import { FormulaValue } from './formula';
 
 /**
@@ -181,6 +181,7 @@ export class CellEdit extends BatchEdit {
             requestType: 'save', action: 'edit', type: events.actionBegin, cancel: false, data: editedData,
             rowData: this.parent.getCurrentViewRecords()[parseInt(rowIndex.toString(), 10)], row: rowElement
         };
+        this.registerPendingRecord('edit', args.rowData, rowIndex);
         setValue(field, value, editedData);
         this.parent.trigger(events.actionBegin, args, (updateCellArgs: SaveEventArgs) => {
             if (updateCellArgs.cancel) {
@@ -232,6 +233,7 @@ export class CellEdit extends BatchEdit {
             index: rowIndex
         });
         setValue(columnName, cellSaveArgs.value, editedData);
+        this.registerPendingRecord('edit', cellSaveArgs.rowData, rowIndex);
         gObj.trigger(events.actionBegin, saveArgs, (updateArgs: SaveEventArgs) => {
             if (updateArgs.cancel) {
                 return;
@@ -408,6 +410,23 @@ export class CellEdit extends BatchEdit {
      */
     public editComplete(e: NotifyArgs): void {
         this.cellEditModule.editComplete(e);
+    }
+
+    /**
+     * Stores the record state before a CRUD operation, so that the shared undo/redo history can
+     * create an entry once the operation has been persisted successfully.
+     *
+     * @param {string} type - The kind of the operation: `add`, `edit` or `delete`.
+     * @param {Object} record - The record state before the operation.
+     * @param {number} rowIndex - The index of the record in the data source.
+     * @returns {void}
+     * @hidden
+     */
+    private registerPendingRecord(type: string, record: Object, rowIndex: number): void {
+        const undoRedoModule: IEdit['undoRedoModule'] = this.parent.editModule && this.parent.editModule.undoRedoModule;
+        if (undoRedoModule && undoRedoModule.setPendingRecord) {
+            undoRedoModule.setPendingRecord(record, type, rowIndex);
+        }
     }
 
     private requestSuccess(args: NotifyArgs): void {

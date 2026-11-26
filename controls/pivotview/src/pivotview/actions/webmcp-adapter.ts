@@ -1,3 +1,6 @@
+/**
+ * WebMCP tool adapter for PivotView operations.
+ */
 import { PivotView } from '../base/pivotview';
 import {
     WebMcpTool,
@@ -24,7 +27,7 @@ import { CalculatedFieldSettingsModel, ConditionalFormatSettingsModel, DataSourc
 import { IFieldOptions } from '../../base/engine';
 import { DataSourceType } from '../../base/types';
 import { ConditionalFormatSettings } from '../../model/datasourcesettings';
-import { DisplayOptionModel, PivotViewWebMcpSettingsModel } from '../base/pivotview-model';
+import { DisplayOptionModel } from '../base/pivotview-model';
 import { ChartSeriesType, View } from '../../common/base/enum';
 
 const webMcpTools: WebMcpTool[] = [
@@ -787,22 +790,22 @@ export class WebMcpPivotView {
         case 'removeFieldFromAxis': return this.handleRemoveFieldFromAxis(args as WebMcpFieldAxisArgs);
         case 'moveFieldBetweenAxes': return this.handleMoveFieldBetweenAxes(args as WebMcpMoveFieldBetweenAxesArgs);
         case 'manageCalculatedField': return this.handleManageCalculatedField(args as WebMcpManageCalculatedFieldArgs);
-        case 'clearSorting': return this.handleClearSorting(args);
-        case 'clearConditionalFormatting': return this.handleClearConditionalFormatting(args);
-        case 'clearNumberFormatting': return this.handleClearNumberFormatting(args);
+        case 'clearSorting': return this.handleClearSorting();
+        case 'clearConditionalFormatting': return this.handleClearConditionalFormatting();
+        case 'clearNumberFormatting': return this.handleClearNumberFormatting();
         case 'setDataSource': return this.handleSetDataSource(args as WebMcpSetDataSourceArgs);
         case 'applyFiltering': return this.handleApplyFiltering(args as WebMcpApplyFilteringArgs);
         case 'applySorting': return this.handleApplySorting(args as WebMcpApplySortingArgs);
         case 'applyValueSorting': return this.handleApplyValueSorting(args as WebMcpApplyValueSortingArgs);
-        case 'clearAllFilters': return this.handleClearAllFilters(args);
+        case 'clearAllFilters': return this.handleClearAllFilters();
         case 'applyConditionalFormatting': return this.handleApplyConditionalFormatting(args as WebMcpApplyConditionalFormattingArgs);
         case 'exportToExcel': return this.handleExportToExcel(args as WebMcpExportToFileArgs);
         case 'exportToPDF': return this.handleExportToPDF(args as WebMcpExportToFileArgs);
         case 'exportToCSV': return this.handleExportToCSV(args as WebMcpExportToFileArgs);
         case 'drillDownField': return this.handleDrillDownField(args as WebMcpFieldAxisArgs);
         case 'drillUpField': return this.handleDrillUpField(args as WebMcpFieldAxisArgs);
-        case 'expandAllHeaders': return this.handleExpandAllHeaders(args);
-        case 'collapseAllHeaders': return this.handleCollapseAllHeaders(args);
+        case 'expandAllHeaders': return this.handleExpandAllHeaders();
+        case 'collapseAllHeaders': return this.handleCollapseAllHeaders();
         case 'setChartType': return this.handleSetChartType(args as WebMcpSetChartTypeArgs);
         case 'toggleViewMode': return this.handleToggleViewMode(args as WebMcpToggleViewModeArgs);
         case 'applyNumberFormat': return this.handleApplyNumberFormat(args as WebMcpApplyNumberFormatArgs);
@@ -1191,7 +1194,7 @@ export class WebMcpPivotView {
         }
     }
 
-    private handleClearSorting(args: object): WebMcpToolResponse {
+    private handleClearSorting(): WebMcpToolResponse {
         try {
             const dataSourceSettings: DataSourceSettingsModel = this.parent.dataSourceSettings || ({} as DataSourceSettingsModel);
             if (!dataSourceSettings.enableSorting) {
@@ -1209,7 +1212,7 @@ export class WebMcpPivotView {
         }
     }
 
-    private handleClearConditionalFormatting(args: object): WebMcpToolResponse {
+    private handleClearConditionalFormatting(): WebMcpToolResponse {
         try {
             if (!this.parent.allowConditionalFormatting) {
                 return this.error('Conditional formatting is not enabled. Please set allowConditionalFormatting property to true.');
@@ -1230,7 +1233,7 @@ export class WebMcpPivotView {
         }
     }
 
-    private handleClearNumberFormatting(args: object): WebMcpToolResponse {
+    private handleClearNumberFormatting(): WebMcpToolResponse {
         try {
             if (!this.parent.allowNumberFormatting) {
                 return this.error('Number formatting is not enabled. Please set allowNumberFormatting property to true.');
@@ -1383,7 +1386,7 @@ export class WebMcpPivotView {
         }
     }
 
-    private handleClearAllFilters(args?: object): WebMcpToolResponse {
+    private handleClearAllFilters(): WebMcpToolResponse {
         try {
             const dataSourceSettings: DataSourceSettingsModel = this.parent.dataSourceSettings || {};
             dataSourceSettings.filterSettings = [];
@@ -1615,7 +1618,7 @@ export class WebMcpPivotView {
         }
     }
 
-    private handleExpandAllHeaders(args: object): WebMcpToolResponse {
+    private handleExpandAllHeaders(): WebMcpToolResponse {
         try {
             const dataSourceSettings: DataSourceSettingsModel = this.parent.dataSourceSettings || {};
             dataSourceSettings.expandAll = true;
@@ -1631,7 +1634,7 @@ export class WebMcpPivotView {
         }
     }
 
-    private handleCollapseAllHeaders(args: object): WebMcpToolResponse {
+    private handleCollapseAllHeaders(): WebMcpToolResponse {
         try {
             const dataSourceSettings: DataSourceSettingsModel = this.parent.dataSourceSettings || {};
             dataSourceSettings.expandAll = false;

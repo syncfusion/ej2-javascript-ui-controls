@@ -256,7 +256,7 @@ export class PdfGanttTaskbarCollection {
            this.parent.pdfExportModule.gantt.eventMarker.renderHeight = this.parent.pdfExportModule.gantt.layouter.pageHeightCollection[this.parent.pdfExportModule.gantt.currentPage].totalHeight;
             if (this.parent.pdfExportModule.gantt.enableHeader) {
                 this.parent.pdfExportModule.gantt.chartHeader.drawPageTimeline(page, startPoint, detail ,this.parent.pdfExportModule.gantt.currentPage);
-                startPoint.y = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60);
+                startPoint.y = this.parent.pdfExportModule.gantt.layouter.headerHeight;
             }
             isNextPage = true;
         }
@@ -2312,6 +2312,14 @@ export class PdfGanttTaskbarCollection {
                                        startPoint.y + adjustHeight, pixelToPoint(3), pixelToPoint(this.height));
         }
     }
+    public getMilestoneCenterOffset(): number {
+        const adjustHeight: number = this.parent.renderBaseline ?
+            pixelToPoint((this.parent.rowHeight - this.height) / 3.0) :
+            pixelToPoint((this.parent.rowHeight - this.height) / 2.0);
+        const milestoneSize: number = pixelToPoint(Math.floor(this.parent.chartRowsModule.taskBarHeight * 0.8));
+        return adjustHeight - (this.parent.chartRowsModule.taskBarHeight * 0.7) / 2 + milestoneSize / Math.sqrt(2);
+    }
+
     /**
      * @param {PdfPage} page .
      * @param {PointF} startPoint .

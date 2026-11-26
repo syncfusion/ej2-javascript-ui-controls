@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { append, prepend, createElement, extend, EventHandler, closest, addClass } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, setStyleAttribute, remove } from '@syncfusion/ej2-base';
-import { EventFieldsMapping, EventClickArgs, EventRenderedArgs, TdData, NotifyEventArgs, MoreEventsClickArgs } from '../base/interface';
+import { EventFieldsMapping, EventClickArgs, EventRenderedArgs, TdData, NotifyEventArgs, MoreEventsClickArgs,
+    EventSpacingValues, SpacingFrame, RowFrame, StackLayout } from '../base/interface';
 import { Schedule } from '../base/schedule';
 import { EventBase } from './event-base';
 import * as cls from '../base/css-constant';
@@ -9,6 +10,8 @@ import * as events from '../base/constant';
 import * as util from '../base/util';
 
 const EVENT_GAP: number = 0;
+/** The gap and the leading space in pixels that the Timeline views and TimelineYear use when the application sets none. */
+const DEFAULT_TRACK_SPACE: number = 2;
 /**
  * Month view events render
  */
@@ -18,17 +21,24 @@ export class MonthEvent extends EventBase {
     public dateRender: Date[];
     public renderedEvents: Record<string, any>[] = [];
     public eventHeight: number;
-    private monthHeaderHeight: number = 0;
+    protected monthHeaderHeight: number = 0;
     public workCells: HTMLElement[];
     public cellWidth: number;
     public cellHeight: number;
     public moreIndicatorHeight: number = 19;
+    /** The event spacing in use for the current render. It is null when none of its fields is set, so that the legacy layout runs unchanged. */
+    protected spacing: EventSpacingValues | null = util.spacingIfSet(this.parent.getEventSpacing());
+    /** The row frame reduced to the last value that fits the cell, set by checkSpacingFit. It is null while the configured frame fits. */
+    private fittedFrame: RowFrame | null = null;
+    /** Levels needed per cell, counted before the events are placed. It is only filled when event spacing is set. */
+    protected cellEventCounts: number[] = [];
     public renderType: string = 'day';
     public maxHeight: boolean;
     public withIndicator: boolean;
     public maxOrIndicator: boolean;
     public inlineValue: boolean;
     private isResourceEventTemplate: boolean;
+    protected exactMode: boolean = false;
 
     constructor(parent: Schedule) {
         super(parent);
@@ -42,6 +52,92 @@ export class MonthEvent extends EventBase {
         this.moreIndicatorHeight =
             (this.parent.rowAutoHeight && this.parent.eventSettings.ignoreWhitespace) ? 0 : this.moreIndicatorHeight;
         this.addEventListener();
+    }
+
+    /**
+     * The gap, leading and trailing space of a level track. A field the application does not set keeps today's value: a gap of 2 px
+     * and a leading space of 2 px in the Timeline views (no leading space when enableMaxHeight fills the row), a leading space of 2 px
+     * in TimelineYear, and none in Month. A trailing space the application does not set keeps the legacy behaviour, where the slot of the
+     * more indicator stays reserved (reserve is true) and no trailing space is added.
+     *
+     * @returns {RowFrame} The resolved gap, lead, trail and whether the indicator slot is reserved.
+     */
+    private getConfiguredFrame(): RowFrame {
+        const isYear: boolean = this.parent.currentView === 'TimelineYear';
+        const isTimeline: boolean = !isYear && this.parent.activeView.isTimelineView();
+        return {
+            gap: this.spacing.gap !== null ? this.spacing.gap : (isTimeline ? DEFAULT_TRACK_SPACE : 0),
+            lead: this.spacing.leadingSpace !== null ? this.spacing.leadingSpace :
+                ((isYear || (isTimeline && !this.maxHeight)) ? DEFAULT_TRACK_SPACE : 0),
+            trail: this.spacing.trailingSpace !== null ? this.spacing.trailingSpace : 0,
+            reserve: this.spacing.trailingSpace === null
+        };
+    }
+
+    /**
+     * The frame the levels are laid out with: the configured frame, or the frame reduced to the last value that fits when the
+     * configured one does not fit the cell (see checkSpacingFit).
+     *
+     * @returns {RowFrame} The gap, lead, trail and whether the indicator slot is reserved.
+     */
+    protected getRowFrame(): RowFrame {
+        return this.fittedFrame || this.getConfiguredFrame();
+    }
+
+    /**
+     * Reduces the event spacing for this render to the last value that fits when it leaves no room for one level and the more indicator
+     * in a cell, because the events or the indicator would then leave the cell or overlap each other. The gap is reduced first, then the
+     * leading and trailing space (see util.fitSpacing); a value that fits is kept. A row that grows to fit its levels (rowAutoHeight, or
+     * maxEventsPerRow without the indicator) always has room, so it keeps the configured frame.
+     *
+     * @param {number} area The height of a cell below its date label, in pixels.
+     * @returns {void}
+     */
+    protected checkSpacingFit(area: number): void {
+        this.fittedFrame = null;
+        const growsToFit: boolean = this.parent.rowAutoHeight ||
+            (this.parent.activeViewOptions.maxEventsPerRow && !this.parent.eventSettings.enableIndicator);
+        if (!this.spacing || growsToFit) {
+            return;
+        }
+        const frame: RowFrame = this.getConfiguredFrame();
+        const indicator: number = (this.maxHeight || (this.maxOrIndicator && !frame.reserve)) ? 0 : this.moreIndicatorHeight;
+        const gapCount: number = this.maxOrIndicator ? 0 : 1;
+        const fit: SpacingFrame = util.fitSpacing(area - this.eventHeight - indicator, gapCount, frame.gap, frame.lead, frame.trail);
+        if (fit.gap < frame.gap || fit.lead < frame.lead || fit.trail < frame.trail) {
+            this.fittedFrame = { gap: fit.gap, lead: fit.lead, trail: fit.trail, reserve: frame.reserve };
+        }
+    }
+
+    /**
+     * Counts, for every cell of a week row, the events that cover it, so the number of levels a cell needs is known before the events are placed.
+     *
+     * @param {Record<string, any>[]} spannedEvents The events of one week row.
+     * @returns {void}
+     */
+    protected countCellEvents(spannedEvents: Record<string, any>[]): void {
+        this.cellEventCounts = [];
+        for (const event of spannedEvents) {
+            const startTime: Date = event[this.fields.startTime] as Date;
+            const day: number = this.parent.getIndexOfDate(this.dateRender, util.resetTime(new Date(startTime.getTime())));
+            const days: number = ((event.data as Record<string, any>).count as number) || 1;
+            for (let i: number = 0; i < days && day >= 0; i++) {
+                this.cellEventCounts[day + i] = (this.cellEventCounts[day + i] || 0) + 1;
+            }
+        }
+    }
+
+    /**
+     * The level layout of a cell for the levels it needs, with the measured level height and the cell area below the day label.
+     *
+     * @param {number} day The index of the cell in the rendered dates.
+     * @returns {StackLayout} The level layout from getStackLayout.
+     */
+    protected getCellStackLayout(day: number): StackLayout {
+        const frame: RowFrame = this.getRowFrame();
+        return util.getStackLayout(this.cellHeight - this.monthHeaderHeight, this.cellEventCounts[parseInt(day.toString(), 10)] || 0,
+                                   this.eventHeight, frame.gap, frame.lead, frame.trail, this.moreIndicatorHeight,
+                                   !!this.parent.rowAutoHeight, frame.reserve);
     }
 
     private removeEventWrapper(appElement: Element[]): void {
@@ -86,6 +182,11 @@ export class MonthEvent extends EventBase {
             }
         }
         this.removeHeightProperty(cls.CONTENT_TABLE_CLASS);
+        if (this.parent.fixedRowsModule && this.parent.element.querySelector('.' + cls.FIXED_CONTENT_TABLE_CLASS)) {
+            // rowAutoHeight: the fixed content cells keep the stale inline height from the last render
+            // otherwise, because updateCellHeight only grows and the fixed table is not .e-content-table.
+            this.removeHeightProperty(cls.FIXED_CONTENT_TABLE_CLASS);
+        }
         if (!this.element.querySelector('.' + cls.WORK_CELLS_CLASS)) {
             return;
         }
@@ -98,7 +199,8 @@ export class MonthEvent extends EventBase {
         }
         this.eventHeight = this.parent.getElementHeightFromClass(this.element, cls.APPOINTMENT_CLASS);
         const selector: string = '.' + cls.CONTENT_TABLE_CLASS + ' tbody tr';
-        this.addCellHeight(selector, this.eventHeight, (this.parent.currentView === 'Month' ? EVENT_GAP : 2), this.monthHeaderHeight, this.moreIndicatorHeight);
+        this.addCellHeight(selector, this.eventHeight, (this.parent.currentView === 'Month' ? EVENT_GAP : 2), this.monthHeaderHeight, this.moreIndicatorHeight,
+                           true, this.spacing ? this.getRowFrame() : undefined);
         const scrollTop: number = conWrap.scrollTop;
         if (this.parent.rowAutoHeight && this.parent.virtualScrollModule && !this.parent.virtualScrollModule.isHorizontalScroll
             && !isNullOrUndefined(this.parent.currentAction)) {
@@ -149,8 +251,17 @@ export class MonthEvent extends EventBase {
         this.parent.renderTemplates();
     }
 
+    /**
+     * @param {Date[]} dateRender Accepts the dates to render.
+     * @param {number[]} workDays Accepts the work days.
+     * @param {TdData} resData Accepts the resource row.
+     * @returns {void}
+     * @private
+     */
     public renderEventsHandler(dateRender: Date[], workDays: number[], resData?: TdData): void {
         this.renderedEvents = [];
+        const explicit: string = this.parent.activeViewOptions.eventPlacement || this.parent.eventSettings.placement;
+        this.exactMode = this.isDayCellView() && explicit === 'Exact' && this.parent.eventBase.getEventPlacement() === 'Exact';
         let eventsList: Record<string, any>[];
         let blockList: Record<string, any>[];
         let resIndex: number = 0;
@@ -178,6 +289,7 @@ export class MonthEvent extends EventBase {
         const cellDetail: HTMLElement = this.workCells[this.parent.activeView.isTimelineView() ? 0 : this.workCells.length - 1];
         this.cellWidth = this.parent.getElementWidth(cellDetail);
         this.cellHeight = this.parent.getElementHeight(cellDetail);
+        this.checkSpacingFit(this.cellHeight - this.monthHeaderHeight);
         this.dateRender = dateRender;
         const filteredDates: Date[] = this.getRenderedDates(dateRender);
         this.getSlotDates(workDays || this.parent.activeViewOptions.workDays);
@@ -195,11 +307,14 @@ export class MonthEvent extends EventBase {
             const endDate: Date = util.addDays(new Date(slot[slot.length - 1]), 1);
             const spannedEvents: Record<string, any>[] = this.filterEvents(new Date(slot[0]), endDate, events);
             this.sortSpannedEvents(spannedEvents);
+            if (this.spacing) {
+                this.countCellEvents(spannedEvents);
+            }
             for (const event of spannedEvents) {
                 if (this.maxHeight) {
                     const sDate: Date = this.parent.currentView === 'Month' ? event[this.fields.startTime] as Date :
                         this.getStartTime(event, event.data as Record<string, any>);
-                    if (this.getIndex(sDate) > 0) {
+                    if ((this.exactMode ? this.getExtentIndex(event) : this.getIndex(sDate)) > 0) {
                         continue;
                     }
                 }
@@ -521,18 +636,36 @@ export class MonthEvent extends EventBase {
             return;
         }
         const eventsPerRow: number = this.parent.rowAutoHeight ? 1 : this.parent.activeViewOptions.maxEventsPerRow;
-        const overlapCount: number = this.getIndex(startTime);
+        const overlapCount: number = this.exactMode ? this.getExtentIndex(event) : this.getIndex(startTime);
         event.Index = overlapCount;
         const diffInDays: number = (event.data as Record<string, any>).count as number;
         if (startTime.getTime() <= endTime.getTime()) {
-            const appWidth: number = (diffInDays * this.cellWidth) - 5;
+            let appWidth: number = (diffInDays * this.cellWidth) - 5;
+            let appOffset: number = 0;
+            if (this.exactMode) {
+                const rowLength: number = (this.slots[0] as any as number[]).length;
+                const geometry: Record<string, any> = this.getExactGeometry(event, this.cellWidth, rowLength - (day % rowLength));
+                appOffset = geometry.offset as number;
+                appWidth = (geometry.width as number) - (geometry.endsAtEdge ? 5 : 0);
+            }
             const cellTd: Element = this.workCells[parseInt(day.toString(), 10)];
-            const appTop: number = (overlapCount * (this.eventHeight + EVENT_GAP));
-            const height: number =
+            let appTop: number = (overlapCount * (this.eventHeight + EVENT_GAP));
+            let height: number =
                 this.monthHeaderHeight + ((overlapCount + 1) * (this.eventHeight + EVENT_GAP)) + this.moreIndicatorHeight;
-            const enableAppRender: boolean = this.parent.activeViewOptions.maxEventsPerRow && !this.parent.rowAutoHeight &&
+            let enableAppRender: boolean = this.parent.activeViewOptions.maxEventsPerRow && !this.parent.rowAutoHeight &&
                 !this.parent.eventSettings.enableIndicator ? overlapCount < eventsPerRow : this.maxOrIndicator ? overlapCount < 1
                     ? true : false : this.cellHeight > height;
+            let layout: StackLayout = null;
+            if (this.spacing) {
+                layout = this.getCellStackLayout(day);
+                appTop = layout.top(overlapCount);
+                height = this.monthHeaderHeight + layout.height;
+                const usesMaxEventsPerRow: boolean = this.parent.activeViewOptions.maxEventsPerRow && !this.parent.rowAutoHeight &&
+                    !this.parent.eventSettings.enableIndicator;
+                if (!usesMaxEventsPerRow && !this.maxOrIndicator) {
+                    enableAppRender = overlapCount < layout.visible;
+                }
+            }
             if (this.parent.rowAutoHeight || enableAppRender) {
                 this.renderedEvents.push(extend({}, event, null, true) as Record<string, any>);
                 let appointmentElement: HTMLElement;
@@ -544,6 +677,9 @@ export class MonthEvent extends EventBase {
                 this.applyResourceColor(appointmentElement, event, 'backgroundColor', this.groupOrder);
                 this.wireAppointmentEvents(appointmentElement, event);
                 setStyleAttribute(appointmentElement, { 'width': appWidth + 'px', 'top': appTop + 'px' });
+                if (appOffset > 0) {
+                    appointmentElement.style[this.parent.enableRtl ? 'right' : 'left'] = appOffset + 'px';
+                }
                 this.renderEventElement(event, appointmentElement, cellTd);
                 if (this.parent.rowAutoHeight) {
                     const conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
@@ -574,9 +710,14 @@ export class MonthEvent extends EventBase {
                             if (!isNullOrUndefined(groupIndex)) {
                                 moreIndicatorElement.setAttribute('data-group-index', groupIndex);
                             }
-                            moreIndicatorElement.style.top = (this.cellHeight - this.monthHeaderHeight) + 'px';
-                            moreIndicatorElement.style.width = this.cellWidth - 2 + 'px';
-                            moreIndicatorElement.style.transform = 'translateY(-100%)';
+                            if (layout && layout.indicatorTop !== null) {
+                                moreIndicatorElement.style.top = layout.indicatorTop + 'px';
+                                moreIndicatorElement.style.width = this.cellWidth - 2 + 'px';
+                            } else {
+                                moreIndicatorElement.style.top = (this.cellHeight - this.monthHeaderHeight) + 'px';
+                                moreIndicatorElement.style.width = this.cellWidth - 2 + 'px';
+                                moreIndicatorElement.style.transform = 'translateY(-100%)';
+                            }
                             this.renderElement(this.workCells[day + i], moreIndicatorElement);
                             EventHandler.add(moreIndicatorElement, 'click', this.moreIndicatorClick, this);
                         }
@@ -587,7 +728,8 @@ export class MonthEvent extends EventBase {
     }
 
     public adjustAppointments(conWidth: number): void {
-        const tr: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr');
+        const tr: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr:not(.' + cls.GROUP_SUMMARY_ROW_CLASS + ')') ||
+            this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr');
         const actualCellWidth: number = this.parent.getElementWidth(this.workCells[0]);
         this.cellWidth = actualCellWidth / +(this.workCells[0].getAttribute('colspan') || 1);
         const currentPercentage: number = (actualCellWidth * tr.children.length) / (conWidth / 100);
@@ -642,6 +784,114 @@ export class MonthEvent extends EventBase {
             }
         }
         return appointmentsList;
+    }
+
+    /**
+     * Returns true when the day is the slot of the view, so that the event placement mode applies.
+     *
+     * @returns {boolean} Returns true for the Month view.
+     * @private
+     */
+    protected isDayCellView(): boolean {
+        return this.parent.currentView === 'Month';
+    }
+
+    /**
+     * Resolves the interval an event segment is drawn over in Exact mode: the true start and end of the event,
+     * cut at the first and last day cell of the segment.
+     *
+     * @param {Record<string, any>} event - Specifies the split event segment.
+     * @returns {Record<string, any>} Returns the start and end of the extent, whether it is zero-length and the bounds of its first and last cell.
+     * @private
+     */
+    public getExactExtent(event: Record<string, any>): Record<string, any> {
+        const data: Record<string, any> = event.data as Record<string, any>;
+        const segStart: Date = util.resetTime(event[this.fields.startTime] as Date);
+        const lastStart: Date = util.resetTime(event[this.fields.endTime] as Date);
+        const lastEnd: Date = util.addDays(lastStart, 1);
+        const firstEnd: Date = util.addDays(segStart, 1);
+        let start: Date = segStart;
+        let end: Date = lastEnd;
+        let isZero: boolean = false;
+        if (!event[this.fields.isAllDay]) {
+            const trueStart: Date = data[this.fields.startTime] as Date;
+            const trueEnd: Date = data[this.fields.endTime] as Date;
+            if (!data.isLeft && trueStart.getTime() > segStart.getTime()) {
+                start = trueStart;
+            }
+            if (!data.isRight && trueEnd.getTime() < lastEnd.getTime()) {
+                end = trueEnd;
+            }
+            isZero = trueStart.getTime() === trueEnd.getTime();
+            if (isZero) {
+                end = start;
+            }
+        }
+        return { start: start, end: end, isZero: isZero, firstStart: segStart, firstEnd: firstEnd, lastStart: lastStart, lastEnd: lastEnd };
+    }
+
+    /**
+     * Maps a wall-clock time of the schedule time zone to the real instant, so a day that is longer or shorter
+     * because of daylight saving scales by its own length.
+     *
+     * @param {Date} date - Specifies the wall-clock time.
+     * @returns {Date} Returns the date unchanged when no time zone is set.
+     * @private
+     */
+    protected toInstant(date: Date): Date {
+        return this.parent.timezone ? this.parent.tzModule.remove(date, this.parent.timezone) : date;
+    }
+
+    /**
+     * Calculates the inline offset and size of an event segment in Exact mode. Offset is measured from the inline start of the first day cell.
+     *
+     * @param {Record<string, any>} event - Specifies the split event segment.
+     * @param {number} cellWidth - Specifies the inline size of a day cell.
+     * @param {number} maxSpan - Specifies the number of cells available from the first cell to the end of the range or row.
+     * @returns {Record<string, any>} Returns the offset, width and whether the bar ends at the cell edge.
+     * @private
+     */
+    public getExactGeometry(event: Record<string, any>, cellWidth: number, maxSpan?: number): Record<string, any> {
+        const extent: Record<string, any> = this.getExactExtent(event);
+        const count: number = (event.data as Record<string, any>).count as number;
+        const offset: number = util.timeToOffset(this.toInstant(extent.start), this.toInstant(extent.firstStart),
+                                                 this.toInstant(extent.firstEnd), cellWidth);
+        let width: number;
+        let endsAtEdge: boolean;
+        if (extent.isZero) {
+            width = cellWidth;
+            if (maxSpan) {
+                width = Math.min(width, maxSpan * cellWidth - offset);
+            }
+            endsAtEdge = false;
+        } else {
+            const endOffset: number = util.timeToOffset(this.toInstant(extent.end), this.toInstant(extent.lastStart),
+                                                        this.toInstant(extent.lastEnd), cellWidth);
+            width = ((count - 1) * cellWidth) + endOffset - offset;
+            endsAtEdge = endOffset === cellWidth;
+        }
+        return { offset: offset, width: width, endsAtEdge: endsAtEdge };
+    }
+
+    /**
+     * Finds the lane of an event segment from the extents of the segments already rendered, instead of from the slots they touch.
+     *
+     * @param {Record<string, any>} event - Specifies the split event segment.
+     * @returns {number} Returns the zero-based lane.
+     * @private
+     */
+    public getExtentIndex(event: Record<string, any>): number {
+        const lanes: number[] = [];
+        const own: Record<string, any> = this.getExactExtent(event);
+        const ownEnd: number = own.isZero ? own.start.getTime() + util.MS_PER_DAY : own.end.getTime();
+        for (const app of this.renderedEvents) {
+            const other: Record<string, any> = this.getExactExtent(app);
+            const otherEnd: number = other.isZero ? other.start.getTime() + util.MS_PER_DAY : other.end.getTime();
+            if (other.start.getTime() < ownEnd && otherEnd > own.start.getTime()) {
+                lanes.push(app.Index as number);
+            }
+        }
+        return lanes.length > 0 ? Math.max(this.getSmallestMissingNumber(lanes), 0) : 0;
     }
 
     public getIndex(date: Date): number {
@@ -756,7 +1006,13 @@ export class MonthEvent extends EventBase {
 
     public setMaxEventHeight(event: HTMLElement, cell: HTMLElement): void {
         const headerHeight: number = (this.parent.currentView === 'Month') ? util.getOuterHeight(cell.querySelector('.' + cls.DATE_HEADER_CLASS)) : 0;
-        const height: number = (cell.offsetHeight - headerHeight) - (this.maxHeight ? 0 : this.moreIndicatorHeight);
+        let height: number = (cell.offsetHeight - headerHeight) - (this.maxHeight ? 0 : this.moreIndicatorHeight);
+        if (this.spacing) {
+            const frame: RowFrame = this.getRowFrame();
+            const indicatorSlot: number = this.maxHeight || !frame.reserve ? 0 : this.moreIndicatorHeight;
+            height = (cell.offsetHeight - headerHeight) - frame.lead - frame.trail - indicatorSlot;
+            setStyleAttribute(event, { 'top': frame.lead + 'px' });
+        }
         setStyleAttribute(event, { 'height': height + 'px' });
         if (!isNullOrUndefined(event)) {
             const appointmentDetails: HTMLElement = event.querySelector('.' + cls.APPOINTMENT_DETAILS);

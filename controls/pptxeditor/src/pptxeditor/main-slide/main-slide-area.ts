@@ -104,6 +104,11 @@ export class MainSlideArea {
     private textMeasurer: TextMeasurer | null = null;
     private watermark: HTMLElement | null = null;
     private contextMenuElement: HTMLUListElement | null = null;
+    /** Touch (coarse pointer) media query; the Copy Text menu follows it live. */
+    private pointerQuery: MediaQueryList | null = null;
+    private readonly onPointerQueryChangeBound: () => void = (): void => {
+        this.syncContextMenuToPointer();
+    };
     private contextMenu: ContextMenu | null = null;
     private resizeObserver: ResizeObserver | null = null;
     private resizeFrame: number | null = null;
@@ -211,6 +216,7 @@ export class MainSlideArea {
         this.applyTextSelectionClass();
         this.applyWatermark();
         this.wireContextMenu();
+        this.watchPointerType();
         this.wireResizeObserver();
         this.applyLayout();
 
@@ -355,6 +361,14 @@ export class MainSlideArea {
         this.slideFrameRenderer = null;
         void ((this.textMeasurer) !== undefined && (this.textMeasurer) !== null ? (this.textMeasurer).close() : undefined);
         this.textMeasurer = null;
+        if (this.pointerQuery) {
+            if (typeof this.pointerQuery.removeEventListener === 'function') {
+                this.pointerQuery.removeEventListener('change', this.onPointerQueryChangeBound);
+            } else if (typeof this.pointerQuery.removeListener === 'function') {
+                this.pointerQuery.removeListener(this.onPointerQueryChangeBound);
+            }
+            this.pointerQuery = null;
+        }
         if (this.resizeObserver) {
             this.resizeObserver.disconnect();
             this.resizeObserver = null;
@@ -531,6 +545,54 @@ export class MainSlideArea {
         this.watermark.textContent = text;
         this.watermark.classList.remove('ej2-pptx-main-slide__watermark--hidden');
         this.watermark.setAttribute('aria-hidden', 'true');
+    }
+
+    /**
+     * Follows the primary pointer type so toggling device mode (or docking a tablet) adds or removes
+     * the Copy Text menu without a page reload.
+     *
+     * @returns {void}
+     */
+    private watchPointerType(): void {
+        if (this.pointerQuery || typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+            return;
+        }
+        this.pointerQuery = window.matchMedia('(pointer: coarse)');
+        if (typeof this.pointerQuery.addEventListener === 'function') {
+            this.pointerQuery.addEventListener('change', this.onPointerQueryChangeBound);
+        } else if (typeof this.pointerQuery.addListener === 'function') {
+            this.pointerQuery.addListener(this.onPointerQueryChangeBound);
+        }
+    }
+
+    /**
+     * Creates or removes the context menu to match the current pointer type.
+     *
+     * @returns {void}
+     */
+    private syncContextMenuToPointer(): void {
+        if (!this.root) {
+            return;
+        }
+        const coarse: boolean = !!this.pointerQuery && this.pointerQuery.matches;
+        if (coarse && this.contextMenu) {
+            try {
+                this.contextMenu.destroy();
+            } catch {
+                // Ignore destroy errors; the menu is progressive enhancement.
+            }
+            this.contextMenu = null;
+        } else if (!coarse && !this.contextMenu) {
+            if (this.contextMenuElement && this.contextMenuElement.parentElement) {
+                this.contextMenuElement.parentElement.removeChild(this.contextMenuElement);
+            }
+            const menuUl: HTMLUListElement = createElement('ul', {
+                className: 'ej2-pptx-main-slide__context-menu'
+            }) as HTMLUListElement;
+            this.contextMenuElement = menuUl;
+            this.root.appendChild(menuUl);
+            this.wireContextMenu();
+        }
     }
 
     /**

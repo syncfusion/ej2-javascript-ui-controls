@@ -1,7 +1,7 @@
 import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfPage, PdfDestination, _PdfDestinationHelper } from './../pdf-page';
 import { _PdfDictionary, _PdfName, _PdfReference } from './../pdf-primitives';
-import { PdfFormFieldVisibility, _PdfCheckFieldState, PdfAnnotationFlag, PdfBorderStyle, PdfHighlightMode, PdfLineCaptionType, PdfLineEndingStyle, PdfLineIntent, PdfRotationAngle, PdfTextAlignment, PdfBorderEffectStyle, PdfMeasurementUnit, _PdfGraphicsUnit, PdfCircleMeasurementType, PdfRubberStampAnnotationIcon, PdfCheckBoxStyle, PdfTextMarkupAnnotationType, PdfPopupIcon, PdfAnnotationState, PdfAnnotationStateModel, PdfAttachmentIcon, PdfAnnotationIntent, _PdfAnnotationType, PdfBlendMode, PdfDashStyle, PdfLineCap, PathPointType, _PdfColorSpace, DataFormat, PdfAttachmentRelationship, Pdf3DAnnotationType, Pdf3DActivationMode, Pdf3DDeactivationMode, Pdf3DProjectionType, Pdf3DRenderStyle, Pdf3DLightingStyle, Pdf3DAnimationType, PdfMoviePlayMode, PdfPrinterMarkOrientation, PdfPrinterMarkTargetBox, PdfPrinterMarkType, PdfRichMediaContentType, PdfRichMediaPresentationStyle, PdfRichMediaDeactivationMode, PdfRichMediaActivationMode, PdfScreenAnnotationTrigger, PdfScreenAnnotationHighlightMode, PdfSoundIcon, PdfSoundEncoding, PdfSoundChannels } from './../enumerator';
+import { PdfFormFieldVisibility, _PdfCheckFieldState, PdfAnnotationFlag, PdfBorderStyle, PdfHighlightMode, PdfLineCaptionType, PdfLineEndingStyle, PdfLineIntent, PdfRotationAngle, PdfTextAlignment, PdfTextDirection, PdfBorderEffectStyle, PdfMeasurementUnit, _PdfGraphicsUnit, PdfCircleMeasurementType, PdfRubberStampAnnotationIcon, PdfCheckBoxStyle, PdfTextMarkupAnnotationType, PdfPopupIcon, PdfAnnotationState, PdfAnnotationStateModel, PdfAttachmentIcon, PdfAnnotationIntent, _PdfAnnotationType, PdfBlendMode, PdfDashStyle, PdfLineCap, PathPointType, _PdfColorSpace, DataFormat, PdfAttachmentRelationship, Pdf3DAnnotationType, Pdf3DActivationMode, Pdf3DDeactivationMode, Pdf3DProjectionType, Pdf3DRenderStyle, Pdf3DLightingStyle, Pdf3DAnimationType, PdfMoviePlayMode, PdfPrinterMarkOrientation, PdfPrinterMarkTargetBox, PdfPrinterMarkType, PdfRichMediaContentType, PdfRichMediaPresentationStyle, PdfRichMediaDeactivationMode, PdfRichMediaActivationMode, PdfScreenAnnotationTrigger, PdfScreenAnnotationHighlightMode, PdfSoundIcon, PdfSoundEncoding, PdfSoundChannels } from './../enumerator';
 import { _checkField, _removeDuplicateReference, _updateVisibility, _checkComment, _checkReview, _mapAnnotationStateModel, _mapAnnotationState, _decode, _setMatrix, _convertToColor, _findPage, _getItemValue, _areNotEqual, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _getUpdatedBounds, _mapBorderStyle, _mapLineEndingStyle, _reverseMapEndingStyle, _toRectangle, _mapBorderEffectStyle, _getStateTemplate, _mapMeasurementUnit, _mapGraphicsUnit, _stringToStyle, _styleToString, _mapMarkupAnnotationType, _reverseMarkupAnnotationType, _reverseMapAnnotationState, _reverseMapAnnotationStateModel, _mapPopupIcon, _mapRubberStampIcon, _mapAttachmentIcon, _mapAnnotationIntent, _reverseMapPdfFontStyle, _fromRectangle, _getNewGuidString, _getFontStyle, _mapFont, _checkInkPoints, _updateBounds, _isNullOrUndefined, _obtainFontDetails, _areArrayEqual, _arePointsNotEqual, _convertToPoints, _isPointArray, _convertPointsToNumberArrays, _convertNumberToPointArrays, _convertNumberArraysToPoints, _convertPointToNumberArray, _getPageIndex, _stringToBytes, _stringToDate, _dateToString, _relationshipToString, _decodeEmbeddedStream, _padStart } from './../utils';
 import { PdfAttachment } from './../attachments/pdf-attachment';
 import { PdfField, PdfTextBoxField, PdfRadioButtonListField, _PdfDefaultAppearance, PdfListBoxField, PdfCheckBoxField, PdfComboBoxField } from './../form/field';
@@ -15138,6 +15138,18 @@ export class PdfFreeTextAnnotation extends PdfComment {
     private _annotationIntent: PdfAnnotationIntent;
     private _lineEndingStyle: PdfLineEndingStyle;
     private _textAlignment: PdfTextAlignment = PdfTextAlignment.left;
+    /**
+     * Indicates whether complex-script text rendering is enabled for the annotation text.
+     *
+     * @private
+     */
+    private _complexScript: boolean = false;
+    /**
+     * Text direction of the free-text annotation content.
+     *
+     * @private
+     */
+    private _textDirection: PdfTextDirection = PdfTextDirection.none;
     private _cropBoxValueX: number = 0;
     private _cropBoxValueY: number = 0;
     private _paddings: _PdfPaddings;
@@ -15580,6 +15592,94 @@ export class PdfFreeTextAnnotation extends PdfComment {
         }
         this._textAlignment = value;
         this._isContentUpdated = true;
+    }
+    /**
+     * Gets a value indicating whether complex-script text rendering is enabled for the annotation text.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Get the first annotation of the page
+     * let annotation: PdfFreeTextAnnotation = page.annotations.at(0) as PdfFreeTextAnnotation;
+     * // Read the complex-script state
+     * let enabled: boolean = annotation.complexScript;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     *
+     * @returns {boolean} True when complex-script rendering is enabled for the annotation.
+     */
+    get complexScript(): boolean {
+        return this._complexScript;
+    }
+    /**
+     * Sets a value indicating whether complex-script text rendering is enabled for the annotation text.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Get the first annotation of the page
+     * let annotation: PdfFreeTextAnnotation = page.annotations.at(0) as PdfFreeTextAnnotation;
+     * // Enable complex-script shaping for the annotation text.
+     * annotation.complexScript = true;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     *
+     * @param {boolean} value True to enable complex-script rendering.
+     */
+    set complexScript(value: boolean) {
+        this._complexScript = value;
+    }
+    /**
+     * Gets the text direction of the free-text annotation content.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Get the first annotation of the page
+     * let annotation: PdfFreeTextAnnotation = page.annotations.at(0) as PdfFreeTextAnnotation;
+     * // Read the text direction
+     * let direction: PdfTextDirection = annotation.textDirection;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     *
+     * @returns {PdfTextDirection} Text direction of the annotation content.
+     */
+    get textDirection(): PdfTextDirection {
+        return this._textDirection;
+    }
+    /**
+     * Sets the text direction of the free-text annotation content.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Get the first annotation of the page
+     * let annotation: PdfFreeTextAnnotation = page.annotations.at(0) as PdfFreeTextAnnotation;
+     * // Set right-to-left direction for the annotation content.
+     * annotation.textDirection = PdfTextDirection.rightToLeft;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     *
+     * @param {PdfTextDirection} value Text direction of the annotation content.
+     */
+    set textDirection(value: PdfTextDirection) {
+        this._textDirection = value;
     }
     /**
      * Gets the font of the annotation.
@@ -16306,7 +16406,8 @@ export class PdfFreeTextAnnotation extends PdfComment {
             appearanceRect = nativeRectangle;
             if (borderEffect &&
                 borderEffect.style === PdfBorderEffectStyle.cloudy &&
-                borderEffect.intensity > 0) {
+                borderEffect.intensity > 0 &&
+                !(this.calloutLines && this._calloutLines.length > 0)) {
                 const radius: number = borderEffect.intensity * 5;
                 this._dictionary.update('RD', [
                     radius + this.border.width / 2,
@@ -16372,7 +16473,9 @@ export class PdfFreeTextAnnotation extends PdfComment {
                                            this.border.width,
                                            false);
                 }
-                if (!this._dictionary.has('RD')) {
+                const isCloudy: boolean = borderEffect && borderEffect.style === PdfBorderEffectStyle.cloudy &&
+                    borderEffect.intensity > 0;
+                if (!this._dictionary.has('RD') || (!this._isLoaded && !isCloudy)) {
                     rectangle = [this.bounds.x + (margins ? margins.left : 0),
                         -((this._page.size.height - (this.bounds.y + this.bounds.height + (margins ? margins.top : 0)))),
                         this.bounds.width,
@@ -16582,7 +16685,9 @@ export class PdfFreeTextAnnotation extends PdfComment {
         this._dictionary.update('DS', ds);
         const body: string = '<?xml version="1.0"?><body xmlns="http://www.w3.org/1999/xhtml" style="font:'
             + fontName + ' ' + font.size + 'pt;font-weight:'
-            + (font.isBold ? 'bold' : 'normal') + ';color:' + this._colorToHex(textMarkUpColor) + '"><p dir="ltr">';
+            + (font.isBold ? 'bold' : 'normal') + ';color:' + this._colorToHex(textMarkUpColor) + '">' +
+            // Rich-content paragraph direction follows the effective annotation direction (rightToLeft -> rtl).
+            '<p dir="' + (this._textDirection === PdfTextDirection.rightToLeft ? 'rtl' : 'ltr') + '">';
         let textAlignment: string;
         let alignmentText: string;
         if (alignment !== null && typeof alignment !== 'undefined') {
@@ -16836,6 +16941,8 @@ export class PdfFreeTextAnnotation extends PdfComment {
             format.alignment = alignment;
             format.lineSpacing = 0;
             format.lineLimit = false;
+            format.complexScript = this._complexScript;
+            format.textDirection = this._textDirection;
             if (isRotation) {
                 g.drawString(text, font, parameter.bounds, parameter.backBrush, format);
             } else {

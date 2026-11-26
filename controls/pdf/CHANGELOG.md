@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 35.2.14 (2026-11-26)
+
+### PDF
+
+#### Bug Fixes
+
+- Resolved an issue where form fields were not parsed after multiple save operations.
+- Resolved an issue where free text annotations were not preserved when copying pages.
+- Resolved an issue where free text annotations with cloud borders were not preserved with call out lines.
+
+#### Features
+
+- Enhanced PDF text rendering with complex script support.
+
 ## 35.2.13 (2026-11-24)
 
 ### PDF

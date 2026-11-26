@@ -1,14 +1,14 @@
 import { IDataOptions, PivotEngine, IFieldListOptions, IFieldOptions, IAxisSet, IDataSet, ISort, IDrillOptions, FieldItemInfo, IConditionalFormatSettings, IValueSortSettings, IGroupSettings } from '../../base/engine';
 import { IDrilledItem, IStringIndex, ICalculatedFields, ICalculatedFieldSettings, IFormatSettings } from '../../base/engine';
 import { IFilter } from '../../base/engine';
-import { Mode, SelectionMode, PdfBorderStyle, AggregateTypes, ExportView, SubTotalsPosition, GrandTotalsPosition, ChartSeriesType, MultipleAxisMode } from '../base/enum';
+import { Mode, SelectionMode, PdfBorderStyle, AggregateTypes, ExportView, SubTotalsPosition, GrandTotalsPosition, ChartSeriesType, MultipleAxisMode, View, RunningTotalDirection } from '../base/enum';
 import { L10n } from '@syncfusion/ej2-base';
 import { Grid, ExcelStyle, CellSelectionMode, SelectionType, CheckboxSelectionType, PdfExportProperties as GridPdfExportProperties, Hyperlink, Image as GridExcelImage } from '@syncfusion/ej2-grids';
 import { Column, ExcelExportProperties as GridExcelExportProperties } from '@syncfusion/ej2-grids';
 import { ExcelHeaderQueryCellInfoEventArgs as GridExcelHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs as GridExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { CellSelectingEventArgs, ColumnModel, ExcelHAlign, ExcelVAlign, ISelectedCell } from '@syncfusion/ej2-grids';
 import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell, PdfPageOrientation, PdfGridColumn } from '@syncfusion/ej2-pdf-export';
-import { SeriesModel, ExportType, Axis, IChartEventArgs, FontModel, Alignment } from '@syncfusion/ej2-charts';
+import { SeriesModel, ExportType, Axis, IChartEventArgs, IPrintEventArgs, FontModel, Alignment } from '@syncfusion/ej2-charts';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import { SummaryTypes, Sorting } from '../../base/types';
 import { DisplayOption, PivotView } from '../../pivotview/base/pivotview';
@@ -245,7 +245,7 @@ export interface BeforeExportEventArgs {
     /** Defines an option to export multiple pivot table to the same PDF file */
     isMultipleExport?: boolean;
     /** Defines current PDF file that holds the pivot table information which will be used to export */
-    pdfDoc?: Object;
+    pdfDoc?: object;
     /** A file-like object of immutable, raw data. Blobs represent data that isn't necessarily in a JavaScript-native format. The File interface is based on Blob, inheriting blob functionality and expanding it to support files on the user's system. */
     isBlob?: boolean;
     /** Defines the additional settings for excel export such as multiple export, header, footer, etc.
@@ -370,7 +370,7 @@ export interface CellClickEventArgs {
     /** Defines the cell element that is clicked. */
     currentCell: Element;
     /** Defines the cell item that is clicked. */
-    data: Object;
+    data: unknown;
     /** Defines the native event properties. */
     nativeEvent: MouseEvent;
 }
@@ -382,7 +382,7 @@ export interface HyperCellClickEventArgs {
     /** Defines the cell element that is clicked. */
     currentCell: Element;
     /** Defines the cell item that is clicked. */
-    data: Object;
+    data: unknown;
     /** Defines an option to restrict the hyperlink cell click operation. By default, the value is in 'true' state. */
     cancel: boolean;
     /** Defines the native event properties. */
@@ -686,8 +686,8 @@ export interface PivotButtonArgs {
  */
 export interface IAction {
     updateModel?(): void;
-    onActionBegin?(args?: Object, type?: string): void;
-    onActionComplete?(args?: Object, type?: string): void;
+    onActionBegin?(args?: unknown, type?: string): void;
+    onActionComplete?(args?: unknown, type?: string): void;
     addEventListener?(): void;
     removeEventListener?(): void;
 }
@@ -705,7 +705,7 @@ export interface ExcelRow {
      * Specifies the index of the row in the Excel sheet.
      * This determines the vertical position of the row during export.
      *
-     * @value
+     *
      * @example
      * index: 5
      */
@@ -714,7 +714,7 @@ export interface ExcelRow {
      * Defines the collection of cells to be included in the row.
      * Each cell can contain content, style, and formatting options.
      *
-     * @value
+     *
      * @example
      * cells: [{ value: 'Total', style: { fontColor: '#000000' } }]
      */
@@ -723,7 +723,7 @@ export interface ExcelRow {
      * Specifies the height of the Excel row.
      * This controls the vertical spacing of the row in the Excel sheet.
      *
-     * @value
+     *
      * @example
      * height: 25
      */
@@ -770,7 +770,7 @@ export interface ExcelImage {
      * A base64-encoded string representing the image to be embedded in the Excel worksheet.
      * The string must contain only the raw base64 data, without any MIME type prefix (e.g., no `data:image/png;base64,`).
      *
-     * @value
+     *
      * @example
      * image: "iVBORw0KGgoAAAANSUhEUgAA..."
      */
@@ -779,7 +779,7 @@ export interface ExcelImage {
      * Specifies the height of the image in Excel cell.
      * This determines how tall the image will appear in the exported Excel sheet.
      *
-     * @value
+     *
      * @example
      * height: 50
      */
@@ -788,7 +788,7 @@ export interface ExcelImage {
      * Specifies the width of the image in Excel cell.
      * This determines how wide the image will appear in the exported Excel sheet.
      *
-     * @value
+     *
      * @example
      * width: 50
      */
@@ -797,7 +797,7 @@ export interface ExcelImage {
      * Defines the starting row index in the Excel sheet where the image will be placed.
      * This indicates the top boundary of the image.
      *
-     * @value
+     *
      * @example
      * row: 1
      */
@@ -806,7 +806,7 @@ export interface ExcelImage {
      * Defines the starting column index in the Excel sheet where the image will be placed.
      * This indicates the left boundary of the image.
      *
-     * @value
+     *
      * @example
      * column: 2
      */
@@ -815,7 +815,7 @@ export interface ExcelImage {
      * Defines the ending row index that the image should span to vertically.
      * This allows the image to cover multiple rows if needed.
      *
-     * @value
+     *
      * @example
      * lastRow: 4
      */
@@ -824,7 +824,7 @@ export interface ExcelImage {
      * Defines the ending column index that the image should span to horizontally.
      * This allows the image to cover multiple columns if needed.
      *
-     * @value
+     *
      * @example
      * lastColumn: 5
      */
@@ -834,7 +834,7 @@ export interface ExcelImage {
      * Specifies the vertical offset (in pixels) from the top edge of the starting row.
      * This fine-tunes the vertical positioning of the image within the cell.
      *
-     * @value
+     *
      * @example
      * firstRowOffset: 5
      */
@@ -844,7 +844,7 @@ export interface ExcelImage {
      * Specifies the horizontal offset (in pixels) from the left edge of the starting column.
      * This fine-tunes the horizontal positioning of the image within the cell.
      *
-     * @value
+     *
      * @example
      * firstColumnOffset: 10
      */
@@ -963,7 +963,7 @@ export interface ExcelCell {
     /**
      * Adds a hyperlink to the cell, enabling clickable navigation to external URLs or internal references.
      *
-     * @value
+     *
      * @example
      * hyperlink: { target: 'https://example.com', displayText: 'Click Here' }
      */
@@ -1119,7 +1119,7 @@ export interface AggregateEventArgs {
  */
 export interface QueryCellInfoEventArgs {
     /** Defines the row data associated with the current cell. */
-    data?: Object;
+    data?: unknown;
     /** Defines the cell element. */
     cell?: Element;
     /**
@@ -1137,7 +1137,7 @@ export interface QueryCellInfoEventArgs {
     /** Defines the current action. */
     requestType?: string;
     /** Define the foreign key row data associated with the current cell. */
-    foreignKeyData?: Object;
+    foreignKeyData?: unknown;
     /** Define the pivot table instance object. */
     pivotview?: PivotView;
 }
@@ -1182,7 +1182,7 @@ export interface MemberEditorOpenEventArgs {
     /**
      * Defines the filter members of the selected field.
      */
-    fieldMembers?: { [key: string]: Object }[];
+    fieldMembers?: { [key: string]: string | number | boolean | object }[];
     /** Defines selected field's filter settings */
     filterSetting?: IFilter;
     /** Defines an option to restrict the member editor popup from open. */
@@ -1262,7 +1262,7 @@ export interface MemberItems {
     /**
      * Defines the custom HTML atttribute informations that used to add it specific filter member's DOM element in UI.
      */
-    htmlAttributes?: { [key: string]: Object };
+    htmlAttributes?: { [key: string]: unknown };
     /** Defines whether the specific filter member is include or not that used to be display in the pivot table. */
     isSelected?: boolean;
     /** Defines the unique name of a specific filter member. */
@@ -1296,7 +1296,7 @@ export interface BeforeServiceInvokeEventArgs {
     /** Defines the action which is being performed. */
     action?: string;
     /** Defines the custom properties which needs to pass to server side. */
-    customProperties?: Object;
+    customProperties?: unknown;
     /** Defines the drill item. */
     drillItem?: IDrilledItem;
     /** Defines the sort item. */
@@ -1316,7 +1316,7 @@ export interface BeforeServiceInvokeEventArgs {
     /** Defines the hash string. */
     hash?: string;
     /** Defines the internal properties. */
-    internalProperties?: Object;
+    internalProperties?: unknown;
     /** Defines the options for customizing the excel document during export. */
     excelExportProperties?: ExcelExportProperties;
     /** Allows you to export the pivot table data of all pages. */
@@ -1704,6 +1704,8 @@ export interface PivotAggregateInfo {
     baseItem?: string;
     /** Defines whether the previous/next base item can belong to another parent member. */
     allowCrossGroupCalculation?: boolean;
+    /** Defines the accumulation direction of the running totals. */
+    runningTotalDirection?: RunningTotalDirection;
 }
 
 /**
@@ -1734,23 +1736,44 @@ export interface ExportCompleteEventArgs {
     }>;
 }
 
+/** Defines options for exporting the rendered PivotView table as standalone HTML. */
+export interface HtmlExportProperties {
+    /** Specifies the downloaded HTML filename. */
+    fileName?: string;
+    /** Specifies the document title. */
+    title?: string;
+    /** Specifies whether the default table styles are included. */
+    includeStyles?: boolean;
+}
+
+/** Defines options for exporting the current PivotView composition as an image. */
+export interface ImageExportProperties {
+    /** Specifies the downloaded image filename. */
+    fileName?: string;
+    /** Specifies image quality for JPEG output, between zero and one. */
+    quality?: number;
+    /** Specifies image scale. */
+    scale?: number;
+    /** Specifies the image background color. */
+    backgroundColor?: string;
+}
+
 /**
  * The event argument that holds configuration details for exporting Pivot Table data to Excel.
  *
  * This interface extends the base `GridExcelExportProperties` and includes additional options
  * specific to Pivot Table export, such as targeting multiple Pivot Table instances by ID.
- *
  */
 export interface ExcelExportProperties extends GridExcelExportProperties {
     /**
      * Defines the IDs of the Pivot Table instances to be exported to Excel.
      * Multiple Pivot Tables can be exported by specifying their element IDs in this array.
      *
-     * @value
+     *
      * @example
      * pivotTableIds: ['PivotView1', 'PivotView2']
      */
-    pivotTableIds ?: string[]
+    pivotTableIds ?: string[];
 }
 
 /**
@@ -1765,11 +1788,11 @@ export interface PdfExportProperties extends GridPdfExportProperties {
      * Defines the IDs of the Pivot Table instances to be exported to PDF.
      * Multiple Pivot Tables can be exported by specifying their element IDs in this array.
      *
-     * @value
+     *
      * @example
      * pivotTableIds: ['PivotView1', 'PivotView2']
      */
-    pivotTableIds?: string[]
+    pivotTableIds?: string[];
 }
 
 /**
@@ -1868,7 +1891,7 @@ export interface WebMcpTool {
     /**
      * A function that executes the tool's logic when invoked.
      */
-    execute?: Function;
+    execute?: (args: object) => object | Promise<object>;
 }
 
 /**
@@ -2036,4 +2059,105 @@ export interface CSVParseResult {
 export interface WebMcpApplyConditionalFormattingArgs {
     /** Collection of conditional formatting models to apply. */
     formatRules: ConditionalFormatSettingsModel[];
+}
+
+/** @hidden */
+export interface FullScreenScrollState {
+    element: HTMLElement;
+    top: number;
+    left: number;
+}
+
+/** @hidden */
+export interface FullScreenState {
+    focus: HTMLElement;
+    scroll: FullScreenScrollState[];
+    ancestors: HTMLElement[];
+    views: { element: HTMLElement; display: string }[];
+    dialog?: { element: HTMLElement; zIndex: number };
+}
+
+/** @hidden */
+export interface FullScreenOverflowState {
+    count: number;
+    owned: boolean;
+}
+
+/** Arguments for customizing the rendered PivotView print composition. */
+export interface PivotViewPrintEventArgs extends IPrintEventArgs {
+    /**
+     * Selects rendered Table, Chart or Both content. Undefined preserves the default composition.
+     * Both starts the chart on a separate page after the table. Missing views are not rendered on demand.
+     * When changed, the selected composition replaces htmlContent; otherwise htmlContent edits are retained.
+     */
+    view?: View;
+}
+
+/** Parsed server engine payload.
+ *
+ * @hidden
+ */
+export interface ServerEngineResponse {
+    members: string;
+    memberName: string;
+    fieldList: string;
+    fields: string;
+    dataSourceSettings: string;
+    pivotValue: string;
+    pivotCount: string;
+    indexObject: string;
+    rawData: string;
+    isEmptyData: boolean;
+    isEngineUpdated: boolean;
+}
+
+/** Component template callback before framework compilation.
+ *
+ * @hidden
+ */
+export type PivotTemplate = (...args: unknown[]) => unknown;
+
+/** Compiled component template callback.
+ *
+ * @hidden
+ */
+export type CompiledPivotTemplate = (...args: unknown[]) => NodeListOf<HTMLElement> | string;
+
+/** Virtual content geometry prepared before scroll alignment.
+ *
+ * @hidden
+ */
+export interface VirtualContentLayout {
+    width: number;
+    table: HTMLElement;
+}
+
+/** Constructor shape inspected by dynamic module injection.
+ *
+ * @hidden
+ */
+export interface PivotModuleConstructor {
+    new (parent: PivotView): object;
+    prototype: { getModuleName(): string };
+}
+
+/** Field member returned by the server engine.
+ *
+ * @hidden
+ */
+export interface ServerFieldMember {
+    Name?: string;
+    Caption?: string;
+    Index?: number[];
+    Ordinal?: number;
+    IsDrilled?: boolean;
+}
+
+/** Request metadata consumed when sending server headers.
+ *
+ * @hidden
+ */
+export interface ServerRequestMetadata {
+    headers: { [key: string]: string };
+    requestType?: string;
 }

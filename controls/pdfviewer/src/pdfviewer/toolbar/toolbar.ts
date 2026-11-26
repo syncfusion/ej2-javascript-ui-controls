@@ -1572,7 +1572,8 @@ export class Toolbar {
                 break;
             case 14:
                 // Only add CollaborativeUsers item if in collaborative editing mode
-                if (this.pdfViewer.isCollaborativeEditing) {
+                if (this.pdfViewer.isCollaborativeEditing && this.pdfViewer.collaborativeUsers &&
+                    this.pdfViewer.collaborativeUsers.length > 0) {
                     this.itemsIndexArray.push({ item: 'CollaborativeUsers', startIndex: this.toolItems.length, endIndex: this.toolItems.length });
                     const avatarTemplate: string = this.createCollaborativeUsersTemplate();
                     this.toolItems.push({ type: 'Separator', align: 'Right', cssClass: 'e-pv-collaborator-separator-container' });
@@ -2130,8 +2131,7 @@ export class Toolbar {
         avatarContainer.innerHTML = '';
         const userCount: number = this.pdfViewer.collaborativeUsers.length;
         if (userCount === 0) {
-            avatarGroup.style.display = 'none';
-            userPopup.style.display = 'none';
+            this.hideCollaborativeUsersToolbar();
             return;
         }
         avatarGroup.style.display = 'flex';
@@ -2736,6 +2736,9 @@ export class Toolbar {
         case this.pdfViewer.element.id + '_handToolIcon':
         case this.pdfViewer.element.id + '_handToolText':
             if (!(this.isScrollingToolDisabled || this.getStampMode())) {
+                if (this.pdfViewer.formDesignerModule) {
+                    this.pdfViewer.formDesignerModule.exitFormFieldCreationMode();
+                }
                 this.pdfViewerBase.initiatePanning();
                 this.updateInteractionTools(false);
                 this.annotationToolbarModule.selectAnnotationDeleteItem(true);
@@ -3294,6 +3297,9 @@ export class Toolbar {
                     this.panItem.setAttribute('tabindex', '-1');
                 }
                 this.deSelectItem(this.textSelectItem);
+                if (this.pdfViewer.formDesignerModule) {
+                    this.pdfViewer.formDesignerModule.exitFormFieldCreationMode();
+                }
                 this.pdfViewer.interactionMode = 'Pan';
                 if (!isNullOrUndefined(this.textSelectItem)) {
                     this.textSelectItem.setAttribute('tabindex', '0');

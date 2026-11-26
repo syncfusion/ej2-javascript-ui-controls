@@ -3,7 +3,7 @@ import { getActualPropFromColl, isActionPrevent, getColumnByForeignKeyValue } fr
 import { remove, matches, initializeTelemetryFeature } from '@syncfusion/ej2-base';
 import { DataUtil, Predicate, Query, DataManager } from '@syncfusion/ej2-data';
 import { FilterSettings } from '../base/grid';
-import { IGrid, IAction, NotifyArgs, IFilterOperator, IValueFormatter, FilterUI, EJ2Intance, CustomOperators } from '../base/interface';
+import { IGrid, IAction, NotifyArgs, IFilterOperator, IValueFormatter, FilterUI, EJ2Intance, CustomOperators, IFilterArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { CellType, ResponsiveDialogAction } from '../base/enum';
 import { PredicateModel } from '../base/grid-model';
@@ -23,6 +23,7 @@ import * as literals from '../base/string-literals';
 import { Input, InputArgs } from '@syncfusion/ej2-inputs';
 import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
 import { ExcelFilterBase } from '../common/excel-filter-base';
+import { IXLFilter } from '../common/filter-interface';
 
 /**
  *
@@ -80,6 +81,7 @@ export class Filter implements IAction {
     public serviceLocator: ServiceLocator;
     private l10n: L10n;
     private valueFormatter: IValueFormatter;
+    private prevRangeColumns: PredicateModel[] = [];
     private actualPredicate: { [key: string]: PredicateModel[] } = {};
     public prevFilterObject: PredicateModel;
     public checkboxPrevFilterObject: { field: string; }[];
@@ -526,7 +528,8 @@ export class Filter implements IAction {
         }
     }
 
-    private filterMenuClose(): void {
+    private filterMenuClose(args?: { isToolPanel?: boolean }): void {
+        if (args && args.isToolPanel) { return; }
         this.fltrDlgDetails.isOpen = false;
     }
 
@@ -577,6 +580,10 @@ export class Filter implements IAction {
                 instance: this, handler: this.filterByColumn, arg1: fieldName, arg2: filterOperator, arg3: filterValue, arg4: predicate,
                 arg5: matchCase, arg6: ignoreAccent, arg7: actualFilterValue, arg8: actualOperator
             });
+            return;
+        }
+        if (filterOperator === 'between') {
+            this.applyBetween(fieldName, filterValue as Date[] | string[], ignoreAccent);
             return;
         }
         this.predicate = predicate ? predicate : Array.isArray(filterValue) ? 'or' : 'and';
@@ -632,6 +639,46 @@ export class Filter implements IAction {
             return;
         }
         this.updateModel();
+    }
+
+    private applyBetween(fieldName: string, filterValue: Date[] | string[], ignoreAccent?: boolean): void {
+        const column: Column = this.column;
+        if (this.filterSettings.type !== 'Menu' ||
+            (column.type !== 'date' && column.type !== 'datetime' && column.type !== 'dateonly')) {
+            return;
+        }
+        const bounds: Date[] = Array.isArray(filterValue) && filterValue.length === 2 ?
+            (filterValue as (Date | string)[]).map((value: Date | string) => isNullOrUndefined(value) || value === '' ? null : new Date(value as string)) : [];
+        if (bounds.length !== 2 || bounds.some((date: Date) => isNullOrUndefined(date) || isNaN(date.getTime()))) {
+            return;
+        }
+        if (column.type !== 'datetime') {
+            // getDatePredicate widens 'lessthanorequal' on date columns to the end of that day.
+            bounds[0].setHours(0, 0, 0, 0);
+            bounds[1].setHours(0, 0, 0, 0);
+        }
+        this.predicate = 'and';
+        this.value = bounds as Object as Date;
+        this.matchCase = true;
+        this.ignoreAccent = !isNullOrUndefined(ignoreAccent) ? ignoreAccent : this.parent.filterSettings.ignoreAccent;
+        this.fieldName = fieldName;
+        this.operator = 'between';
+        this.values[column.field] = bounds;
+        this.filterObjIndex = this.getFilteredColsIndexByField(column);
+        this.prevFilterObject = this.filterSettings.columns[this.filterObjIndex];
+        this.prevRangeColumns = this.filterSettings.columns.filter((predicate: PredicateModel) => predicate.uid === column.uid);
+        const rangeOperators: string[] = ['greaterthanorequal', 'lessthanorequal'];
+        const rangePredicates: PredicateModel[] = rangeOperators.map((operator: string, index: number) => ({
+            field: fieldName, uid: column.uid, isForeignKey: false, operator: operator, value: bounds[parseInt(index.toString(), 10)],
+            predicate: 'and', matchCase: this.matchCase, ignoreAccent: this.ignoreAccent, isRange: true,
+            type: column.type, actualFilterValue: {}, actualOperator: {}
+        }));
+        this.actualPredicate[`${fieldName}`] = rangePredicates;
+        const otherPredicates: PredicateModel[] = this.filterSettings.columns.filter(
+            (predicate: PredicateModel) => predicate.uid !== column.uid);
+        this.currentFilterObject = rangePredicates[1];
+        this.filterSettings.columns = otherPredicates.concat(rangePredicates);
+        this.parent.dataBind();
     }
 
     private applyColumnFormat(filterValue: string | number | Date | boolean): void {
@@ -695,7 +742,11 @@ export class Filter implements IAction {
                                 filterIconElement.classList.add('e-filtered');
                             }
                         } else {
-                            if (isNullOrUndefined(this.prevFilterObject)) {
+                            if (this.currentFilterObject && this.currentFilterObject.isRange) {
+                                const uid: string = this.currentFilterObject.uid;
+                                this.filterSettings.columns = this.filterSettings.columns.filter(
+                                    (predicate: PredicateModel) => predicate.uid !== uid).concat(this.prevRangeColumns);
+                            } else if (isNullOrUndefined(this.prevFilterObject)) {
                                 this.filterSettings.columns.splice(this.filterSettings.columns.length - 1, 1);
                             } else {
                                 this.filterSettings.columns[this.filterObjIndex] = this.prevFilterObject;
@@ -889,7 +940,46 @@ export class Filter implements IAction {
             this.filterModule.closeDialog();
         }
         this.setFilterModel(col);
+        // The tool panel item of this column is destroyed first so that the filter UI element ids are not duplicated.
+        this.parent.notify(events.toolPanelFilterDialogOpen, { field: col.field });
         this.filterModule.openDialog(this.createOptions(col, target, left, top));
+    }
+
+    /**
+     * Closes the filter dialog if it is opened for the given column.
+     *
+     * @param {string} field - column field name
+     * @returns {void}
+     * @hidden
+     */
+    public closeFilterDialogByField(field: string): void {
+        if (this.filterModule && this.column && this.column.field === field) {
+            this.filterModule.closeDialog();
+        }
+    }
+
+    /**
+     * Renders the filter dialog content of the column inside the given host element (tool panel accordion item).
+     *
+     * @param {Column} col - filtering column
+     * @param {HTMLElement} host - element that receives the filter UI
+     * @param {Function} onClose - called after the filter UI is closed by apply, clear or cancel
+     * @returns {{ closeDialog: Function }} the filter instance used to destroy the rendered UI
+     * @hidden
+     */
+    public renderToolPanelFilter(col: Column, host: HTMLElement, onClose: Function): { closeDialog: Function } {
+        const type: string = col.filter.type || this.parent.filterSettings.type;
+        const options: IFilterArgs = { ...(this.createOptions(col, host) as IFilterArgs), isToolPanel: true, toolPanelClose: onClose };
+        let instance: { openDialog: Function, closeDialog: Function };
+        if (type === 'Excel') {
+            instance = new ExcelFilterBase(this.parent as IXLFilter, this.customOperators);
+        } else if (type === 'CheckBox') {
+            instance = new CheckBoxFilterBase(this.parent as IXLFilter);
+        } else {
+            instance = new FilterMenuRenderer(this.parent, this.filterSettings, this.serviceLocator, this.customOperators, this);
+        }
+        instance.openDialog(options);
+        return instance;
     }
 
     /**
@@ -1328,7 +1418,8 @@ export class Filter implements IAction {
                 { value: 'lessthanorequal', text: this.l10n.getConstant('LessThanOrEqual') },
                 { value: 'notequal', text: this.l10n.getConstant('NotEqual') },
                 { value: 'isnull', text: this.l10n.getConstant('IsNull') },
-                { value: 'isnotnull', text: this.l10n.getConstant('NotNull') }
+                { value: 'isnotnull', text: this.l10n.getConstant('NotNull') },
+                { value: 'between', text: this.l10n.getConstant('Between') }
             ],
 
             datetimeOperator: [
@@ -1339,7 +1430,8 @@ export class Filter implements IAction {
                 { value: 'lessthanorequal', text: this.l10n.getConstant('LessThanOrEqual') },
                 { value: 'notequal', text: this.l10n.getConstant('NotEqual') },
                 { value: 'isnull', text: this.l10n.getConstant('IsNull') },
-                { value: 'isnotnull', text: this.l10n.getConstant('NotNull') }
+                { value: 'isnotnull', text: this.l10n.getConstant('NotNull') },
+                { value: 'between', text: this.l10n.getConstant('Between') }
             ],
 
             dateonlyOperator: [
@@ -1350,7 +1442,8 @@ export class Filter implements IAction {
                 { value: 'lessthanorequal', text: this.l10n.getConstant('LessThanOrEqual') },
                 { value: 'notequal', text: this.l10n.getConstant('NotEqual') },
                 { value: 'isnull', text: this.l10n.getConstant('IsNull') },
-                { value: 'isnotnull', text: this.l10n.getConstant('NotNull') }
+                { value: 'isnotnull', text: this.l10n.getConstant('NotNull') },
+                { value: 'between', text: this.l10n.getConstant('Between') }
             ],
 
             booleanOperator: [
@@ -1440,6 +1533,7 @@ export class Filter implements IAction {
         if (this.filterSettings.mode === 'Immediate' || this.parent.filterSettings.type === 'Menu' ||
             this.parent.filterSettings.type === 'CheckBox' || this.parent.filterSettings.type === 'Excel') {
             const target: Element = e.target as Element;
+            if (parentsUntil(target, 'e-toolpanel')) { return; }
             const datepickerEle: boolean = target.classList.contains('e-day'); // due to datepicker popup cause
             const dialog: Element = parentsUntil(this.parent.element, 'e-dialog');
             let hasDialog: boolean = false;

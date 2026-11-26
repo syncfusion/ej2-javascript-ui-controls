@@ -1,10 +1,10 @@
-import { _TrueTypeReader, _TrueTypeMetrics } from './ttf-reader';
+
 import { _PdfDictionary, _PdfName, Dictionary } from './../pdf-primitives';
 import { _PdfFontMetrics } from './pdf-font-metrics';
 import { _StandardWidthTable } from './pdf-font-metrics';
 import { _FontDescriptorFlag } from '../enumerator';
 import { _decode } from '../utils';
-import { _TrueTypeGlyph } from './../fonts/ttf-reader';
+import { _TrueTypeGlyph, _TrueTypeMetrics, _TrueTypeReader } from './../fonts/ttf-reader';
 import { _PdfStream } from './../base-stream';
 import { _TrueTypeTableInfo } from './ttf-table';
 /**
@@ -85,6 +85,12 @@ export class _UnicodeTrueTypeFont {
      * @private
      */
     _usedChars: Dictionary<string, string>;
+    /**
+     * Retains shaped glyph identifiers and their source character codes.
+     *
+     * @private
+     */
+    _shapedGlyphIds: { [index: number]: number };
     /**
      * Indicates whether the embedded font program has been written.
      *
@@ -343,11 +349,66 @@ export class _UnicodeTrueTypeFont {
         if (this._ttfReader._isOpenType && this._ttfMetrics._contains) {
             fontProgram = this._ttfReader._readCompactFontFormatTable();
             this._fontProgram.dictionary.update('Subtype', _PdfName.get('CIDFontType0C'));
+        } else if (this._hasShapedGlyphs()) {
+            fontProgram = this._readShapedFontProgram();
         } else {
             fontProgram = this._ttfReader._readFontProgram(this._usedChars);
         }
         this._fontProgram._clearStream();
         this._fontProgram._writeBytes(fontProgram);
+    }
+    /**
+     * Builds the subset font program including glyphs created by OpenType shaping.
+     *
+     * @private
+     * @returns {number[]} The font program bytes.
+     */
+    _readShapedFontProgram(): number[] {
+        const reader: _TrueTypeReader = this._ttfReader;
+        const glyphChars: Dictionary<number, number> = reader._getGlyphChars(this._usedChars);
+        this._shapedKeys().forEach((key: string) => {
+            glyphChars.setValue(Number(key), this._shapedGlyphIds[Number(key)]);
+        });
+        const locaTable: any = reader._readLocaTable(reader._bIsLocaShort); // eslint-disable-line
+        reader._updateGlyphChars(glyphChars, locaTable);
+        const glyphTable: any = reader._generateGlyphTable(glyphChars, locaTable, null, null); // eslint-disable-line
+        const locaResult: any = reader._updateLocaTable(glyphTable.newLocaTable, reader._bIsLocaShort); // eslint-disable-line
+        return reader._getFontProgram(locaResult.newLocaUpdated, glyphTable.newGlyphTable, glyphTable.glyphTableSize,
+                                      locaResult.newLocaSize);
+    }
+    /**
+     * Returns the registered shaped glyph identifiers as strings.
+     *
+     * @private
+     * @returns {string[]} Identifier keys.
+     */
+    _shapedKeys(): string[] {
+        return (this._shapedGlyphIds === null || typeof this._shapedGlyphIds === 'undefined') ? [] : Object.keys(this._shapedGlyphIds);
+    }
+    /**
+     * Indicates whether shaped glyphs were registered.
+     *
+     * @private
+     * @returns {boolean} True when shaped glyphs exist.
+     */
+    _hasShapedGlyphs(): boolean {
+        return this._shapedKeys().length > 0;
+    }
+    /**
+     * Registers a shaped glyph identifier so it is embedded, measured and mapped.
+     *
+     * @private
+     * @param {number} index Glyph identifier.
+     * @param {string} characters Source characters represented by the glyph.
+     * @returns {void} nothing.
+     */
+    _setShapedGlyph(index: number, characters: string): void {
+        if (this._shapedGlyphIds === null || typeof this._shapedGlyphIds === 'undefined') {
+            this._shapedGlyphIds = {};
+        }
+        if (index > 0 && !(index in this._shapedGlyphIds)) {
+            this._shapedGlyphIds[<number>index] = characters.length > 0 ? characters.charCodeAt(0) : 0;
+        }
     }
     /**
      * Returns the bounding box transformed into pdf descriptor format.
@@ -404,6 +465,11 @@ export class _UnicodeTrueTypeFont {
     _generateCmap(): void {
         if (this._usedChars !== null && typeof this._usedChars !== 'undefined' && this._usedChars._size() > 0) {
             const glyphChars: Dictionary<number, number> = this._ttfReader._getGlyphChars(this._usedChars);
+            this._shapedKeys().forEach((key: string) => {
+                if (!glyphChars.containsKey(Number(key))) {
+                    glyphChars.setValue(Number(key), this._shapedGlyphIds[Number(key)]);
+                }
+            });
             if (glyphChars._size() > 0) {
                 const keys: number[] = glyphChars.keys().sort();
                 const first: number = keys[0];
@@ -531,6 +597,16 @@ export class _UnicodeTrueTypeFont {
             keys.forEach((chLen: string) => {
                 const glyph: _TrueTypeGlyph = this._ttfReader._getGlyph(chLen);
                 glyphInfo.push(glyph);
+            });
+            const widths: number[] = this._ttfReader._width;
+            this._shapedKeys().forEach((key: string) => {
+                const id: number = Number(key);
+                if (!glyphInfo.some((g: _TrueTypeGlyph) => g._index === id) && widths && widths.length > 0) {
+                    const extra: _TrueTypeGlyph = new _TrueTypeGlyph();
+                    extra._index = id;
+                    extra._width = widths[Math.min(id, widths.length - 1)];
+                    glyphInfo.push(extra);
+                }
             });
             glyphInfo.sort((a: _TrueTypeGlyph, b: _TrueTypeGlyph) => a._index - b._index);
             let firstGlyphIndex: number = 0;

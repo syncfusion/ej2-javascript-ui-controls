@@ -105,6 +105,8 @@ export class DataSourceUpdate {
                             (this.parent.engineModule as PivotEngine).removeValueInstance(
                                 draggedButtonElement.getAttribute('data-instance-id')
                             );
+                            this.control.setProperties({ dataSourceSettings: { values: this.parent.dataSourceSettings.values.filter(
+                                (value: IFieldOptions) => value.instanceId !== draggedButtonElement.getAttribute('data-instance-id')) } }, true);
                         } else {
                             this.control.setProperties({ dataSourceSettings: { values: [] } }, true);
                         }
@@ -411,6 +413,7 @@ export class DataSourceUpdate {
                 baseField: fieldItem ? fieldItem.baseField : field.baseField,
                 baseItem: fieldItem ? fieldItem.baseItem : field.baseItem,
                 allowCrossGroupCalculation: fieldItem ? fieldItem.allowCrossGroupCalculation : field.allowCrossGroupCalculation,
+                runningTotalDirection: fieldItem ? fieldItem.runningTotalDirection : field.runningTotalDirection,
                 allowDragAndDrop: fieldItem ? fieldItem.allowDragAndDrop : field.allowDragAndDrop,
                 showSubTotals: fieldItem ? fieldItem.showSubTotals : field.showSubTotals,
                 showFilterIcon: fieldItem ? fieldItem.showFilterIcon : field.showFilterIcon,

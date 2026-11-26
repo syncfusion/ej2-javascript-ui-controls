@@ -248,6 +248,7 @@ export class PivotUtil {
                     baseField: fieldlistObj.baseField,
                     baseItem: fieldlistObj.baseItem,
                     allowCrossGroupCalculation: fieldlistObj.allowCrossGroupCalculation,
+                    runningTotalDirection: fieldlistObj.runningTotalDirection,
                     dateMember: isMemberIncluded ? [] : this.cloneDateMembers(fieldlistObj.dateMember),
                     members: isMemberIncluded ? {} : this.cloneFormatMembers(fieldlistObj.members),
                     formatString: fieldlistObj.formatString,
@@ -403,6 +404,7 @@ export class PivotUtil {
                     baseField: set.baseField,
                     baseItem: set.baseItem,
                     allowCrossGroupCalculation: set.allowCrossGroupCalculation,
+                    runningTotalDirection: set.runningTotalDirection,
                     isCalculatedField: set.isCalculatedField,
                     isNamedSet: set.isNamedSet,
                     showNoDataItems: set.showNoDataItems,
@@ -808,6 +810,7 @@ export class PivotUtil {
             baseField: fieldList.baseField,
             baseItem: fieldList.baseItem,
             allowCrossGroupCalculation: fieldList.allowCrossGroupCalculation,
+            runningTotalDirection: fieldList.runningTotalDirection,
             isCalculatedField: fieldList.isCalculatedField,
             isNamedSet: fieldList.isNamedSets,
             showNoDataItems: fieldList.showNoDataItems,
@@ -1515,6 +1518,7 @@ export class PivotUtil {
                     isFieldStart = true;
                 } else {
                     record += char;
+                    isFieldStart = false;
                 }
             }
             if (record !== '') {

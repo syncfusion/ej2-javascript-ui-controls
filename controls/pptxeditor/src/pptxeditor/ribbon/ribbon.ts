@@ -22,7 +22,7 @@ import { initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { MenuItemModel } from '@syncfusion/ej2-navigations';
 import { SelectionFontState } from '../semantic/semantic-clipboard';
 import { buildFileMenu, buildFileMenuItems } from './file-tab';
-import { buildHomeTab } from './home-tab';
+import { buildHomeTab, isMobileViewport } from './home-tab';
 import { buildSlideshowTab } from './slideshow-tab';
 import { buildViewTab } from './view-tab';
 import { SplitButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
@@ -48,6 +48,8 @@ interface Ej2InstanceLike {
     text?: string | null;
     dataBind?: () => void;
     dataSource?: string[];
+    resizeHandler?: (() => void) | null;
+    boundResizeHandler?: (() => void) | null;
 }
 
 /**
@@ -64,6 +66,27 @@ export class EditorRibbon {
     private fileInput: HTMLInputElement | null = null;
     private presentButton: SplitButton | null = null;
     private destroyed: boolean = false;
+    /** Whether the current item models were built for a phone-sized viewport. */
+    private builtForMobile: boolean = false;
+    /** Combo boxes created for the current build, so their window resize handlers can be released. */
+    private comboInstances: Ej2InstanceLike[] = [];
+    /** Tab to select on the next build (kept when the ribbon is rebuilt on a breakpoint change). */
+    private pendingTabIndex: number = 0;
+    /** Keeps the slide text selection alive when a ribbon layout-switcher button is pressed. */
+    private readonly onSwitcherPointerDownBound: (event: Event) => void = (event: Event): void => {
+        const target: Element | null = event.target instanceof Element ? event.target : null;
+        const onSwitcher: boolean = !!target && !!target.closest('.e-ribbon-collapse-btn, .e-ribbon-expand-btn');
+        if (onSwitcher && (this.builtForMobile || isMobileViewport())) {
+            // A focusable button takes focus on mousedown, which clears the document selection.
+            // Cancelling the default keeps the selection (and its handles); `click` still fires.
+            event.preventDefault();
+        }
+    };
+    /** Phone-breakpoint media query; its changes rebuild the ribbon without a page reload. */
+    private mobileQuery: MediaQueryList | null = null;
+    private readonly onMobileQueryChangeBound: () => void = (): void => {
+        this.onViewportBreakpointChanged();
+    };
 
     /** Last applied Copy / Font group state, to skip redundant DOM updates. */
     private selectionSignature: string = '';
@@ -91,6 +114,8 @@ export class EditorRibbon {
             return;
         }
         this.container = container;
+        this.container.removeEventListener('mousedown', this.onSwitcherPointerDownBound, true);
+        this.container.addEventListener('mousedown', this.onSwitcherPointerDownBound, true);
         this.container.setAttribute('role', 'region');
         this.container.setAttribute('aria-label', 'Presentation ribbon');
 
@@ -104,12 +129,14 @@ export class EditorRibbon {
 
         Ribbon.Inject(RibbonButton, RibbonComboBox, RibbonDropDown, RibbonFileMenu);
 
+        this.builtForMobile = isMobileViewport();
         const tabs: RibbonTabModel[] = [
             buildHomeTab(this.host),
             buildSlideshowTab(this.host),
             buildViewTab(this.host)
         ];
 
+        this.trackComboBoxes(tabs);
         const layout: RibbonLayout = this.resolveEj2Layout(this.host.ribbonLayout);
 
         this.ribbon = new Ribbon({
@@ -117,18 +144,24 @@ export class EditorRibbon {
             cssClass: 'ej2-pptx-ribbon-control',
             enableRtl: !!this.host.enableRtl,
             width: '100%',
-            selectedTab: 0,
+            selectedTab: this.pendingTabIndex,
             fileMenu: buildFileMenu(this.host, {
                 openDevice: (): void => {
                     this.invokeOpenDevice();
                 }
             }),
+            // The ribbon's own layout switcher flips `activeLayout` without telling the editor.
+            ribbonLayoutSwitched: (args: { activeLayout?: string }): void => {
+                this.onRibbonLayoutSwitched(args && args.activeLayout);
+            },
             helpPaneTemplate: initializeCSPTemplate(function (this: EditorRibbon): HTMLElement[] {
                 return [this.buildPresentButton()];
             }, this),
             tabs
         });
         this.ribbon.appendTo(container);
+        this.syncHelpPaneWidth();
+        this.watchViewportBreakpoint();
         // EJ2 only paints groups for the initial selected tab. Pre-create every
         // tab's groups so Slide Show / View / Help match File / Home on first open.
         this.materializeAllTabGroups();
@@ -358,9 +391,122 @@ export class EditorRibbon {
         if (!this.ribbon || this.destroyed) {
             return;
         }
+        this.syncHelpPaneWidth();
         if (typeof this.ribbon.refreshLayout === 'function') {
             this.ribbon.refreshLayout();
         }
+    }
+
+    /**
+     * EJ2 measures the help pane (Present button) once, at creation, and reserves that width
+     * from the tab row. When responsive CSS later shrinks the button (icon only on small
+     * screens) the stale width leaves the tabs no room, so re-measure it.
+     *
+     * @returns {void}
+     */
+    private syncHelpPaneWidth(): void {
+        if (!this.container) {
+            return;
+        }
+        const help: HTMLElement | null = this.container.querySelector('.e-ribbon-help-template');
+        const tabEl: HTMLElement | null = help ? help.parentElement : null;
+        if (!help || !tabEl) {
+            return;
+        }
+        // Hidden (display:none on small screens) reserves no width; otherwise use the measured one.
+        const hidden: boolean = window.getComputedStyle(help).display === 'none';
+        if (hidden || help.offsetWidth > 0) {
+            tabEl.style.setProperty('--helpTemplateWidth', hidden ? '0px' : String(help.offsetWidth) + 'px');
+        }
+    }
+
+    /**
+     * Listens for the phone breakpoint so the ribbon follows window resizes, orientation changes
+     * and the browser's device-mode toggle without a page reload. Registered once per ribbon.
+     *
+     * @returns {void}
+     */
+    private watchViewportBreakpoint(): void {
+        if (this.mobileQuery || typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+            return;
+        }
+        this.mobileQuery = window.matchMedia('(max-width: 767.98px)');
+        if (typeof this.mobileQuery.addEventListener === 'function') {
+            this.mobileQuery.addEventListener('change', this.onMobileQueryChangeBound);
+        } else if (typeof this.mobileQuery.addListener === 'function') {
+            this.mobileQuery.addListener(this.onMobileQueryChangeBound);
+        }
+    }
+
+    private unwatchViewportBreakpoint(): void {
+        if (!this.mobileQuery) {
+            return;
+        }
+        if (typeof this.mobileQuery.removeEventListener === 'function') {
+            this.mobileQuery.removeEventListener('change', this.onMobileQueryChangeBound);
+        } else if (typeof this.mobileQuery.removeListener === 'function') {
+            this.mobileQuery.removeListener(this.onMobileQueryChangeBound);
+        }
+        this.mobileQuery = null;
+    }
+
+    /**
+     * The viewport crossed the phone breakpoint: item sizes, labels and group overflow are chosen
+     * when the ribbon is built, so rebuild it for the new class of device, keeping the open tab.
+     *
+     * @returns {void}
+     */
+    private onViewportBreakpointChanged(): void {
+        if (this.destroyed || !this.container || !this.ribbon || this.builtForMobile === isMobileViewport()) {
+            return;
+        }
+        this.rebuildKeepingTab(this.container);
+    }
+
+    /**
+     * Rebuilds the ribbon for the current device class / layout and re-selects the tab that was
+     * open, so a layout or breakpoint switch never drops the user back to Home. Falls back to the
+     * first tab only when the previous index does not exist in the rebuilt ribbon.
+     *
+     * @param {HTMLElement} container - `.ej2-pptx-ribbon` host
+     * @returns {void}
+     */
+    private rebuildKeepingTab(container: HTMLElement): void {
+        const current: number = this.ribbon && typeof this.ribbon.selectedTab === 'number' ? this.ribbon.selectedTab : 0;
+        this.pendingTabIndex = current;
+        try {
+            this.initialize(container);
+        } finally {
+            this.pendingTabIndex = 0;
+        }
+        const count: number = this.ribbon && this.ribbon.tabs ? this.ribbon.tabs.length : 0;
+        if (this.ribbon && count > 0 && this.ribbon.selectedTab !== (current < count ? current : 0)) {
+            this.ribbon.selectedTab = current < count ? current : 0;
+        }
+        this.refreshActionState();
+    }
+
+    /**
+     * Handles the ribbon's built-in layout switcher. On phones the item models differ per layout
+     * (icon-only vs labelled), so the ribbon is rebuilt for the layout the user picked. Desktop
+     * keeps EJ2's in-place switch untouched.
+     *
+     * @param {string|undefined} activeLayout - Layout EJ2 switched to
+     * @returns {void}
+     */
+    private onRibbonLayoutSwitched(activeLayout: string | undefined): void {
+        if (this.destroyed || !this.container || !(this.builtForMobile || isMobileViewport())) {
+            return;
+        }
+        const container: HTMLElement = this.container;
+        this.host.ribbonLayout = activeLayout === 'Classic' ? 'Classic' : 'Simplified';
+        // Rebuild after EJ2 finishes its own switch; destroying the ribbon inside its event is unsafe.
+        window.setTimeout((): void => {
+            if (this.destroyed || this.container !== container) {
+                return;
+            }
+            this.rebuildKeepingTab(container);
+        }, 0);
     }
 
     /**
@@ -373,6 +519,13 @@ export class EditorRibbon {
             return;
         }
         const layout: RibbonLayout = this.resolveEj2Layout(this.host.ribbonLayout);
+        if (this.ribbon.activeLayout !== layout && this.container && (this.builtForMobile || isMobileViewport())) {
+            // Phone builds choose icon-only (Simplified) or labelled (Classic) item models up front.
+            // Rebuild when the models came from a phone build (even if the screen is now wider) or
+            // the screen is phone-sized now; otherwise stale icon-only items would show in Classic.
+            this.rebuildKeepingTab(this.container);
+            return;
+        }
         if (this.ribbon.activeLayout !== layout) {
             this.ribbon.activeLayout = layout;
             this.ribbon.dataBind();
@@ -635,8 +788,10 @@ export class EditorRibbon {
             return;
         }
         this.destroyed = true;
+        this.unwatchViewportBreakpoint();
 
         if (this.container) {
+            this.container.removeEventListener('mousedown', this.onSwitcherPointerDownBound, true);
             this.teardownHostRibbon(this.container);
             this.container = null;
         } else if (this.ribbon) {
@@ -723,6 +878,7 @@ export class EditorRibbon {
      * @returns {void}
      */
     private teardownHostRibbon(host: HTMLElement): void {
+        this.releaseWindowResizeHandlers(host);
         if (this.ribbon && !this.ribbon.isDestroyed) {
             try {
                 this.ribbon.destroy();
@@ -743,6 +899,86 @@ export class EditorRibbon {
 
         this.destroyEj2InstancesIn(host);
         this.resetRibbonHostElement(host);
+    }
+
+    /**
+     * Detaches the `window` resize listener EJ2 left on a drop-down (`resizeHandler`) or on a
+     * readonly combo box (`boundResizeHandler`, only removed by EJ2 for non-readonly boxes).
+     *
+     * @param {Ej2InstanceLike|undefined} instance - EJ2 control
+     * @returns {void}
+     */
+    private removeResizeHandler(instance: Ej2InstanceLike | undefined): void {
+        if (!instance) {
+            return;
+        }
+        if (typeof instance.resizeHandler === 'function') {
+            window.removeEventListener('resize', instance.resizeHandler);
+        }
+        if (typeof instance.boundResizeHandler === 'function') {
+            window.removeEventListener('resize', instance.boundResizeHandler);
+            instance.boundResizeHandler = null;
+        }
+    }
+
+    /**
+     * Remembers every combo box the ribbon creates (including the ones that live in the closed
+     * overflow popup, which is not in the DOM) via its `created` callback.
+     *
+     * @param {RibbonTabModel[]} tabs - Tab models about to be handed to the ribbon
+     * @returns {void}
+     */
+    private trackComboBoxes(tabs: RibbonTabModel[]): void {
+        const instances: Ej2InstanceLike[] = this.comboInstances;
+        for (const tab of tabs) {
+            for (const group of tab.groups || []) {
+                for (const collection of group.collections || []) {
+                    for (const item of collection.items || []) {
+                        const settings: { created?: (this: Ej2InstanceLike) => void } | undefined = item.comboBoxSettings;
+                        if (!settings) {
+                            continue;
+                        }
+                        const original: ((this: Ej2InstanceLike) => void) | undefined = settings.created;
+                        settings.created = function (this: Ej2InstanceLike): void {
+                            instances.push(this);
+                            if (original) {
+                                original.call(this);
+                            }
+                        };
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * EJ2 drop-down / combo box controls register a `window` resize handler and do not always
+     * remove it on destroy. A destroyed control then throws on every later resize, and every
+     * ribbon rebuild would leak more of them, so detach them before the controls are destroyed.
+     *
+     * @param {HTMLElement} root - Ribbon host that is about to be torn down
+     * @returns {void}
+     */
+    private releaseWindowResizeHandlers(root: HTMLElement): void {
+        for (const combo of this.comboInstances) {
+            this.removeResizeHandler(combo);
+        }
+        this.comboInstances = [];
+        const nodes: Element[] = Array.from(root.querySelectorAll('*'));
+        nodes.push(root);
+        // Overflow popups are attached to <body>, outside the host; reach the ribbon's own controls by id.
+        const doc: Document = root.ownerDocument;
+        Array.prototype.push.apply(nodes, Array.from(doc.querySelectorAll('[id^="pptx-ribbon-"]')));
+        for (const node of nodes) {
+            const instances: Ej2InstanceLike[] | undefined =
+                (node as HTMLElement & { 'ej2_instances'?: Ej2InstanceLike[] })['ej2_instances'];
+            if (!instances) {
+                continue;
+            }
+            for (const instance of instances) {
+                this.removeResizeHandler(instance);
+            }
+        }
     }
 
     /**

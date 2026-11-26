@@ -44,19 +44,6 @@
 	"dependencies": {
 		"@syncfusion/ej2-icons": "*"
 	},
-	"devDependencies": {
-		"@syncfusion/ej2-staging": "^1.0.15",
-		"@types/chai": "^3.4.28",
-		"@types/jasmine": "2.8.22",
-		"@types/jasmine-ajax": "^3.1.27",
-		"@types/requirejs": "^2.1.26",
-		"es6-promise": "^3.2.1",
-		"gulp": "^3.9.1",
-		"gulp-sass": "^3.1.0",
-		"gulp-typescript": "^3.1.6",
-		"requirejs": "^2.3.3",
-		"typescript": "2.3.4"
-	},
 	"scripts": {
 		"build": "gulp build"
 	},

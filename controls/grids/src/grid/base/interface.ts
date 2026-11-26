@@ -10,7 +10,7 @@ import {
     DomVirtualizationSettingsModel, AdvancedFilterSettingsModel, FormulaSettingsModel, GridWebMcpSettingsModel
 } from './grid-model';
 import { HighlightSettingsModel } from '../models/highlight-settings';
-import { PageSettingsModel, AggregateRowModel, ColumnChooserSettingsModel } from '../models/models';
+import { PageSettingsModel, AggregateRowModel, ColumnChooserSettingsModel, ToolpanelSettingsModel } from '../models/models';
 import { FindSettingsModel } from './find-settings';
 import { RowDropSettingsModel, GroupSettingsModel, GridModel, EditSettingsModel, LoadingIndicatorModel } from './grid-model';
 import { Cell } from '../models/cell';
@@ -19,7 +19,7 @@ import { GridLine, Action, CellType, SortDirection, PrintMode, ToolbarItems, Com
 import { MultipleExportType, MultiplePdfExportType, ExportType, ExcelHAlign, ExcelVAlign, BorderLineStyle, ToolbarItem, AggregateTemplateType } from './enum';
 import { PredicateModel } from './grid-model';
 import { SentinelType, Offsets, RowSelectable, PinRow, SetRowHeight } from './type';
-import { CheckState, ColumnQueryModeType, HierarchyGridPrintMode, ClipMode, freezeMode, EmptyRecordMode } from './enum';
+import { CheckState, ColumnQueryModeType, HierarchyGridPrintMode, ClipMode, freezeMode, EmptyRecordMode, ToolPanelType } from './enum';
 import { ResponsiveDialogAction, RowRenderingDirection } from './enum';
 import { Edit } from '../actions/edit';
 import { Highlight } from '../actions/highlight';
@@ -56,7 +56,7 @@ import { AdvancedFilter } from '../actions/advanced-filter';
 import { Reorder } from '../actions/reorder';
 import { ContextMenu } from '../actions/context-menu';
 import { FilterMenuRenderer } from '../renderer/filter-menu-renderer';
-import { ColumnChooser, Search } from '../..';
+import { ColumnChooser, Search, SideBar } from '../..';
 import { WebMcpGrid } from '../actions/webmcp-adapter';
 
 /**
@@ -798,6 +798,7 @@ export interface IGrid extends Component<HTMLElement> {
      *
      */
     isRowSelectable?: RowSelectable | string;
+    isRowNonDeselectable?: RowSelectable | string;
 
     /**
      * Defines the own class for the grid element.
@@ -912,6 +913,18 @@ export interface IGrid extends Component<HTMLElement> {
 
     columnChooserModule?: ColumnChooser;
 
+    sideBarModule?: SideBar;
+
+    toolPanelAggregates?: { field: string, type: string }[];
+
+    enableToolPanel?: boolean;
+
+    toolPanelSettings?: ToolpanelSettingsModel;
+
+    openToolPanel?(id: string): void;
+
+    closeToolPanel?(): void;
+
     webMcpGridModule?: WebMcpGrid;
 
     expandedRows?: { [index: number]: IExpandedRow };
@@ -1008,8 +1021,10 @@ export interface IGrid extends Component<HTMLElement> {
     addFormula?(name: string, handler: Function): void;
     removeFormula?(name: string): void;
     selectRows?(indexes: number[]): void;
+    deselectRow?(index: number): void;
+    deselectRows?(rowIndexes: number[]): void;
     clearSelection?(): void;
-    clearRowSelection?(): void;
+    clearRowSelection?(includeNonDeselectableRows?: boolean): void;
     updateExternalMessage?(message: string): void;
     getColumns?(isRefresh?: boolean): Column[];
     getStackedHeaderColumnByHeaderText?(stackedHeader: string, col: Column[]): Column;
@@ -1103,11 +1118,14 @@ export interface IGrid extends Component<HTMLElement> {
     getActiveMatch?(): FindMatch;
     findModule?: { find(searchString: string): void; refreshHighlights?(): void };
     deleteRecord?(fieldname?: string, data?: Object): void;
+    deleteRecordAsync?(fieldname?: string, data?: Object): Promise<void>;
     startEdit?(): void;
     endEdit?(): void;
     closeEdit?(): void;
     clearFiltering?(fields?: string[]): void;
     addRecord?(data?: Object): void;
+    addRecordAsync?(data?: Object, index?: number): Promise<void>;
+    updateRowAsync?(index: number, data: Object): Promise<void>;
     /**
      * Undo the last edit action and restore the grid to its previous state.
      */
@@ -1332,6 +1350,12 @@ export interface IFilterWrite extends IFilterBase {
     filteredValue?: string | number | boolean | Date | (string | number | boolean | Date)[];
     /** Defines the parent instance */
     parent?: IGrid;
+    /**
+     * Specifies the instance of filter operator.
+     *
+     * @hidden
+     */
+    getOptrInstance?: FlMenuOptrUI;
 }
 
 /**
@@ -2615,6 +2639,36 @@ export interface IUndoRedoAction {
 /**
  * @hidden
  */
+export interface ICommittedRecord {
+    primaryKey: string;
+    keyValue: string | number;
+    previousRecord?: Object;
+    newRecord?: Object;
+    rowIndex: number;
+    changeType: 'added' | 'changed' | 'deleted';
+}
+
+/**
+ * @hidden
+ */
+export interface ICommittedAction {
+    type: 'cell-edit' | 'row-add' | 'row-delete' | 'batch-transaction';
+    primaryKey?: string;
+    keyValue?: string | number;
+    rowIndex?: number;
+    field?: string;
+    previousRecord?: Object;
+    newRecord?: Object;
+    changedRecords?: ICommittedRecord[];
+    addedRecords?: ICommittedRecord[];
+    deletedRecords?: ICommittedRecord[];
+    records?: ICommittedRecord[];
+    sequence: number;
+}
+
+/**
+ * @hidden
+ */
 export interface IAutoFill extends IUndoRedoAction {
     /** Specifies the cells involved in the AutoFill operation. */
     cells: IUndoRedoAction[];
@@ -2739,6 +2793,8 @@ export interface SaveEventArgs extends AddEventArgs {
     index?: number;
     /** Defines the promise. */
     promise?: Promise<Object>;
+    /** Defines the column name. */
+    columnName?: string;
 }
 
 export interface EditEventArgs extends BeginEditArgs {
@@ -2847,6 +2903,12 @@ export interface IFilterCreate extends IFilterBase {
     localizeText?: L10n;
     /** Defines the instance of filter dialog. */
     dialogObj?: Dialog;
+    /**
+     * Notifies the filter renderer that the filter UI is ready.
+     *
+     * @hidden
+     */
+    afterRenderFilterUI?: Function;
 }
 
 export interface CellSaveArgs extends CellEditSameArgs {
@@ -2889,6 +2951,12 @@ export interface BeforeDataBoundArgs {
  */
 export interface IEdit {
     formObj?: FormValidator;
+    /** @hidden */
+    undoRedoModule?: {
+        setPendingBatchTransaction(transaction: ICommittedAction): void;
+        setPendingRecord(record: Object, type: string, rowIndex: number): void;
+        cloneRecord(record: Object): Object;
+    };
     destroy?: Function;
     closeEdit?(): void;
     deleteRecord?(fieldname?: string, data?: Object): void;
@@ -2906,6 +2974,8 @@ export interface IEdit {
     saveCell?(isForceSave?: boolean): void;
     escapeCellEdit?() : void;
     addCancelWhilePaging?(): void;
+    undoEdit?(): void;
+    redoEdit?(): void;
     /**
      * Undo the last batch edit action and restore the grid to its previous state.
      */
@@ -3185,16 +3255,109 @@ export interface KeyboardEventArgs extends KeyboardEvent {
 }
 
 /**
- * @hidden
+ * Defines a preset date range shown in the date range picker of the Filter Menu `between` operator.
+ */
+export interface IDateRangePreset {
+    /**
+     * Specifies the text displayed for the preset in the preset list.
+     */
+    label: string;
+    /**
+     * Specifies the start date of the preset range.
+     */
+    start: Date;
+    /**
+     * Specifies the end date of the preset range. It must not be earlier than `start`.
+     */
+    end: Date;
+}
+
+/**
+ * Defines the preset ranges options of the date range picker used by the Filter Menu `between` operator.
+ */
+export interface IDateRangeFilter {
+    /**
+     * If `enablePresets` is set to true, the date range picker displays the preset ranges selected by `presetMode`.
+     * Otherwise, no preset ranges are displayed.
+     *
+     * @default false
+     */
+    enablePresets?: boolean;
+    /**
+     * Defines which preset ranges are displayed when `enablePresets` is true.
+     * * `Default` - Displays only the built-in presets: This Week, This Month, This Year, Last Week, Last Month,
+     * Last 3 Months, Last 6 Months and Last Year.
+     * * `Custom` - Displays only the ranges specified in `customPresetRanges`.
+     * * `Both` - Displays the built-in presets followed by the ranges specified in `customPresetRanges` in the same list.
+     *
+     * @default 'Default'
+     */
+    presetMode?: 'Default' | 'Custom' | 'Both';
+    /**
+     * Specifies the user-defined preset ranges used when `presetMode` is `Custom` or `Both`.
+     * Entries without a label, with an invalid date, or whose start date is later than the end date are ignored.
+     *
+     * @default undefined
+     */
+    customPresetRanges?: IDateRangePreset[];
+}
+
+/**
+ * Defines the filter options of a column.
  */
 export interface IFilter {
+    /**
+     * Specifies the filter type of the column, such as `Menu`, `CheckBox`, `Excel` or `FilterBar`.
+     *
+     * @default undefined
+     */
     type?: string;
+    /**
+     * Specifies the data source used to populate the filter list of the column.
+     *
+     * @default undefined
+     */
     dataSource?: Object[] | DataManager;
+    /**
+     * If `hideSearchbox` is set to true, the search box of the filter dialog is hidden.
+     *
+     * @default false
+     */
     hideSearchbox?: boolean;
+    /**
+     * Specifies the template used to render the items of the filter list.
+     *
+     * @default undefined
+     */
     itemTemplate?: string | Function;
+    /**
+     * Specifies the functions used to render a custom component in the filter menu.
+     * * create - Creates the custom component.
+     * * read - Reads the value from the component.
+     * * write - Applies the component model dynamically.
+     * * destroy - Destroys the custom component.
+     *
+     * @default undefined
+     */
     ui?: IFilterMUI;
+    /**
+     * Specifies the default filter operator of the column.
+     *
+     * @default undefined
+     */
     operator?: string;
+    /**
+     * Specifies the model of the component rendered in the filter, such as the date picker or numeric text box.
+     *
+     * @default undefined
+     */
     params?: DatePickerModel | NumericTextBoxModel | DropDownListModel | AutoCompleteModel | DateTimePickerModel;
+    /**
+     * Defines the preset date ranges of the date range picker shown for the `between` operator in the Filter Menu.
+     *
+     * @default undefined
+     */
+    dateRanges?: IDateRangeFilter;
 }
 
 /**
@@ -3235,6 +3398,10 @@ export interface IFilterArgs {
     operator?: string;
     cancel?: boolean;
     disableHtmlEncode?: boolean;
+    /** Renders the filter content inside `target` (tool panel accordion item) instead of a popup near the header. */
+    isToolPanel?: boolean;
+    /** Called after a tool panel filter dialog is closed by apply, clear or cancel. */
+    toolPanelClose?: Function;
 }
 
 export interface PdfExportProperties {
@@ -3958,6 +4125,76 @@ export interface FlashOptions {
     columns?: string[];
     /** Highlight settings for this call only. Missing values fall back to the grid's `highlightSettings`. */
     highlightSettings?: HighlightSettingsModel;
+}
+
+/**
+ * Configures a single tool panel of the side bar.
+ */
+export interface ToolPanelModel {
+    /** Unique id of the panel. Built-in ids are `columns`, `filters` and `edit`. */
+    id: string;
+    /** Defines the panel type. */
+    type?: ToolPanelType;
+    /** Text shown on the strip button and panel header. */
+    headerText?: string;
+    /** CSS class of the strip button icon. */
+    iconCss?: string;
+    /** Tooltip of the strip button. */
+    tooltip?: string;
+    /** Custom content template. Context: `{ grid, panel }`. */
+    template?: string | Function;
+    /** Shows or hides the panel button. */
+    visible?: boolean;
+    /** Field whitelist for the Filters and Edit panels. */
+    columns?: string[];
+    /** Shows the Row Groups area in the Columns panel. Requires the Group module. */
+    showGroupDropArea?: boolean;
+    /** Shows the Values (aggregates) area in the Columns panel. Requires the Aggregate module. */
+    showAggregateDropArea?: boolean;
+    /** Aggregate types offered in the Values chip menu. */
+    aggregateTypes?: string[];
+}
+
+/**
+ * Arguments of the toolPanelColumnDrop and toolPanelColumnDropped events.
+ */
+export interface ToolPanelColumnDropEventArgs {
+    /** Zone that received the drop: `Chooser`, `Group` or `Aggregate`. */
+    zone: 'Chooser' | 'Group' | 'Aggregate';
+    /** Action applied: `Reorder`, `Group`, `Ungroup`, `AddAggregate`, `ChangeAggregate` or `RemoveAggregate`. */
+    action: 'Reorder' | 'Group' | 'Ungroup' | 'AddAggregate' | 'ChangeAggregate' | 'RemoveAggregate';
+    /** The column that was dropped. */
+    column: Column;
+    /** Aggregate type after the action. */
+    aggregateType?: string;
+    /** Cancels the action (toolPanelColumnDrop only). */
+    cancel?: boolean;
+}
+
+/**
+ * Arguments of the tool panel events.
+ */
+export interface ToolPanelEventArgs {
+    /** Id of the panel. */
+    id: string;
+    /** Type of the panel. */
+    type: ToolPanelType;
+    /** Panel body element. */
+    element: HTMLElement;
+    /** Cancels the open or close action in the before events. */
+    cancel?: boolean;
+    /** Id of the previously opened panel, if any. */
+    previousId?: string;
+}
+
+/**
+ * Arguments of the toolPanelCreated event.
+ */
+export interface ToolPanelCreatedEventArgs {
+    /** Id of the panel. */
+    id: string;
+    /** Panel body element. */
+    element: HTMLElement;
 }
 
 /**

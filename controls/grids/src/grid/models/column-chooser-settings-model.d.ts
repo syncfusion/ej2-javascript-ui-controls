@@ -76,4 +76,12 @@ export interface ColumnChooserSettingsModel {
      */
     immediateModeDelay?: number;
 
+    /**
+     * If set to true, the columns can be reordered by drag and drop (or Alt + Up/Down arrow keys) in the column chooser.
+     * It requires the grid `allowReordering` property to be enabled and the `Reorder` module to be injected.
+     *
+     * @default false
+     */
+    allowReordering?: boolean;
+
 }

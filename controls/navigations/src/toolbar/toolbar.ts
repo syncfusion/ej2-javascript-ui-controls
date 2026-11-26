@@ -1234,6 +1234,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         let width: number = 0;
         let style: CSSStyleDeclaration;
         [].slice.call(selectAll('.' + CLS_ITEM, items)).forEach((el: HTEle) => {
+            if (el.parentElement && closest(el.parentElement, '.e-toolbar') !== this.element) {
+                return;
+            }
             if (isVisible(el)) {
                 style = window.getComputedStyle(el);
                 width += this.isVertical ? el.offsetHeight : el.offsetWidth;

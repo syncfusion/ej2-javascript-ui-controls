@@ -883,10 +883,12 @@ export class QuickPopups {
                     this.morePopup.relateTo = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS +
                         ' tbody tr td[data-date="' + tdDate + '"]') as HTMLElement;
                 } else {
-                    this.morePopup.relateTo = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS +
+                    const wrapSelector: string = closest(target, '.' + cls.FIXED_CONTENT_WRAP_CLASS) ?
+                        '.' + cls.FIXED_CONTENT_WRAP_CLASS : '.' + cls.CONTENT_WRAP_CLASS;
+                    this.morePopup.relateTo = this.parent.element.querySelector(wrapSelector +
                         ' tbody tr td[data-group-index="' + gIndex + '"][data-date="' + tdDate + '"]') as HTMLElement;
                     if (isNullOrUndefined(this.morePopup.relateTo)) {
-                        const workCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CONTENT_WRAP_CLASS +
+                        const workCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(wrapSelector +
                             ' tbody tr td[data-group-index="' + gIndex + '"]'));
                         for (let i: number = 0; i < workCells.length; i++) {
                             const date: string = workCells[parseInt(i.toString(), 10)].getAttribute('data-date');

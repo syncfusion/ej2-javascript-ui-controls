@@ -87,6 +87,9 @@ export {
     ReplaceImageDataOptions
 } from './pictures/index';
 export {
+    DateTimeFormatType,
+    HeaderFooter,
+    HeadersFooters,
     LayoutSlide,
     MasterSlide,
     Slide,

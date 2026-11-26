@@ -2,7 +2,7 @@
 import { addClass, append, createElement, extend, remove, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { setStyleAttribute, EventHandler } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
-import { EventRenderedArgs, TdData } from '../base/interface';
+import { EventRenderedArgs, TdData, RowFrame, StackLayout } from '../base/interface';
 import { TimelineEvent } from './timeline-view';
 import * as util from '../base/util';
 import * as events from '../base/constant';
@@ -17,9 +17,22 @@ const EVENT_GAP: number = 2;
 export class YearEvent extends TimelineEvent {
     public cellHeader: number;
     private isResource: boolean = false;
+    private regionSelector: string = '.' + cls.CONTENT_WRAP_CLASS;
 
     constructor(parent: Schedule) {
         super(parent, 'day');
+    }
+
+    /**
+     * The level layout of a TimelineYear cell for the levels it needs, below the date header.
+     *
+     * @param {number} levels The number of levels the cell needs.
+     * @returns {StackLayout} The level layout from getStackLayout.
+     */
+    private getYearStackLayout(levels: number): StackLayout {
+        const frame: RowFrame = this.getRowFrame();
+        return util.getStackLayout(this.cellHeight - this.cellHeader, levels, this.eventHeight, frame.gap, frame.lead, frame.trail,
+                                   this.moreIndicatorHeight, !!this.parent.rowAutoHeight, frame.reserve);
     }
 
     public renderAppointments(): void {
@@ -85,7 +98,12 @@ export class YearEvent extends TimelineEvent {
         this.eventHeight = this.parent.getElementHeightFromClass(eventTable, cls.APPOINTMENT_CLASS);
         const selector: string =
             `.${cls.MONTH_HEADER_WRAPPER} tbody tr,.${cls.RESOURCE_COLUMN_TABLE_CLASS} tbody tr,.${cls.CONTENT_TABLE_CLASS} tbody tr`;
-        this.addCellHeight(selector, this.eventHeight, EVENT_GAP, this.cellHeader, this.moreIndicatorHeight);
+        this.addCellHeight(selector, this.eventHeight, EVENT_GAP, this.cellHeader, this.moreIndicatorHeight, true,
+                           this.spacing ? this.getRowFrame() : undefined);
+        if (this.parent.fixedRowsModule && this.parent.element.querySelector('.' + cls.FIXED_CONTENT_TABLE_CLASS)) {
+            // rowAutoHeight: clear the stale inline heights of the fixed content cells before they are re-laid out.
+            this.removeHeightProperty(cls.FIXED_CONTENT_TABLE_CLASS);
+        }
         const wrapperCollection: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CONTAINER_CLASS));
         const months: number[] = this.getMonths();
         const groupIndex: number = (this.parent.activeViewOptions.group.resources.length > 0 && this.parent.uiStateValues.isGroupAdaptive) ?
@@ -125,8 +143,9 @@ export class YearEvent extends TimelineEvent {
                         leftValue = ((dayIndex + monthStart.getDate()) - 1) * this.cellWidth;
                     }
                 }
-                const rowTd: HTMLElement = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${td}) td`) as HTMLElement;
+                const rowTd: HTMLElement = this.parent.element.querySelector(`${this.regionSelector} tr:nth-child(${td}) td`) as HTMLElement;
                 this.cellHeight = rowTd.offsetHeight;
+                this.checkSpacingFit(this.cellHeight - this.cellHeader);
                 const dayStart: Date = util.resetTime(new Date(monthStart.getTime()));
                 const dayEnd: Date = util.addDays(new Date(dayStart.getTime()), 1);
                 let resource: TdData;
@@ -141,10 +160,15 @@ export class YearEvent extends TimelineEvent {
                     this.updateSpannedEvents(eventData, dayStart, dayEnd);
                     const overlapIndex: number = this.getIndex(dayStart as Date);
                     eventData.Index = overlapIndex;
-                    const availedHeight: number = this.cellHeader + (this.eventHeight * (overlapIndex + 1)) + EVENT_GAP +
+                    let availedHeight: number = this.cellHeader + (this.eventHeight * (overlapIndex + 1)) + EVENT_GAP +
                         this.moreIndicatorHeight;
                     const appArea: number = this.cellHeight - this.cellHeader - this.moreIndicatorHeight;
-                    const renderedAppCount: number = Math.floor(appArea / (this.eventHeight + EVENT_GAP));
+                    let renderedAppCount: number = Math.floor(appArea / (this.eventHeight + EVENT_GAP));
+                    if (this.spacing) {
+                        const dayLayout: StackLayout = this.getYearStackLayout(count);
+                        availedHeight = this.cellHeader + this.getYearStackLayout(overlapIndex + 1).height;
+                        renderedAppCount = dayLayout.visible;
+                    }
                     const eventsPerRow: number = this.parent.rowAutoHeight ? 1 : this.parent.activeViewOptions.maxEventsPerRow;
                     const moreIndicatorCount: number = this.parent.activeViewOptions.maxEventsPerRow ? count - eventsPerRow
                         : (count - renderedAppCount) <= 0 ? 1 : count - renderedAppCount;
@@ -156,7 +180,7 @@ export class YearEvent extends TimelineEvent {
                         if (isRendered.length > 0 && isRendered[0].MoreIndicator || isSpanned.length > 0 && isSpanned[0].MoreIndicator) {
                             const moreIndex: number = this.parent.activeViewOptions.orientation === 'Horizontal' ? row : dayIndex;
                             this.renderMoreIndicator(eventWrapper, moreIndicatorCount,
-                                                     dayStart, moreIndex, leftValue, rightValue, groupIndex);
+                                                     dayStart, moreIndex, leftValue, rightValue, groupIndex, count);
                             continue;
                         } else if (isRendered.length > 0 || isSpanned.length > 0) {
                             continue;
@@ -165,7 +189,7 @@ export class YearEvent extends TimelineEvent {
                     if (this.maxHeight && this.parent.currentView.indexOf('Timeline') !== -1 && overlapIndex > 0) {
                         continue;
                     }
-                    if (this.parent.rowAutoHeight || this.shouldRenderAppointment(overlapIndex, availedHeight)) {
+                    if (this.parent.rowAutoHeight || this.shouldRenderAppointment(overlapIndex, availedHeight, count)) {
                         this.renderEvent(eventWrapper, eventData, row, leftValue, rightValue, monthStart, dayIndex);
                         if (this.parent.rowAutoHeight || this.cellHeight > availedHeight) {
                             this.updateCellHeight(rowTd, availedHeight);
@@ -173,7 +197,8 @@ export class YearEvent extends TimelineEvent {
                         isSpannedCollection.push(eventData);
                     } else {
                         const moreIndex: number = this.parent.activeViewOptions.orientation === 'Horizontal' ? row : dayIndex;
-                        this.renderMoreIndicator(eventWrapper, moreIndicatorCount, dayStart, moreIndex, leftValue, rightValue, groupIndex);
+                        this.renderMoreIndicator(eventWrapper, moreIndicatorCount, dayStart, moreIndex, leftValue, rightValue,
+                                                 groupIndex, count);
                         if (this.parent.activeViewOptions.orientation === 'Horizontal') {
                             eventData.MoreIndicator = true;
                             this.renderedEvents.push(eventData);
@@ -229,18 +254,26 @@ export class YearEvent extends TimelineEvent {
     private timelineResourceEvents(): void {
         const contentTable: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
         const isVerticalScrollbarAvail: boolean = contentTable.offsetWidth > contentTable.clientWidth;
-        const workCell: HTMLElement = this.parent.element.querySelector('.' + cls.WORK_CELLS_CLASS);
+        const workCell: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' .' + cls.WORK_CELLS_CLASS);
         this.cellWidth = this.parent.getElementWidth(workCell);
         this.cellHeader = 0;
         const eventTable: Element = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS);
         this.eventHeight = this.parent.getElementHeightFromClass(eventTable, cls.APPOINTMENT_CLASS);
+        const fixedRows: TdData[] = this.parent.fixedRowsModule && !this.parent.uiStateValues.isGroupAdaptive ?
+            this.parent.resourceBase.fixedResourceLevel : [];
         const selector: string =
-            `.${cls.MONTH_HEADER_WRAPPER} tbody tr,.${cls.RESOURCE_COLUMN_TABLE_CLASS} tbody tr,.${cls.CONTENT_TABLE_CLASS} tbody tr`;
-        this.addCellHeight(selector, this.eventHeight, EVENT_GAP, this.cellHeader, this.moreIndicatorHeight);
-        const wrapperCollection: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CONTAINER_CLASS));
+            `.${cls.MONTH_HEADER_WRAPPER} tbody tr,.${cls.RESOURCE_COLUMN_TABLE_CLASS} tbody tr,.${cls.CONTENT_TABLE_CLASS} tbody tr` +
+            (fixedRows.length > 0 ? `,.${cls.FIXED_RESOURCE_WRAP_CLASS} tbody tr,.${cls.FIXED_CONTENT_TABLE_CLASS} tbody tr` : '');
+        this.addCellHeight(selector, this.eventHeight, EVENT_GAP, this.cellHeader, this.moreIndicatorHeight, true,
+                           this.spacing ? this.getRowFrame() : undefined);
+        // The group summary rows take their final height before the row tops are read, or the events land off their rows.
+        if (this.parent.groupSummaryModule) {
+            this.parent.groupSummaryModule.syncHeights();
+        }
+        const wrapperCollection: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.EVENT_TABLE_CLASS + ' .' + cls.APPOINTMENT_CONTAINER_CLASS));
         const resources: TdData[] = this.parent.uiStateValues.isGroupAdaptive ?
             [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] :
-            this.parent.activeViewOptions.allowVirtualScrolling ? this.parent.resourceBase.renderedResources :
+            this.parent.activeViewOptions.allowVirtualScrolling || fixedRows.length > 0 ? this.parent.resourceBase.renderedResources :
                 this.parent.resourceBase.lastResourceLevel;
         const months: number[] = this.getMonths();
         if (this.parent.activeViewOptions.orientation === 'Horizontal') {
@@ -253,13 +286,17 @@ export class YearEvent extends TimelineEvent {
                 }
             }
         } else {
-            for (let i: number = 0, len: number = resources.length; i < len; i++) {
-                this.renderedEvents = [];
-                for (let month: number = 0; month < months.length; month++) {
-                    const monthStart: Date = new Date(this.parent.selectedDate.getFullYear(), months[parseInt(month.toString(), 10)], 1);
-                    this.renderResourceEvent(wrapperCollection[parseInt(i.toString(), 10)], resources[parseInt(i.toString(), 10)], month,
-                                             i, monthStart);
+            this.renderVerticalResourceEvents(resources, wrapperCollection, months);
+            if (fixedRows.length > 0) {
+                const fixedWrappers: HTMLElement[] =
+                    [].slice.call(this.parent.element.querySelectorAll('.' + cls.FIXED_EVENT_TABLE_CLASS + ' .' + cls.APPOINTMENT_CONTAINER_CLASS));
+                this.regionSelector = '.' + cls.FIXED_CONTENT_WRAP_CLASS;
+                try {
+                    this.renderVerticalResourceEvents(fixedRows, fixedWrappers, months);
+                } finally {
+                    this.regionSelector = '.' + cls.CONTENT_WRAP_CLASS;
                 }
+                this.positionFixedEvents();
             }
         }
         if (this.parent.rowAutoHeight && !isVerticalScrollbarAvail && contentTable.offsetWidth > contentTable.clientWidth) {
@@ -268,7 +305,7 @@ export class YearEvent extends TimelineEvent {
                 ele.style.removeProperty('left');
                 ele.style.removeProperty('right');
             });
-            const appContainer: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CONTAINER_CLASS));
+            const appContainer: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.EVENT_TABLE_CLASS + ' .' + cls.APPOINTMENT_CONTAINER_CLASS));
             const conTable: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS);
             const tr: HTMLElement[] = [].slice.call(conTable.querySelectorAll('tbody tr'));
             appContainer.forEach((ele: HTMLElement, index: number) => {
@@ -296,13 +333,49 @@ export class YearEvent extends TimelineEvent {
         }
     }
 
-    private shouldRenderAppointment(overlapIndex: number, availedHeight: number): boolean {
+    /**
+     * The year theme rules are scoped to `.e-event-table`, which the fixed event table does not carry. The positions
+     * that the layout depends on are therefore set inline.
+     *
+     * @returns {void}
+     */
+    private positionFixedEvents(): void {
+        const table: Element = this.parent.element.querySelector('.' + cls.FIXED_EVENT_TABLE_CLASS);
+        const absolute: HTMLElement[] = [].slice.call(table.querySelectorAll('.' + cls.APPOINTMENT_WRAPPER_CLASS + ',.' +
+            cls.APPOINTMENT_CLASS + ',.' + cls.MORE_INDICATOR_CLASS));
+        for (const element of absolute) {
+            element.style.position = 'absolute';
+        }
+        const containers: HTMLElement[] = [].slice.call(table.querySelectorAll('.' + cls.APPOINTMENT_CONTAINER_CLASS));
+        for (const container of containers) {
+            container.style.position = 'relative';
+        }
+    }
+
+    private renderVerticalResourceEvents(resources: TdData[], wrapperCollection: HTMLElement[], months: number[]): void {
+        for (let i: number = 0, len: number = resources.length; i < len; i++) {
+            this.renderedEvents = [];
+            // A group summary row keeps its event container so the row indexes stay aligned, but holds no event.
+            if (this.parent.groupSummaryModule && this.parent.groupSummaryModule.isGroupRow(resources[parseInt(i.toString(), 10)])) {
+                continue;
+            }
+            for (let month: number = 0; month < months.length; month++) {
+                const monthStart: Date = new Date(this.parent.selectedDate.getFullYear(), months[parseInt(month.toString(), 10)], 1);
+                this.renderResourceEvent(wrapperCollection[parseInt(i.toString(), 10)], resources[parseInt(i.toString(), 10)], month,
+                                         i, monthStart);
+            }
+        }
+    }
+
+    private shouldRenderAppointment(overlapIndex: number, availedHeight: number, levels?: number): boolean {
         const eventsPerRow: number = this.parent.rowAutoHeight ? 1 : this.parent.activeViewOptions.maxEventsPerRow;
         if (this.parent.activeViewOptions.maxEventsPerRow && !this.parent.rowAutoHeight &&
             !this.parent.eventSettings.enableIndicator) {
             return overlapIndex < eventsPerRow;
         } else if (this.maxOrIndicator) {
             return overlapIndex < 1;
+        } else if (this.spacing) {
+            return overlapIndex < this.getYearStackLayout(levels || 0).visible;
         } else {
             return this.cellHeight > availedHeight;
         }
@@ -314,8 +387,9 @@ export class YearEvent extends TimelineEvent {
         const monthEnd: Date = util.addDays(util.lastDateOfMonth(new Date(monthStart.getTime())), 1);
         const eventDatas: Record<string, any>[] = this.parent.eventBase.filterEvents(monthStart, monthEnd, undefined, resource);
         const rowIndex: number = this.parent.activeViewOptions.orientation === 'Vertical' ? index : month;
-        const td: HTMLElement = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${rowIndex + 1}) td`) as HTMLElement;
+        const td: HTMLElement = this.parent.element.querySelector(`${this.regionSelector} tr:nth-child(${rowIndex + 1}) td`) as HTMLElement;
         this.cellHeight = td.offsetHeight;
+        this.checkSpacingFit(this.cellHeight - this.cellHeader);
         this.groupOrder = resource.groupOrder;
         const isSpannedCollection: Record<string, any>[] = [];
         for (let a: number = 0; a < eventDatas.length; a++) {
@@ -330,7 +404,10 @@ export class YearEvent extends TimelineEvent {
                 overlapIndex = this.getIndex(eventData[this.fields.startTime] as Date);
                 eventData.Index = overlapIndex;
             }
-            const availedHeight: number = this.cellHeader + (this.eventHeight * (a + 1)) + EVENT_GAP + this.moreIndicatorHeight;
+            let availedHeight: number = this.cellHeader + (this.eventHeight * (a + 1)) + EVENT_GAP + this.moreIndicatorHeight;
+            if (this.spacing) {
+                availedHeight = this.cellHeader + this.getYearStackLayout(a + 1).height;
+            }
             const leftValue: number = (this.parent.activeViewOptions.orientation === 'Vertical') ?
                 month * this.cellWidth : index * this.cellWidth;
             if (!this.parent.isMinMaxDate(eventData[this.fields.startTime] as Date)) {
@@ -348,13 +425,14 @@ export class YearEvent extends TimelineEvent {
             if (this.maxHeight && this.parent.currentView.indexOf('Timeline') !== -1 && overlapIndex > 0) {
                 continue;
             }
-            if (this.parent.rowAutoHeight || this.shouldRenderAppointment(overlapIndex, availedHeight)) {
+            if (this.parent.rowAutoHeight || this.shouldRenderAppointment(overlapIndex, availedHeight, eventDatas.length)) {
                 this.renderEvent(eventWrapper, eventData, month, leftValue, leftValue, monthStart, index);
                 this.updateCellHeight(td, availedHeight);
                 isSpannedCollection.push(eventData);
             } else {
                 const moreIndex: number = this.parent.activeViewOptions.orientation === 'Horizontal' ? month : index;
-                this.renderMoreIndicator(eventWrapper, eventDatas.length - a, monthStart, moreIndex, leftValue, leftValue, index);
+                this.renderMoreIndicator(eventWrapper, eventDatas.length - a, monthStart, moreIndex, leftValue, leftValue, index,
+                                         eventDatas.length);
                 if (this.parent.activeViewOptions.orientation === 'Horizontal') {
                     for (let i: number = index; i < eventDatas.length; i++) {
                         this.renderedEvents.push(extend({}, eventDatas[parseInt(i.toString(), 10)],
@@ -371,13 +449,74 @@ export class YearEvent extends TimelineEvent {
         setStyleAttribute(event, { 'height': height + 'px', 'align-items': 'center' });
     }
 
+    /**
+     * Calculates the offset and width of an event in Exact mode. It applies only when Exact is set explicitly.
+     * The slot is the day cell, or the month cell when resources are grouped (decision D-8).
+     * Zero-duration events keep the slot rendering (decision D-10).
+     *
+     * @param {Record<string, any>} eventObj - Specifies the event with its spanned details.
+     * @param {Date} monthDate - Specifies the month, or the day for the vertical orientation, being rendered.
+     * @returns {Record<string, number>} Returns the offset and width, or null when the slot rendering is used.
+     */
+    private getYearExactGeometry(eventObj: Record<string, any>, monthDate: Date): Record<string, number> {
+        const explicit: string = this.parent.activeViewOptions.eventPlacement || this.parent.eventSettings.placement;
+        const start: Date = eventObj[this.fields.startTime] as Date;
+        const end: Date = eventObj[this.fields.endTime] as Date;
+        if (explicit !== 'Exact' || this.parent.eventBase.getEventPlacement() !== 'Exact' ||
+            eventObj[this.fields.isAllDay] || start.getTime() >= end.getTime()) {
+            return null;
+        }
+        const cellWidth: number = this.cellWidth;
+        const horizontal: boolean = this.parent.activeViewOptions.orientation === 'Horizontal';
+        const slotStart: (date: Date) => Date = (date: Date): Date => this.isResource ?
+            new Date(date.getFullYear(), date.getMonth(), 1) : util.resetTime(date);
+        const slotEnd: (date: Date) => Date = (date: Date): Date => this.isResource ?
+            util.addMonths(slotStart(date), 1) : util.addDays(slotStart(date), 1);
+        const slotIndex: (date: Date) => number = (date: Date): number => this.isResource ?
+            (date.getFullYear() * 12) + date.getMonth() : Math.round(util.resetTime(date).getTime() / util.MS_PER_DAY);
+        // Day cells: horizontal runs on one row, vertical clips to the day column. Month cells: horizontal clips to the month row.
+        const clipStart: Date = this.isResource ? (horizontal ? slotStart(monthDate) : null) :
+            (horizontal ? null : util.resetTime(monthDate));
+        const clipEnd: Date = clipStart ? slotEnd(clipStart) : null;
+        const rangeStart: Date = clipStart && clipStart.getTime() > start.getTime() ? clipStart : start;
+        const rangeEnd: Date = clipEnd && clipEnd.getTime() < end.getTime() ? clipEnd : end;
+        const lastTime: Date = new Date(rangeEnd.getTime() - 1);
+        const first: Date = slotStart(rangeStart);
+        const last: Date = slotStart(lastTime);
+        const count: number = this.isResource || !clipStart ? (slotIndex(lastTime) - slotIndex(rangeStart)) + 1 : 1;
+        const offset: number = util.timeToOffset(this.toInstant(rangeStart), this.toInstant(first),
+                                                 this.toInstant(slotEnd(first)), cellWidth);
+        const endOffset: number = util.timeToOffset(this.toInstant(rangeEnd), this.toInstant(last),
+                                                    this.toInstant(slotEnd(last)), cellWidth);
+        return { offset: offset, width: ((count - 1) * cellWidth) + endOffset - offset };
+    }
+
+    /**
+     * Returns the Exact offset and width a dragged copy needs in grouped Timeline year, so the preview equals the saved bar.
+     *
+     * @param {Record<string, any>} event - Specifies the event with its new start and end.
+     * @param {number} cellWidth - Specifies the width of a month cell (horizontal) or day cell (vertical).
+     * @param {Date} segmentDate - Specifies the day of one segment of an event that is drawn per day, in vertical Timeline year.
+     * @returns {Record<string, number>} Returns the offset and width, or null when the slot rendering applies.
+     * @private
+     */
+    public getDragGeometry(event: Record<string, any>, cellWidth: number, segmentDate?: Date): Record<string, number> {
+        this.fields = this.parent.eventFields;
+        this.cellWidth = cellWidth;
+        this.isResource = this.parent.activeViewOptions.group.resources.length > 0;
+        const eventObj: Record<string, any> = this.isSpannedEvent(event, segmentDate || event[this.fields.startTime] as Date);
+        return this.getYearExactGeometry(eventObj, segmentDate || eventObj[this.fields.startTime] as Date);
+    }
+
     // eslint-disable-next-line max-len
     private renderEvent(wrapper: HTMLElement, eventData: Record<string, any>, row: number, left: number, right: number, monthDate: Date, rowIndex?: number): void {
         const eventObj: Record<string, any> = this.isSpannedEvent(eventData, monthDate);
         const wrap: HTMLElement = this.createEventElement(eventObj);
         let width: number;
         let index: number;
-        if (eventObj.isSpanned.count === 1) {
+        const exact: Record<string, number> = this.getYearExactGeometry(eventObj, monthDate);
+        // an Exact bar ends at its true end; the day is only taken off the slot rendering, where the end is an exclusive midnight
+        if (eventObj.isSpanned.count === 1 && !exact) {
             const endTime: Date = util.addDays(eventObj[this.fields.endTime] as Date, -1);
             eventObj[this.fields.endTime] = (endTime > eventObj[this.fields.startTime]) ? endTime : eventObj[this.fields.endTime];
         }
@@ -394,8 +533,16 @@ export class YearEvent extends TimelineEvent {
             index = rowIndex + 1;
             width = this.isResource ? eventObj.isSpanned.count * this.cellWidth : this.cellWidth;
         }
-        const rowTd: HTMLElement = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${index}) td`) as HTMLElement;
-        const top: number = rowTd.offsetTop + this.cellHeader + (this.eventHeight * <number>eventObj.Index) + EVENT_GAP;
+        const rowTd: HTMLElement = this.parent.element.querySelector(`${this.regionSelector} tr:nth-child(${index}) td`) as HTMLElement;
+        let top: number = rowTd.offsetTop + this.cellHeader + (this.eventHeight * <number>eventObj.Index) + EVENT_GAP;
+        if (this.spacing) {
+            const frame: RowFrame = this.getRowFrame();
+            top = rowTd.offsetTop + this.cellHeader + frame.lead + (<number>eventObj.Index * (this.eventHeight + frame.gap));
+        }
+        if (exact) {
+            width = exact.width;
+            if (this.parent.enableRtl) { right += exact.offset; } else { left += exact.offset; }
+        }
         setStyleAttribute(wrap, {
             'width': width + 'px', 'height': this.eventHeight + 'px', 'left': left + 'px', 'right': right + 'px', 'top': top + 'px'
         });
@@ -423,7 +570,7 @@ export class YearEvent extends TimelineEvent {
     }
 
     // eslint-disable-next-line max-len
-    private renderMoreIndicator(wrapper: HTMLElement, count: number, startDate: Date, row: number, left: number, right: number, index?: number): void {
+    private renderMoreIndicator(wrapper: HTMLElement, count: number, startDate: Date, row: number, left: number, right: number, index?: number, levels?: number): void {
         if (this.parent.activeViewOptions.group.resources.length === 0 && wrapper.querySelector('[data-start-date="' + startDate.getTime() + '"]')) {
             return;
         }
@@ -434,11 +581,19 @@ export class YearEvent extends TimelineEvent {
             endDate = util.addDays(new Date(startDate.getTime()), 1);
         }
         const moreIndicator: HTMLElement = this.getMoreIndicatorElement(count, startDate, endDate);
-        const rowTr: HTMLElement = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${row + 1})`) as HTMLElement;
-        const top: number = rowTr.offsetTop + this.cellHeight;
+        const rowTr: HTMLElement = this.parent.element.querySelector(`${this.regionSelector} tr:nth-child(${row + 1})`) as HTMLElement;
+        let top: number = rowTr.offsetTop + this.cellHeight;
+        let transform: string = 'translateY(-100%)';
+        if (this.spacing && levels) {
+            const layout: StackLayout = this.getYearStackLayout(levels);
+            if (layout.indicatorTop !== null) {
+                top = rowTr.offsetTop + this.cellHeader + layout.indicatorTop;
+                transform = '';
+            }
+        }
         left = (Math.floor(left / this.cellWidth) * this.cellWidth);
         right = (Math.floor(right / this.cellWidth) * this.cellWidth);
-        setStyleAttribute(moreIndicator, { 'width': this.cellWidth + 'px', 'left': left + 'px', 'right': right + 'px', 'top': top + 'px', 'transform': 'translateY(-100%)' });
+        setStyleAttribute(moreIndicator, { 'width': this.cellWidth + 'px', 'left': left + 'px', 'right': right + 'px', 'top': top + 'px', 'transform': transform });
         if (!isNullOrUndefined(index)) {
             moreIndicator.setAttribute('data-group-index', index.toString());
         }

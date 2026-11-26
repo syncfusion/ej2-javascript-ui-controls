@@ -58,7 +58,9 @@ export class Data {
                 this.parent.resourceBase.resourceCollection.length > 0 && this.parent.resourceBase.renderedResources.length > 0) {
                 const resIdCollection: string[][] = [];
                 this.parent.resourceBase.resourceCollection.forEach(() => resIdCollection.push([]));
-                this.parent.resourceBase.renderedResources.forEach((resource: Record<string, any>) => {
+                const lazyResources: Record<string, any>[] =
+                    this.parent.resourceBase.renderedResources.concat(this.parent.resourceBase.fixedResourceLevel);
+                lazyResources.forEach((resource: Record<string, any>) => {
                     resIdCollection.forEach((resId: string[], index: number) => {
                         const groupId: string = resource.groupOrder[parseInt(index.toString(), 10)];
                         if (groupId && resId.indexOf(groupId) < 0) {

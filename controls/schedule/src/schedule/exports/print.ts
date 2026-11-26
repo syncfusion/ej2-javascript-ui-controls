@@ -78,6 +78,14 @@ export class Print {
                     if (timeCellsScroll) {
                         timeCellsScroll.scrollTop = scrollableEle.scrollTop;
                     }
+                    const summaryRowScroll: HTMLElement = printWindow.document.querySelector('.e-summary-row');
+                    if (summaryRowScroll) {
+                        summaryRowScroll.scrollLeft = scrollableEle.scrollLeft;
+                    }
+                    const summaryColumnScroll: HTMLElement = printWindow.document.querySelector('.e-summary-column');
+                    if (summaryColumnScroll) {
+                        summaryColumnScroll.scrollTop = scrollableEle.scrollTop;
+                    }
                     const contentCellScroll: HTMLElement = printWindow.document.querySelector(className);
                     if (contentCellScroll) {
                         contentCellScroll.scrollLeft = scrollableEle.scrollLeft;
@@ -94,11 +102,7 @@ export class Print {
         const element: HTMLElement = createElement('div', { id: this.parent.element.id + '_print', className: 'e-print-schedule' });
         document.body.appendChild(element);
         Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, Year, TimelineYear);
-        this.printInstance = new Schedule(this.getPrintScheduleModel(printOptions));
-        this.printInstance.isPrinting = true;
-        this.printInstance.registeredTemplate = this.parent.registeredTemplate;
-        this.printInstance.root = this.parent.root ? this.parent.root : this.parent;
-        this.printInstance.appendTo(element);
+        this.printInstance = this.createPrintInstance(element, printOptions);
         const args: BeforePrintEventArgs = { cancel: false, printElement: element };
         this.parent.trigger(events.beforePrint, args, (printElement: BeforePrintEventArgs) => {
             if (printElement.cancel) {
@@ -112,13 +116,26 @@ export class Print {
         });
     }
 
+    private createPrintInstance(element: HTMLElement, printOptions: ScheduleModel): Schedule {
+        const instance: Schedule = new Schedule(this.getPrintScheduleModel(printOptions));
+        instance.isPrinting = true;
+        instance.registeredTemplate = this.parent.registeredTemplate;
+        instance.root = this.parent.root ? this.parent.root : this.parent;
+        instance.printSource = this.parent;
+        instance.appendTo(element);
+        // The fixed rows module has read the pins by now; do not keep the source Scheduler alive.
+        instance.printSource = null;
+        return instance;
+    }
+
     private getPrintScheduleModel(printOptions: ScheduleModel): ScheduleModel {
         const printModel: ScheduleModel = {};
         const scheduleProps: string[] = ['agendaDaysCount', 'calendarMode', 'cssClass', 'currentView',
             'dateFormat', 'enableRtl', 'endHour', 'eventSettings', 'firstDayOfWeek',
             'firstMonthOfYear', 'group', 'height', 'locale', 'maxDate', 'minDate', 'readonly',
             'resources', 'rowAutoHeight', 'selectedDate', 'showHeaderBar', 'showTimeIndicator', 'currentTimeIndicatorSettings', 'showWeekNumber',
-            'showWeekend', 'startHour', 'timeFormat', 'timeScale', 'timezone', 'views', 'width', 'workDays', 'workHours',
+            'showWeekend', 'startHour', 'timeFormat', 'timeScale', 'timezone', 'views', 'width', 'workDays', 'workHours', 'eventSpacing',
+            'summaryRow', 'summaryColumn', 'renderSummaryCell',
             'dateHeaderTemplate', 'dateRangeTemplate', 'cellHeaderTemplate', 'dayHeaderTemplate', 'monthHeaderTemplate',
             'cellTemplate', 'resourceHeaderTemplate', 'headerIndentTemplate', 'actionBegin', 'actionComplete', 'actionFailure',
             'created', 'dataBinding', 'dataBound', 'destroyed', 'eventRendered', 'moreEventsClick', 'navigating', 'popupOpen', 'popupClose', 'renderCell'
@@ -167,6 +184,16 @@ export class Print {
                     }
                 }
                 printModel.views = views;
+                break;
+            case 'summaryRow':
+            case 'summaryColumn':
+                (printModel as Record<string, any>)[`${key}`] = Object.assign({}, ((isNullOrUndefined((printOptions as Record<string, any>)[`${key}`]) ?
+                    (this.parent as Record<string, any>)[`${key}`] : (printOptions as Record<string, any>)[`${key}`]) as Record<string, any>).properties ||
+                    (printOptions as Record<string, any>)[`${key}`]);
+                break;
+            case 'renderSummaryCell':
+                printModel.renderSummaryCell = isNullOrUndefined(printOptions.renderSummaryCell) ? this.parent.renderSummaryCell :
+                    printOptions.renderSummaryCell;
                 break;
             default:
                 if (scheduleTemplates.indexOf(key) > -1) {

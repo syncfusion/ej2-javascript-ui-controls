@@ -27,6 +27,8 @@ import { PackageLimitError } from '../../core/security/errors';
 import { DML_NS } from '../../core/shapes/constants';
 import { asMutable } from '../../core/shapes/dom-utils';
 import { OoxmlAttribute, OoxmlElement, OoxmlText } from '../../core/xml/index';
+import { HeadersFooters } from '../../core/headers-footers/header-footer';
+
 const encoder: TextEncoder = new TextEncoder();
 /** Existing notes workflows retain manual flush; gradient authoring may opt into immediate canonical mutation publication. */
 export interface NotesMutationOptions {
@@ -50,10 +52,14 @@ export class NotesSlide extends NotesCommonPart {
     /** @internal
      * @param {string} partName - Actual notes-slide part identity.
      * @param {PackagePartAccess} access - Owning package access.
-     * @param {NotesMutationOptions} options - Explicit persistence mode; default keeps the existing manual-flush contract. */
-    constructor(partName: string, access: PackagePartAccess, options: NotesMutationOptions = {}) {
+     * @param {NotesMutationOptions} options - Explicit persistence mode; default keeps the existing manual-flush contract.
+     * @param {() => number} slideNumber - 1-based number of the owning slide. */
+    constructor(partName: string, access: PackagePartAccess, options: NotesMutationOptions = {}, slideNumber?: () => number) {
         super(partName, access, 'notes', NOTES_SLIDE_CONTENT_TYPE, notesAutoPersist(options));
+        this.slideNumber = slideNumber;
     }
+    /** 1-based number of the slide that owns this notes page, for an unassigned slide-number field. */
+    private readonly slideNumber: (() => number) | undefined;
     /** @returns {NotesMaster | undefined} Master selected by this actual notes part's Internal relationship. */
     get master(): NotesMaster | undefined { this.getRoot(); return relatedNotesMaster(this.partName, this.access); }
     /**
@@ -63,6 +69,22 @@ export class NotesSlide extends NotesCommonPart {
      */
     get exists(): boolean {
         return true;
+    }
+    /**
+     * Header, footer, date and time, and slide number for this notes slide.
+     *
+     * @remarks
+     * Placeholder text is on this notes slide. `p:hf` visibility is on the
+     * related notes master (`CT_NotesSlide` has no `hf`; `CT_NotesMaster` does).
+     * When no notes master is associated, visibility is read from this part.
+     * @returns {HeadersFooters} Live entries.
+     */
+    get headersFooters(): HeadersFooters {
+        const root: OoxmlElement = this.getRoot();
+        const master = this.master;
+        const flags: OoxmlElement = master === undefined ? root : master.getRoot();
+        const onFlags: (() => void) | undefined = master === undefined ? undefined : (): void => { master.flush(); };
+        return new HeadersFooters(root, this.access.limits, this.partName, flags, (): void => { this.flush(); }, onFlags, 'notes', this.slideNumber);
     }
     /**
      * Notes body shape: first shape with placeholder type `body`, document order.

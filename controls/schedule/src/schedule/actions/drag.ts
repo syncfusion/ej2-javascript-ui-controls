@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createElement, closest, Draggable, extend, formatUnit, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { addClass, remove, removeClass, setStyleAttribute } from '@syncfusion/ej2-base';
-import { DragEventArgs, EventFieldsMapping, TdData, EJ2Instance } from '../base/interface';
+import { DragEventArgs, EventFieldsMapping, TdData, EJ2Instance, CloneFrame } from '../base/interface';
 import { ActionBase } from '../actions/action-base';
 import { MonthEvent } from '../event-renderer/month';
 import { TimelineEvent } from '../event-renderer/timeline-view';
@@ -41,11 +41,16 @@ export class DragAndDrop extends ActionBase {
     private targetTd: HTMLElement = null;
     private isCursorAhead: boolean = false;
     private dragArea: HTMLElement;
+    private cloneFrame: CloneFrame | null = null;
     private enableCurrentViewDrag: boolean = false;
     private isPreventMultiDrag: boolean = false;
     private slotsUptoCursor: number = -1;
     private eleTop: number = 0;
     private distanceUptoCursor: number = 0;
+    private isExactDayDrag: boolean = false;
+    private isExactIntervalSnap: boolean = false;
+    private exactGrabMs: number = 0;
+    private exactCloneOffset: number = 0;
 
     public wireDragEvent(element: HTMLElement): void {
         new Draggable(element, {
@@ -109,12 +114,38 @@ export class DragAndDrop extends ActionBase {
         return this.actionObj.clone;
     }
 
+    /**
+     * When event spacing is set, the clone of a Day, Week or WorkWeek event takes the frame of one column (leading and trailing space
+     * left free) instead of the whole column, so the preview matches where the event will be dropped. It reuses the VerticalEvent that
+     * dragStart already created, so no extra listeners are registered. Without spacing nothing changes.
+     *
+     * @returns {void}
+     */
+    private applyCloneSpacing(): void {
+        this.cloneFrame = null;
+        if (!this.verticalEvent || this.parent.eventDragArea || this.actionObj.element.classList.contains(cls.ALLDAY_APPOINTMENT_CLASS)) {
+            return;
+        }
+        this.cloneFrame = this.verticalEvent.getCloneFrame();
+        if (!this.cloneFrame) {
+            return;
+        }
+        if (this.parent.enableRtl) {
+            setStyleAttribute(this.actionObj.clone, { left: '', right: this.cloneFrame.offset, width: this.cloneFrame.width });
+        } else {
+            setStyleAttribute(this.actionObj.clone, { left: this.cloneFrame.offset, right: '', width: this.cloneFrame.width });
+        }
+    }
+
     private dragPosition(e: Record<string, any>): Record<string, any> {
         if (this.parent.eventDragArea) {
             return { left: e.left, top: e.top };
         }
         const cellHeight: number = (this.actionObj.cellHeight / this.actionObj.slotInterval) * this.actionObj.interval;
         let leftValue: string = formatUnit(0);
+        if (this.cloneFrame && !this.parent.enableRtl) {
+            leftValue = this.cloneFrame.offset;
+        }
         if (this.parent.currentView === 'Month') {
             leftValue = e.left as string;
         }
@@ -196,6 +227,8 @@ export class DragAndDrop extends ActionBase {
         if (!this.parent.allowMultiDrag) {
             this.parent.eventBase.removeSelectedAppointmentClass();
         }
+        let isIntervalSet: boolean = false;
+        let argsInterval: number = this.actionObj.interval;
         const dragArgs: DragEventArgs = {
             cancel: false,
             data: eventObj,
@@ -203,7 +236,8 @@ export class DragAndDrop extends ActionBase {
             event: e,
             excludeSelectors: null,
             element: this.actionObj.element,
-            interval: this.actionObj.interval,
+            get interval(): number { return argsInterval; },
+            set interval(value: number) { argsInterval = value; isIntervalSet = true; },
             navigation: { enable: false, timeDelay: 2000 },
             scroll: { enable: true, scrollBy: 30, timeDelay: 100 }
         };
@@ -214,6 +248,8 @@ export class DragAndDrop extends ActionBase {
                 if (!isNullOrUndefined(dragObj)) {
                     dragObj.intDestroy((e as DragEventArgs).event as MouseEvent & TouchEvent);
                 }
+                this.isExactDayDrag = false;
+                this.isExactIntervalSnap = false;
                 this.isMultiSelect = false;
                 this.multiData = [];
                 this.actionObj.action = '';
@@ -226,7 +262,14 @@ export class DragAndDrop extends ActionBase {
             this.actionObj.start = eventObj[this.parent.eventFields.startTime] as Date;
             this.actionObj.end = eventObj[this.parent.eventFields.endTime] as Date;
             this.actionObj.groupIndex = parseInt(this.actionObj.element.getAttribute('data-group-index') || '0', 10);
-            this.actionObj.interval = dragEventArgs.interval;
+            this.isExactDayDrag = this.parent.eventBase.isExactDayCellView();
+            this.exactCloneOffset = 0;
+            // Exact mode places the start from the cursor with minute precision unless the application sets its own interval
+            const isExactCursor: boolean = this.isExactDayDrag || this.parent.eventBase.isExactGroupedYear();
+            const isMinutePlacement: boolean = isExactCursor && !isIntervalSet;
+            this.isExactIntervalSnap = isExactCursor && (isMinutePlacement || dragEventArgs.interval > 0);
+            this.exactGrabMs = isExactCursor ? this.getExactGrabOffset((e as DragEventArgs).event.pageX) : 0;
+            this.actionObj.interval = isMinutePlacement ? 1 : dragEventArgs.interval;
             this.actionObj.navigation = dragEventArgs.navigation;
             this.actionObj.scroll = dragEventArgs.scroll;
             this.enableCurrentViewDrag = dragArgs.dragWithinRange && !dragArgs.navigation.enable && this.parent.allowMultiDrag;
@@ -275,6 +318,7 @@ export class DragAndDrop extends ActionBase {
             if (this.parent.currentView === 'Day' || this.parent.currentView === 'Week' || this.parent.currentView === 'WorkWeek') {
                 this.verticalEvent = new VerticalEvent(this.parent);
                 this.verticalEvent.initializeValues();
+                this.applyCloneSpacing();
                 const splitEvents: Record<string, any>[] = this.splitEvent(this.actionObj.event);
                 splitEvents.forEach((event: Record<string, any>) => {
                     let query: string =
@@ -365,6 +409,7 @@ export class DragAndDrop extends ActionBase {
         this.updateScrollPosition(e);
         this.updateNavigatingPosition(e);
         this.updateDraggingDateTime(e);
+        this.updateExactFeedback(e);
         const dragArgs: DragEventArgs = {
             data: eventObj, event: e, element: this.actionObj.element, startTime: this.actionObj.start,
             endTime: this.actionObj.end, selectedData: this.updatedData
@@ -396,12 +441,14 @@ export class DragAndDrop extends ActionBase {
         this.isPreventMultiDrag = false;
         this.removeCloneElementClasses();
         this.removeCloneElement();
+        this.endExactFeedback();
         clearInterval(this.actionObj.navigationInterval);
         this.actionObj.navigationInterval = null;
         clearInterval(this.actionObj.scrollInterval);
         this.actionObj.scrollInterval = null;
         this.actionClass('removeClass');
         this.parent.uiStateValues.action = this.parent.uiStateValues.isTapHold = false;
+        this.parent.notify(events.interactionEnd, {});
         if (this.isAllowDrop(e)) {
             return;
         }
@@ -1027,8 +1074,17 @@ export class DragAndDrop extends ActionBase {
         let td: HTMLTableCellElement = closest((<HTMLTableCellElement>this.actionObj.target), 'td') as HTMLTableCellElement;
         if (!isNullOrUndefined(td)) {
             const tr: HTMLTableRowElement = td.parentElement as HTMLTableRowElement;
-            this.actionObj.index = (tr.rowIndex * tr.children.length) + td.cellIndex;
-            const workCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS));
+            // A group summary row holds no work cells, so it is not counted in the row position of the work cell.
+            let groupRowsAbove: number = 0;
+            for (let row: Element = tr.previousElementSibling; row; row = row.previousElementSibling) {
+                if (row.classList.contains(cls.GROUP_SUMMARY_ROW_CLASS)) {
+                    groupRowsAbove++;
+                }
+            }
+            this.actionObj.index = ((tr.rowIndex - groupRowsAbove) * tr.children.length) + td.cellIndex;
+            // The index counts the rows of the table that holds the cursor, so the fixed region must not be searched together with the scrolling region.
+            const cellTable: Element = closest(td, 'table') || this.parent.element;
+            const workCells: HTMLElement[] = [].slice.call(cellTable.querySelectorAll('.' + cls.WORK_CELLS_CLASS));
             td = <HTMLTableCellElement>workCells[this.actionObj.index];
             const currentDate: Date = this.parent.getDateFromElement(td);
             if (!isNullOrUndefined(currentDate)) {
@@ -1040,6 +1096,13 @@ export class DragAndDrop extends ActionBase {
                 const startTimeDiff: number = util.getUniversalTime(<Date>eventObj[this.parent.eventFields.startTime]) -
                     util.getUniversalTime(util.resetTime(new Date(+eventObj[this.parent.eventFields.startTime])));
                 dragStart.setMilliseconds(startTimeDiff);
+                if (this.isExactIntervalSnap) {
+                    const snapped: Date = this.getExactSnappedStart(dragStart);
+                    dragStart.setTime(snapped.getTime());
+                }
+                if (this.parent.eventBase.isExactGroupedYear() && !this.isExactIntervalSnap) {
+                    this.keepDayOfMonth(dragStart, eventObj[this.parent.eventFields.startTime] as Date);
+                }
                 const dragEnd: Date = new Date(dragStart.getTime());
                 dragEnd.setMilliseconds(eventDuration);
                 this.actionObj.start = new Date(dragStart.getTime());
@@ -1069,11 +1132,34 @@ export class DragAndDrop extends ActionBase {
             }
         } else {
             if (this.parent.currentView === 'TimelineYear') {
-                this.dynamicYearlyEventsRendering(event);
+                const isUngroupedHorizontal: boolean = this.parent.activeViewOptions.orientation === 'Horizontal' &&
+                    this.parent.activeViewOptions.group.resources.length === 0;
+                // ungrouped horizontal keeps the original single clone: its row is the month of the start date
+                if ((this.parent.eventBase.isExactDayCellView() || this.parent.eventBase.isExactGroupedYear()) && !isUngroupedHorizontal &&
+                    !(this.parent.eventBase.isExactGroupedYear() && this.parent.activeViewOptions.orientation === 'Vertical')) {
+                    // the clone spans the whole dropped duration, like the saved bar, instead of the one slot under the cursor
+                    this.yearEventsRendering(event);
+                } else {
+                    this.dynamicYearlyEventsRendering(event);
+                }
             } else {
                 this.dynamicEventsRendering(event);
             }
         }
+    }
+
+    /**
+     * Grouped Timeline year cells are months, so the month under the pointer is taken and the original day of month
+     * and time of day are kept. A day that the target month does not have moves to its last day.
+     *
+     * @param {Date} target - Specifies the start whose month is the hovered month; it is updated in place.
+     * @param {Date} original - Specifies the start of the dragged event.
+     * @returns {void}
+     */
+    private keepDayOfMonth(target: Date, original: Date): void {
+        const lastDay: number = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+        target.setTime(new Date(target.getFullYear(), target.getMonth(), Math.min(original.getDate(), lastDay),
+                                original.getHours(), original.getMinutes(), original.getSeconds(), original.getMilliseconds()).getTime());
     }
 
     private updateMultipleVerticalDate(data: Record<string, any>, timeDifference: number): Record<string, any> {
@@ -1082,7 +1168,13 @@ export class DragAndDrop extends ActionBase {
             (<Date>eventObj[this.parent.eventFields.startTime]).getTime();
         const startDate: Date = new Date(eventObj[this.parent.eventFields.startTime] as Date);
         if (this.parent.currentView === 'TimelineYear' && this.parent.group.resources.length > 0) {
-            eventObj[this.parent.eventFields.startTime] = new Date(startDate.setMonth(startDate.getMonth() + timeDifference));
+            if (this.parent.eventBase.isExactGroupedYear()) {
+                const moved: Date = new Date(startDate.getFullYear(), startDate.getMonth() + timeDifference, 1);
+                this.keepDayOfMonth(moved, startDate);
+                eventObj[this.parent.eventFields.startTime] = moved;
+            } else {
+                eventObj[this.parent.eventFields.startTime] = new Date(startDate.setMonth(startDate.getMonth() + timeDifference));
+            }
         }
         else {
             const differInDays: number = Math.ceil(timeDifference / util.MS_PER_DAY);
@@ -1093,13 +1185,70 @@ export class DragAndDrop extends ActionBase {
         return eventObj;
     }
 
+    private getExactUnitStart(date: Date): Date {
+        return this.parent.eventBase.isExactGroupedYear() ? new Date(date.getFullYear(), date.getMonth(), 1) :
+            util.resetTime(new Date(date.getTime()));
+    }
+
+    private getExactUnitEnd(unitStart: Date): Date {
+        return this.parent.eventBase.isExactGroupedYear() ? util.addMonths(unitStart, 1) : util.addDays(unitStart, 1);
+    }
+
+    private getExactCell(): HTMLElement {
+        const target: Element = this.actionObj.target as Element;
+        return target ? closest(target, '.' + cls.WORK_CELLS_CLASS) as HTMLElement : null;
+    }
+
+    private getExactGrabOffset(startPageX: number): number {
+        const rect: ClientRect = this.actionObj.element.getBoundingClientRect();
+        const cellWidth: number = this.actionObj.cellWidth;
+        if (isNullOrUndefined(startPageX) || !cellWidth) {
+            return 0;
+        }
+        const clientX: number = startPageX - window.pageXOffset;
+        const px: number = this.parent.enableRtl ? rect.right - clientX : clientX - rect.left;
+        const eventStart: Date = this.actionObj.event[this.parent.eventFields.startTime] as Date;
+        const dayStart: Date = this.getExactUnitStart(eventStart);
+        const dayLength: number = this.getExactUnitEnd(dayStart).getTime() - dayStart.getTime();
+        return (Math.max(px, 0) / cellWidth) * dayLength;
+    }
+
+    /**
+     * Converts the pointer to a time in Exact mode: the instant under the pointer, minus the grab distance,
+     * rounded to the interval in minutes of wall-clock time (REQ-PLACE-009).
+     *
+     * @param {Date} fallback - Specifies the start used when no cell is under the pointer.
+     * @returns {Date} Returns the snapped start.
+     */
+    private getExactSnappedStart(fallback: Date): Date {
+        const cell: HTMLElement = this.getExactCell();
+        const cellDate: Date = cell ? this.parent.getDateFromElement(cell) : null;
+        if (isNullOrUndefined(cellDate) || isNullOrUndefined(this.actionObj.pageX)) {
+            return fallback;
+        }
+        let start: Date = fallback;
+        if (!this.isMorePopupOpened) {
+            // the bar in the more-events popup has no position in the day cell, so it keeps its time of day there
+            const rect: ClientRect = cell.getBoundingClientRect();
+            const dayStart: Date = this.getExactUnitStart(cellDate);
+            const pointed: Date = util.offsetToTime(this.actionObj.pageX - window.pageXOffset - rect.left, dayStart,
+                                                    this.getExactUnitEnd(dayStart), rect.width, this.parent.enableRtl);
+            start = new Date(pointed.getTime() - this.exactGrabMs);
+        }
+        const day: Date = util.resetTime(new Date(start.getTime()));
+        const wallMinutes: number = (start.getHours() * 60) + start.getMinutes() + (start.getSeconds() / 60);
+        day.setMinutes(Math.round(wallMinutes / this.actionObj.interval) * this.actionObj.interval);
+        return day;
+    }
+
     private calculateTimelineTime(e: MouseEvent & TouchEvent): void {
         const eventObj: Record<string, any> = extend({}, this.actionObj.event, null, true) as Record<string, any>;
         const eventDuration: number = util.getUniversalTime(<Date>eventObj[this.parent.eventFields.endTime]) -
             util.getUniversalTime(<Date>eventObj[this.parent.eventFields.startTime]);
         let offsetLeft: number = this.parent.enableRtl ? Math.abs(this.actionObj.clone.offsetLeft) - this.actionObj.clone.offsetWidth :
             parseInt(this.actionObj.clone.style.left, 10);
-        offsetLeft = Math.round(offsetLeft / this.actionObj.cellWidth) * this.actionObj.cellWidth;
+        // the Exact preview is drawn inside the day cell; take that offset out before snapping to whole cells
+        offsetLeft = Math.round((offsetLeft - this.exactCloneOffset) / this.actionObj.cellWidth) * this.actionObj.cellWidth;
         let rightOffset: number;
         if (this.parent.enableRtl) {
             rightOffset = Math.abs(parseInt(this.actionObj.clone.style.right, 10));
@@ -1117,15 +1266,16 @@ export class DragAndDrop extends ActionBase {
             this.isCursorAhead = true;
         }
         let cloneIndex: number =
-            Math.floor((this.actionObj.pageX - this.actionObj.clone.getBoundingClientRect().left + leftVal) / this.actionObj.cellWidth);
+            Math.floor((this.actionObj.pageX - this.actionObj.clone.getBoundingClientRect().left + leftVal + this.exactCloneOffset) /
+                this.actionObj.cellWidth);
         if (this.parent.enableRtl) {
-            cloneIndex = Math.abs(Math.floor((this.actionObj.pageX - this.actionObj.clone.getBoundingClientRect().right) /
-                this.actionObj.cellWidth)) - 1;
+            cloneIndex = Math.abs(Math.floor((this.actionObj.pageX - this.actionObj.clone.getBoundingClientRect().right +
+                this.exactCloneOffset) / this.actionObj.cellWidth)) - 1;
         }
         if (this.cursorPointIndex < 0) {
             this.cursorIndex(e, eventObj, offsetLeft, cloneIndex);
         }
-        const tr: HTMLTableRowElement = this.parent.getContentTable().querySelector('tr') as HTMLTableRowElement;
+        const tr: HTMLTableRowElement = this.getFirstWorkRow();
         let index: number = this.getCursorCurrentIndex(colIndex, cloneIndex, tr);
         index = index < 0 ? 0 : index;
         let eventStart: Date = this.isHeaderRows ? new Date(this.timelineEventModule.dateRender[parseInt(index.toString(), 10)].getTime()) :
@@ -1182,6 +1332,9 @@ export class DragAndDrop extends ActionBase {
                 }
             }
         }
+        if (this.isExactIntervalSnap) {
+            eventStart = this.getExactSnappedStart(eventStart);
+        }
         const eventEnd: Date = new Date(eventStart.getTime());
         eventEnd.setMilliseconds(eventDuration);
         let eventsData: Record<string, any>[] = [this.getUpdatedEvent(eventStart, eventEnd, this.actionObj.event)];
@@ -1224,13 +1377,22 @@ export class DragAndDrop extends ActionBase {
                 day = day < 0 ? 0 : day;
                 const left: number =
                     this.timelineEventModule.getPosition(startTime, endTime, eventObj[this.parent.eventFields.isAllDay] as boolean, day);
+                let exactOffset: number = 0;
+                let cloneWidth: number = width;
+                if (this.isExactDayDrag && !this.isMorePopupOpened) {
+                    const geometry: Record<string, any> = this.timelineEventModule.getExactGeometry(
+                        events[0], this.actionObj.cellWidth, this.timelineEventModule.dateRender.length - day);
+                    exactOffset = geometry.offset as number;
+                    this.exactCloneOffset = this.parent.enableRtl ? -exactOffset : exactOffset;
+                    cloneWidth = (geometry.width as number) - (geometry.endsAtEdge ? 2 : 0);
+                }
                 if (this.parent.enableRtl) {
-                    cloneElement.style.right = formatUnit(left - beforeWidth);
+                    cloneElement.style.right = formatUnit(left - beforeWidth + exactOffset);
                 } else {
-                    cloneElement.style.left = formatUnit(left - beforeWidth);
+                    cloneElement.style.left = formatUnit(left - beforeWidth + exactOffset);
                 }
                 if (!this.isMorePopupOpened) {
-                    cloneElement.style.width = formatUnit(width + beforeWidth + afterWidth);
+                    cloneElement.style.width = formatUnit(cloneWidth + beforeWidth + afterWidth);
                 }
             }
             if (this.parent.activeViewOptions.group.resources.length > 0) {
@@ -1348,8 +1510,25 @@ export class DragAndDrop extends ActionBase {
             (dragArea.scrollTop - translateY - (window.scrollY || window.pageYOffset))) -
             util.getElementTop(dragArea, this.parent.uiStateValues.isTransformed)) / rowHeight);
         rowIndex = (rowIndex < 0) ? 0 : (rowIndex > trCollection.length - 1) ? trCollection.length - 1 : rowIndex;
+        const targetCell: HTMLElement = closest((<HTMLElement>this.actionObj.target), 'td') as HTMLElement;
+        const fixedWrap: HTMLElement = targetCell ? closest(targetCell, '.' + cls.FIXED_CONTENT_WRAP_CLASS) as HTMLElement : null;
+        if (fixedWrap && this.parent.fixedRowsModule) {
+            const fixedContainer: HTMLElement = fixedWrap.querySelector('.' + cls.FIXED_EVENT_TABLE_CLASS +
+                ' .' + cls.APPOINTMENT_CONTAINER_CLASS + '[data-group-index="' + targetCell.getAttribute('data-group-index') + '"]');
+            if (fixedContainer) {
+                let fixedWrapper: HTMLElement = fixedContainer.querySelector('.' + cls.APPOINTMENT_WRAPPER_CLASS) as HTMLElement;
+                if (!fixedWrapper) {
+                    fixedWrapper = createElement('div', { className: cls.APPOINTMENT_WRAPPER_CLASS });
+                    fixedContainer.appendChild(fixedWrapper);
+                }
+                this.appendCloneElement(fixedWrapper, cloneElement);
+                this.actionObj.groupIndex = parseInt(targetCell.getAttribute('data-group-index'), 10);
+                cloneElement.style.top = formatUnit((targetCell.parentElement as HTMLElement).offsetTop);
+                return;
+            }
+        }
         this.actionObj.index = rowIndex;
-        const eventContainer: Element = this.parent.element.querySelectorAll('.e-appointment-container:not(.e-hidden)').item(rowIndex);
+        const eventContainer: Element = dragArea.querySelectorAll('.e-appointment-container:not(.e-hidden)').item(rowIndex);
         let eventWrapper: HTMLElement = eventContainer.querySelector('.' + cls.APPOINTMENT_WRAPPER_CLASS) as HTMLElement;
         if (!eventWrapper) {
             eventWrapper = createElement('div', { className: cls.APPOINTMENT_WRAPPER_CLASS });
@@ -1412,6 +1591,9 @@ export class DragAndDrop extends ActionBase {
     }
 
     private isAllowDrop(e: MouseEvent): boolean {
+        if (this.parent.groupSummaryModule && this.parent.groupSummaryModule.isGroupTarget(e.target as Element)) {
+            return true;
+        }
         if (!this.actionObj.excludeSelectors) {
             return false;
         }

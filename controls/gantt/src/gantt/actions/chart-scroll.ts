@@ -451,6 +451,9 @@ export class ChartScroll {
             if (weekendContainer) { weekendContainer.style.top = formatUnit(scrollTop); }
             if (eventMarkersContainer) { eventMarkersContainer.style.top = formatUnit(scrollTop); }
         }
+        if (this.parent.sCurveModule) {
+            this.parent.sCurveModule.updateTop(scrollTop);
+        }
         if (this.parent.chartVerticalLineContainer) {
             this.parent.chartVerticalLineContainer.style.top = formatUnit(scrollTop);
         }
@@ -481,6 +484,9 @@ export class ChartScroll {
             if (eventMarkersContainer) {
                 eventMarkersContainer.style.top = formatUnit(scrollTop);
             }
+        }
+        if (this.parent.sCurveModule) {
+            this.parent.sCurveModule.updateTop(scrollTop);
         }
         if (this.parent.chartVerticalLineContainer) {
             this.parent.chartVerticalLineContainer.style.top = formatUnit(scrollTop);

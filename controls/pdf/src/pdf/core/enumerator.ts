@@ -4957,3 +4957,69 @@ export enum PdfShapeType {
      */
     RoundedRectangle
 }
+/**
+ * OpenType layout script tags supported by the shaping engine.
+ *
+ * @private
+ */
+export enum _OtfScriptTag {
+    /** Arabic script tag. */
+    arabic = 'arab',
+    /** Bengali version-2 script tag. */
+    bengali2 = 'bng2',
+    /** Devanagari version-2 script tag. */
+    devanagari2 = 'dev2',
+    /** Gujarati version-2 script tag. */
+    gujarati2 = 'gjr2',
+    /** Gurmukhi version-2 script tag. */
+    gurmukhi2 = 'gur2',
+    /** Kannada version-2 script tag. */
+    kannada2 = 'knd2',
+    /** Malayalam version-2 script tag. */
+    malayalam2 = 'mlm2',
+    /** Oriya version-2 script tag. */
+    oriya2 = 'ory2',
+    /** Tamil version-2 script tag. */
+    tamil2 = 'tml2',
+    /** Telugu version-2 script tag. */
+    telugu2 = 'tel2',
+    /** Thai script tag. */
+    thai = 'thai',
+    /** Khmer script tag. */
+    khmer = 'khmr'
+}
+/**
+ * Extended script classification used by detection; maps to `_OtfScriptTag`.
+ *
+ * @private
+ */
+export enum _OtfScript {
+    /** No significant script detected. */
+    unknown = 0,
+    /** Arabic script. */
+    arabic = 1,
+    /** Hebrew script (RTL layout through the legacy bidi path). */
+    hebrew = 2,
+    /** Bengali script. */
+    bengali = 3,
+    /** Devanagari script. */
+    devanagari = 4,
+    /** Gujarati script. */
+    gujarati = 5,
+    /** Gurmukhi script. */
+    gurmukhi = 6,
+    /** Kannada script. */
+    kannada = 7,
+    /** Malayalam script. */
+    malayalam = 8,
+    /** Oriya script. */
+    oriya = 9,
+    /** Tamil script. */
+    tamil = 10,
+    /** Telugu script. */
+    telugu = 11,
+    /** Thai script. */
+    thai = 12,
+    /** Khmer script. */
+    khmer = 13
+}

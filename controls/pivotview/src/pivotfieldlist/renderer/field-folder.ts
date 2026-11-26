@@ -27,7 +27,7 @@ export interface IFolderTree {
 }
 
 /**
- * Splits a folder path. Returns undefined for an invalid path (empty segment other than one trailing delimiter).
+ * Trims folder segments and ignores blank boundaries. Returns undefined for empty paths or interior empty segments.
  *
  * @param {string} path - Delimited folder path.
  * @returns {string[]} Folder names, or undefined when invalid.
@@ -35,15 +35,23 @@ export interface IFolderTree {
  */
 export function parseFolderPath(path: string): string[] {
     const parts: string[] = path.split(FOLDER_DELIMITER);
-    if (parts.length > 1 && parts[parts.length - 1] === '') {
+    if (parts.length > 1 && parts[0].trim() === '') {
+        parts.shift();
+    }
+    if (parts.length > 1 && parts[parts.length - 1].trim() === '') {
         parts.pop();
     }
+    const names: string[] = [];
     for (const part of parts) {
         if (part === '') {
             return undefined;
         }
+        const name: string = part.trim();
+        if (name !== '') {
+            names.push(name);
+        }
     }
-    return parts;
+    return names.length > 0 ? names : undefined;
 }
 
 /**

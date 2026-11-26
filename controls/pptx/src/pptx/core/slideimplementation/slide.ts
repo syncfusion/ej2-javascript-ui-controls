@@ -65,6 +65,8 @@ import { Table } from '../../features/tables/table';
 import { addNotesSlide } from '../../features/notes/attach-notes';
 import { removeNotesSlide } from '../../features/notes/remove-notes';
 import { NotesSlide } from '../../features/notes/notes-slide';
+import { HeadersFooters } from '../headers-footers/header-footer';
+
 export { hasAnimationTargets } from './animation-targets';
 
 /**
@@ -171,6 +173,13 @@ export class Slide {
      * @internal
      */
     private presentation: Presentation | undefined;
+    /**
+     * Resolves this slide's existing notes part without creating one.
+     * Registered by the presentation so core does not import the notes feature.
+     *
+     * @internal
+     */
+    private notesResolver: (() => { readonly shapes: ShapeCollection } | undefined) | undefined;
     /**
      * @internal
      * @param {*} options - The options value.
@@ -603,6 +612,25 @@ export class Slide {
      */
     attachPresentation(document: Presentation): void {
         this.presentation = document;
+    }
+    /**
+     * Registers how to read this slide's notes part without creating one.
+     *
+     * @internal
+     * @param resolver - Returns the notes shape host, or `undefined` when absent.
+     * @returns {void} Nothing.
+     */
+    attachNotesResolver(resolver: () => { readonly shapes: ShapeCollection } | undefined): void {
+        this.notesResolver = resolver;
+    }
+    /**
+     * Notes shape host when a notes part already exists; never creates one.
+     *
+     * @internal
+     * @returns The notes host, or `undefined`.
+     */
+    existingNotes(): { readonly shapes: ShapeCollection } | undefined {
+        return this.notesResolver === undefined ? undefined : this.notesResolver();
     }
     /**
      * Moves this slide into the section at `sectionIndex`.
@@ -1150,9 +1178,9 @@ export class Slide {
     find(textOrRegex: string | RegExp, caseSensitive?: boolean, wholeWord?: boolean): TextFindMatch | undefined {
         const slideIndex: number = this.resolveFindSlideIndex();
         if (typeof textOrRegex === 'string') {
-            return findStringOnSlide(this.modelSlide(), slideIndex, textOrRegex, caseSensitive === true, wholeWord === true, this);
+            return findStringOnSlide({ shapes: this.modelSlide().shapes, slideIndex, slide: this }, textOrRegex, caseSensitive === true, wholeWord === true);
         }
-        return findRegExpOnSlide(this.modelSlide(), slideIndex, textOrRegex, this);
+        return findRegExpOnSlide({ shapes: this.modelSlide().shapes, slideIndex, slide: this }, textOrRegex);
     }
     /**
      * Finds all occurrences of `text` in this slide's body text (non-overlapping,
@@ -1183,9 +1211,9 @@ export class Slide {
     findAll(textOrRegex: string | RegExp, caseSensitive?: boolean, wholeWord?: boolean): ReadonlyArray<TextFindMatch> {
         const slideIndex: number = this.resolveFindSlideIndex();
         if (typeof textOrRegex === 'string') {
-            return findAllStringOnSlide(this.modelSlide(), slideIndex, textOrRegex, caseSensitive === true, wholeWord === true, this);
+            return findAllStringOnSlide({ shapes: this.modelSlide().shapes, slideIndex, slide: this }, textOrRegex, caseSensitive === true, wholeWord === true);
         }
-        return findAllRegExpOnSlide(this.modelSlide(), slideIndex, textOrRegex, this);
+        return findAllRegExpOnSlide({ shapes: this.modelSlide().shapes, slideIndex, slide: this }, textOrRegex);
     }
     /**
      * Resolves this slide's index in the parent presentation slide list.
@@ -1193,6 +1221,15 @@ export class Slide {
      * @internal
      * @returns {number} Zero-based `p:sldIdLst` index when bound; `0` when unbound or not found.
      */
+    /**
+     * 1-based position of this slide in `p:sldIdLst`, used for slide-number fields.
+     *
+     * @internal
+     * @returns {number} Slide number.
+     */
+    slideNumberValue(): number {
+        return this.resolveFindSlideIndex() + 1;
+    }
     private resolveFindSlideIndex(): number {
         const siblings: ReadonlyArray<Slide> = (this.getSiblingSlides == null ? undefined : this.getSiblingSlides());
         if (siblings === undefined) {
@@ -1232,6 +1269,24 @@ export class Slide {
      * resolvable chart frames. Warm the engine with `await loadXlsxRoot()` or
      * `await ensureFeature(CHARTS_FEATURE_ID)` before reading.
      */
+    /**
+     * Header, footer, date and time, and slide number for this slide.
+     *
+     * @remarks
+     * Text is the direct `dt` / `ftr` / `sldNum` / `hdr` placeholder on this
+     * slide, not inherited layout or master text. `CT_Slide` has no `p:hf`
+     * (`pml.xsd`); visibility is this slide's layout `p:hf` (omitted means
+     * shown) and is therefore shared by slides that use that layout. A missing
+     * placeholder reads as empty and is created on write.
+     * Citation: `pml.xsd` `CT_HeaderFooter`, `CT_Slide`, `CT_SlideLayout`,
+     * `ST_PlaceholderType`.
+     * @returns {HeadersFooters} Live header/footer entries.
+     */
+    get headersFooters(): HeadersFooters {
+        const slideNumber: () => number = (): number => this.resolveFindSlideIndex() + 1;
+        return new HeadersFooters(this.root, this.limits, this.partName, this.layout.getRoot(), this.onMutate,
+            this.layout.notifyMutated(), 'slide', slideNumber);
+    }
     get charts(): Charts {
         return chartsForSlide(this);
     }

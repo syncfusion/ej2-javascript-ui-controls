@@ -10,6 +10,7 @@
  * @internal
  */
 import { Slide } from '../../slideimplementation/slide';
+import { ShapeCollection } from '../../shapes/shape-collection';
 import { findAllRegExpInHaystack, findAllStringInHaystack, findRegExpInHaystack, findStringInHaystack } from './find-in-haystack';
 import { buildHaystack } from './haystack';
 import { AnchoredMatch, ParagraphHaystack } from './types';
@@ -20,7 +21,19 @@ import { arrayAt } from '../../util/es5-compat';
 import { ParagraphCollection } from '../paragraph-collection';
 import { Paragraph } from '../paragraph';
 /**
- * Collects all string matches on one slide in walk order.
+ * One part the document search walks: a slide, its notes, a master, or a layout.
+ *
+ * @internal
+ */
+export interface SearchablePart {
+    readonly shapes: ShapeCollection;
+    /** Owning slide index, or `-1` for masters and layouts. */
+    readonly slideIndex: number;
+    /** Slide the match is reported against. */
+    readonly slide: Slide;
+}
+/**
+ * Collects all string matches on one part in walk order.
  *
  * @internal
  * @param {Slide} slide - The slide value.
@@ -30,10 +43,10 @@ import { Paragraph } from '../paragraph';
  * @param {boolean} wholeWord - The wholeWord value.
  * @returns {TextFindMatch[]} The result.
  */
-export function findAllStringOnSlide(slide: Slide, slideIndex: number, needle: string, caseSensitive: boolean,
-                                     wholeWord: boolean, publicSlide?: Slide): TextFindMatch[] {
+export function findAllStringOnSlide(part: SearchablePart, needle: string, caseSensitive: boolean,
+                                     wholeWord: boolean): TextFindMatch[] {
     const out: TextFindMatch[] = [];
-    const iterSlideSurfacesResult: any[] = Array.from(iterSlideSurfaces(slide));// eslint-disable-line
+    const iterSlideSurfacesResult: any[] = Array.from(iterSlideSurfaces(part.shapes));// eslint-disable-line
     for (let i: number = 0; i < iterSlideSurfacesResult.length; i++) {
         const surface: any = arrayAt(iterSlideSurfacesResult, i);// eslint-disable-line
         const paragraphs: ParagraphCollection = surface.textBody.paragraphs;
@@ -46,7 +59,7 @@ export function findAllStringOnSlide(slide: Slide, slideIndex: number, needle: s
             const hits: ReadonlyArray<AnchoredMatch> = findAllStringInHaystack(haystack, needle, caseSensitive, wholeWord);
             for (let k: number = 0; k < hits.length; k++) {
                 const hit: AnchoredMatch = arrayAt(hits, k);
-                out.push(toMatch(hit, publicSlide === undefined ? slide : publicSlide, slideIndex, surface, p));
+                out.push(toMatch(hit, part.slide, part.slideIndex, surface, p));
 
             }
         }
@@ -65,9 +78,9 @@ export function findAllStringOnSlide(slide: Slide, slideIndex: number, needle: s
  * @param {boolean} wholeWord - The wholeWord value.
  * @returns {TextFindMatch | undefined} The result.
  */
-export function findStringOnSlide(slide: Slide, slideIndex: number, needle: string, caseSensitive: boolean,
-                                  wholeWord: boolean, publicSlide?: Slide): TextFindMatch | undefined {
-    const iterSlideSurfacesResult: any[] = Array.from(iterSlideSurfaces(slide));// eslint-disable-line
+export function findStringOnSlide(part: SearchablePart, needle: string, caseSensitive: boolean,
+                                  wholeWord: boolean): TextFindMatch | undefined {
+    const iterSlideSurfacesResult: any[] = Array.from(iterSlideSurfaces(part.shapes));// eslint-disable-line
     for (let i: number = 0; i < iterSlideSurfacesResult.length; i++) {
         const surface: any = arrayAt(iterSlideSurfacesResult, i);// eslint-disable-line
         const paragraphs: ParagraphCollection = surface.textBody.paragraphs;
@@ -79,7 +92,7 @@ export function findStringOnSlide(slide: Slide, slideIndex: number, needle: stri
             const haystack: ParagraphHaystack = buildHaystack(paragraph, p);
             const hit: AnchoredMatch = findStringInHaystack(haystack, needle, caseSensitive, wholeWord);
             if (hit !== undefined) {
-                return toMatch(hit, publicSlide === undefined ? slide : publicSlide, slideIndex, surface, p);
+                return toMatch(hit, part.slide, part.slideIndex, surface, p);
             }
         }
 
@@ -95,9 +108,9 @@ export function findStringOnSlide(slide: Slide, slideIndex: number, needle: stri
  * @param {RegExp} regex - The regex value.
  * @returns {TextFindMatch[]} The result.
  */
-export function findAllRegExpOnSlide(slide: Slide, slideIndex: number, regex: RegExp, publicSlide?: Slide): TextFindMatch[] {
+export function findAllRegExpOnSlide(part: SearchablePart, regex: RegExp): TextFindMatch[] {
     const out: TextFindMatch[] = [];
-    const iterSlideSurfacesResult: any[] = Array.from(iterSlideSurfaces(slide));// eslint-disable-line
+    const iterSlideSurfacesResult: any[] = Array.from(iterSlideSurfaces(part.shapes));// eslint-disable-line
     for (let i: number = 0; i < iterSlideSurfacesResult.length; i++) {
         const surface: any = arrayAt(iterSlideSurfacesResult, i);// eslint-disable-line
         const paragraphs: ParagraphCollection = surface.textBody.paragraphs;
@@ -110,7 +123,7 @@ export function findAllRegExpOnSlide(slide: Slide, slideIndex: number, regex: Re
             const hits: ReadonlyArray<AnchoredMatch> = findAllRegExpInHaystack(haystack, regex);
             for (let k: number = 0; k < hits.length; k++) {
                 const hit: any = arrayAt(hits, k);// eslint-disable-line
-                out.push(toMatch(hit, publicSlide === undefined ? slide : publicSlide, slideIndex, surface, p));
+                out.push(toMatch(hit, part.slide, part.slideIndex, surface, p));
 
             }
         }
@@ -127,8 +140,8 @@ export function findAllRegExpOnSlide(slide: Slide, slideIndex: number, regex: Re
  * @param {RegExp} regex - The regex value.
  * @returns {TextFindMatch | undefined} The result.
  */
-export function findRegExpOnSlide(slide: Slide, slideIndex: number, regex: RegExp, publicSlide?: Slide): TextFindMatch | undefined {
-    const iterSlideSurfacesResult: any[] = Array.from(iterSlideSurfaces(slide));// eslint-disable-line
+export function findRegExpOnSlide(part: SearchablePart, regex: RegExp): TextFindMatch | undefined {
+    const iterSlideSurfacesResult: any[] = Array.from(iterSlideSurfaces(part.shapes));// eslint-disable-line
     for (let i: number = 0; i < iterSlideSurfacesResult.length; i++) {
         const surface: any = arrayAt(iterSlideSurfacesResult, i);// eslint-disable-line
         const paragraphs: ParagraphCollection = surface.textBody.paragraphs;
@@ -140,7 +153,7 @@ export function findRegExpOnSlide(slide: Slide, slideIndex: number, regex: RegEx
             const haystack: ParagraphHaystack = buildHaystack(paragraph, p);
             const hit: AnchoredMatch = findRegExpInHaystack(haystack, regex);
             if (hit !== undefined) {
-                return toMatch(hit, publicSlide === undefined ? slide : publicSlide, slideIndex, surface, p);
+                return toMatch(hit, part.slide, part.slideIndex, surface, p);
             }
         }
 
@@ -157,15 +170,15 @@ export function findRegExpOnSlide(slide: Slide, slideIndex: number, regex: RegEx
  * @param {boolean} wholeWord - The wholeWord value.
  * @returns {*} The result.
  */
-export function findAllStringOnDocument(slides: ReadonlyArray<Slide>, needle: string, caseSensitive: boolean,
+export function findAllStringOnDocument(parts: ReadonlyArray<SearchablePart>, needle: string, caseSensitive: boolean,
                                         wholeWord: boolean): ReadonlyArray<TextFindMatch> {
     const out: TextFindMatch[] = [];
-    for (let i: number = 0; i < slides.length; i++) {
-        const slide: Slide = arrayAt(slides, i);
-        if (slide === undefined) {
+    for (let i: number = 0; i < parts.length; i++) {
+        const part: SearchablePart = arrayAt(parts, i);
+        if (part === undefined) {
             continue;
         }
-        out.push(...findAllStringOnSlide(slide, i, needle, caseSensitive, wholeWord));
+        out.push(...findAllStringOnSlide(part, needle, caseSensitive, wholeWord));
     }
     return out;
 }
@@ -179,14 +192,14 @@ export function findAllStringOnDocument(slides: ReadonlyArray<Slide>, needle: st
  * @param {boolean} wholeWord - The wholeWord value.
  * @returns {TextFindMatch | undefined} The result.
  */
-export function findStringOnDocument(slides: ReadonlyArray<Slide>, needle: string, caseSensitive: boolean,
+export function findStringOnDocument(parts: ReadonlyArray<SearchablePart>, needle: string, caseSensitive: boolean,
                                      wholeWord: boolean): TextFindMatch | undefined {
-    for (let i: number = 0; i < slides.length; i++) {
-        const slide: Slide = arrayAt(slides, i);
-        if (slide === undefined) {
+    for (let i: number = 0; i < parts.length; i++) {
+        const part: SearchablePart = arrayAt(parts, i);
+        if (part === undefined) {
             continue;
         }
-        const hit: TextFindMatch = findStringOnSlide(slide, i, needle, caseSensitive, wholeWord);
+        const hit: TextFindMatch = findStringOnSlide(part, needle, caseSensitive, wholeWord);
         if (hit !== undefined) {
             return hit;
         }
@@ -201,14 +214,14 @@ export function findStringOnDocument(slides: ReadonlyArray<Slide>, needle: strin
  * @param {RegExp} regex - The regex value.
  * @returns {*} The result.
  */
-export function findAllRegExpOnDocument(slides: ReadonlyArray<Slide>, regex: RegExp): ReadonlyArray<TextFindMatch> {
+export function findAllRegExpOnDocument(parts: ReadonlyArray<SearchablePart>, regex: RegExp): ReadonlyArray<TextFindMatch> {
     const out: TextFindMatch[] = [];
-    for (let i: number = 0; i < slides.length; i++) {
-        const slide: Slide = arrayAt(slides, i);
-        if (slide === undefined) {
+    for (let i: number = 0; i < parts.length; i++) {
+        const part: SearchablePart = arrayAt(parts, i);
+        if (part === undefined) {
             continue;
         }
-        out.push(...findAllRegExpOnSlide(slide, i, regex));
+        out.push(...findAllRegExpOnSlide(part, regex));
     }
     return out;
 }
@@ -220,13 +233,13 @@ export function findAllRegExpOnDocument(slides: ReadonlyArray<Slide>, regex: Reg
  * @param {RegExp} regex - The regex value.
  * @returns {TextFindMatch | undefined} The result.
  */
-export function findRegExpOnDocument(slides: ReadonlyArray<Slide>, regex: RegExp): TextFindMatch | undefined {
-    for (let i: number = 0; i < slides.length; i++) {
-        const slide: Slide = arrayAt(slides, i);
-        if (slide === undefined) {
+export function findRegExpOnDocument(parts: ReadonlyArray<SearchablePart>, regex: RegExp): TextFindMatch | undefined {
+    for (let i: number = 0; i < parts.length; i++) {
+        const part: SearchablePart = arrayAt(parts, i);
+        if (part === undefined) {
             continue;
         }
-        const hit: TextFindMatch = findRegExpOnSlide(slide, i, regex);
+        const hit: TextFindMatch = findRegExpOnSlide(part, regex);
         if (hit !== undefined) {
             return hit;
         }
@@ -239,9 +252,9 @@ export function findRegExpOnDocument(slides: ReadonlyArray<Slide>, regex: RegExp
  * @param {Slide} slide - The slide value.
  * @returns {IterableIterator} Surfaces on the slide.
  */
-function* iterSlideSurfaces(slide: Slide): IterableIterator<TextBodySurface> {
-    for (let i: number = 0; i < slide.shapes.length; i++) {
-        const shape: any = arrayAt(slide.shapes, i);// eslint-disable-line
+function* iterSlideSurfaces(shapes: ShapeCollection): IterableIterator<TextBodySurface> {
+    for (let i: number = 0; i < shapes.length; i++) {
+        const shape: any = arrayAt(shapes, i);// eslint-disable-line
         yield* iterTextBodiesOnShape(shape);
 
     }

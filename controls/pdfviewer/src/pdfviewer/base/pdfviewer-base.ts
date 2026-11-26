@@ -13509,7 +13509,7 @@ export class PdfViewerBase {
             this.pdfViewer.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus) {
             isSkip = true;
         }
-        if (!(Array.from(document.activeElement.classList).some((cls: any) => cls.includes('e-pv-formdesigner') || cls.includes('e-pv-annotation-handwritten-container'))) && target.parentElement && !target.parentElement.classList.contains('foreign-object') && !target.classList.contains('e-pv-radio-btn') && !target.classList.contains('e-pv-radiobtn-span') && !target.classList.contains('e-pv-checkbox-div') && !target.classList.contains('e-pdfviewer-formFields')
+        if (!(Array.from(document.activeElement.classList).some((cls: any) => cls.includes('e-pv-formdesigner') || cls.includes('e-pv-annotation-handwritten-container'))) && target.parentElement && !target.parentElement.classList.contains('foreign-object') && !target.classList.contains('e-pv-radio-btn') && !target.classList.contains('e-pv-radiobtn-span') && !target.classList.contains('e-pv-checkbox-div') && !target.classList.contains('e-pdfviewer-formFields') && !target.closest('.e-pv-datetime-composite')
             && !target.classList.contains('e-pdfviewer-ListBox') && !target.classList.contains('e-pdfviewer-signatureformfields')
             && !((target).className === 'free-text-input' && (target).tagName === 'TEXTAREA')
             && !isSkip && !((target).className === 'e-pv-hyperlink') && target.parentElement.classList.length > 0 && !target.parentElement.classList.contains('e-editable-elements') && !this.isAddComment) {

@@ -137,6 +137,9 @@ export class TimelineViews extends VerticalView {
         } else {
             contentWrap.appendChild(line);
         }
+        if (this.parent.fixedRowsModule) {
+            this.parent.fixedRowsModule.addTimeIndicator(line, !(settings != null && !settings.onTop && eventWrap));
+        }
         if (this.parent.virtualScrollModule) {
             const timeIndicator: HTMLElement = this.parent.element.querySelector('.' + cls.CURRENT_TIMELINE_CLASS) as HTMLElement;
             const element: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table');
@@ -230,6 +233,9 @@ export class TimelineViews extends VerticalView {
             this.parent.virtualScrollModule.renderVirtualTrack(wrap);
         }
         this.element.querySelector('tbody').appendChild(tr);
+        if (this.parent.fixedRowsModule) {
+            this.parent.fixedRowsModule.renderRegion(tr);
+        }
     }
 
     private getRowCount(): number {

@@ -346,6 +346,17 @@ export class ChartRows extends DateProcessor {
 
                 this.getSplitTaskbarRightResizerNode(segment) +
                 '</div></div>');
+            // Invisible hoverable gap between consecutive segments so the tooltip can fire over the split-line area.
+            if (i < data.ganttProperties.segments.length - 1) {
+                const nextSeg: ITaskSegment = data.ganttProperties.segments[i + 1 as number];
+                const gapStart: number = segment.left + segment.width;
+                const gapWidth: number = nextSeg.left - gapStart;
+                if (gapWidth > 0) {
+                    splitTasks += '<div class="e-gantt-split-gap" style="width:' + gapWidth +
+                        'px;position:absolute;' + (this.parent.enableRtl ? 'right:' : 'left:') + gapStart +
+                        'px;height:' + this.taskBarHeight + 'px;pointer-events:auto;z-index:0;"></div>';
+                }
+            }
         }
         return splitTasks;
     }
@@ -1789,6 +1800,10 @@ export class ChartRows extends DateProcessor {
             this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);
         }
         this.parent.ganttChartModule.updateLastRowBottomWidth();
+        this.parent.notify('refreshProgressLine', {});
+        if (this.parent.sCurveModule) {
+            this.parent.sCurveModule.refreshSCurve();
+        }
     }
 
     /**
@@ -2763,6 +2778,7 @@ export class ChartRows extends DateProcessor {
                 }
             }
             this.parent.renderTemplates();
+            this.parent.notify('refreshProgressLine', {});
             if (
                 this.parent.showOverAllocation &&
                 this.parent.allowTaskbarOverlap &&
@@ -2878,6 +2894,9 @@ export class ChartRows extends DateProcessor {
                 }
             }
             this.parent.ganttChartModule.updateLastRowBottomWidth();
+            if (this.parent.sCurveModule) {
+                this.parent.sCurveModule.refreshSCurve();
+            }
             this.isMultiTaskbarEnabled = false;
         }
     }

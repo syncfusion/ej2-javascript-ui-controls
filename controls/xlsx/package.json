@@ -10,7 +10,8 @@
 	"typings": "index.d.ts",
 	"dependencies": {
 		"@syncfusion/ej2-base": "*",
-		"@syncfusion/ej2-compression": "*"
+		"@syncfusion/ej2-compression": "*",
+		"@syncfusion/ej2-office-common": "*"
 	},
 	"scripts": {
 		"build": "gulp build"

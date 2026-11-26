@@ -5,6 +5,7 @@ import { PivotUtil } from './util';
 import { Sorting, SummaryTypes, FilterType, LabelOperators, ValueOperators, Operators, DateOperators, Condition, RenderMode, TopBottomMode } from './types';
 import { DateGroup, GroupType, ProviderType, DataSourceType } from './types';
 import { HeaderCollection, AggregateEventArgs, GrandTotalsPosition, HeadersSortEventArgs, SubTotalsPosition } from '../common';
+import { RunningTotalDirection } from '../common/base/enum';
 import { evaluateExpression } from './expression-evaluator';
 import { isAdjacentToken, ADJACENT_PREVIOUS, buildNeighbourMap, findBaseMember, calculateAdjacent, IAdjacentResult, INeighbours } from './adjacent-difference';
 
@@ -192,9 +193,8 @@ export class PivotEngine {
     public dateAggregateErrors: { fieldName: string; type: string }[] = [];
     private tabularPivotValues: IAxisSet[][] = [];
     /**
-     * Contributing record count of the typed date Min/Max cell currently framed
-     * by `updateRowData`; written onto the value cell as `dateCount` for the
-     * pivot chart count fallback (PIVOT-MINMAX, OQ-MINMAX-06).
+     * Number of source records contributing to the typed date Min/Max cell being
+     * framed by `updateRowData`; preserved as hidden `dateCount` cell metadata.
      *
      * @hidden
      */
@@ -853,6 +853,7 @@ export class PivotEngine {
                                                 baseField: actualField.baseField,
                                                 baseItem: actualField.baseItem,
                                                 allowCrossGroupCalculation: actualField.allowCrossGroupCalculation,
+                                                runningTotalDirection: actualField.runningTotalDirection,
                                                 showFilterIcon: actualField.showFilterIcon,
                                                 showSortIcon: actualField.showSortIcon,
                                                 showEditIcon: actualField.showEditIcon,
@@ -1120,6 +1121,7 @@ export class PivotEngine {
                                         baseField: actualField.baseField,
                                         baseItem: actualField.baseItem,
                                         allowCrossGroupCalculation: actualField.allowCrossGroupCalculation,
+                                        runningTotalDirection: actualField.runningTotalDirection,
                                         showSubTotals: actualField.showValueTypeIcon,
                                         allowDragAndDrop: actualField.allowDragAndDrop,
                                         showFilterIcon: actualField.showFilterIcon,
@@ -1142,6 +1144,7 @@ export class PivotEngine {
                                         baseField: customGroupField.baseField,
                                         baseItem: customGroupField.baseItem,
                                         allowCrossGroupCalculation: customGroupField.allowCrossGroupCalculation,
+                                        runningTotalDirection: customGroupField.runningTotalDirection,
                                         showRemoveIcon: customGroupField.showRemoveIcon,
                                         showSubTotals: customGroupField.showValueTypeIcon,
                                         allowDragAndDrop: customGroupField.allowDragAndDrop,
@@ -1385,7 +1388,9 @@ export class PivotEngine {
                         baseItem: (field && 'baseItem' in field) ?
                             field.baseItem : undefined,
                         allowCrossGroupCalculation: (field && 'allowCrossGroupCalculation' in field) ?
-                            field.allowCrossGroupCalculation : undefined
+                            field.allowCrossGroupCalculation : undefined,
+                        runningTotalDirection: (field && 'runningTotalDirection' in field) ?
+                            field.runningTotalDirection : undefined
                     };
                     this.updateMembersOrder(key);
                 }
@@ -1401,7 +1406,7 @@ export class PivotEngine {
                     type = this.groupedDataType[key as string];
                 } else {
                     type = (field && 'dataType' in field && field.dataType && dataTypes.indexOf(field.dataType.toLowerCase()) > -1) ?
-                        field.dataType.toLowerCase() : PivotUtil.getType(fields[this.fieldKeys[key as string] as string | number] as Date);
+                        field.dataType.toLowerCase() : this.getFieldValueType(fields[this.fieldKeys[key as string] as string | number]);
                 }
                 if (type === undefined || type === 'undefined') {
                     if (this.dataSourceSettings.groupSettings.length > 0) {
@@ -1457,7 +1462,9 @@ export class PivotEngine {
                     baseItem: (field && 'baseItem' in field) ?
                         field.baseItem : undefined,
                     allowCrossGroupCalculation: (field && 'allowCrossGroupCalculation' in field) ?
-                        field.allowCrossGroupCalculation : undefined
+                        field.allowCrossGroupCalculation : undefined,
+                    runningTotalDirection: (field && 'runningTotalDirection' in field) ?
+                        field.runningTotalDirection : undefined
                 };
                 this.updateMembersOrder(key);
                 index++;
@@ -1465,6 +1472,14 @@ export class PivotEngine {
         }
         this.groupedDataType = {};
         this.updateTreeViewData(dataFields);
+    }
+
+    private getFieldValueType(value: Object): string {
+        // Valid Date objects are typed as date/datetime; PivotUtil.getType keeps reporting them as numbers.
+        if (value instanceof Date && !isNaN(value.valueOf())) {
+            return PivotUtil.getType(value.toISOString());
+        }
+        return PivotUtil.getType(value as Date);
     }
 
     private getFieldType(field: IFieldOptions): string {
@@ -1532,6 +1547,7 @@ export class PivotEngine {
                 field.baseField = fields[cnt as number].baseField;
                 field.baseItem = fields[cnt as number].baseItem;
                 field.allowCrossGroupCalculation = fields[cnt as number].allowCrossGroupCalculation;
+                field.runningTotalDirection = fields[cnt as number].runningTotalDirection;
                 field.allowDragAndDrop = fields[cnt as number].allowDragAndDrop;
                 field.showFilterIcon = fields[cnt as number].showFilterIcon;
                 field.showSortIcon = fields[cnt as number].showSortIcon;
@@ -2379,7 +2395,8 @@ export class PivotEngine {
             return true;
         }
         if (mode === 'Percent') {
-            const isValidPercent: boolean = /^[0-9]+$/.test(value1) && parseInt(value1, 10) >= 1 && parseInt(value1, 10) <= 100;
+            const percent: number = Number(value1);
+            const isValidPercent: boolean = percent > 0 && percent <= 100;
             if (!isValidPercent) {
                 if (nodeEnv !== 'production') {
                     // eslint-disable-next-line no-console
@@ -2510,7 +2527,7 @@ export class PivotEngine {
         };
         if (mode === 'Percent') {
             // BR-03: the percentage selects ceil(n%) of the eligible candidates.
-            const percent: number = parseInt(filter.value1 as string, 10);
+            const percent: number = Number(filter.value1);
             const retainedCount: number = Math.ceil(nonEmptyMembers.length * percent / 100);
             const percentEnd: number = includeBoundaryTies(retainedCount);
             for (let i: number = 0; i < percentEnd; i++) {
@@ -4700,7 +4717,9 @@ export class PivotEngine {
                         for (let cln: number = 0, dln: number = 1, clt: number = columns.length; cln < clt; ++cln) {
                             if (!isValueIndexFound) {
                                 for (vln = 0; vln < vlt; vln++) {
-                                    if (rowUniqueName.indexOf(this.dataSourceSettings.values[vln as number].name) > -1) {
+                                    const rowValue: IFieldOptions = this.dataSourceSettings.values[vln as number];
+                                    if (this.valueFieldHasDuplicates && row.instanceId ?
+                                        rowValue.instanceId === row.instanceId : rowUniqueName.indexOf(rowValue.name) > -1) {
                                         isValueIndexFound = true;
                                         isValueCellUpdated = true;
                                         break;
@@ -4898,7 +4917,10 @@ export class PivotEngine {
             case 'PercentageOfRunningTotals':
                 {
                     this.selectedHeaders.values.push(this.getValueFieldKey(values[vln as number]));
-                    this.getAggregatedHeaderData((this.valueAxis && (this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader) ? cMembers : rMembers), this.getValueFieldKey(values[vln as number]), undefined, false, (this.valueAxis && (this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader) ? 'column' : 'row'), values[vln as number].type, this.selectedHeaders.selectedHeader, vln);
+                    const runningTotalDirection: RunningTotalDirection = values[vln as number].runningTotalDirection;
+                    const isColumnAxis: boolean = runningTotalDirection === 'Row' ? true : runningTotalDirection === 'Column' ? false :
+                        (this.valueAxis && (this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader));
+                    this.getAggregatedHeaderData(isColumnAxis ? cMembers : rMembers, this.getValueFieldKey(values[vln as number]), undefined, false, (isColumnAxis ? 'column' : 'row'), values[vln as number].type, this.selectedHeaders.selectedHeader, vln);
                 }
                 break;
             case 'PercentageOfParentTotal':
@@ -5101,11 +5123,99 @@ export class PivotEngine {
                 }
                 this.aggregatedValueMatrix[pivotIndex[index as string][0]][pivotIndex[index as string][1]] = 0;
             }
+            this.updateDirectionalRunningTotals(data);
+            this.updateRunningTotalCaptions(data);
             this.updatePivotValues(true);
         } else if (isAdjacentApplied) {
             this.updatePivotValues(true);
         }
     }
+    private updateDirectionalRunningTotals(data: IAxisSet[][]): void {
+        const delimiter: string = this.valueSortSettings.headerDelimiter;
+        for (const field of this.dataSourceSettings.values) {
+            if (!field.runningTotalDirection ||
+                (field.type !== 'RunningTotals' && field.type !== 'PercentageOfRunningTotals')) {
+                continue;
+            }
+            const fieldKey: string = this.getValueFieldKey(field);
+            const lines: IAxisSet[][] = [];
+            const isRow: boolean = field.runningTotalDirection === 'Row';
+            for (let rowIndex: number = 0; rowIndex < data.length; rowIndex++) {
+                for (let colIndex: number = 0; data[rowIndex as number] && colIndex < data[rowIndex as number].length; colIndex++) {
+                    const cell: IAxisSet = data[rowIndex as number][colIndex as number] as IAxisSet;
+                    if (cell && cell.axis === 'value' && this.getValueCellKey(cell) === fieldKey) {
+                        const index: number = isRow ? rowIndex : colIndex;
+                        if (!lines[index as number]) {
+                            lines[index as number] = [];
+                        }
+                        lines[index as number].push(cell);
+                    }
+                }
+            }
+            for (const line of lines) {
+                if (!line) {
+                    continue;
+                }
+                const paths: string[] = line.map((cell: IAxisSet) => (isRow ? cell.columnHeaders : cell.rowHeaders) as string);
+                const parents: boolean[] = paths.map((path: string) => !!path &&
+                    paths.some((other: string) => !!other && other.indexOf(path + delimiter) === 0));
+                const cumulative: number[] = [];
+                let total: number = 0;
+                for (let index: number = 0; index < line.length; index++) {
+                    if (paths[index as number] && !parents[index as number]) {
+                        total += this.extractRunningTotalValue(line[index as number]);
+                    }
+                    cumulative[index as number] = total;
+                }
+                for (let index: number = 0; index < line.length; index++) {
+                    const cell: IAxisSet = line[index as number];
+                    let value: number = paths[index as number] ? cumulative[index as number] : total;
+                    if (parents[index as number]) {
+                        for (let childIndex: number = 0; childIndex < line.length; childIndex++) {
+                            if (paths[childIndex as number] && !parents[childIndex as number] &&
+                                paths[childIndex as number].indexOf(paths[index as number] + delimiter) === 0) {
+                                value = cumulative[childIndex as number];
+                            }
+                        }
+                    }
+                    const result: { formattedText: string; actualValue: number } = field.type === 'PercentageOfRunningTotals' ?
+                        this.convertRunningTotalToPercentage(value, total, fieldKey) :
+                        { formattedText: this.getFormattedValue(value, fieldKey).formattedText, actualValue: value };
+                    if (cell.showSubTotals) {
+                        cell.formattedText = result.formattedText;
+                    }
+                    if (!this.aggregatedValueMatrix[cell.rowIndex]) {
+                        this.aggregatedValueMatrix[cell.rowIndex] = [];
+                    }
+                    this.aggregatedValueMatrix[cell.rowIndex][cell.colIndex] = result.actualValue;
+                }
+            }
+        }
+    }
+
+    private updateRunningTotalCaptions(data: IAxisSet[][]): void {
+        for (const field of this.dataSourceSettings.values) {
+            if (!field.runningTotalDirection ||
+                (field.type !== 'RunningTotals' && field.type !== 'PercentageOfRunningTotals')) {
+                continue;
+            }
+            const key: string = 'runningTotal' + field.runningTotalDirection +
+                (field.type === 'PercentageOfRunningTotals' ? 'Percent' : '') + 'Caption';
+            const caption: string = (this.localeObj ? this.localeObj.getConstant(key) :
+                (field.type === 'PercentageOfRunningTotals' ? '% of ' : '') +
+                'Running Totals of ' + field.runningTotalDirection + ' of {0}').replace('{0}', field.caption || field.name);
+            const fieldKey: string = this.getValueFieldKey(field);
+            for (const row of data) {
+                for (const cell of row || []) {
+                    if (cell && (cell.axis === 'row' || cell.axis === 'column') &&
+                        this.getValueCellKey(cell) === fieldKey) {
+                        cell.formattedText = caption;
+                    }
+                }
+            }
+        }
+    }
+
     private getAdjacentAxis(field: IFieldOptions, rows: IFieldOptions[], columns: IFieldOptions[]): string {
         let baseField: string = field.baseField;
         if (!baseField) {
@@ -5345,6 +5455,15 @@ export class PivotEngine {
             !isNullOrUndefined(currentSet.actualValue) && isNaN(currentSet.actualValue))) ?
             currentSet.actualValue : (!isNullOrUndefined(cellValue) &&
             !isNaN(cellValue)) ? cellValue : 0;
+    }
+
+    private getRunningTotalDirection(valueKey: string): RunningTotalDirection {
+        for (const field of this.dataSourceSettings.values) {
+            if (this.getValueFieldKey(field) === valueKey) {
+                return field.runningTotalDirection;
+            }
+        }
+        return undefined;
     }
 
     private isRowSubtotal(rowIdx: number, rowheads: IAxisSet[]): boolean {
@@ -5777,11 +5896,12 @@ export class PivotEngine {
                 break;
             case 'RunningTotals':
                 {
+                    const hasDirection: boolean = !!this.getRunningTotalDirection(name);
                     if (isRowBaseField) {
                         this.accumulateRowBasedRunningValues(
                             colIndex, rowIndex, rowheads, data, name, selectedHeaderCollection, pivotIndex,
                             (accumulatedValue: number): { formattedText: string; actualValue: number } => ({
-                                formattedText: accumulatedValue === 0 ? '' : this.getFormattedValue(accumulatedValue, name).formattedText,
+                                formattedText: accumulatedValue === 0 && !hasDirection ? '' : this.getFormattedValue(accumulatedValue, name).formattedText,
                                 actualValue: accumulatedValue
                             })
                         );
@@ -7287,6 +7407,12 @@ export class PivotEngine {
             if (!this.isDateType(field.type as string) || !valueField.type) {
                 continue;
             }
+            if (valueField.type === 'Sum') {
+                // 'Sum' is the model default and is never meaningful for dates; use
+                // Min so the initial render shows date values instead of empty cells.
+                valueField.type = 'Min';
+                continue;
+            }
             const allowed: string[] = ['Min', 'Max', 'Count', 'DistinctCount'];
             if (allowed.indexOf(valueField.type as string) === -1) {
                 const entry: IFieldOptions = (valueField as { [key: string]: Object }).properties ?
@@ -7325,6 +7451,7 @@ export class PivotEngine {
             instanceField.baseField = valueField.baseField;
             instanceField.baseItem = valueField.baseItem;
             instanceField.allowCrossGroupCalculation = valueField.allowCrossGroupCalculation;
+            instanceField.runningTotalDirection = valueField.runningTotalDirection;
             this.valueInstanceFieldList[valueField.instanceId] = instanceField;
         }
     }
@@ -7569,6 +7696,7 @@ export interface IDataOptions {
      * * `showSubTotals`: Allows to show or hide sub-totals to a specific field in row axis of the pivot table.
      * * `isNamedSet`: Allows you to set whether the specified field is a named set or not. In general,
      * the named set is a set of dimension members or a set expression (MDX query) to be created as a dimension in the SSAS OLAP cube itself. **Note: It is applicable only for OLAP data source.**
+     * * `runningTotalDirection`: Allows to set the accumulation direction (`Row` or `Column`) of the `RunningTotals` and `PercentageOfRunningTotals` aggregate types. **Note: It is applicable only for relational data source.**
      * * `isCalculatedField`: Allows to set whether the specified field is a calculated field or not.
      * In general, the calculated field is created from the bound data source or using simple formula with basic arithmetic operators in the pivot table. **Note: It is applicable only for OLAP data source.**
      * * `showFilterIcon`: Allows you to show or hide the filter icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI.
@@ -8143,6 +8271,11 @@ export interface IFieldOptions {
      */
     allowCrossGroupCalculation?: boolean;
     /**
+     * Allows you to set the direction (`Row` or `Column`) in which the `RunningTotals` and `PercentageOfRunningTotals` aggregate types accumulate the values.
+     * > It is applicable only for relational data source.
+     */
+    runningTotalDirection?: RunningTotalDirection;
+    /**
      * Allows to show or hide sub-totals to a specific field in row/column axis of the pivot table.
      */
     showSubTotals?: boolean;
@@ -8458,6 +8591,11 @@ export interface IField {
      */
     allowCrossGroupCalculation?: boolean;
     /**
+     * Allows you to set the direction (`Row` or `Column`) in which the `RunningTotals` and `PercentageOfRunningTotals` aggregate types accumulate the values.
+     * > It is applicable only for relational data source.
+     */
+    runningTotalDirection?: RunningTotalDirection;
+    /**
      * It allows to change the specific field's type.
      */
     filterType?: string;
@@ -8604,9 +8742,8 @@ export interface IAxisSet {
      */
     value?: number | Date;
     /**
-     * Contributing record count of a typed date Min/Max value cell; used by the
-     * pivot chart to plot counts for a date-only report
-     * (PIVOT-MINMAX, OQ-MINMAX-06 count fallback).
+     * Contributing record count of a typed date Min/Max value cell, preserved as
+     * hidden cell metadata.
      *
      * @hidden
      */

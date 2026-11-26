@@ -1133,6 +1133,14 @@ export class CalculatedField implements IAction {
         dialog.appendTo(calculatedFieldElement);
     }
 
+    /**
+     * @returns {void}
+     * @hidden
+     */
+    public closeCalculatedField(): void {
+        this.cancelClick();
+    }
+
     private cancelClick(): void {
         const dialog: Dialog = getInstance(
             select('#' + this.parentID + 'calculateddialog', document), Dialog) as Dialog;

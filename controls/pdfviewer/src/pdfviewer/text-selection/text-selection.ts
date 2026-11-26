@@ -571,6 +571,10 @@ export class TextSelection {
             this.pdfViewerBase.viewerContainer.classList.remove('e-disable-text-selection');
             this.pdfViewerBase.viewerContainer.classList.add('e-enable-text-selection');
             this.pdfViewerBase.viewerContainer.addEventListener('selectstart', (e: any) => {
+                const target: HTMLElement = e.target as HTMLElement;
+                if (target && target.tagName && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) {
+                    return true;
+                }
                 e.preventDefault();
                 return true;
             });

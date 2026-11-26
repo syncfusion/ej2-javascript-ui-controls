@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { append, createElement, extend, EventHandler, Animation, formatUnit, closest } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, setStyleAttribute, remove, removeClass, addClass } from '@syncfusion/ej2-base';
-import { EventFieldsMapping, ElementData, EventRenderedArgs, TdData, EventClickArgs, BufferTemplateArgs } from '../base/interface';
+import { EventSpacingValues, SpacingFrame, EventFieldsMapping, ElementData, EventRenderedArgs, TdData, EventClickArgs, BufferTemplateArgs, CloneFrame } from '../base/interface';
 import { Schedule } from '../base/schedule';
 import { View } from '../base/type';
 import { EventBase } from './event-base';
 import * as util from '../base/util';
 import * as events from '../base/constant';
 import * as cls from '../base/css-constant';
+import { VerticalEventSpacing } from './vertical-event-spacing';
 
 /**
  * Vertical view appointment rendering
@@ -33,10 +34,16 @@ export class VerticalEvent extends EventBase {
     public resources: TdData[];
     private isResourceEventTemplate: boolean;
     private moreIndicatorsMap: Array<{ key: string; info: Record<string, any> }> = [];
+    private spacing: VerticalEventSpacing | null = null;
+    private allDayLevels: Array<{ element: HTMLElement; index: number }> = [];
+    private allDayFrameKey: string = '';
+    private allDayCellTop: number = 0;
+    private allDayLevelHeight: number = 0;
 
     constructor(parent: Schedule) {
         super(parent);
         this.element = this.parent.activeView.getPanel();
+        this.spacing = this.createSpacing();
         this.fields = this.parent.eventFields;
         this.animation = new Animation({ progress: this.animationUiUpdate.bind(this) });
         this.addEventListener();
@@ -93,6 +100,11 @@ export class VerticalEvent extends EventBase {
         EventHandler.add(expandCollapse, 'click', this.rowExpandCollapse, this);
         this.renderedEvents = [];
         this.renderedAllDayEvents = [];
+        this.allDayLevels = [];
+        this.allDayFrameKey = '';
+        if (this.spacing) {
+            this.spacing.resetAllDay();
+        }
         this.initializeValues();
         this.processBlockEvents();
         this.renderEvents('normalEvents');
@@ -202,10 +214,12 @@ export class VerticalEvent extends EventBase {
 
     private appendEvent(eventObj: Record<string, any>, appointmentElement: HTMLElement, index: number, appLeft: string): void {
         const appointmentWrap: HTMLElement = this.element.querySelector('.' + cls.APPOINTMENT_WRAPPER_CLASS + '[id="' + cls.APPOINTMENT_WRAPPER_CLASS + '-' + index + '"]');
-        if (this.parent.enableRtl) {
-            setStyleAttribute(appointmentElement, { 'right': appLeft });
-        } else {
-            setStyleAttribute(appointmentElement, { 'left': appLeft });
+        if (!isNullOrUndefined(appLeft)) {
+            if (this.parent.enableRtl) {
+                setStyleAttribute(appointmentElement, { 'right': appLeft });
+            } else {
+                setStyleAttribute(appointmentElement, { 'left': appLeft });
+            }
         }
         const eventType: string = appointmentElement.classList.contains(cls.BLOCK_APPOINTMENT_CLASS) ? 'blockEvent' : 'event';
         const args: EventRenderedArgs = {
@@ -391,11 +405,12 @@ export class VerticalEvent extends EventBase {
             'top': top + 'px',
             'height': height + 'px'
         });
+        const badgeOffset: string = this.spacing ? this.spacing.getBadgeOffset() : '0%';
         if (this.parent.enableRtl) {
-            indicatorElement.style.left = '0%';
+            indicatorElement.style.left = badgeOffset;
         }
         else {
-            indicatorElement.style.right = '0%';
+            indicatorElement.style.right = badgeOffset;
         }
         indicatorElement.innerHTML = `+${hiddenCount}`;
         EventHandler.add(indicatorElement, 'click', this.onMoreIndicatorClick, this);
@@ -568,6 +583,9 @@ export class VerticalEvent extends EventBase {
                         }
                     }
                 }
+                if (this.spacing && eventType !== 'allDayEvents') {
+                    this.spacing.finishColumn(this.getDayIndex(day, resource, dateCount));
+                }
                 dateCount += 1;
             }
         }
@@ -733,6 +751,10 @@ export class VerticalEvent extends EventBase {
                 attrs: { 'tabindex': '0', 'data-index': index.toString(), 'data-count': '1' },
                 innerHTML: '+1&nbsp;' + (this.parent.isAdaptive ? '' : this.parent.localeObj.getConstant('more'))
             });
+            const indicatorBottom: string | null = this.spacing ? this.spacing.getAllDayIndicatorBottom(this.allDayLevelHeight) : null;
+            if (indicatorBottom !== null) {
+                (moreIndicatorElement as HTMLElement).style.bottom = indicatorBottom;
+            }
             innerCountWrap.appendChild(moreIndicatorElement);
             countWrapper.appendChild(innerCountWrap);
             EventHandler.add(moreIndicatorElement, 'click', this.rowExpandCollapse, this);
@@ -846,6 +868,11 @@ export class VerticalEvent extends EventBase {
                     if (!eventArgs.cancel) {
                         eventWrapper.appendChild(appointmentElement);
                         topValue += (allDayIndex === 0 ? cellTop : (cellTop + (allDayIndex * eventHeight))) + 1;
+                        if (this.spacing) {
+                            this.allDayCellTop = cellTop;
+                            this.allDayLevelHeight = eventHeight;
+                            this.allDayLevels.push({ element: appointmentElement, index: allDayIndex });
+                        }
                         setStyleAttribute(appointmentElement, { 'width': appWidth + '%', 'top': formatUnit(topValue) });
                         if (allDayIndex > 1) {
                             this.moreEvents.push(appointmentElement);
@@ -856,7 +883,7 @@ export class VerticalEvent extends EventBase {
                         this.allDayElement[0].setAttribute('data-count', this.allDayLevel.toString());
                         const allDayRowHeight: number = ((!this.parent.uiStateValues.expand && this.allDayLevel > 2) ?
                             (3 * eventHeight) : ((this.allDayLevel + 1) * eventHeight)) + 4;
-                        this.setAllDayRowHeight(allDayRowHeight);
+                        this.setAllDayRowHeight(allDayRowHeight, this.spacing ? this.layoutAllDayLevels() : 0);
                         this.addOrRemoveClass();
                         this.wireAppointmentEvents(appointmentElement, eventObj);
                     }
@@ -899,7 +926,7 @@ export class VerticalEvent extends EventBase {
                 index: appIndex, left: appLeft, width: appWidth,
                 day: dayCount, dayIndex: dayIndex, record: record, resource: resource
             };
-            const tempData: Record<string, any> = this.adjustOverlapElements(argsData);
+            const tempData: Record<string, any> = this.spacing ? { appWidth: null, appLeft: null } : this.adjustOverlapElements(argsData);
             appWidth = (tempData.appWidth) as string;
             if (isNullOrUndefined(this.renderedEvents[parseInt(resource.toString(), 10)])) {
                 this.renderedEvents[parseInt(resource.toString(), 10)] = [];
@@ -921,9 +948,16 @@ export class VerticalEvent extends EventBase {
                 afterHeight = bufferHeights.afterHeight;
             }
             setStyleAttribute(appointmentElement, {
-                'width': (this.parent.eventSettings.enableMaxHeight || !this.parent.activeViewOptions.allowOverlap ? '100%' : tempData.appWidth),
+                'width': (this.isSingleColumn() ? '100%' : tempData.appWidth),
                 'height': (appHeight + beforeHeight + afterHeight) + 'px', 'top': (topValue - beforeHeight) + 'px'
             });
+            if (this.spacing) {
+                const wrapperIndex: number = this.getDayIndex(dayIndex, resource, dayCount);
+                this.spacing.layoutGroup(record, appointmentElement, appIndex, wrapperIndex, this.overlapEvents);
+                if (inline) {
+                    this.spacing.finishColumn(wrapperIndex);
+                }
+            }
             if (isBufferRender && (beforeHeight || afterHeight)) {
                 this.renderEventBuffers(appointmentElement, eventObj, resource, beforeHeight, afterHeight);
                 this.offsetEventContent(appointmentElement, beforeHeight, afterHeight, appHeight);
@@ -1123,6 +1157,35 @@ export class VerticalEvent extends EventBase {
             append(templateElements, bufferElement);
         }
         this.parent.renderTemplates();
+    }
+
+    /**
+     * Creates the spacing helper for this render. It runs from the constructor after `element` is set.
+     *
+     * @returns {VerticalEventSpacing | null} The helper, or null when no spacing field is set for the active view.
+     */
+    private createSpacing(): VerticalEventSpacing | null {
+        const values: EventSpacingValues | null = util.spacingIfSet(this.parent.getEventSpacing());
+        return values ? new VerticalEventSpacing(this.parent, this.element, values, this.isSingleColumn()) : null;
+    }
+
+    /**
+     * Tells whether every event takes the whole column: enableMaxHeight, or allowOverlap turned off.
+     *
+     * @returns {boolean} True when events do not share a column.
+     */
+    private isSingleColumn(): boolean {
+        return this.parent.eventSettings.enableMaxHeight || !this.parent.activeViewOptions.allowOverlap;
+    }
+
+    /**
+     * The single-column frame of the active view, used to size the drag clone so the preview matches the column an event
+     * would be dropped into. It is null without event spacing.
+     *
+     * @returns {CloneFrame | null} The inline offset and width of one full-width column, or null.
+     */
+    public getCloneFrame(): CloneFrame | null {
+        return this.spacing ? this.spacing.getCloneFrame() : null;
     }
 
     private getEventWidth(): string {
@@ -1394,19 +1457,40 @@ export class VerticalEvent extends EventBase {
         return data;
     }
 
-    private setAllDayRowHeight(height: number): void {
+    /**
+     * Places the levels of the all-day row with event spacing for the levels the row shows now (three while collapsed, all while expanded).
+     * The frame is reduced when the row would grow taller than a third of the schedule, so the levels already placed move when the
+     * frame changes with the level count; otherwise only the level that was just added is placed.
+     *
+     * @returns {number} The pixels that the spacing adds to the legacy row height.
+     */
+    private layoutAllDayLevels(): number {
+        const levels: number = (!this.parent.uiStateValues.expand && this.allDayLevel > 2) ? 3 : this.allDayLevel + 1;
+        const frame: SpacingFrame = this.spacing.getAllDayFrame(levels, this.allDayLevelHeight);
+        const key: string = frame.gap + '|' + frame.lead;
+        const targets: Array<{ element: HTMLElement; index: number }> =
+            key === this.allDayFrameKey ? this.allDayLevels.slice(-1) : this.allDayLevels;
+        this.allDayFrameKey = key;
+        for (const level of targets) {
+            level.element.style.top = formatUnit(this.spacing.getAllDayTop(this.allDayCellTop, level.index, this.allDayLevelHeight, frame));
+        }
+        return this.spacing.getAllDayExtra(frame, levels);
+    }
+
+    private setAllDayRowHeight(height: number, extra: number = 0): void {
         const dateHeader: HTMLElement = (this.parent.element.querySelector('.' + cls.DATE_HEADER_WRAP_CLASS) as HTMLElement);
         if (this.parent.height === 'auto' || !this.parent.enableAllDayScroll) {
             addClass([dateHeader], cls.ALLDAY_APPOINTMENT_AUTO);
         }
         const allDayRow: HTMLElement = (this.parent.element.querySelector('.' + cls.ALLDAY_ROW_CLASS) as HTMLElement);
         allDayRow.style.height = '';
+        const rowSize: string = extra !== 0 ? 'calc(' + (height / 12) + 'em + ' + extra + 'px)' : (height / 12) + 'em';
         if (this.parent.uiStateValues.expand && this.parent.height !== 'auto' && this.parent.enableAllDayScroll) {
-            allDayRow.style.height = (height / 12) + 'em';
+            allDayRow.style.height = rowSize;
             this.parent.eventBase.allDayExpandScroll(dateHeader);
         } else {
             for (const element of this.allDayElement) {
-                (<HTMLElement>element).style.height = (height / 12) + 'em';
+                (<HTMLElement>element).style.height = rowSize;
             }
             removeClass([dateHeader], cls.ALLDAY_APPOINTMENT_SCROLL);
         }
@@ -1458,6 +1542,7 @@ export class VerticalEvent extends EventBase {
         const target: HTMLElement = this.element.querySelector('.' + cls.ALLDAY_APPOINTMENT_SECTION_CLASS) as HTMLElement;
         this.parent.uiStateValues.expand = target.classList.contains(cls.APPOINTMENT_ROW_EXPAND_CLASS);
         let rowHeight: number;
+        let extra: number = 0;
         if (this.parent.uiStateValues.expand) {
             target.setAttribute('title', this.parent.localeObj.getConstant('collapseAllDaySection'));
             target.setAttribute('aria-label', this.parent.localeObj.getConstant('collapseAllDaySection'));
@@ -1468,7 +1553,8 @@ export class VerticalEvent extends EventBase {
             rowHeight = (3 * this.getEventHeight()) + 4;
             this.parent.element.querySelector('.' + cls.DATE_HEADER_WRAP_CLASS).scrollTop = 0;
         }
-        this.setAllDayRowHeight(rowHeight);
+        extra = this.spacing && this.allDayLevels.length > 0 ? this.layoutAllDayLevels() : 0;
+        this.setAllDayRowHeight(rowHeight, extra);
         this.animation.animate(this.allDayElement[0] as HTMLElement);
         this.addOrRemoveClass();
         this.animation.animate(target);
@@ -1504,6 +1590,8 @@ export class VerticalEvent extends EventBase {
         this.fields = null;
         this.animation = null;
         this.moreIndicatorsMap = null;
+        this.spacing = null;
+        this.allDayLevels = null;
         super.destroy();
     }
 }

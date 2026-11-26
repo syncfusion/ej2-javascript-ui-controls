@@ -9,6 +9,7 @@ import { OpcPackage, PackagePart } from './package-model';
 import { isContentTypesPart, relationshipsPartName } from './paths';
 import { parseRelationships, PackageRelationship } from './relationships';
 import { looksLikeOleCompoundFile, readZipEntries } from './zip-reader';
+import { decryptIfEncrypted, wasEncryptedContainer } from './encryption';
 import { arrayAt } from '../util/es5-compat';
 
 /**
@@ -28,11 +29,16 @@ export interface OpenPresentationOptions {
      * Partial override of {@link SecurityLimits}. Omitted keys keep library defaults.
      */
     readonly limits?: Partial<SecurityLimits>;
+    /**
+     * Password for an OFFCRYPTO-encrypted package. Ignored for a plain OPC ZIP.
+     * Never logged or retained after open.
+     */
+    readonly password?: string;
 }
 
 /** Stable message when CFB is presented (never includes password text). */
 const ENCRYPTED_PACKAGE_REFUSED: string =
-    'Package uses the OLE compound-file format (often OFFCRYPTO encryption); encrypted packages cannot be opened';
+    'Package uses the OLE compound-file format (often OFFCRYPTO encryption); encrypted packages require a password to open';
 
 /**
  * Loads an OPC presentation package model from raw bytes.
@@ -43,8 +49,9 @@ const ENCRYPTED_PACKAGE_REFUSED: string =
  * @remarks Public entry is {@link Presentation.open}. This helper stays package-scoped so `open.ts` does not import `Presentation` (avoids
  * a create/open cycle). Unknown parts and relationship types are retained for round-trip. ECMA-376 Part 1 section 9.1.5 trash items keep
  * their ZIP bytes but are never associated with a content type on save. External relationship targets are never fetched. Macro-enabled main
- * content types are accepted as packages; macros are never executed. Encrypted OFFCRYPTO / OLE CFB packages are refused. Decrypt-open is
- * not supported.
+ * content types are accepted as packages; macros are never executed. An OLE CFB package is decrypted with
+ * {@link OpenPresentationOptions.password} via `@syncfusion/ej2-office-common` before the ZIP parse. A CFB package
+ * without a password is refused.
  * @internal
  * @param {OpenPresentationInput} input - Entire `.pptx` (or related) package as bytes, or base64 `string`.
  * @param {OpenPresentationOptions} options - Optional security limit overrides.
@@ -54,8 +61,25 @@ export async function openPresentationPackage(
     input: OpenPresentationInput,
     options: OpenPresentationOptions = {}
 ): Promise<OpcPackage> {
+    return openPresentationBytes(toUint8Array(input), options);
+}
+
+/**
+ * Opens already-decoded package bytes. Callers that must know whether the source
+ * was an OFFCRYPTO container (so a successful password can be retained) decode
+ * once and use this entry.
+ *
+ * @internal
+ * @param {Uint8Array} supplied - Package bytes.
+ * @param {OpenPresentationOptions} options - Limits and optional password.
+ * @returns {Promise<OpcPackage>} Opened package.
+ */
+export async function openPresentationBytes(
+    supplied: Uint8Array,
+    options: OpenPresentationOptions = {}
+): Promise<OpcPackage> {
     const limits: SecurityLimits = resolveLimits(options.limits);
-    const bytes: Uint8Array = toUint8Array(input);
+    const bytes: Uint8Array = decryptIfEncrypted(supplied, options.password, limits.singlePartUncompressedBytes);
     if (looksLikeOleCompoundFile(bytes)) {
         throw new EncryptedPackageError(ENCRYPTED_PACKAGE_REFUSED);
     }

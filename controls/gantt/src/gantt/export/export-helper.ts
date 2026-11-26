@@ -25,6 +25,17 @@ import { PdfGanttPredecessor } from './pdf-connector-line';
 
 /**
  * @hidden
+ * Internal node describing where a stacked header cell is placed in the export grid.
+ */
+interface IStackedHeaderNode {
+    column: ColumnModel;
+    start: number;
+    count: number;
+    isLeaf: boolean;
+}
+
+/**
+ * @hidden
  * `ExportHelper` for `PdfExport` & `ExcelExport`
  */
 export class ExportHelper {
@@ -40,6 +51,7 @@ export class ExportHelper {
     private pdfDoc: PdfDocument;
     private exportValueFormatter: ExportValueFormatter;
     private totalColumnWidth: number = 0;
+    private stackedHeaderLevels: IStackedHeaderNode[][] = [];
     public beforeSinglePageExport: Object = {};
     public baselineHeight: number = 8;
     public baselineTop: number;
@@ -198,11 +210,12 @@ export class ExportHelper {
     public processGridExport(data: IGanttData[], gantt: PdfGantt, props: PdfExportProperties): void {
         this.flatData = data;
         this.gantt = gantt;
+        this.gantt.progressLineRecords = this.flatData;
         this.exportValueFormatter = new ExportValueFormatter(this.parent.locale);
         this.exportProps = props;
         this.rowIndex = 0;
         this.colIndex = 0;
-        this.columns = this.parent.treeGrid.columns as ColumnModel[];
+        this.columns = this.flattenExportColumns(this.parent.treeGrid.columns as ColumnModel[]);
         this.gantt.treeColumnIndex = this.parent.treeColumnIndex;
         this.gantt.rowHeight = pixelToPoint(this.parent.rowHeight);
         this.gantt.style.cellPadding.left = 0;
@@ -223,8 +236,60 @@ export class ExportHelper {
         this.parent.pdfExportModule.isPdfExport = false;
     }
 
+    /**
+     * PDF export emits one data column per visible leaf. Stacked parents are not exported
+     * as spanning header rows.
+     *
+     * @param {ColumnModel[]} columns .
+     * @returns {ColumnModel[]} .
+     */
+    public flattenExportColumns(columns: ColumnModel[]): ColumnModel[] {
+        const leaves: ColumnModel[] = [];
+        if (!columns) {
+            return leaves;
+        }
+        for (let i: number = 0; i < columns.length; i++) {
+            const column: ColumnModel = columns[i as number];
+            if (column.columns && column.columns.length > 0) {
+                const nested: ColumnModel[] = this.flattenExportColumns(column.columns as ColumnModel[]);
+                for (let j: number = 0; j < nested.length; j++) {
+                    leaves.push(nested[j as number]);
+                }
+            } else {
+                leaves.push(column);
+            }
+        }
+        return leaves;
+    }
+
+    /**
+     * Computes the stacked header depth of a column tree: the maximum number of
+     * nesting levels a visible leaf sits below. Returns 1 when columns are flat.
+     *
+     * @param {ColumnModel[]} columns .
+     * @param {number} level .
+     * @returns {number} .
+     */
+    private getStackedHeaderDepth(columns: ColumnModel[], level?: number): number {
+        const currentLevel: number = isNullOrUndefined(level) ? 1 : level;
+        let depth: number = currentLevel;
+        for (let i: number = 0; i < columns.length; i++) {
+            const column: ColumnModel = columns[i as number];
+            if (column.columns && column.columns.length > 0) {
+                depth = Math.max(depth, this.getStackedHeaderDepth(column.columns as ColumnModel[], currentLevel + 1));
+            }
+        }
+        return depth;
+    }
+
     private processHeaderContent(): void {
-        this.rowIndex++;
+        const stackedDepth: number = this.getStackedHeaderDepth(this.parent.treeGrid.columns as ColumnModel[]);
+        this.rowIndex = stackedDepth;
+        this.gantt.headerRowCount = stackedDepth;
+        if (stackedDepth > 1) {
+            this.processStackedHeaderContent(stackedDepth);
+            return;
+        }
         this.row = this.gantt.rows.addRow();
         let index: number = 0;
         this.columns.forEach((column: ColumnModel): void => {
@@ -233,6 +298,159 @@ export class ExportHelper {
                 index++;
             }
         });
+    }
+
+    /**
+     * Builds one header row per stacked level from the original column tree.
+     * Parent cells span their visible leaf columns horizontally; leaf cells merge
+     * down to the bottom header row through rowSpan when they sit above it.
+     *
+     * @param {number} depth .
+     * @returns {void} .
+     */
+    private processStackedHeaderContent(depth: number): void {
+        // Columns must exist before rows are added: addRow pre-creates one cell per column.
+        this.stackedHeaderLevels = [];
+        for (let level: number = 0; level < depth; level++) {
+            this.stackedHeaderLevels.push([]);
+        }
+        this.collectStackedHeaderNodes(this.parent.treeGrid.columns as ColumnModel[], 0, { index: 0 });
+        let index: number = 0;
+        this.addStackedColumns(this.parent.treeGrid.columns as ColumnModel[]);
+        this.columns.forEach((column: ColumnModel): void => {
+            if (this.isColumnVisible(column)) {
+                this.processColumnDefinition(column, index);
+                index++;
+            }
+        });
+        const headerRows: PdfTreeGridRow[] = [];
+        for (let level: number = 0; level < depth; level++) {
+            this.row = this.gantt.rows.addRow();
+            this.row.height = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60);
+            for (let c: number = 0; c < this.row.cells.count; c++) {
+                const cell: PdfTreeGridCell = this.row.cells.getCell(c);
+                cell.value = '';
+                cell.isHeaderCell = true;
+                this.copyStyles(this.ganttStyle.columnHeader, cell, false);
+            }
+            headerRows.push(this.row);
+        }
+        for (let level: number = 0; level < depth; level++) {
+            const rowCells: PdfTreeGridCell[] = [];
+            const headerRow: PdfTreeGridRow = headerRows[level as number];
+            for (let c: number = 0; c < headerRow.cells.count; c++) {
+                rowCells.push(headerRow.cells.getCell(c));
+            }
+            const nodes: IStackedHeaderNode[] = this.stackedHeaderLevels[level as number];
+            for (let n: number = 0; n < nodes.length; n++) {
+                const node: IStackedHeaderNode = nodes[n as number];
+                if (node.count === 0) {
+                    continue;
+                }
+                const cell: PdfTreeGridCell = rowCells[node.start as number];
+                const rowSpan: number = node.isLeaf ? (depth - level) : 1;
+                const columnSpan: number = node.isLeaf ? 1 : node.count;
+                cell.value = node.column.headerText;
+                cell.rowSpan = rowSpan;
+                cell.columnSpan = columnSpan;
+                if (!node.isLeaf) {
+                    let stackedHeaderWidth: number = 0;
+                    for (let c: number = 0; c < node.count; c++) {
+                        stackedHeaderWidth += this.gantt.columns.getColumn(node.start + c).width;
+                    }
+                    cell.width = stackedHeaderWidth;
+                }
+                if (rowSpan > 1) {
+                    cell.style.format = isNullOrUndefined(cell.style.format) ? new PdfStringFormat() : cell.style.format;
+                    cell.style.format.lineAlignment = PdfVerticalAlignment.Middle;
+                }
+                if (node.column.textAlign) {
+                    cell.style.format = isNullOrUndefined(cell.style.format) ? new PdfStringFormat() : cell.style.format;
+                    cell.style.format.alignment = PdfTextAlignment[node.column.textAlign];
+                }
+                for (let r: number = 1; r < rowSpan; r++) {
+                    const coveredRow: PdfTreeGridRow = headerRows[level + r];
+                    coveredRow.cells.getCell(node.start).isRowMergeContinue = true;
+                }
+            }
+        }
+    }
+
+    /**
+     * Walks the column tree and records, for every level, the nodes rendered on that
+     * level together with their visible-leaf start index and visible-leaf count.
+     *
+     * @param {ColumnModel[]} columns .
+     * @param {number} level .
+     * @param {{ index: number }} leafCounter .
+     * @returns {void} .
+     */
+    private collectStackedHeaderNodes(columns: ColumnModel[], level: number, leafCounter: { index: number }): void {
+        for (let i: number = 0; i < columns.length; i++) {
+            const column: ColumnModel = columns[i as number];
+            if (column.columns && column.columns.length > 0) {
+                const start: number = leafCounter.index;
+                this.collectStackedHeaderNodes(column.columns as ColumnModel[], level + 1, leafCounter);
+                const count: number = leafCounter.index - start;
+                if (count > 0) {
+                    this.stackedHeaderLevels[level as number].push({ column: column, start: start, count: count, isLeaf: false });
+                }
+            } else if (this.isColumnVisible(column)) {
+                this.stackedHeaderLevels[level as number].push(
+                    { column: column, start: leafCounter.index, count: 1, isLeaf: true });
+                leafCounter.index++;
+            }
+        }
+    }
+
+    /**
+     * Adds one PdfTreeGrid column per visible leaf, preserving leaf order.
+     *
+     * @param {ColumnModel[]} columns .
+     * @returns {void} .
+     */
+    private addStackedColumns(columns: ColumnModel[]): void {
+        for (let i: number = 0; i < columns.length; i++) {
+            const column: ColumnModel = columns[i as number];
+            if (column.columns && column.columns.length > 0) {
+                this.addStackedColumns(column.columns as ColumnModel[]);
+            } else if (this.isColumnVisible(column)) {
+                this.gantt.columns.add(1);
+            }
+        }
+    }
+
+    /**
+     * Configures the PdfTreeGrid column for a leaf header (width, header text, tree flag).
+     *
+     * @param {ColumnModel} column .
+     * @param {number} index .
+     * @returns {void} .
+     */
+    private processColumnDefinition(column: ColumnModel, index: number): void {
+        const pdfColumn: PdfTreeGridColumn = this.gantt.columns.getColumn(index);
+        const colFieldName : string = this.columns[this.parent.treeColumnIndex].field;
+        if (colFieldName === column.field) {
+            pdfColumn.isTreeColumn = true;
+        }
+        const width: string | number = parseInt(column.width as string, 10);
+        pdfColumn.width = pixelToPoint(width);
+        this.totalColumnWidth += pdfColumn.width;
+        pdfColumn.headerText = column.headerText;
+        pdfColumn.field = column.field;
+    }
+
+    /**
+     * Sums the heights of all header rows (the computed TreeGrid header height).
+     *
+     * @returns {number} .
+     */
+    private getTreeGridHeaderHeight(): number {
+        let height: number = 0;
+        for (let i: number = 0; i < this.gantt.headerRowCount; i++) {
+            height += this.gantt.rows.getRow(i).height;
+        }
+        return height;
     }
     private processColumnHeader(column: ColumnModel, index: number): void {
         this.gantt.columns.add(1);
@@ -256,8 +474,8 @@ export class ExportHelper {
         const treeGridHeaderHeight: number = this.parent.timelineModule.isSingleTier ? 45 : 60;
         this.copyStyles(this.ganttStyle.columnHeader, cell, false);
         this.row.height = pixelToPoint(treeGridHeaderHeight);
-        if (column.headerTextAlign) {
-            cell.style.format.alignment = PdfTextAlignment[column.headerTextAlign];
+        if (column.textAlign) {
+            cell.style.format.alignment = PdfTextAlignment[column.textAlign];
         }
         const template: ITemplateDetails = {
             image: null,
@@ -294,8 +512,9 @@ export class ExportHelper {
     }
 
     private isColumnVisible(column: ColumnModel): boolean {
-        const visibleColumn: boolean = column.visible || this.exportProps.includeHiddenColumn;
-        return (visibleColumn);
+        const isVisible: boolean = column.visible !== false;
+        const visibleColumn: boolean = isVisible || this.exportProps.includeHiddenColumn;
+        return visibleColumn;
     }
 
     private processGanttContent(): void {
@@ -327,8 +546,10 @@ export class ExportHelper {
             this.parent.timelineModule.createTimelineSeries();
         }
         const timelineSettings: Timeline = this.parent.timelineModule;
+        const tierHeight: number = this.parent.timelineModule.isSingleTier ? 45 : 60;
+        const headerHeight: number = tierHeight * this.gantt.headerRowCount;
         this.gantt.chartHeader.topTierHeight = this.gantt.chartHeader.bottomTierHeight
-            = (this.parent.timelineModule.isSingleTier ? 45 : 60 / 2);
+            = headerHeight / 2;
         this.gantt.chartHeader.topTierCellWidth = timelineSettings.topTierCellWidth;
         this.gantt.chartHeader.bottomTierCellWidth = timelineSettings.bottomTierCellWidth;
         this.gantt.chartHeader.topTier = extend([], [], this.parent.enableTimelineVirtualization ?
@@ -344,7 +565,8 @@ export class ExportHelper {
             this.gantt.chartHeader.width = this.parent.enableTimelineVirtualization ? this.parent.timelineModule.wholeTimelineWidth :
                 timelineSettings.totalTimelineWidth;
         }
-        this.gantt.chartHeader.height = !isNullOrUndefined(this.gantt.rows.getRow(0).height) ? this.gantt.rows.getRow(0).height : 65;
+        this.gantt.chartHeader.height = !isNullOrUndefined(this.gantt.rows.getRow(0).height) ?
+            this.getTreeGridHeaderHeight() : 65;
         this.gantt.timelineStartDate = new Date(timelineSettings.timelineStartDate.getTime());
     }
     /**

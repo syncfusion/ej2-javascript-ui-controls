@@ -944,6 +944,8 @@ export class Render {
             ele.setAttribute('data-basefield', this.engine.fieldList[pivotValue.actualText.toString()].baseField);
             ele.setAttribute('data-baseItem', this.engine.fieldList[pivotValue.actualText.toString()].baseItem);
             ele.setAttribute('data-allowcrossgroup', this.engine.fieldList[pivotValue.actualText.toString()].allowCrossGroupCalculation ? 'true' : 'false');
+            ele.setAttribute('data-runningtotaldirection',
+                             this.engine.fieldList[pivotValue.actualText.toString()].runningTotalDirection || '');
             this.aggMenu.createValueSettingsDialog(ele as HTMLElement, this.parent.element, aggregateType);
             break;
         }
@@ -2064,6 +2066,9 @@ export class Render {
     /** @hidden */
 
     public calculateGridWidth(): number | string {
+        if (this.parent.isFullScreen) {
+            return this.parent.getWidthAsNumber();
+        }
         let parWidth: number | string = this.parent.width;
         let eleWidth: number = this.parent.element.getBoundingClientRect().width ?
             this.parent.element.getBoundingClientRect().width : this.parent.element.offsetWidth;
@@ -2091,6 +2096,19 @@ export class Render {
         const contentElement: HTMLElement = (
             this.parent.element.querySelector('.' + cls.GRID_CLASS + ' .' + cls.CONTENT_CLASS) as HTMLElement
         );
+        if (this.parent.isFullScreen && contentElement) {
+            const header: HTMLElement = this.parent.element.querySelector('.' + cls.GRID_HEADER) as HTMLElement;
+            const grouping: HTMLElement = this.parent.element.querySelector('.' + cls.GRID_GROUPING_BAR_CLASS) as HTMLElement;
+            const toolbar: HTMLElement = this.parent.element.querySelector('.' + cls.GRID_TOOLBAR) as HTMLElement;
+            const pager: HTMLElement = this.parent.element.querySelector('.' + cls.GRID_PAGER) as HTMLElement;
+            const height: number = Math.max(40, this.parent.getHeightAsNumber() - (header ? header.offsetHeight : 0) -
+                (grouping ? grouping.offsetHeight : 0) - (toolbar ? toolbar.offsetHeight : 0) - (pager ? pager.offsetHeight : 0) - 2);
+            if (elementCreated) {
+                this.parent.grid.height = height;
+                this.parent.grid.dataBind();
+            }
+            return height;
+        }
         let gridHeight: number | string = this.parent.height;
         let parHeight: number = this.parent.getHeightAsNumber();
         if (contentElement) {

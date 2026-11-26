@@ -180,6 +180,12 @@ export class PdfForm {
      */
     _fieldAutoNaming: boolean = false;
     /**
+     * Indicates whether complex-script text rendering is enabled for text-capable form fields.
+     *
+     * @private
+     */
+    _complexScript: boolean = false;
+    /**
      * Generated or user-specified field names.
      *
      * @private
@@ -371,6 +377,44 @@ export class PdfForm {
      */
     set fieldAutoNaming(value: boolean) {
         this._fieldAutoNaming = value;
+    }
+    /**
+     * Gets a value indicating whether complex-script text rendering is enabled for text-capable form fields.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Read the complex-script state of the form
+     * let enabled: boolean = document.form.complexScript;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     *
+     * @returns {boolean} True when complex-script rendering is enabled for the form.
+     */
+    get complexScript(): boolean {
+        return this._complexScript;
+    }
+    /**
+     * Sets a value indicating whether complex-script text rendering is enabled for text-capable form fields.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Enable complex-script shaping for text-capable fields.
+     * document.form.complexScript = true;
+     * // Generate new field appearances.
+     * document.form.setDefaultAppearance(false);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     *
+     * @param {boolean} value True to enable complex-script rendering.
+     */
+    set complexScript(value: boolean) {
+        this._complexScript = value;
     }
     /**
      * Gets the `PdfField` at the specified index.

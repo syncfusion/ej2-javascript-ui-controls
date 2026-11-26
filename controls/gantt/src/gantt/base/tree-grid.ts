@@ -419,6 +419,9 @@ export class GanttTreeGrid {
             this.parent.updateContentHeight();
         }
         this.parent.ganttChartModule.updateWidthAndHeight();
+        if (this.parent.progressLineModule) {
+            this.parent.notify('refreshProgressLine', {});
+        }
         this.parent.ganttChartModule.reRenderConnectorLines();
         this.parent['hideLoadingIndicator']();
         this.parent.trigger('collapsed', args);
@@ -471,6 +474,9 @@ export class GanttTreeGrid {
             this.parent.updateContentHeight();
         }
         this.parent.ganttChartModule.updateWidthAndHeight();
+        if (this.parent.progressLineModule) {
+            this.parent.notify('refreshProgressLine', {});
+        }
         this.parent.ganttChartModule.reRenderConnectorLines();
         this.parent['hideLoadingIndicator']();
         this.parent.isCollapseAll = false;
@@ -733,8 +739,9 @@ export class GanttTreeGrid {
                 record['action'] = 'ColumnReorder';
                 record['fromIndex'] = extend([], [], [args['fromIndex']], true)[0];
                 record['toIndex'] = extend([], [], [args['toIndex']], true)[0];
-                record['toColumn'] = extend([], [], [this.parent.treeGrid.columns[args['toIndex']]['field']], true)[0];
-                record['fromColumn'] = extend([], [], [this.parent.treeGrid.columns[args['fromIndex']]['field']], true)[0];
+                const columnModel: ColumnModel[] = (this.parent.treeGrid as any).columnModel as ColumnModel[];
+                record['toColumn'] = extend([], [], [columnModel[args['toIndex']]['field']], true)[0];
+                record['fromColumn'] = extend([], [], [columnModel[args['fromIndex']]['field']], true)[0];
                 (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as Object) = record;
             }
             let treeField: string = null;
@@ -1051,61 +1058,7 @@ export class GanttTreeGrid {
         const tasksMapping: string[] = ['id', 'name', 'startDate', 'endDate', 'duration', 'dependency',
             'progress', 'baselineStartDate', 'baselineEndDate', 'baselineDuration', 'resourceInfo', 'notes', 'work', 'manual', 'type', 'milestone', 'segments', 'constraintType', 'constraintDate', 'calendarId'];
         for (let i: number = 0; i < length; i++) {
-            let column: GanttColumnModel = {};
-            if (typeof ganttObj.columns[i as number] === 'string') {
-                column.field = ganttObj.columns[i as number] as string;
-            } else {
-                column = <GanttColumnModel>ganttObj.columns[i as number];
-            }
-            column.isFrozen = column.isFrozen ? column.isFrozen : undefined;
-            column.freeze = column.freeze ? column.freeze : undefined;
-            let columnName: string[] = [];
-            if (tasksMapping.length > 0) {
-                columnName = tasksMapping.filter((name: string) => {
-                    return column.field === tasks[name as string];
-                });
-            }
-            if (columnName.length === 0) {
-                if (column.field === this.parent.resourceFields.group) {
-                    continue;
-                }
-                if (column.field !== 'WBSCode' && column.field !== 'WBSPredecessor' && column.field !== 'SerialNumber') {
-                    this.parent.customColumns.push(column.field);
-                }
-                column.headerText = !isNullOrUndefined(column.headerText) ? column.headerText : column.field;
-                column.width = column.width ? column.width : 150;
-                if (column.field === 'WBSCode' || column.field === 'SerialNumber') {
-                    column.allowEditing = false;
-                }
-                else {
-                    column.allowEditing = !isNullOrUndefined(column.allowEditing) ? column.allowEditing : true;
-                }
-                if (column.field === 'WBSCode' || column.field === 'WBSPredecessor' || column.field === 'SerialNumber') {
-                    column.clipMode = 'EllipsisWithTooltip';
-                }
-                if (column.editType === undefined) {
-                    if (column.type === 'date') {
-                        column.editType = 'datepickeredit';
-                    } else if (column.type === 'datetime') {
-                        column.editType = 'datetimepickeredit';
-                    } else {
-                        column.editType = 'stringedit';
-                    }
-                }
-                column.type = column.type ? column.type : 'string';
-                if (column.type === 'checkbox') {
-                    this.parent.setProperties({selectionSettings: {
-                        type: 'Multiple'
-                    }}, true );
-                }
-                this.bindTreeGridColumnProperties(column, true);
-                continue;
-            } else {
-                const index: number = tasksMapping.indexOf(columnName[0]);
-                tasksMapping.splice(index, 1);
-                this.createTreeGridColumn(column, true);
-                this.parent.columnMapping[columnName[0]] = column.field;
-            }
+            this.composeColumn(ganttObj.columns[i as number], tasks, tasksMapping, true);
         }
 
         /** Create default columns with task settings property */
@@ -1123,6 +1076,97 @@ export class GanttTreeGrid {
             this.createTreeGridColumn(column, true);
         }
     }
+    /**
+     * Compose a Gantt column, including nested stacked-header children.
+     * A column with a non-empty `columns` array is a header group: it is not a data field,
+     * and only its leaves are registered in columnByField, customColumns, and ganttColumns.
+     *
+     * @param {GanttColumnModel | string} source .
+     * @param {TaskFieldsModel} tasks .
+     * @param {string[]} tasksMapping .
+     * @param {boolean} isDefined .
+     * @returns {ColumnModel} .
+     */
+    private composeColumn(
+        source: GanttColumnModel | string,
+        tasks: TaskFieldsModel,
+        tasksMapping: string[],
+        isDefined?: boolean
+    ): ColumnModel {
+        const column: GanttColumnModel = typeof source === 'string' ? { field: source } : source;
+        column.isFrozen = column.isFrozen ? column.isFrozen : undefined;
+        column.freeze = column.freeze ? column.freeze : undefined;
+        const children: (GanttColumnModel | string)[] = column.columns as (GanttColumnModel | string)[];
+        if (children && children.length > 0) {
+            const composedChildren: ColumnModel[] = [];
+            for (let i: number = 0; i < children.length; i++) {
+                const child: GanttColumnModel | string = children[i as number];
+                const childColumn: GanttColumnModel = typeof child === 'string' ? { field: child } : child;
+                const composedChild: ColumnModel = this.composeColumn(childColumn, tasks, tasksMapping, false);
+                if (!isNullOrUndefined(composedChild)) {
+                    composedChildren.push(composedChild);
+                }
+            }
+            column.columns = composedChildren as GanttColumnModel[];
+            const treeGridColumn: ColumnModel = {};
+            for (const prop of Object.keys(column)) {
+                treeGridColumn[prop as string] = column[prop as string];
+            }
+            treeGridColumn.columns = composedChildren;
+            if (isDefined) {
+                this.treeGridColumns.push(treeGridColumn);
+            }
+            return treeGridColumn;
+        }
+        let columnName: string[] = [];
+        if (tasksMapping.length > 0 && !isNullOrUndefined(column.field)) {
+            columnName = tasksMapping.filter((name: string) => {
+                return column.field === tasks[name as string];
+            });
+        }
+        if (columnName.length === 0) {
+            if (column.field === this.parent.resourceFields.group) {
+                return null;
+            }
+            if (column.field !== 'WBSCode' && column.field !== 'WBSPredecessor' && column.field !== 'SerialNumber' &&
+                !isNullOrUndefined(column.field)) {
+                this.parent.customColumns.push(column.field);
+            }
+            column.headerText = !isNullOrUndefined(column.headerText) ? column.headerText : column.field;
+            column.width = column.width ? column.width : 150;
+            if (column.field === 'WBSCode' || column.field === 'SerialNumber') {
+                column.allowEditing = false;
+            }
+            else {
+                column.allowEditing = !isNullOrUndefined(column.allowEditing) ? column.allowEditing : true;
+            }
+            if (column.field === 'WBSCode' || column.field === 'WBSPredecessor' || column.field === 'SerialNumber') {
+                column.clipMode = 'EllipsisWithTooltip';
+            }
+            if (column.editType === undefined) {
+                if (column.type === 'date') {
+                    column.editType = 'datepickeredit';
+                } else if (column.type === 'datetime') {
+                    column.editType = 'datetimepickeredit';
+                } else {
+                    column.editType = 'stringedit';
+                }
+            }
+            column.type = column.type ? column.type : 'string';
+            if (column.type === 'checkbox') {
+                this.parent.setProperties({ selectionSettings: {
+                    type: 'Multiple'
+                } }, true);
+            }
+            return this.bindTreeGridColumnProperties(column, isDefined);
+        }
+        const index: number = tasksMapping.indexOf(columnName[0]);
+        tasksMapping.splice(index, 1);
+        const composed: ColumnModel = this.createTreeGridColumn(column, isDefined);
+        this.parent.columnMapping[columnName[0]] = column.field;
+        return composed;
+    }
+
     private getLocalizedConstraintTypeText(type: string): string {
         return this.parent.localeObj.getConstant(`constraintType${type}`);
     }
@@ -1131,9 +1175,9 @@ export class GanttTreeGrid {
      *
      * @param {GanttColumnModel} column .
      * @param {boolean} isDefined .
-     * @returns {void} .
+     * @returns {ColumnModel} .
      */
-    private createTreeGridColumn(column: GanttColumnModel, isDefined?: boolean): void {
+    private createTreeGridColumn(column: GanttColumnModel, isDefined?: boolean): ColumnModel {
         const taskSettings: TaskFieldsModel = this.parent.taskFields;
         const previousColumn: GanttColumnModel = this.parent.previousGanttColumns.filter((prevcolumn: GanttColumnModel) => {
             return column.field === prevcolumn.field;
@@ -1415,7 +1459,7 @@ export class GanttTreeGrid {
                 }
             };
         }
-        this.bindTreeGridColumnProperties(column, isDefined);
+        return this.bindTreeGridColumnProperties(column, isDefined);
     }
     public changeLocale(data: any): any[] {
         const filter: any = [];
@@ -1591,9 +1635,9 @@ export class GanttTreeGrid {
     /**
      * @param {GanttColumnModel} newGanttColumn .
      * @param {boolean} isDefined .
-     * @returns {void} .
+     * @returns {ColumnModel} .
      */
-    private bindTreeGridColumnProperties(newGanttColumn: GanttColumnModel, isDefined?: boolean): void {
+    private bindTreeGridColumnProperties(newGanttColumn: GanttColumnModel, isDefined?: boolean): ColumnModel {
         const treeGridColumn: ColumnModel = {}; const ganttColumn: GanttColumnModel = {};
         for (const prop of Object.keys(newGanttColumn)) {
             treeGridColumn[prop as string] = ganttColumn[prop as string] = newGanttColumn[prop as string];
@@ -1621,11 +1665,14 @@ export class GanttTreeGrid {
                 treeGridColumn.type = ganttColumn.type;
             }
         }
-        this.parent.columnByField[ganttColumn.field] = ganttColumn;
+        if (!isNullOrUndefined(ganttColumn.field)) {
+            this.parent.columnByField[ganttColumn.field] = ganttColumn;
+        }
         this.parent.ganttColumns.push(new GanttColumn(ganttColumn));
         if (isDefined) {
             this.treeGridColumns.push(treeGridColumn);
         }
+        return treeGridColumn;
     }// eslint-disable-next-line
     private validateExcelData(data: IGanttData): IGanttData {
         if (!isNullOrUndefined(this.parent.treeGrid.excelExportModule)

@@ -23,6 +23,23 @@
 export type View = 'Day' | 'Week' | 'WorkWeek' | 'Month' | 'Year' | 'Agenda' | 'MonthAgenda' | 'TimelineDay' | 'TimelineWeek' | 'TimelineWorkWeek' | 'TimelineMonth' | 'TimelineYear';
 
 /**
+ * Subset of `View` accepted by `ZoomLevel.option`.
+ *
+ * Used by the Timeline Zoom feature to constrain the rendered view
+ * family. Any preset whose `option` is outside this union is rejected
+ * at initialization with a non-fatal warning. `TimelineYear` is
+ * accepted only when paired with `orientation: 'Vertical'`.
+ */
+/**
+ * Specifies how an event is placed within a day cell.
+ * * Exact - Position and size follow the true start and end time.
+ * * Slot - The event fills the slots it touches.
+ */
+export type EventPlacement = 'Exact' | 'Slot';
+
+export type TimelineView = 'TimelineDay' | 'TimelineWeek' | 'TimelineWorkWeek' | 'TimelineMonth' | 'TimelineYear';
+
+/**
  * An enum that holds the actions available in scheduler.
  * ```props
  * Add :- Denotes the current action of the scheduler is appointment creation.
@@ -140,3 +157,40 @@ export type ToolbarName = 'Custom' | 'Previous' | 'Next' | 'Today' | 'Views' | '
  * - **Current:** Denotes the current date collection.
  */
 export type NavigationDirection = 'Previous' | 'Next' | 'Current';
+
+/**
+ * Module-level type alias for the runtime Zoom transition
+ * classification. Used by `Schedule.classifyZoomChange` and
+ * `Schedule.applyZoomPreset`.
+ */
+export type ZoomChangeType = 'no-op' | 'layout' | 'range';
+
+/**
+ * An enum that denotes which summary element a summary event refers to.
+ *
+ * - **SummaryRow:** A cell of the summary row.
+ * - **SummaryColumn:** A cell of the summary column.
+ * - **SummaryTotal:** The grand total cell where the summary row and column meet.
+ * - **SummaryRowLabel:** The label cell of the summary row.
+ * - **SummaryColumnLabel:** The label cell of the summary column.
+ * - **GroupSummary:** A cell of the group summary, shown in the parent resource row of a group.
+ */
+export type SummaryRenderType = 'SummaryRow' | 'SummaryColumn' | 'SummaryTotal' | 'SummaryRowLabel' | 'SummaryColumnLabel' | 'GroupSummary';
+
+/**
+ * An enum that denotes the pass in which a summary cell is rendered.
+ *
+ * - **Initial:** The layout was rendered and the cells are blank.
+ * - **Refresh:** The events were rendered or refreshed and the cell values can be calculated.
+ */
+export type SummaryRenderMode = 'Initial' | 'Refresh';
+
+/**
+ * An enum that defines how much time one summary row cell covers in the timeline views.
+ */
+export type SummaryRowCellUnit = 'Slot' | 'Hour' | 'Date' | 'Week' | 'Month' | 'Year';
+
+/**
+ * An enum that defines how many time axis rows one summary column cell covers in the Day, Week and Work Week views.
+ */
+export type SummaryColumnCellUnit = 'Slot' | 'MajorSlot';

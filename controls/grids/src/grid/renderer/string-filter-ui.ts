@@ -7,7 +7,7 @@ import { Browser, isNullOrUndefined, extend, getValue } from '@syncfusion/ej2-ba
 import { ServiceLocator } from '../services/service-locator';
 import { Filter } from '../actions/filter';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
-import { getZIndexCalcualtion, eventPromise, toggleFilterUI } from '../base/util';
+import { getZIndexCalcualtion, eventPromise, toggleFilterUI, getFilterDlgElement } from '../base/util';
 import * as events from '../base/constant';
 import { FilterStateObj } from '../common/filter-interface';
 import * as literals from '../base/string-literals';
@@ -31,6 +31,7 @@ export class StringFilterUI implements IFilterMUI {
     private filterSettings: FilterSettings;
     private filter: Filter;
     private dialogObj: Dialog;
+    private dlgElement: Element;
     private dropdownOpen: Function;
     private dropdownComplete: Function;
     private acOpen: Function;
@@ -52,9 +53,11 @@ export class StringFilterUI implements IFilterMUI {
         this.multiSelectCheckBoxInstance = this.parent.createElement('input', { className: 'multiselect-input', id: 'multiselectstrui-' + args.column.uid });
         args.target.appendChild(this.multiSelectCheckBoxInstance);
         this.dialogObj = args.dialogObj;
+        this.dlgElement = getFilterDlgElement(args.dialogObj, args.target);
         this.processDataOperation(args);
         this.createMultiSelectDropDown(args);
-        toggleFilterUI(args.getOptrInstance.dropOptr.value as string, args.column.uid, args.column, args.column.type, args.dialogObj);
+        toggleFilterUI(args.getOptrInstance.dropOptr.value as string, args.column.uid, args.column, args.column.type, args.dialogObj,
+                       this.dlgElement);
     }
 
     private processDataOperation(args: IFilterCreate): void {
@@ -63,7 +66,7 @@ export class StringFilterUI implements IFilterMUI {
                 .then((result: ReturnType) => {
                     this.getAutoCompleteOptions(args, result);
                     toggleFilterUI(args.getOptrInstance.dropOptr.value as string, args.column.uid,
-                                   args.column, args.column.type, args.dialogObj);
+                                   args.column, args.column.type, args.dialogObj, this.dlgElement);
                 });
             return;
         }
@@ -143,12 +146,14 @@ export class StringFilterUI implements IFilterMUI {
         this.actObj = autoComplete;
         this.actObj.appendTo(this.instance);
         if (isForeignColumn) {
-            this.parent.filterModule.filterModule.afterRenderFilterUI();
+            (args.afterRenderFilterUI || this.parent.filterModule.filterModule.afterRenderFilterUI.bind(
+                this.parent.filterModule.filterModule))();
         }
     }
 
     public write(args: IFilterWrite): void {
-        const operatorDropdown: DropDownList = this.parent.filterModule.filterModule.getOperatorDropdown();
+        const operatorDropdown: DropDownList = args.getOptrInstance ? args.getOptrInstance.dropOptr :
+            this.parent.filterModule.filterModule.getOperatorDropdown();
         const stringObject: AutoComplete = this.getAutoCompleteInstance(args.column.uid);
         const multiSelectObject: MultiSelect = this.getMultiSelectInstance(args.column.uid);
         if (operatorDropdown.value === 'in' || operatorDropdown.value === 'notin') {
@@ -184,11 +189,11 @@ export class StringFilterUI implements IFilterMUI {
     }
 
     private getAutoCompleteInstance(uid: string): AutoComplete {
-        return (<EJ2Intance>document.querySelector(`#strui-${uid}`)).ej2_instances[0];
+        return this.actObj || (<EJ2Intance>document.querySelector(`#strui-${uid}`)).ej2_instances[0];
     }
 
     private getMultiSelectInstance(uid: string): MultiSelect {
-        return (<EJ2Intance>document.querySelector(`#multiselectstrui-${uid}`)).ej2_instances[0];
+        return this.multiSelectObj || (<EJ2Intance>document.querySelector(`#multiselectstrui-${uid}`)).ej2_instances[0];
     }
 
     private createMultiSelectDropDown(args: IFilterCreate): void {
@@ -244,7 +249,8 @@ export class StringFilterUI implements IFilterMUI {
         };
     }
 
-    public destroy(): void {
+    public destroy(args?: { element?: Element }): void {
+        if (args && args.element && this.dlgElement && args.element !== this.dlgElement) { return; }
         this.parent.off(events.filterMenuClose, this.destroy);
         this.parent.off(events.destroy, this.destroy);
         if (this.actObj && !this.actObj.isDestroyed) {

@@ -10,6 +10,36 @@ import { ResponsiveDialogRenderer } from './responsive-dialog-renderer';
 import { ResponsiveDialogAction } from '../base/enum';
 import * as literals from '../base/string-literals';
 
+/**
+ * Creates the table of edit inputs that the edit dialog and the tool panel edit form show.
+ *
+ * @param {IGrid} parent - specifies the IGrid
+ * @param {Object} elements - edit inputs by column uid
+ * @param {Column[]} cols - columns rendered in the table
+ * @returns {Element} the table element
+ * @hidden
+ */
+export function createEditTable(parent: IGrid, elements: Object, cols: Column[]): Element {
+    const table: Element = parent.createElement('table', { className: literals.table, attrs: { cellspacing: '6px', role: 'grid' } });
+    const tbody: Element = parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
+    for (let i: number = 0; i < cols.length; i++) {
+        if (parent.editModule.checkColumnIsGrouped(cols[parseInt(i.toString(), 10)]) || cols[parseInt(i.toString(), 10)].commands
+            || cols[parseInt(i.toString(), 10)].commandsTemplate || cols[parseInt(i.toString(), 10)].type === 'checkbox'
+            || cols[parseInt(i.toString(), 10)].type === 'rownumber' || !elements[cols[parseInt(i.toString(), 10)].uid]) {
+            continue;
+        }
+        const tr: Element = parent.createElement('tr', { attrs: { role: 'row' } });
+        const dataCell: HTMLElement = parent.createElement('td', { className: literals.rowCell });
+        dataCell.style.cssText = `text-align: ${parent.enableRtl ? 'right' : 'left'}; width: 190px;`;
+        elements[cols[parseInt(i.toString(), 10)].uid].classList.remove('e-input');
+        dataCell.appendChild(elements[cols[parseInt(i.toString(), 10)].uid]);
+        tr.appendChild(dataCell);
+        tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+    return table;
+}
+
 
 /**
  * Edit render module is used to render grid edit row.
@@ -225,25 +255,7 @@ export class DialogEditRender {
             div.appendChild(form);
             return div;
         }
-        const table: Element = this.parent.createElement('table', { className: literals.table, attrs: { cellspacing: '6px', role: 'grid' } });
-        const tbody: Element = this.parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
-        const cols: Column[] = gObj.getColumns() as Column[];
-        for (let i: number = 0; i < cols.length; i++) {
-            if (this.parent.editModule.checkColumnIsGrouped(cols[parseInt(i.toString(), 10)]) || cols[parseInt(i.toString(), 10)].commands
-                || cols[parseInt(i.toString(), 10)].commandsTemplate || cols[parseInt(i.toString(), 10)].type === 'checkbox'
-                || cols[parseInt(i.toString(), 10)].type === 'rownumber') {
-                continue;
-            }
-            const tr: Element = this.parent.createElement('tr', { attrs: { role: 'row' } });
-            const dataCell: HTMLElement = this.parent.createElement('td', { className: literals.rowCell });
-            dataCell.style.cssText = `text-align: ${this.parent.enableRtl ? 'right' : 'left'}; width: 190px;`;
-            elements[cols[parseInt(i.toString(), 10)].uid].classList.remove('e-input');
-            dataCell.appendChild(elements[cols[parseInt(i.toString(), 10)].uid]);
-            tr.appendChild(dataCell);
-            tbody.appendChild(tr);
-        }
-        table.appendChild(tbody);
-        form.appendChild(table);
+        form.appendChild(createEditTable(this.parent, elements, gObj.getColumns() as Column[]));
         div.appendChild(form);
         return div;
     }

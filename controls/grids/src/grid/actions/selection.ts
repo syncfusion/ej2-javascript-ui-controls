@@ -42,6 +42,7 @@ export class Selection implements IAction {
      * @hidden
      */
     public selectedRecords: Element[] = [];
+    private nonDeselectableRows: Map<string, Object> = new Map<string, Object>();
     /**
      * @hidden
      */
@@ -252,6 +253,7 @@ export class Selection implements IAction {
      * @hidden
      */
     public destroy(): void {
+        this.nonDeselectableRows.clear();
         const gridElement: Element = this.parent.element;
         if (!gridElement || (!gridElement.querySelector('.' + literals.gridHeader) && !gridElement.querySelector('.' + literals.gridContent))) { return; }
         this.hidePopUp();
@@ -358,6 +360,7 @@ export class Selection implements IAction {
             return;
         }
         const isRowSelected: boolean = selectedRow.hasAttribute('aria-selected');
+        if (isRowSelected && this.isProtectedData(selectData)) { return; }
         this.activeTarget();
         if (!isToggle || !this.selectedRowIndexes.length) {
             isToggle = false;
@@ -497,6 +500,11 @@ export class Selection implements IAction {
      * @returns {void}
      */
     public selectRows(rowIndexes: number[]): void {
+        this.selectRowsWithCallback(rowIndexes);
+    }
+
+    private selectRowsWithCallback(
+        rowIndexes: number[], onSelectionCommitted?: () => void, preservePersistedSelection: boolean = false): void {
         const gObj: IGrid = this.parent;
         let selectableRowIndex: number[] = [...rowIndexes];
         const rowIndex: number = !this.isSingleSel() ? rowIndexes[0] : rowIndexes[rowIndexes.length - 1];
@@ -528,7 +536,7 @@ export class Selection implements IAction {
                 return;
             }
             if (!(this.selectionSettings.persistSelection && gObj.allowRowDragAndDrop && this.isDragged)) {
-                this.clearRow();
+                this.clearRow(preservePersistedSelection);
             }
             this.selectRowIndex(selectableRowIndex.slice(-1)[0]);
             const selectRowFn: Function = (index: number, preventFocus?: boolean) => {
@@ -564,6 +572,7 @@ export class Selection implements IAction {
                     }
                 }
             }
+            if (onSelectionCommitted) { onSelectionCommitted(); }
             args = {
                 rowIndexes: selectableRowIndex, row: selectedRows, rowIndex: rowIndex, target: this.actualTarget,
                 prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
@@ -575,6 +584,141 @@ export class Selection implements IAction {
             }
             this.isInteracted = false;
         });
+    }
+    /**
+     * Deselects a row by the given index.
+     *
+     * @param {number} index - Specifies the row index.
+     * the `isRowNonDeselectable` callback. Defaults to false; user-interaction restrictions are unaffected.
+     * @returns {void}
+     */
+    public deselectRow(index: number): void {
+        this.deselectRows([index]);
+    }
+    /**
+     * Deselects the currently selected rows by passing row indexes.
+     * Indexes that are not currently selected are ignored.
+     * Rows marked non-deselectable via `isRowNonDeselectable` are deselected as well;
+     * the non-deselectable restriction applies only to user interactions.
+     *
+     * @param {number[]} rowIndexes - Specifies the row indexes to deselect.
+     * @returns {void}
+     */
+    public deselectRows(rowIndexes: number[]): void {
+        const gObj: IGrid = this.parent;
+        if (!this.isRowType() || this.isEditing() || !rowIndexes || !rowIndexes.length) {
+            return;
+        }
+        const deselectTarget: Element = this.target;
+        const datas: Object[] = [];
+        const rows: Element[] = [];
+        const foreignKeys: Object[] = [];
+        const deselectedIndexes: number[] = [];
+        const isVirtual: boolean = gObj.enableVirtualization || gObj.isRowDomVirtualization();
+        for (const rowIndex of rowIndexes) {
+            if (this.selectedRowIndexes.indexOf(rowIndex) === -1) {
+                continue;
+            }
+            const currentRow: Element = isVirtual ? gObj.getRowByIndex(rowIndex)
+                : gObj.editSettings.mode === 'Batch' ? gObj.getRows()[parseInt(rowIndex.toString(), 10)]
+                    : gObj.getDataRows()[parseInt(rowIndex.toString(), 10)];
+            const rowObj: Row<Column> = this.getRowObj(currentRow);
+            if (!rowObj || !rowObj.isDataRow || (this.isPartialSelection && !rowObj.isSelectable)) {
+                continue;
+            }
+            deselectedIndexes.push(rowIndex);
+            datas.push(rowObj.data);
+            rows.push(currentRow);
+            foreignKeys.push(rowObj.foreignKeyData);
+        }
+        if (!deselectedIndexes.length) {
+            return;
+        }
+        // Programmatic deselection is not a row-click interaction: mark this as a non-interactive
+        // deselect so `rowDeselect` routes the event through its trigger path even when
+        // persistSelection is enabled (the gate otherwise requires an interaction flag).
+        this.isAddRowsToSelection = true;
+        const prevRowDeselect: boolean = this.isRowDeselect;
+        const prevRowClicked: boolean = this.isRowClicked;
+        this.isRowDeselect = false;
+        this.rowDeselect(events.rowDeselecting, deselectedIndexes, datas, rows, foreignKeys, deselectTarget, null,
+                         () => {
+                             if (this.isCancelDeSelect) {
+                                 this.isAddRowsToSelection = false;
+                                 // The shared trigger callback may have unconditionally unchecked the
+                                 // first row's checkbox on a programmatic cancel; protected rows must
+                                 // keep their checked/disabled state until ownership is really released.
+                                 for (let i: number = 0; i < rows.length; i++) {
+                                     const cancelRow: Element = rows[parseInt(i.toString(), 10)];
+                                     const cancelObj: Row<Column> = cancelRow ? this.getRowObj(cancelRow) : ({} as Row<Column>);
+                                     if (cancelObj.data && this.isProtectedData(cancelObj.data)) {
+                                         this.syncProtectedCheckbox(cancelRow, cancelObj);
+                                     }
+                                 }
+                                 return;
+                             }
+                             for (let i: number = 0; i < deselectedIndexes.length; i++) {
+                                 const rowIndex: number = deselectedIndexes[parseInt(i.toString(), 10)];
+                                 const currentRow: Element = rows[parseInt(i.toString(), 10)];
+                                 const rowObj: Row<Column> = currentRow ? this.getRowObj(currentRow) : ({} as Row<Column>);
+                                 const isProtected: boolean = !!(rowObj.data && this.isProtectedData(rowObj.data));
+                                 const idx: number = this.selectedRowIndexes.indexOf(rowIndex);
+                                 if (idx > -1) {
+                                     this.selectedRowIndexes.splice(idx, 1);
+                                 }
+                                 const recIdx: number = this.selectedRecords.indexOf(currentRow);
+                                 if (recIdx > -1) {
+                                     this.selectedRecords.splice(recIdx, 1);
+                                 }
+                                 if (this.checkVirtualCheckBox() && !this.parent.isPersistSelection) {
+                                     const recIdx: number = this.virtualSelectedData.indexOf(datas[parseInt(i.toString(), 10)]);
+                                     if (recIdx > -1) {
+                                         this.virtualSelectedData.splice(recIdx, 1);
+                                     }
+                                 } else if (!this.parent.isRemote() && this.parent.isCheckBoxSelection &&
+                                     this.isPartialSelection && !this.parent.isPersistSelection) {
+                                     const recIdx: number = this.partialSelectedData.indexOf(datas[parseInt(i.toString(), 10)]);
+                                     if (recIdx > -1) {
+                                         this.partialSelectedData.splice(recIdx, 1);
+                                     }
+                                 }
+                                 if (this.selectionSettings.persistSelection && this.selectionSettings.checkboxMode !== 'ResetOnRowClick') {
+                                     this.isRowClicked = this.checkSelectAllClicked ? true : false;
+                                 }
+                                 if (currentRow && !this.disableUI) {
+                                     currentRow.removeAttribute('aria-selected');
+                                     this.addRemoveClassesForRow(currentRow, false, true, 'e-selectionbackground', 'e-active');
+                                 }
+                                 this.updateCheckBoxes(currentRow, false, rowIndex);
+                                 if (isProtected) {
+                                     // Release protected ownership so the row becomes interactively
+                                     // selectable again after a deliberate programmatic override.
+                                     this.nonDeselectableRows.delete(this.protectionKey(rowObj.data));
+                                     this.updatePersistDelete(this.getPkValue(this.parent.getPrimaryKeyFieldNames()[0], rowObj.data));
+                                     this.syncProtectedCheckbox(currentRow, rowObj);
+                                     if (currentRow && !this.disableUI) {
+                                         this.addRemoveClassesForRow(currentRow, false, true, 'e-selectionbackground', 'e-active');
+                                         currentRow.removeAttribute('aria-selected');
+                                     }
+                                 }
+                                 if (this.selectedRowIndexes.length) {
+                                     this.selectRowIndex(this.selectedRowIndexes[this.selectedRowIndexes.length - 1]);
+                                 } else {
+                                     this.isRowSelected = false;
+                                 }
+                                 if (!isProtected) {
+                                     this.updatePersistCollection(currentRow, false);
+                                 }
+                             }
+                             this.rowDeselect(events.rowDeselected, deselectedIndexes, datas, rows, foreignKeys, deselectTarget,
+                                              undefined, undefined, undefined);
+                             this.isInteracted = false;
+                             this.isMultiSelection = false;
+                             this.isAddRowsToSelection = false;
+                             this.isHdrSelectAllClicked = false;
+                         });
+        this.isRowClicked = prevRowClicked;
+        this.isRowDeselect = prevRowDeselect;
     }
 
     /**
@@ -622,6 +766,7 @@ export class Selection implements IAction {
                 const duplicateRow: Element = this.parent.getRowByIndex(rowIndex);
                 selectedRow = isNullOrUndefined(duplicateRow) ? selectedRow : duplicateRow;
             }
+            if (isUnSelected && this.isProtectedData(rowObj.data)) { continue; }
             this.selectRowIndex(rowIndex);
             if (isUnSelected && ((checkboxColumn.length ? true : this.selectionSettings.enableToggle) || this.isMultiCtrlRequest)) {
                 this.isAddRowsToSelection = true;
@@ -744,13 +889,21 @@ export class Selection implements IAction {
         return indexes;
     }
 
-    private clearRow(): void {
+    private clearRow(preservePersistedSelection: boolean = false): void {
         this.clearRowCheck = true;
-        this.clearRowSelection();
+        if (preservePersistedSelection && this.protectionEnabled() && this.parent.isPersistSelection) {
+            this.clearProtectedSelection(false, true);
+        } else {
+            this.clearRowSelection();
+        }
     }
 
     private clearRowCallBack(): void {
         if (this.isCancelDeSelect && this.parent.checkAllRows !== 'Check') {
+            return;
+        }
+        if (this.hasProtectedRows()) {
+            this.restoreProtectedRows();
             return;
         }
         this.selectedRowIndexes = [];
@@ -763,6 +916,7 @@ export class Selection implements IAction {
     }
 
     private clearSelectedRow(index: number): void {
+        if (this.isProtectedData(this.getRowObj(index).data)) { return; }
         if (this.toggle) {
             const selectedEle: Element = this.parent.getRowByIndex(index);
             if (!this.disableUI) {
@@ -786,8 +940,220 @@ export class Selection implements IAction {
     private getPkValue(pkField: string, data: object): string{
         return pkField ? isComplexField(pkField) ? getObject(pkField, data) : data[`${pkField}`] : data[`${pkField}`];
     }
+    private protectionEnabled(): boolean {
+        const enabled: boolean = typeof this.parent.isRowNonDeselectable === 'function' &&
+            this.selectionSettings.type === 'Multiple' && this.selectionSettings.mode !== 'Cell' &&
+            this.parent.getPrimaryKeyFieldNames().length > 0;
+        if (!enabled && this.nonDeselectableRows.size) {
+            this.nonDeselectableRows.clear();
+            for (const row of this.parent.getDataRows()) {
+                const obj: Row<Column> = this.getRowObj(row);
+                const owned: boolean = !!row.querySelector('[data-selection-protected]');
+                this.syncProtectedCheckbox(row, obj);
+                if (owned && !this.parent.isPersistSelection) { obj.isSelected = false; }
+            }
+        }
+        return enabled;
+    }
+    private protectionKey(data: Object): string {
+        const value: string = this.getPkValue(this.parent.getPrimaryKeyFieldNames()[0], data);
+        return typeof value + ':' + value;
+    }
+    private registerProtectedRecord(data: Object, isSelectable: boolean = true): void {
+        if (isSelectable && this.protectionEnabled() &&
+            (this.parent.isRowNonDeselectable as Function)(data, this.parent.getColumns())) {
+            this.nonDeselectableRows.set(this.protectionKey(data), data);
+        }
+    }
+    private isProtectedData(data: Object): boolean {
+        return !!data && this.protectionEnabled() && this.nonDeselectableRows.has(this.protectionKey(data));
+    }
+    private hasProtectedRows(): boolean {
+        return this.protectionEnabled() && this.nonDeselectableRows.size > 0;
+    }
+    private syncProtectedCheckbox(row: Element, rowObj: Row<Column>): void {
+        const checkbox: HTMLInputElement = row.querySelector('.e-checkselect, .e-edit-checkselect') as HTMLInputElement;
+        if (!checkbox) { return; }
+        if (rowObj.isSelectable === false) {
+            checkbox.removeAttribute('data-selection-protected');
+            setChecked(checkbox, false);
+            removeAddCboxClasses(checkbox.nextElementSibling as HTMLElement, false);
+            return;
+        }
+        if (this.isProtectedData(rowObj.data)) {
+            checkbox.setAttribute('data-selection-protected', this.protectionKey(rowObj.data));
+            checkbox.disabled = true;
+            checkbox.setAttribute('aria-disabled', 'true');
+            checkbox.parentElement.classList.add('e-checkbox-disabled');
+            setChecked(checkbox, true);
+            removeAddCboxClasses(checkbox.nextElementSibling as HTMLElement, true);
+        } else if (checkbox.hasAttribute('data-selection-protected')) {
+            checkbox.removeAttribute('data-selection-protected');
+            checkbox.disabled = false;
+            checkbox.removeAttribute('aria-disabled');
+            checkbox.parentElement.classList.remove('e-checkbox-disabled');
+            if (!rowObj.isSelected) {
+                setChecked(checkbox, false);
+                removeAddCboxClasses(checkbox.nextElementSibling as HTMLElement, false);
+                row.removeAttribute('aria-selected');
+                this.addRemoveClassesForRow(row, false, true, 'e-selectionbackground', 'e-active');
+            }
+        }
+    }
+    private reconcileProtectedRowsAfterRefresh(e: { args?: { requestType?: string } }): void {
+        if (!e.args || ['sorting', 'filtering', 'searching', 'paging'].indexOf(e.args.requestType) === -1 ||
+            !this.hasProtectedRows() || this.parent.isRemote() || this.parent.enableVirtualization ||
+            this.parent.isRowDomVirtualization() || this.parent.enableInfiniteScrolling ||
+            this.parent.groupSettings.columns.length || this.parent.groupSettings.enableLazyLoading ||
+            this.parent.isFrozenGrid() || this.parent.frozenRows || this.parent.pinnedTopRecords.length) { return; }
+        const rows: Element[] = this.parent.getDataRows().filter((row: Element) => {
+            const obj: Row<Column> = this.parent.getRowObjectFromUID(row.getAttribute('data-uid'));
+            return !row.classList.contains('e-masked-row') && !!obj && !!obj.data && obj.isDataRow;
+        });
+        const liveRows: Set<Element> = new Set<Element>(rows);
+        const ordinaryKeys: Set<string> = new Set<string>();
+        const persistentKeys: Set<string> = new Set<string>();
+        // Capture ownership before rebuilding: replacement model flags alone are not authority.
+        if (this.parent.isPersistSelection) {
+            Object.keys(this.selectedRowState).forEach((key: string) => {
+                if (this.selectedRowState[`${key}`] === true) { persistentKeys.add(key); }
+            });
+        } else {
+            this.selectedRecords.forEach((row: Element) => {
+                if (liveRows.has(row) && this.getRowObj(row).isSelected && row.getAttribute('aria-selected') === 'true') {
+                    ordinaryKeys.add(this.protectionKey(this.getRowObj(row).data));
+                }
+            });
+        }
+        this.selectedRecords = [];
+        this.selectedRowIndexes = [];
+        for (const row of rows) {
+            const obj: Row<Column> = this.getRowObj(row);
+            const selected: boolean = obj.isSelectable !== false &&
+                (this.nonDeselectableRows.has(this.protectionKey(obj.data)) ||
+                (this.parent.isPersistSelection ? persistentKeys.has(String(this.getPkValue(this.primaryKey, obj.data))) :
+                    ordinaryKeys.has(this.protectionKey(obj.data))));
+            obj.isSelected = selected;
+            if (selected) {
+                this.selectedRecords.push(row);
+                this.selectedRowIndexes.push(obj.index);
+                row.setAttribute('aria-selected', 'true');
+            } else {
+                row.removeAttribute('aria-selected');
+            }
+            this.addRemoveClassesForRow(row, selected, false, 'e-selectionbackground', 'e-active');
+            this.updateCheckBoxes(row, selected);
+            this.syncProtectedCheckbox(row, obj);
+        }
+        // Persistent records/counts, including offscreen ordinary records, remain PK-owned.
+        this.isRowSelected = this.selectedRowIndexes.length > 0 || this.hasProtectedRows();
+        this.selectRowIndex(this.selectedRowIndexes.length ? this.selectedRowIndexes[this.selectedRowIndexes.length - 1] : -1);
+        this.setCheckAllState();
+    }
+    private restoreProtectedRows(): void {
+        if (!this.hasProtectedRows()) { return; }
+        this.selectedRecords = this.selectedRecords.filter((row: Element) =>
+            this.parent.getRowByIndex(parseInt(row.getAttribute(literals.ariaRowIndex), 10) - 1) === row &&
+            this.getRowObj(row).isSelected);
+        this.selectedRowIndexes = this.selectedRecords.map((row: Element) =>
+            parseInt(row.getAttribute(literals.ariaRowIndex), 10) - 1);
+        for (const row of this.parent.getDataRows()) {
+            const obj: Row<Column> = this.getRowObj(row);
+            this.syncProtectedCheckbox(row, obj);
+            if (this.isProtectedData(obj.data) && obj.isSelectable !== false) {
+                this.updateRowSelection(row, obj.index, true);
+            }
+        }
+        this.isRowSelected = this.selectedRowIndexes.length > 0 || this.hasProtectedRows();
+        this.setCheckAllState();
+    }
+    private clearProtectedSelection(includeProtected: boolean, preservePersistedSelection: boolean = false): void {
+        // Virtual refreshes can expose shimmer rows with no UID/record alongside data rows.
+        // Resolve again at completion: event handlers may replace or recycle the original DOM.
+        const getRecordRows: () => Element[] = () => this.parent.getDataRows().filter((row: Element) =>
+            !row.classList.contains('e-masked-row') && !isNullOrUndefined(this.getRowObj(row).data));
+        const rows: Element[] = getRecordRows().filter((row: Element) =>
+            row.hasAttribute('aria-selected') && (includeProtected || !this.isProtectedData(this.getRowObj(row).data)));
+        let data: Object[] = this.persistSelectedData.concat(this.virtualSelectedData, this.partialSelectedData,
+                                                             rows.map((row: Element) => this.getRowObj(row).data));
+        if (includeProtected) { this.nonDeselectableRows.forEach((record: Object) => data.push(record)); }
+        const seen: Map<string, boolean> = new Map<string, boolean>();
+        data = data.filter((record: Object) => {
+            const key: string = this.protectionKey(record);
+            if (seen.has(key) || (!includeProtected && this.isProtectedData(record))) { return false; }
+            seen.set(key, true);
+            return true;
+        });
+        let indexes: number[] = rows.map((row: Element) => this.getRowObj(row).index);
+        let foreignKeyData: Object[] = rows.map((row: Element) => this.getRowObj(row).foreignKeyData);
+        const headerTarget: boolean = !!this.actualTarget && !isNullOrUndefined(closest(this.actualTarget, 'thead'));
+        const finish: Function = () => {
+            if (this.clearRowCheck) {
+                this.clearRowCallBack();
+                this.clearRowCheck = false;
+                if (this.selectRowCheck) {
+                    this.selectRowCallBack();
+                    this.selectRowCheck = false;
+                }
+            }
+        };
+        if (!data.length) { finish(); return; }
+        const args: RowDeselectingEventArgs = {
+            cancel: false, data: data.length === 1 ? data[0] : data, row: rows.length === 1 ? rows[0] : rows,
+            rowIndex: indexes[0], rowIndexes: indexes,
+            foreignKeyData: indexes.length === 1 && !headerTarget ? foreignKeyData[0] : foreignKeyData,
+            isInteracted: this.isInteracted,
+            isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
+        };
+        this.parent.trigger(events.rowDeselecting, args, (eventArgs: RowDeselectingEventArgs) => {
+            this.isCancelDeSelect = eventArgs.cancel;
+            if (eventArgs.cancel) { finish(); return; }
+            // Event handlers may select/protect records or redraw/recycle the original rows.
+            data = data.filter((record: Object) => includeProtected || !this.isProtectedData(record));
+            if (!data.length) { finish(); return; }
+            seen.clear();
+            data.forEach((record: Object) => seen.set(this.protectionKey(record), true));
+            const currentRows: Element[] = getRecordRows().filter((row: Element) =>
+                seen.has(this.protectionKey(this.getRowObj(row).data)));
+            indexes = currentRows.map((row: Element) => this.getRowObj(row).index);
+            foreignKeyData = currentRows.map((row: Element) => this.getRowObj(row).foreignKeyData);
+            args.data = data.length === 1 ? data[0] : data;
+            args.row = currentRows.length === 1 ? currentRows[0] : currentRows;
+            args.rowIndex = indexes[0];
+            args.rowIndexes = indexes;
+            args.foreignKeyData = indexes.length === 1 && !headerTarget ? foreignKeyData[0] : foreignKeyData;
+            if (!preservePersistedSelection) {
+                for (const record of data) {
+                    this.nonDeselectableRows.delete(this.protectionKey(record));
+                    this.updatePersistDelete(this.getPkValue(this.parent.getPrimaryKeyFieldNames()[0], record));
+                }
+            }
+            for (const row of currentRows) {
+                const obj: Row<Column> = this.getRowObj(row);
+                obj.isSelected = false;
+                row.removeAttribute('aria-selected');
+                this.addRemoveClassesForRow(row, false, true, 'e-selectionbackground', 'e-active');
+                this.updateCheckBoxes(row, false);
+                this.syncProtectedCheckbox(row, obj);
+            }
+            if (!preservePersistedSelection) {
+                this.virtualSelectedData = this.virtualSelectedData.filter((record: Object) => !seen.has(this.protectionKey(record)));
+                this.partialSelectedData = this.partialSelectedData.filter((record: Object) => !seen.has(this.protectionKey(record)));
+                this.partialSelectedRecordsCount = this.partialSelectedData.length;
+            }
+            this.selectedRecords = getRecordRows().filter((row: Element) => row.hasAttribute('aria-selected'));
+            this.selectedRowIndexes = this.selectedRecords.map((row: Element) => this.getRowObj(row).index);
+            this.isRowSelected = this.selectedRowIndexes.length > 0 || this.hasProtectedRows();
+            this.selectRowIndex(this.selectedRowIndexes.length ? this.selectedRowIndexes[this.selectedRowIndexes.length - 1] : -1);
+            this.setCheckAllState();
+            delete args.cancel;
+            this.parent.trigger(events.rowDeselected, args);
+            finish();
+        });
+    }
 
     private updatePersistCollection(selectedRow: Element, chkState: boolean): void {
+        if (!chkState && selectedRow && this.isProtectedData(this.getRowObj(selectedRow).data)) { return; }
         if (((this.parent.isRemote() && (this.parent.enableVirtualization || this.parent.isRowDomVirtualization() ||
         this.parent.enableInfiniteScrolling)) || this.parent.isPersistSelection || this.parent.selectionSettings.persistSelection &&
             this.parent.getPrimaryKeyFieldNames().length > 0) && !isNullOrUndefined(selectedRow)) {
@@ -869,9 +1235,13 @@ export class Selection implements IAction {
             this.selectedRowIndexes.push(startIndex);
             this.selectedRecords.push(selectedRow);
         }
+        const selectedObj: Row<Column> = this.getRowObj(selectedRow);
+        this.registerProtectedRecord(selectedObj.data, selectedObj.isSelectable !== false);
+        if (this.protectionEnabled()) { selectedObj.isSelected = true; }
         selectedRow.setAttribute('aria-selected', 'true');
         this.updatePersistCollection(selectedRow, true);
         this.updateCheckBoxes(selectedRow, true);
+        this.syncProtectedCheckbox(selectedRow, selectedObj);
         this.addRemoveClassesForRow(selectedRow, true, null, 'e-selectionbackground', 'e-active');
         if (!this.preventFocus || this.parent.isFocusFirstCell || this.isFocusLastCell) {
             let target: Element = this.focus.getPrevIndexes().cellIndex ?
@@ -911,7 +1281,7 @@ export class Selection implements IAction {
             if (span.classList.contains('e-rowselect')) {
                 span.classList.remove('e-spanclicked');
             }
-            if (this.parent.isPersistSelection || this.parent.isRemote()) {
+            if (!this.hasProtectedRows() && (this.parent.isPersistSelection || this.parent.isRemote())) {
                 this.persistSelectedData = [];
                 this.selectedRowState = {};
                 this.persistSelectedRecordsCount = 0;
@@ -935,9 +1305,16 @@ export class Selection implements IAction {
     /**
      * Deselects the currently selected rows.
      *
+     * @param {boolean} includeNonDeselectableRows - Include protected rows; defaults to false.
+     *
      * @returns {void}
      */
-    public clearRowSelection(): void {
+    public clearRowSelection(includeNonDeselectableRows?: boolean): void {
+        // Replay can leave ordinary persisted keys without a visible or protected selection.
+        if (this.hasProtectedRows() || (this.protectionEnabled() && this.parent.isPersistSelection)) {
+            this.clearProtectedSelection(includeNonDeselectableRows === true);
+            return;
+        }
         if (this.isRowSelected) {
             const rows: Element[] = this.parent.getDataRows();
             const data: Object[] = [];
@@ -1500,6 +1877,26 @@ export class Selection implements IAction {
             this.selectedRowCellIndexes.push({ rowIndex: rowCellIndex.rowIndex, cellIndexes: [rowCellIndex.cellIndex] });
         }
 
+    }
+
+    /**
+     * Reapplies the cell selection to the rendered cells after DOM virtualization re-renders the rows.
+     *
+     * @returns {void}
+     * @hidden
+     */
+    public restoreCellSelection(): void {
+        if (!this.isCellType() || !this.selectedRowCellIndexes.length) { return; }
+        for (const selected of this.selectedRowCellIndexes) {
+            if (!this.parent.getRowByIndex(selected.rowIndex)) { continue; }
+            for (const cellIndex of selected.cellIndexes) {
+                const cell: Element = this.parent.getCellFromIndex(selected.rowIndex, this.getColIndex(selected.rowIndex, cellIndex));
+                if (cell) {
+                    cell.classList.add('e-cellselectionbackground');
+                    cell.setAttribute('aria-selected', 'true');
+                }
+            }
+        }
     }
 
     /**
@@ -2860,6 +3257,7 @@ export class Selection implements IAction {
             { event: events.beforeFragAppend, handler: this.clearSelAfterRefresh },
             { event: events.columnPositionChanged, handler: this.columnPositionChanged },
             { event: events.contentReady, handler: this.initialEnd },
+            { event: events.contentReady, handler: this.reconcileProtectedRowsAfterRefresh },
             { event: events.rowsRemoved, handler: this.rowsRemoved },
             { event: events.headerRefreshed, handler: this.refreshHeader },
             { event: events.destroyAutoFillElements, handler: this.destroyAutoFillElements },
@@ -3006,7 +3404,7 @@ export class Selection implements IAction {
     }
 
     private hidePopUp(): void {
-        if (this.parent.element.querySelector('.e-gridpopup').getElementsByClassName('e-rowselect').length) {
+        if (this.parent.element.querySelector('.e-gridpopup') && this.parent.element.querySelector('.e-gridpopup').getElementsByClassName('e-rowselect').length) {
             (this.parent.element.querySelector('.e-gridpopup') as HTMLElement).style.display = 'none';
         }
     }
@@ -3083,6 +3481,13 @@ export class Selection implements IAction {
     }
 
     private setRowSelection(state: boolean): void {
+        if (!state && this.hasProtectedRows()) {
+            this.selectedRowState = {};
+            this.nonDeselectableRows.forEach((record: Object) => {
+                this.selectedRowState[this.getPkValue(this.parent.getPrimaryKeyFieldNames()[0], record)] = true;
+            });
+            return;
+        }
         if (!(this.parent.getDataModule().isRemote() || (!isNullOrUndefined(this.parent.dataSource)
             && (<{result: object[]}>this.parent.dataSource).result))) {
             if (state) {
@@ -3153,62 +3558,80 @@ export class Selection implements IAction {
     }
 
     private refreshPersistSelection(): void {
-        let rows: Element[] = this.parent.pinnedTopRecords.length || this.isLazyLoadGroup() ?
-            this.parent.getAllDataRows(true) : this.parent.getRows();
-        if (this.isLazyLoadGroup()) {
-            rows = rows.filter((row: Element) => !row.classList.contains('e-groupcaptionrow'));
-        }
-        this.totalRecordsCount = this.parent.getCurrentViewRecords().length;
-        if (this.parent.allowPaging) {
-            this.totalRecordsCount = this.parent.pageSettings.totalRecordsCount;
-        }
-        if (!isNullOrUndefined(rows) && rows.length > 0 && ((this.parent.isRemote() && (this.parent.enableVirtualization ||
-            this.parent.isRowDomVirtualization() || this.parent.enableInfiniteScrolling))
-            || this.parent.isPersistSelection || this.chkField)) {
-            const indexes: number[] = [];
-            for (let j: number = 0; j < rows.length; j++) {
-                const rowObj: Row<Column> = this.getRowObj(rows[parseInt(j.toString(), 10)]);
-                const pKey: string = rowObj ? rowObj.data ? this.getPkValue(this.primaryKey, rowObj.data) : null : null;
-                if (pKey === null) { return; }
-                if (this.isPartialSelection && !rowObj.isSelectable &&
-                    !Object.prototype.hasOwnProperty.call(this.selectedRowState, pKey)) { continue; }
-                let checkState: boolean;
-                const chkBox: HTMLInputElement = (rows[parseInt(j.toString(), 10)].querySelector('.e-checkselect') as HTMLInputElement);
-                if (this.selectedRowState[`${pKey}`] || (this.parent.checkAllRows === 'Check' && this.selectedRowState[`${pKey}`] &&
-                    this.totalRecordsCount === Object.keys(this.selectedRowState).length && this.chkAllCollec.indexOf(pKey) < 0)
-                    || (this.parent.checkAllRows === 'Uncheck' && this.chkAllCollec.indexOf(pKey) > 0 && !this.parent.selectedRowIndex)
-                    || (this.parent.checkAllRows === 'Intermediate' && !isNullOrUndefined(this.chkField) && rowObj.data[this.chkField])
-                ) {
-                    indexes.push(parseInt(rows[parseInt(j.toString(), 10)].getAttribute(literals.ariaRowIndex), 10) - 1);
-                    checkState = true;
-                } else {
-                    checkState = false;
-                    if (this.checkedTarget !== chkBox && this.parent.isCheckBoxSelection && chkBox) {
-                        removeAddCboxClasses(chkBox.nextElementSibling as HTMLElement, checkState);
+        // Capture replay intent for this operation only; deferred event completions must not
+        // borrow the legacy flag or grant preservation to a nested public selection/clear.
+        const preservePersistedSelection: boolean = this.protectionEnabled() && this.parent.isPersistSelection;
+        try {
+            this.restoreProtectedRows();
+            if (this.hasProtectedRows() && this.parent.isPersistSelection) {
+                this.nonDeselectableRows.forEach((record: Object) => {
+                    this.selectedRowState[this.getPkValue(this.parent.getPrimaryKeyFieldNames()[0], record)] = true;
+                });
+            }
+            let rows: Element[] = this.parent.pinnedTopRecords.length || this.isLazyLoadGroup() ?
+                this.parent.getAllDataRows(true) : this.parent.getRows();
+            if (this.isLazyLoadGroup()) {
+                rows = rows.filter((row: Element) => !row.classList.contains('e-groupcaptionrow'));
+            }
+            this.totalRecordsCount = this.parent.getCurrentViewRecords().length;
+            if (this.parent.allowPaging) {
+                this.totalRecordsCount = this.parent.pageSettings.totalRecordsCount;
+            }
+            if (!isNullOrUndefined(rows) && rows.length > 0 && ((this.parent.isRemote() && (this.parent.enableVirtualization ||
+                this.parent.isRowDomVirtualization() || this.parent.enableInfiniteScrolling))
+                || this.parent.isPersistSelection || this.chkField)) {
+                const indexes: number[] = [];
+                for (let j: number = 0; j < rows.length; j++) {
+                    const rowObj: Row<Column> = this.getRowObj(rows[parseInt(j.toString(), 10)]);
+                    const pKey: string = rowObj ? rowObj.data ? this.getPkValue(this.primaryKey, rowObj.data) : null : null;
+                    if (pKey === null) { return; }
+                    if (this.isPartialSelection && !rowObj.isSelectable &&
+                        !Object.prototype.hasOwnProperty.call(this.selectedRowState, pKey)) { continue; }
+                    let checkState: boolean;
+                    const chkBox: HTMLInputElement = (rows[parseInt(j.toString(), 10)].querySelector('.e-checkselect') as HTMLInputElement);
+                    if (this.selectedRowState[`${pKey}`] || (this.parent.checkAllRows === 'Check' && this.selectedRowState[`${pKey}`] &&
+                        this.totalRecordsCount === Object.keys(this.selectedRowState).length && this.chkAllCollec.indexOf(pKey) < 0)
+                        || (this.parent.checkAllRows === 'Uncheck' && this.chkAllCollec.indexOf(pKey) > 0 && !this.parent.selectedRowIndex)
+                        || (this.parent.checkAllRows === 'Intermediate' && !isNullOrUndefined(this.chkField) && rowObj.data[this.chkField])
+                    ) {
+                        indexes.push(parseInt(rows[parseInt(j.toString(), 10)].getAttribute(literals.ariaRowIndex), 10) - 1);
+                        checkState = true;
+                    } else {
+                        checkState = false;
+                        if (this.checkedTarget !== chkBox && this.parent.isCheckBoxSelection && chkBox) {
+                            removeAddCboxClasses(chkBox.nextElementSibling as HTMLElement, checkState);
+                        }
+                    }
+                    if (preservePersistedSelection && !checkState) {
+                        // Replaying an unselected row is not a remote deselection/exclusion.
+                        rowObj.isSelected = false;
+                    } else {
+                        this.updatePersistCollection(rows[parseInt(j.toString(), 10)], checkState);
                     }
                 }
-                this.updatePersistCollection(rows[parseInt(j.toString(), 10)], checkState);
+                this.persistSelectedRecordsCount = this.persistSelectedData.length &&
+                    this.getAvailableSelectedData(this.persistSelectedData).length;
+                if (this.isSingleSel() && indexes.length > 0) {
+                    this.selectRow(indexes[0], false);
+                } else {
+                    this.selectRowsWithCallback(indexes, undefined, preservePersistedSelection);
+                }
+            } else if (this.parent.isCheckBoxSelection && this.isLazyLoadPersistSelection()) {
+                this.persistSelectedRecordsCount = this.persistSelectedData.length &&
+                    this.getAvailableSelectedData(this.persistSelectedData).length;
+                this.selectedRecords = [];
+                if (!this.parent.allowPaging) {
+                    this.selectedRowIndexes = Object.keys(this.persistSelectedData).map((key: string) => parseInt(key, 10));
+                } else {
+                    this.selectedRowIndexes = [];
+                }
             }
-            this.persistSelectedRecordsCount = this.persistSelectedData.length &&
-                this.getAvailableSelectedData(this.persistSelectedData).length;
-            if (this.isSingleSel() && indexes.length > 0) {
-                this.selectRow(indexes[0], false);
-            } else {
-                this.selectRows(indexes);
+            if ((this.parent.isCheckBoxSelection || this.parent.selectionSettings.checkboxMode === 'ResetOnRowClick') &&
+                this.getCurrentBatchRecordChanges().length > 0) {
+                this.setCheckAllState();
             }
-        } else if (this.parent.isCheckBoxSelection && this.isLazyLoadPersistSelection()) {
-            this.persistSelectedRecordsCount = this.persistSelectedData.length &&
-                this.getAvailableSelectedData(this.persistSelectedData).length;
-            this.selectedRecords = [];
-            if (!this.parent.allowPaging) {
-                this.selectedRowIndexes = Object.keys(this.persistSelectedData).map((key: string) => parseInt(key, 10));
-            } else {
-                this.selectedRowIndexes = [];
-            }
-        }
-        if ((this.parent.isCheckBoxSelection || this.parent.selectionSettings.checkboxMode === 'ResetOnRowClick') &&
-            this.getCurrentBatchRecordChanges().length > 0) {
-            this.setCheckAllState();
+        } finally {
+            if (preservePersistedSelection) { this.isPrevRowSelection = false; }
         }
         if (this.parent.enableInfiniteScrolling && this.parent.infiniteScrollSettings.enableCountLessMode &&
             this.parent.isLastRecordLoaded && this.countLessTotalRecords === 0 &&
@@ -3263,6 +3686,9 @@ export class Selection implements IAction {
                 }
             }
         }
+        if (e.requestType === 'delete' && this.nonDeselectableRows.size) {
+            for (const record of e.data) { this.nonDeselectableRows.delete(this.protectionKey(record)); }
+        }
         if (e.requestType === 'delete' && this.parent.isPersistSelection) {
             const records: object[] = e.data;
             const data: Object[] = records.slice();
@@ -3298,6 +3724,7 @@ export class Selection implements IAction {
     }
 
     private onDataBound(): void {
+        this.protectionEnabled();
         const checkboxColumn: Column[] = this.parent.getColumns().filter((col: Column) => col.type === 'checkbox');
         if (checkboxColumn.length && !this.parent.getDataModule().isRemote()) {
             this.gridCurrentRecord = this.getData();
@@ -3316,7 +3743,7 @@ export class Selection implements IAction {
             if (this.parent.checkAllRows === 'Intermediate') {
                 this.setRowSelection(true);
             }
-            else if (this.parent.checkAllRows === 'Uncheck') {
+            else if (this.parent.checkAllRows === 'Uncheck' && !(this.protectionEnabled() && this.parent.isPersistSelection)) {
                 this.setRowSelection(false);
             }
         }
@@ -3327,7 +3754,7 @@ export class Selection implements IAction {
         if (this.parent.enableVirtualization || this.parent.isRowDomVirtualization()) {
             this.setCheckAllState();
         }
-        if (this.parent.isPersistSelection || (this.contentRenderer &&
+        if (this.hasProtectedRows() || this.parent.isPersistSelection || (this.contentRenderer &&
             isNullOrUndefined((this.contentRenderer as VirtualContentRenderer).requestType) && this.parent.isRemote() &&
             (this.parent.enableVirtualization || this.parent.isRowDomVirtualization() || this.parent.enableInfiniteScrolling))) {
             this.refreshPersistSelection();
@@ -3350,6 +3777,7 @@ export class Selection implements IAction {
     }
 
     private updatePersistSelectedData(checkState: boolean): void {
+        if (!checkState && this.hasProtectedRows()) { return; }
         if (this.parent.isPersistSelection || (this.parent.isRemote() && (this.parent.enableVirtualization ||
             this.parent.isRowDomVirtualization() || this.parent.enableInfiniteScrolling))) {
             let nonFilteredSelectedData: object[] = [];
@@ -3380,8 +3808,8 @@ export class Selection implements IAction {
                     || (!isNullOrUndefined(this.parent.dataSource) && (<{result: object[]}>this.parent.dataSource).result))
                      && !this.isPartialSelection ?
                     this.parent.groupSettings.columns.length ? (<{ records?: Object[] }>this.getData()).records.slice() :
-                        this.getData().slice() : this.isPartialSelection ? this.parent.partialSelectedRecords.slice() :
-                        this.persistSelectedData;
+                        this.getData().slice() : this.isPartialSelection && this.parent.partialSelectedRecords.length ?
+                        this.parent.partialSelectedRecords.slice() : this.persistSelectedData;
                 if (nonFilteredSelectedData.length > 0) {
                     for (let i: number = 0; i < nonFilteredSelectedData.length; i++) {
                         this.persistSelectedData.push(nonFilteredSelectedData[parseInt(i.toString(), 10)]);
@@ -3401,39 +3829,49 @@ export class Selection implements IAction {
             this.isRowSelected = this.selectedRowIndexes.length && true;
         }
         if (checkState && this.getCurrentBatchRecordChanges().length) {
-            this.parent.checkAllRows = 'Check';
-            this.updatePersistSelectedData(checkState);
-            this.selectRowsByRange(
-                cRenderer.getVirtualRowIndex(0),
-                cRenderer.getVirtualRowIndex(this.getCurrentBatchRecordChanges().length - 1 + this.parent.pinnedTopRowModels.length));
-            if (this.checkVirtualCheckBox() && !this.parent.isPersistSelection) {
-                this.virtualSelectedData = this.virtualCheckBoxData().slice();
-                this.selectedRowIndexes = Object.keys(this.virtualSelectedData).map((key: string) => parseInt(key, 10));
-            } else if (!(this.parent.getDataModule().isRemote() || (!isNullOrUndefined(this.parent.dataSource)
-                && (<{result: object[]}>this.parent.dataSource).result)) && this.parent.isCheckBoxSelection && this.isPartialSelection &&
-                !this.isLazyLoadPersistSelection() && this.parent.partialSelectedRecords.length > 0) {
-                if (this.parent.isPersistSelection) {
-                    this.persistSelectedData = [...this.parent.partialSelectedRecords];
-                    this.persistSelectedRecordsCount = this.persistSelectedData.length &&
-                        this.getAvailableDataCount(this.persistSelectedData);
-                } else {
-                    this.partialSelectedData = [...this.parent.partialSelectedRecords];
-                    this.partialSelectedRecordsCount = this.partialSelectedData.length &&
-                        this.getAvailableDataCount(this.partialSelectedData);
+            const startIndex: number = cRenderer.getVirtualRowIndex(0);
+            const endIndex: number = cRenderer.getVirtualRowIndex(
+                this.getCurrentBatchRecordChanges().length - 1 + this.parent.pinnedTopRowModels.length);
+            this.selectRowsWithCallback(this.getCollectionFromIndexes(startIndex, endIndex), () => {
+                this.parent.checkAllRows = 'Check';
+                this.updatePersistSelectedData(checkState);
+                if (this.checkVirtualCheckBox() && !this.parent.isPersistSelection) {
+                    this.virtualSelectedData = this.virtualCheckBoxData().slice();
+                    this.selectedRowIndexes = Object.keys(this.virtualSelectedData).map((key: string) => parseInt(key, 10));
+                } else if (!(this.parent.getDataModule().isRemote() || (!isNullOrUndefined(this.parent.dataSource)
+                    && (<{result: object[]}>this.parent.dataSource).result)) && this.parent.isCheckBoxSelection &&
+                    this.isPartialSelection && !this.isLazyLoadPersistSelection() && this.parent.partialSelectedRecords.length > 0) {
+                    if (this.parent.isPersistSelection) {
+                        this.persistSelectedData = [...this.parent.partialSelectedRecords];
+                        this.persistSelectedRecordsCount = this.persistSelectedData.length &&
+                            this.getAvailableDataCount(this.persistSelectedData);
+                    } else {
+                        this.partialSelectedData = [...this.parent.partialSelectedRecords];
+                        this.partialSelectedRecordsCount = this.partialSelectedData.length &&
+                            this.getAvailableDataCount(this.partialSelectedData);
+                    }
+                } else if (this.isLazyLoadPersistSelection() && !this.parent.isRemote()) {
+                    this.persistSelectedData = this.isPartialSelection ? [...this.parent.partialSelectedRecords] :
+                        this.getData()['records'].slice();
+                    if (!this.parent.allowPaging) {
+                        this.selectedRowIndexes = this.isPartialSelection ? [...this.parent.partialSelectedIndexes] :
+                            Object.keys(this.persistSelectedData).map((key: string) => parseInt(key, 10));
+                    }
+                } else if (this.parent.isPersistSelection && this.parent.isRemote() &&
+                    this.parent.groupSettings.columns.length && this.parent.groupSettings.enableLazyLoading) {
+                    this.persistSelectedData = (this.parent.enableVirtualization ? this.parent.lazyLoadRender as GroupLazyLoadRenderer :
+                        (this.parent.contentModule as GroupLazyLoadRenderer)).getAllPagesData();
+                    this.persistSelectedRecordsCount = this.persistSelectedData.length;
                 }
-            } else if (this.isLazyLoadPersistSelection() && !this.parent.isRemote()) {
-                this.persistSelectedData = this.isPartialSelection ? [...this.parent.partialSelectedRecords] :
-                    this.getData()['records'].slice();
-                if (!this.parent.allowPaging) {
-                    this.selectedRowIndexes = this.isPartialSelection ? [...this.parent.partialSelectedIndexes] :
-                        Object.keys(this.persistSelectedData).map((key: string) => parseInt(key, 10));
+                if (this.parent.isPersistSelection && this.protectionEnabled()) {
+                    for (const record of this.persistSelectedData) {
+                        const isSelectable: boolean = typeof this.parent.isRowSelectable !== 'function' ||
+                            (this.parent.isRowSelectable as Function)(record, this.parent.getColumns());
+                        this.registerProtectedRecord(record, isSelectable);
+                    }
                 }
-            } else if (this.parent.isPersistSelection && this.parent.isRemote() &&
-                this.parent.groupSettings.columns.length && this.parent.groupSettings.enableLazyLoading) {
-                this.persistSelectedData = (this.parent.enableVirtualization ? this.parent.lazyLoadRender as GroupLazyLoadRenderer :
-                    (this.parent.contentModule as GroupLazyLoadRenderer)).getAllPagesData();
-                this.persistSelectedRecordsCount = this.persistSelectedData.length;
-            }
+            }, this.parent.isPersistSelection && this.protectionEnabled());
+            this.selectRowIndex(endIndex);
         } else {
             this.parent.checkAllRows = 'Uncheck';
             this.updatePersistSelectedData(checkState);
@@ -3824,6 +4262,9 @@ export class Selection implements IAction {
                     addClass([spanEle], ['e-stop']);
                     this.parent.checkAllRows = 'Intermediate';
                     input.indeterminate = true;
+                }
+                if (this.parent.checkAllRows === 'Check' || this.parent.checkAllRows === 'Uncheck') {
+                    this.chkAllCollec = [];
                 }
                 if ((this.parent.isEdit && !(this.parent.editModule && this.parent.editModule.editModule &&
                     this.parent.editModule.editModule['initialRender']) && !this.parent.isPersistSelection) ||
@@ -4487,6 +4928,14 @@ export class Selection implements IAction {
         } else if ((this.parent.enableVirtualization || this.parent.isRowDomVirtualization() || this.parent.enableInfiniteScrolling)
             && this.parent.isRemote() && this.isPartialSelection && !this.parent.isPersistSelection) {
             selectedData = this.persistSelectedData;
+        }
+        if (this.hasProtectedRows()) {
+            selectedData = selectedData.slice();
+            const keys: Map<string, boolean> = new Map<string, boolean>();
+            selectedData.forEach((record: Object) => keys.set(this.protectionKey(record), true));
+            this.nonDeselectableRows.forEach((record: Object, key: string) => {
+                if (!keys.has(key)) { selectedData.push(record); }
+            });
         }
         return selectedData;
     }

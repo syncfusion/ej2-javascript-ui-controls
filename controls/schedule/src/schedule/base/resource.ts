@@ -26,6 +26,7 @@ export class ResourceBase {
     public resourceCollection: ResourcesModel[] = [];
     public lastResourceLevel: TdData[];
     public renderedResources: TdData[];
+    public fixedResourceLevel: TdData[] = [];
     public expandedResources: TdData[];
     private colorIndex: number;
     private resourceTreeLevel: TdData[];
@@ -54,18 +55,19 @@ export class ResourceBase {
         tr.appendChild(resColTd);
     }
 
-    public hideResourceRows(tBody: Element): void {
+    public hideResourceRows(tBody: Element, rows?: TdData[]): void {
         if (this.resourceCollection.length <= 1 || this.parent.virtualScrollModule) {
             return;
         }
-        const trCount: number = this.lastResourceLevel.length;
+        const list: TdData[] = rows || this.lastResourceLevel;
+        const trCount: number = list.length;
         for (let i: number = 0; i < trCount; i++) {
-            const resData: Record<string, any> = this.lastResourceLevel[parseInt(i.toString(), 10)].resourceData;
-            const res: ResourcesModel = this.lastResourceLevel[parseInt(i.toString(), 10)].resource;
+            const resData: Record<string, any> = list[parseInt(i.toString(), 10)].resourceData;
+            const res: ResourcesModel = list[parseInt(i.toString(), 10)].resource;
             if (resData.ClassName === cls.RESOURCE_PARENT_CLASS && !resData[res.expandedField] &&
                 !isNullOrUndefined(resData[res.expandedField])) {
                 const trCollection: HTMLElement[] = [].slice.call(tBody.children);
-                const slicedCollection: HTMLElement[] = trCollection.slice(i + 1, i + (parseInt(resData.Count as string, 10) + 1));
+                const slicedCollection: HTMLElement[] = trCollection.slice(i + 1, i + (util.getDescendantCount(list, i) + 1));
                 addClass(slicedCollection, cls.HIDDEN_CLASS);
             }
         }
@@ -82,7 +84,8 @@ export class ResourceBase {
         const tBody: Element = tbl.querySelector('tbody');
         let resData: TdData[] = this.generateTreeData(true) as TdData[];
         this.countCalculation(resColl.slice(0, -2), resColl.slice(0, -1));
-        this.renderedResources = this.lastResourceLevel;
+        this.splitFixedRows();
+        resData = this.renderedResources;
         if (this.parent.virtualScrollModule) {
             const resourceCount: number = this.parent.virtualScrollModule.getRenderedCount();
             this.setExpandedResources();
@@ -101,7 +104,16 @@ export class ResourceBase {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const temp: TdData[] = this.generateTreeData(true) as TdData[];
         this.countCalculation(resColl.slice(0, -2), resColl.slice(0, -1));
-        this.renderedResources = this.lastResourceLevel;
+        this.splitFixedRows();
+    }
+
+    private splitFixedRows(): void {
+        this.fixedResourceLevel = this.parent.fixedRowsModule ? this.parent.fixedRowsModule.getFixedRows(this.lastResourceLevel) : [];
+        this.renderedResources = this.fixedResourceLevel.length === 0 ? this.lastResourceLevel :
+            this.lastResourceLevel.filter((row: TdData) => this.fixedResourceLevel.indexOf(row) < 0);
+        if (!this.parent.fixedRowsModule && this.lastResourceLevel.some((row: TdData) => !!row.resourceData[row.resource.fixedField])) {
+            this.parent.warnFixedRowsModule();
+        }
     }
 
     public setExpandedResources(): void {
@@ -109,7 +121,9 @@ export class ResourceBase {
         for (let i: number = 0; i < this.lastResourceLevel.length; i++) {
             const resource: Record<string, any> = this.lastResourceLevel[parseInt(i.toString(), 10)].resourceData;
             const count: number = resource.Count as number;
-            resources.push(this.lastResourceLevel[parseInt(i.toString(), 10)]);
+            if (this.fixedResourceLevel.indexOf(this.lastResourceLevel[parseInt(i.toString(), 10)]) < 0) {
+                resources.push(this.lastResourceLevel[parseInt(i.toString(), 10)]);
+            }
             const isExpanded: boolean = resource[this.lastResourceLevel[parseInt(i.toString(), 10)].resource.expandedField] as boolean;
             if (!isNullOrUndefined(isExpanded) && !isExpanded && count > 0) {
                 i = i + count;
@@ -139,7 +153,8 @@ export class ResourceBase {
                 extend(resData[parseInt(i.toString(), 10)].resourceData, { ClassName: cls.RESOURCE_PARENT_CLASS });
                 this.renderedResources[parseInt(i.toString(), 10)].className = [cls.RESOURCE_PARENT_CLASS];
             }
-            left = (rIndex * this.leftPixel) + 'px';
+            const indentBase: number = this.parent.fixedRowsModule ? this.parent.fixedRowsModule.getIndentBase(resData[parseInt(i.toString(), 10)]) : 0;
+            left = (Math.max(rIndex - indentBase, 0) * this.leftPixel) + 'px';
             if (resData[parseInt(i.toString(), 10)].resourceData.ClassName as string === cls.RESOURCE_PARENT_CLASS
                 && !isNullOrUndefined(resData[parseInt(i.toString(), 10)].resourceData.Count) && (resData[parseInt(i.toString(), 10)].resourceData.Count > 0)) {
                 let iconClass: string;
@@ -162,7 +177,8 @@ export class ResourceBase {
             ntd.setAttribute(
                 'aria-label',
                 (resData[parseInt(i.toString(), 10)].resourceData[resData[parseInt(i.toString(), 10)].resource.textField] as string)
-                + ' ' + this.parent.localeObj.getConstant('resource'));
+                + ' ' + this.parent.localeObj.getConstant('resource')
+                + (this.fixedResourceLevel.indexOf(resData[parseInt(i.toString(), 10)]) > -1 ? ', ' + this.parent.localeObj.getConstant('pinned') : ''));
             if (!this.parent.activeViewOptions.resourceHeaderTemplate) {
                 this.setMargin(ntd.querySelector('.' + cls.RESOURCE_TEXT_CLASS) as HTMLElement, left);
             }
@@ -257,20 +273,29 @@ export class ResourceBase {
         const workCellCollection: HTMLTableRowElement[] = [];
         const headerRowCollection: HTMLTableRowElement[] = [];
         let pNode: boolean;
-        const clickedRes: Record<string, any> = this.lastResourceLevel[parseInt(index.toString(), 10)].resourceData as Record<string, any>;
-        const resRows: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.RESOURCE_COLUMN_WRAP_CLASS + ' ' + 'tr'));
-        const contentRows: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CONTENT_WRAP_CLASS + ' ' + 'tbody tr'));
-        const eventRows: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CONTENT_WRAP_CLASS + ' .' + cls.APPOINTMENT_CONTAINER_CLASS));
-        for (let j: number = 0; j < clickedRes.Count; j++) {
-            rowCollection.push(resRows[index + j + 1] as HTMLTableRowElement);
-            workCellCollection.push(contentRows[index + j + 1] as HTMLTableRowElement);
-            headerRowCollection.push(eventRows[index + j + 1] as HTMLTableRowElement);
+        const clicked: TdData = this.lastResourceLevel[parseInt(index.toString(), 10)];
+        const inFixed: boolean = this.fixedResourceLevel.indexOf(clicked) > -1;
+        // The fixed block and the scrolling region are separate tables, so rows are addressed inside their own region.
+        const clonedCollection: TdData[] = inFixed ? this.fixedResourceLevel :
+            this.lastResourceLevel.filter((row: TdData) => this.fixedResourceLevel.indexOf(row) < 0);
+        const position: number = clonedCollection.indexOf(clicked);
+        const clickedRes: Record<string, any> = clicked.resourceData as Record<string, any>;
+        const resSelector: string = '.' + (inFixed ? cls.FIXED_RESOURCE_WRAP_CLASS : cls.RESOURCE_COLUMN_WRAP_CLASS);
+        const contentSelector: string = '.' + (inFixed ? cls.FIXED_CONTENT_WRAP_CLASS : cls.CONTENT_WRAP_CLASS);
+        const resRows: Element[] = [].slice.call(this.parent.element.querySelectorAll(resSelector + ' tr'));
+        const contentRows: Element[] = [].slice.call(this.parent.element.querySelectorAll(contentSelector + ' tbody tr'));
+        const eventRows: Element[] = [].slice.call(
+            this.parent.element.querySelectorAll(contentSelector + ' .' + cls.APPOINTMENT_CONTAINER_CLASS));
+        const count: number = util.getDescendantCount(clonedCollection, position);
+        for (let j: number = 0; j < count; j++) {
+            rowCollection.push(resRows[position + j + 1] as HTMLTableRowElement);
+            workCellCollection.push(contentRows[position + j + 1] as HTMLTableRowElement);
+            headerRowCollection.push(eventRows[position + j + 1] as HTMLTableRowElement);
         }
-        const clonedCollection: TdData[] = this.lastResourceLevel;
         for (let i: number = 0; i < rowCollection.length; i++) {
             let expanded: boolean = true;
+            clickedRes[clicked.resource.expandedField] = !hide;
             pNode = rowCollection[parseInt(i.toString(), 10)].children[0].classList.contains(cls.RESOURCE_PARENT_CLASS);
-            clonedCollection[parseInt(index.toString(), 10)].resourceData[clonedCollection[parseInt(index.toString(), 10)].resource.expandedField] = !hide;
             if (hide) {
                 if (pNode) {
                     const trElem: Element = rowCollection[parseInt(i.toString(), 10)].querySelector('.' + cls.RESOURCE_TREE_ICON_CLASS);
@@ -283,12 +308,14 @@ export class ResourceBase {
                 }
             } else {
                 if (pNode) {
-                    const rowIndex: number = rowCollection[parseInt(i.toString(), 10)].rowIndex;
-                    if (!clonedCollection[parseInt(rowIndex.toString(), 10)].resourceData[clonedCollection[parseInt(rowIndex.toString(), 10)].resource.expandedField]
-                        && !isNullOrUndefined(clonedCollection[parseInt(rowIndex.toString(), 10)].resourceData[clonedCollection[parseInt(rowIndex.toString(), 10)].resource.expandedField])) {
-                        rowCollection.splice(i + 1, (parseInt(clonedCollection[parseInt(rowIndex.toString(), 10)].resourceData.Count as string, 10)));
-                        workCellCollection.splice(i + 1, (parseInt(clonedCollection[parseInt(rowIndex.toString(), 10)].resourceData.Count as string, 10)));
-                        headerRowCollection.splice(i + 1, (parseInt(clonedCollection[parseInt(rowIndex.toString(), 10)].resourceData.Count as string, 10)));
+                    const rowIndex: number = clonedCollection.map((row: TdData) => row.groupIndex)
+                        .indexOf(parseInt(rowCollection[parseInt(i.toString(), 10)].children[0].getAttribute('data-group-index'), 10));
+                    const rowData: TdData = clonedCollection[parseInt(rowIndex.toString(), 10)];
+                    if (!rowData.resourceData[rowData.resource.expandedField] && !isNullOrUndefined(rowData.resourceData[rowData.resource.expandedField])) {
+                        const hiddenCount: number = util.getDescendantCount(clonedCollection, rowIndex);
+                        rowCollection.splice(i + 1, hiddenCount);
+                        workCellCollection.splice(i + 1, hiddenCount);
+                        headerRowCollection.splice(i + 1, hiddenCount);
                         expanded = false;
                     }
                     if (expanded) {
@@ -402,6 +429,9 @@ export class ResourceBase {
         const treeCollection: ResourceDetails[] = [];
         const resTreeColl: TdData[] = [];
         let groupIndex: number = 0;
+        if (isTimeLine) {
+            this.fixedResourceLevel = [];
+        }
         for (let i: number = 0, len: number = this.resourceTreeLevel.length; i < len; i++) {
             const treeHandler: CallbackFunction = (treeLevel: TreeSlotData, index: number, levelId: string): ResourceDetails => {
                 const resource: ResourcesModel = this.resourceCollection[parseInt(index.toString(), 10)];
@@ -450,6 +480,9 @@ export class ResourceBase {
         }
         if (isTimeLine) {
             this.lastResourceLevel = resTreeColl;
+            if (this.parent.fixedRowsModule) {
+                this.parent.fixedRowsModule.updateFromData(resTreeColl);
+            }
             return resTreeColl;
         } else {
             return treeCollection;
@@ -576,6 +609,7 @@ export class ResourceBase {
             endHourField: resource.endHourField,
             workDaysField: resource.workDaysField,
             expandedField: resource.expandedField,
+            fixedField: resource.fixedField,
             cssClassField: resource.cssClassField
         };
         return resourceObj;

@@ -15,3 +15,8 @@ export * from './header-rows-model';
 export * from './toolbar-model';
 export * from './current-time-indicator-settings-model';
 export * from './scheduler-webmcp-settings-model';
+export * from './event-spacing-model';
+export * from './fixed-rows-settings-model';
+export * from './summary-row-model';
+export * from './summary-column-model';
+export * from './group-summary-model';

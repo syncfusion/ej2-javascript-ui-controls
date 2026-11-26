@@ -579,6 +579,8 @@ export const GRID_EXCEL_EXPORT: string = 'e-pivotview-excel-export';
 /** @hidden */
 export const GRID_CSV_EXPORT: string = 'e-pivotview-csv-export';
 /** @hidden */
+export const GRID_HTML_EXPORT: string = 'e-export-html';
+/** @hidden */
 export const GRID_PNG_EXPORT: string = 'e-pivotview-png-export';
 /** @hidden */
 export const GRID_JPEG_EXPORT: string = 'e-pivotview-jpeg-export';
@@ -880,3 +882,14 @@ export const TABULAR_GROUP_ROWS: string = 'e-tabular-group-rows';
 export const TABULAR_GROUP_ROWS_WITH_FIELDS: string = 'e-tabular-group-rows-with-fields';
 /** @hidden */
 export const TABULAR_LAYOUT_HEADER: string = 'e-tabular-layout-header';
+
+/** @hidden */
+export const FULL_SCREEN: string = 'e-pivotview-fullscreen';
+/** @hidden */
+export const FULL_SCREEN_OVERFLOW: string = 'e-pivotview-overflow';
+/** @hidden */
+export const FULL_SCREEN_ICON: string = 'e-full-screen';
+/** @hidden */
+export const EXIT_FULL_SCREEN_ICON: string = 'e-exit-full-screen';
+/** @hidden */
+export const FULL_SCREEN_STATUS: string = 'e-pivotview-fullscreen-status';

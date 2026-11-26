@@ -79,15 +79,6 @@ function findNodeCrypto(): RandomHost | undefined {
     } catch {
         // continue to require fallback
     }
-    try {
-        // eslint-disable-next-line no-eval
-        const req: unknown = eval('require');
-        if (isRequireFn(req)) {
-            return nodeRandomBytes(req.call(undefined, 'crypto'));
-        }
-    } catch {
-        return undefined;
-    }
     return undefined;
 }
 

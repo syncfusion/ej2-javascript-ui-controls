@@ -1,5 +1,5 @@
 import { ChartLocation, ColorValue, RectOption, isCollide, isOverlap, LabelLocation, rotateTextSize } from '../../common/utils/helper';
-import { markerAnimate, appendChildElement, getVisiblePoints, getMinPointsDelta } from '../../common/utils/helper';
+import { markerAnimate, appendChildElement, getVisiblePoints } from '../../common/utils/helper';
 import { getLabelText, convertHexToColor, calculateRect, textElement, colorNameToHex, animateTextElement } from '../../common/utils/helper';
 import { Chart } from '../chart';
 import { Size, measureText, TextOption, Rect, SvgRenderer, CanvasRenderer, PathOption } from '@syncfusion/ej2-svg-base';
@@ -7,6 +7,7 @@ import { BorderModel, MarginModel, FontModel, SmartLabelSettingsModel, Connector
 import { DataLabelSettingsModel, MarkerSettingsModel } from '../series/chart-series-model';
 import { ErrorBarDirection } from '../utils/enum';
 import { Series, Points } from './chart-series';
+import { getSideBySideInterval } from './column-base';
 import { ITextRenderEventArgs } from '../../chart/model/chart-interface';
 import { textRender } from '../../common/model/constants';
 import {
@@ -1262,7 +1263,7 @@ export class DataLabel {
                     const pointSpacing: number = (series.columnWidth === null || isNaN(+series.columnWidth))
                         ? 0.7
                         : Math.min(series.columnWidth, 1);
-                    const minimumPointDelta: number = getMinPointsDelta(series.xAxis, series.chart.visibleSeries);
+                    const minimumPointDelta: number = getSideBySideInterval(series.xAxis, series.chart.visibleSeries);
                     const columnWidth: number = minimumPointDelta * pointSpacing;
                     const seriesSpacing: number = series.chart.enableSideBySidePlacement ? series.columnSpacing : 0;
                     let startOffset: number = fractionStart * columnWidth;

@@ -94,7 +94,8 @@ export class VerticalView extends ViewBase implements IRenderer {
         const timeCells: HTMLElement = this.getLeftPanelElement();
         const content: HTMLElement = this.getScrollableElement() as HTMLElement;
         const header: HTMLElement = this.getDatesHeaderElement();
-        const scrollerHeight: number = this.parent.element.offsetHeight - headerBarHeight - header.offsetHeight;
+        const scrollerHeight: number = this.parent.element.offsetHeight - headerBarHeight - header.offsetHeight -
+            (this.parent.summaryModule ? this.parent.summaryModule.getRowHeight() : 0);
         this.setContentHeight(content, timeCells, scrollerHeight);
         this.setColWidth(content);
         const scrollBarWidth: number = util.getScrollBarWidth();
@@ -140,6 +141,9 @@ export class VerticalView extends ViewBase implements IRenderer {
     }
 
     public setContentHeight(element: HTMLElement, leftPanelElement: HTMLElement, height: number): void {
+        if (this.parent.fixedRowsModule && this.parent.height !== 'auto') {
+            height = this.parent.fixedRowsModule.adjustHeight(height);
+        }
         if (this.parent.isAdaptive && !this.isTimelineView()) {
             element.style.height = (this.parent.height === 'auto') ? 'auto' : formatUnit(height);
         } else {

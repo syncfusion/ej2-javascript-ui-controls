@@ -37,9 +37,10 @@ export const NOTES_CREATE_CONTENT_TYPE: string = NOTES_SLIDE_CONTENT_TYPE as 'ap
  * a:p/a:r/a:t (empty) ```
  * @internal
  * @param {string} namespace - Actual source slide PresentationML dialect.
+ * @param {number} slideNumber - 1-based number cached in the default slide-number field.
  * @returns {Uint8Array} The result.
  */
-export function buildMinimalNotesSlidePartBytes(namespace: string = PML_NS): Uint8Array {
+export function buildMinimalNotesSlidePartBytes(namespace: string = PML_NS, slideNumber: number = 1): Uint8Array {
     if (!officeRootNamespace(namespace, PML_NS)) { throw new InvalidPackageError('Invalid notes source dialect', {}); }
     // IDs 1 (group), 2 (sldImg), 3 (body) — stable within this new part only.
     const xml: string = '<?xml version="1.0" encoding="UTF-8"?>' +
@@ -62,6 +63,17 @@ export function buildMinimalNotesSlidePartBytes(namespace: string = PML_NS): Uin
         '</p:nvSpPr>' +
         '<p:spPr/>' +
         '<p:txBody><a:bodyPr/><a:lstStyle/><a:p><a:r><a:t></a:t></a:r></a:p></p:txBody>' +
+        '</p:sp>' +
+        '<p:sp>' +
+        '<p:nvSpPr>' +
+        '<p:cNvPr id="4" name="Slide Number Placeholder 3"/>' +
+        '<p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr>' +
+        '<p:nvPr><p:ph type="sldNum" sz="quarter" idx="5"/></p:nvPr>' +
+        '</p:nvSpPr>' +
+        '<p:spPr/>' +
+        '<p:txBody><a:bodyPr/><a:lstStyle/><a:p>' +
+        '<a:fld id="{B5F0D3C1-6A5E-4C0B-9E0A-2D3F5B7A9C11}" type="slidenum"><a:rPr lang="en-US"/>' +
+        `<a:t>${String(slideNumber)}</a:t></a:fld><a:endParaRPr lang="en-US"/></a:p></p:txBody>` +
         '</p:sp>' +
         '</p:spTree></p:cSld>' +
         '</p:notes>';

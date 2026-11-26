@@ -174,13 +174,17 @@ export class InlineEdit {
         const saveObject: Record<string, any> = this.parent.eventBase.cloneEventObject(saveObj, start, end, count, false, false);
         const timelineView: TimelineEvent = new TimelineEvent(this.parent, this.parent.activeViewOptions.timeScale.enable ? 'hour' : 'day');
         timelineView.dateRender = this.parent.activeView.renderDates;
-        timelineView.eventContainers = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CONTAINER_CLASS));
+        timelineView.eventContainers = this.parent.fixedRowsModule ?
+            this.parent.fixedRowsModule.getEventContainers(this.parent.element, cls.APPOINTMENT_CONTAINER_CLASS) :
+            [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CONTAINER_CLASS));
         const workCell: HTMLElement = this.parent.element.querySelector('.' + cls.WORK_CELLS_CLASS) as HTMLElement;
         timelineView.inlineValue = this.parent.allowInline;
         timelineView.cellWidth = workCell.offsetWidth;
         timelineView.cellHeight = workCell.offsetHeight;
-        const dayLength: number = this.parent.element.querySelectorAll('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr').length === 0 ?
-            0 : this.parent.element.querySelectorAll('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr')[0].children.length;
+        const contentRows: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr'));
+        const workRow: HTMLElement = contentRows.filter((row: HTMLElement) => !row.classList.contains(cls.GROUP_SUMMARY_ROW_CLASS))[0] ||
+            contentRows[0];
+        const dayLength: number = contentRows.length === 0 ? 0 : workRow.children.length;
         timelineView.slotsPerDay = dayLength / timelineView.dateRender.length;
         timelineView.eventHeight = this.parent.getElementHeightFromClass(timelineView.element, cls.APPOINTMENT_CLASS);
         timelineView.renderEvents(saveObject, resIndex);

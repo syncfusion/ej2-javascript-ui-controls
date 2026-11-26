@@ -9,7 +9,7 @@ import { Query, DataManager } from '@syncfusion/ej2-data';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
 import * as events from '../base/constant';
 import * as literals from '../base/string-literals';
-import { isAngularMatContainer, toggleFilterUI } from '../base/util';
+import { isAngularMatContainer, toggleFilterUI, getFilterDlgElement } from '../base/util';
 
 /**
  * `filter operators` render boolean column.
@@ -26,6 +26,7 @@ export class FlMenuOptrUI {
     private customOptr: { [key: string]: Object }[];
     private optrData: Object;
     private dialogObj: Dialog;
+    private dlgElement: Element;
     private ddOpen: Function = this.dropDownOpen.bind(this);
 
     constructor(parent?: IGrid, customFltrOperators?: Object, serviceLocator?: ServiceLocator, filterSettings?: FilterSettings) {
@@ -51,6 +52,7 @@ export class FlMenuOptrUI {
     // eslint-disable-next-line max-len
     public renderOperatorUI(dlgConetntEle: Element, target: Element, column: Column, dlgObj: Dialog, operator?: { [key: string]: Object }[]): void {
         this.dialogObj = dlgObj;
+        this.dlgElement = getFilterDlgElement(dlgObj, dlgConetntEle);
         const optr: string = column.type + 'Operator';
         this.optrData = this.customOptr = !isNullOrUndefined(operator) ? operator :
             (!isNullOrUndefined(this.parent.filterSettings.operators) && !isNullOrUndefined(this.parent.filterSettings.operators[`${optr}`])) ?
@@ -68,7 +70,7 @@ export class FlMenuOptrUI {
             enableRtl: this.parent.enableRtl,
             text: selectedValue,
             change: () => {
-                const valInput: HTMLInputElement = document.querySelector('.e-flmenu-valuediv').querySelector('input');
+                const valInput: HTMLInputElement = this.dlgElement.querySelector('.e-flmenu-valuediv').querySelector('input');
                 if (this.dropOptr.value === 'isempty' || this.dropOptr.value === 'isnotempty' ||
                     this.dropOptr.value === 'isnotnull' || this.dropOptr.value === 'isnull') {
                     if (!isNullOrUndefined(valInput['ej2_instances'])) {
@@ -83,12 +85,12 @@ export class FlMenuOptrUI {
                         valInput.removeAttribute('disabled');
                     }
                 }
-                toggleFilterUI(this.dropOptr.value as string, column.uid, column, column.type, dlgObj);
+                toggleFilterUI(this.dropOptr.value as string, column.uid, column, column.type, dlgObj, this.dlgElement);
             }
         });
         this.dropOptr.isAngular = isAngularMatContainer(this.parent);
         this.dropOptr.addEventListener(literals['open'], this.ddOpen);
-        this.dropOptr.appendTo('#' + column.uid + '-floptr');
+        this.dropOptr.appendTo(optrInput as HTMLElement);
     }
 
     private renderResponsiveDropDownList(args: { popup: Popup }): void {
@@ -96,7 +98,7 @@ export class FlMenuOptrUI {
     }
 
     private dropDownOpen(args: { popup: Popup }): void {
-        args.popup.element.style.zIndex = (this.dialogObj.zIndex + 1).toString();
+        args.popup.element.style.zIndex = ((this.dialogObj ? this.dialogObj.zIndex : 1000) + 1).toString();
         if (this.parent.enableAdaptiveUI) {
             this.renderResponsiveDropDownList(args);
         }
@@ -109,7 +111,7 @@ export class FlMenuOptrUI {
         for (const column of columns) {
             if (col.field === column.field || (col.isForeignColumn() && col.foreignKeyValue === column.field)) {
                 const selectedField: Object = new DataManager(this.optrData).executeLocal(
-                    new Query().where('value', 'equal', column.operator));
+                    new Query().where('value', 'equal', column.isRange ? 'between' : column.operator));
                 selValue = !isNullOrUndefined(selectedField[0]) ? selectedField[0].text : '';
             }
         }
@@ -138,7 +140,8 @@ export class FlMenuOptrUI {
         return (this.dropOptr.value as string);
     }
 
-    private destroyDropDownList(): void {
+    private destroyDropDownList(args?: { element?: Element }): void {
+        if (args && args.element && this.dlgElement && args.element !== this.dlgElement) { return; }
         if (this.dropOptr.isDestroyed) { return; }
         this.dropOptr.removeEventListener(literals['open'], this.ddOpen);
         this.dropOptr.destroy();

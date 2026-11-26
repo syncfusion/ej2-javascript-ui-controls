@@ -3,6 +3,7 @@ import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { PivotView } from '../../pivotview/base/pivotview';
+import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
 
 /**
  * Keyboard interaction
@@ -195,6 +196,13 @@ export class CommonKeyboardInteraction {
         }
     }
     private processClose(e: Event): void {
+        if (e.defaultPrevented) {
+            const owner: PivotView = this.parent.control instanceof PivotView ? this.parent.control :
+                (this.parent.control as PivotFieldList).pivotGridModule;
+            if (owner && owner.isFullScreen) {
+                return;
+            }
+        }
         const target: Element = e.target as Element;
         if (target && closest(target, '.e-popup.e-popup-open')) {
             const dialogInstance: Dialog = getInstance(<HTMLElement>closest(target, '.e-popup.e-popup-open'), Dialog) as Dialog;

@@ -113,10 +113,10 @@ export class Toolbar {
         this.toolbar.isStringTemplate = true;
         const viewStr: string = 'viewContainerRef';
         const registerTemp: string = 'registeredTemplate';
-        const registeredTemplate: Object = {};
+        const registeredTemplate: object = {};
         if ((this.parent)[viewStr as keyof PivotView]) {
             setValue(registerTemp, registeredTemplate, this.toolbar);
-            (this.toolbar)[viewStr as keyof Object] = (this.parent)[viewStr as keyof PivotView];
+            (this.toolbar as unknown as { [key: string]: unknown })[viewStr as string] = (this.parent)[viewStr as keyof PivotView];
         }
         if (this.parent.toolbarTemplate && typeof (this.parent.toolbarTemplate) === 'string') {
             this.toolbar.appendTo(this.parent.toolbarTemplate);
@@ -125,6 +125,7 @@ export class Toolbar {
         } else {
             this.toolbar.appendTo(element);
         }
+        this.updateFullScreen();
         if (flat) { return; }
         const toolbarWidth: number = this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber();
         this.toolbar.width = toolbarWidth;
@@ -140,8 +141,44 @@ export class Toolbar {
         }
     }
 
+    private getFullScreenItem(): ItemModel {
+        return {
+            prefixIcon: (this.parent.isFullScreen ? cls.EXIT_FULL_SCREEN_ICON : cls.FULL_SCREEN_ICON) + ' ' + cls.ICON,
+            tooltipText: this.parent.localeObj.getConstant(this.parent.isFullScreen ? 'exitFullScreen' : 'fullScreen'),
+            align: 'Right', id: this.parent.element.id + 'fullscreen',
+            click: () => { this.parent.setFullScreen(!this.parent.isFullScreen); }
+        };
+    }
+
+    /**
+     * @returns {void}
+     * @hidden
+     */
+    public updateFullScreen(): void {
+        if (!this.toolbar) {
+            return;
+        }
+        const index: number = this.toolbar.items.findIndex((item: ItemModel) => item.id === this.parent.element.id + 'fullscreen');
+        if (index === -1) {
+            return;
+        }
+        const item: ItemModel = this.getFullScreenItem();
+        const button: HTMLElement = document.getElementById(item.id);
+        if (button) {
+            const icon: HTMLElement = button.querySelector('.' + cls.ICON) as HTMLElement;
+            if (icon) {
+                icon.classList.remove(cls.FULL_SCREEN_ICON, cls.EXIT_FULL_SCREEN_ICON);
+                icon.classList.add(this.parent.isFullScreen ? cls.EXIT_FULL_SCREEN_ICON : cls.FULL_SCREEN_ICON);
+            }
+            button.setAttribute('title', item.tooltipText);
+            button.parentElement.setAttribute('title', item.tooltipText);
+            button.setAttribute('aria-label', item.tooltipText);
+            button.setAttribute('aria-pressed', this.parent.isFullScreen.toString());
+        }
+    }
+
     private fetchReports(): FetchReportArgs {
-        const reports: { [key: string]: Object } = { reportName: [] };
+        const reports: { [key: string]: unknown } = { reportName: [] };
         this.parent.trigger(events.fetchReport, reports);
         return reports;
     }
@@ -199,129 +236,8 @@ export class Toolbar {
         const items: ItemModel[] = [];
         for (const item of toolbar) {
             const flat: boolean = this.parent.gridSettings.layout === 'Flat';
-            if (flat && ['Layout', 'GrandTotal', 'FieldList'].indexOf(item) === -1) { continue; }
-            switch (item) {
-            case 'Layout':
-                items.push({ template: this.parent.createElement('ul', { id: this.parent.element.id + '_flat_layout',
-                    attrs: { 'aria-label': this.parent.localeObj.getConstant('flatLayoutMenu') } }) });
-                break;
-            case 'New':
-                items.push({
-                    prefixIcon: cls.GRID_NEW + ' ' + cls.ICON, tooltipText: this.parent.localeObj.getConstant('new'),
-                    click: this.actionClick.bind(this), id: this.parent.element.id + 'new'
-                });
-                break;
-            case 'Save':
-                items.push({
-                    prefixIcon: cls.GRID_SAVE + ' ' + cls.ICON, tooltipText: this.parent.localeObj.getConstant('save'),
-                    click: this.actionClick.bind(this), id: this.parent.element.id + 'save'
-                });
-                break;
-            case 'SaveAs':
-                items.push({
-                    prefixIcon: cls.GRID_SAVEAS + ' ' + cls.ICON, tooltipText: this.parent.localeObj.getConstant('saveAs'),
-                    click: this.actionClick.bind(this), id: this.parent.element.id + 'saveas'
-                });
-                break;
-            case 'Rename':
-                items.push({
-                    prefixIcon: cls.GRID_RENAME + ' ' + cls.ICON, tooltipText: this.parent.localeObj.getConstant('rename'),
-                    click: this.actionClick.bind(this), id: this.parent.element.id + 'rename'
-                });
-                break;
-            case 'Remove':
-                items.push({
-                    prefixIcon: cls.GRID_REMOVE + ' ' + cls.ICON, tooltipText: this.parent.localeObj.getConstant('deleteReport'),
-                    click: this.actionClick.bind(this), id: this.parent.element.id + 'remove'
-                });
-                break;
-            case 'Load':
-                items.push({
-                    template: '<div><input class=' + cls.GRID_LOAD + ' id=' + this.parent.element.id + '_reportlist></input></div>',
-                    click: this.actionClick.bind(this),
-                    id: this.parent.element.id + 'load'
-                });
-                break;
-            case 'Grid':
-                {
-                    const toDisable: boolean = this.parent.displayOption.view === 'Chart';
-                    items.push({
-                        prefixIcon: cls.TOOLBAR_GRID + ' ' + cls.ICON, tooltipText: this.parent.localeObj.getConstant('grid'),
-                        id: this.parent.element.id + 'grid', cssClass: (toDisable ? cls.MENU_DISABLE : '') + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
-                        click: this.menuItemClick.bind(this)
-                    });
-                }
-                break;
-            case 'Chart':
-                {
-                    const validTypes: boolean = (this.parent.displayOption.view === 'Table');
-                    items.push({
-                        template: '<ul id="' + this.parent.element.id + 'chart_menu"></ul>',
-                        id: this.parent.element.id + 'chartmenu', cssClass: (validTypes ? cls.MENU_DISABLE : '') + (this.parent.cssClass ? (' ' + this.parent.cssClass) : '')
-                    });
-                }
-                break;
-            case 'MDX':
-                if (this.parent.dataType === 'olap') {
-                    items.push({
-                        prefixIcon: cls.GRID_MDX + ' ' + cls.ICON, id: this.parent.element.id + 'mdxQuery',
-                        click: this.actionClick.bind(this), tooltipText: this.parent.localeObj.getConstant('mdxQuery')
-                    });
-                }
-                break;
-            case 'Export':
-                items.push({
-                    template: '<ul id="' + this.parent.element.id + 'export_menu"></ul>',
-                    id: this.parent.element.id + 'exportmenu'
-                });
-                break;
-            case 'SubTotal':
-                items.push({
-                    template: '<ul id="' + this.parent.element.id + 'subtotal_menu"></ul>',
-                    id: this.parent.element.id + 'subtotalmenu'
-                });
-                break;
-            case 'GrandTotal':
-                items.push({
-                    template: '<ul id="' + this.parent.element.id + 'grandtotal_menu"></ul>',
-                    id: this.parent.element.id + 'grandtotalmenu'
-                });
-                break;
-            case 'ConditionalFormatting':
-                items.push({
-                    prefixIcon: cls.GRID_FORMATTING + ' ' + cls.ICON, id: this.parent.element.id + 'formatting',
-                    click: this.actionClick.bind(this), tooltipText: this.parent.localeObj.getConstant('toolbarFormatting')
-                });
-                break;
-            case 'NumberFormatting':
-                items.push({
-                    prefixIcon: cls.FORMATTING_TOOLBAR + ' ' + cls.ICON, id: this.parent.element.id + 'numberFormatting',
-                    click: this.actionClick.bind(this), tooltipText: this.parent.localeObj.getConstant('numberFormat')
-                });
-                break;
-            case 'Formatting':
-                items.push({
-                    template: '<ul id="' + this.parent.element.id + 'formatting_menu"></ul>',
-                    id: this.parent.element.id + 'formattingmenu'
-                });
-                break;
-            case 'FieldList':
-                if (flat && (!this.parent.showFieldList || !this.parent.fieldListModule)) { break; }
-                items.push({
-                    prefixIcon: cls.TOOLBAR_FIELDLIST + ' ' + cls.ICON,
-                    tooltipText: this.parent.localeObj.getConstant(flat ? 'flatFields' : 'fieldList'),
-                    click: flat ? () => this.parent.flatLayoutModule.openFields() : this.actionClick.bind(this),
-                    align: 'Right', id: this.parent.element.id + 'fieldlist'
-                });
-                if (this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)) {
-                    (this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).style.display = 'none';
-                }
-                break;
-            default:
-                if (typeof (item) === 'object') {
-                    items.push(item as ItemModel);
-                }
-            }
+            if (flat && ['Layout', 'GrandTotal', 'FieldList'].indexOf(item as string) === -1) { continue; }
+            this.addToolbarItem(item, items);
         }
         if (this.parent.showFieldList && toolbar.indexOf('FieldList') === -1 && (select('#' + this.parent.element.id + '_PivotFieldList', this.parent.element) as HTMLElement) &&
             (select('#' + this.parent.element.id + '_PivotFieldList', this.parent.element) as HTMLElement).style.display === 'none') {
@@ -329,7 +245,156 @@ export class Toolbar {
         }
         const toolbarArgs: ToolbarArgs = { customToolbar: items };
         this.parent.trigger(events.toolbarRender, toolbarArgs);
+        const fullScreenIndex: number = items.findIndex((item: ItemModel) => item.id === this.parent.element.id + 'fullscreen');
+        if (fullScreenIndex !== -1) {
+            const fullScreen: ItemModel = Object.assign({}, items.splice(fullScreenIndex, 1)[0], { align: 'Right' });
+            if (items.length && items[items.length - 1].type === 'Separator') {
+                items[items.length - 1] = Object.assign({}, items[items.length - 1], { align: 'Right' });
+            } else {
+                items.push({ type: 'Separator', align: 'Right' });
+            }
+            items.push(fullScreen);
+        }
         return items;
+    }
+
+    private addToolbarItem(item: ToolbarItems, items: ItemModel[]): void {
+        switch (item) {
+        case 'Layout':
+            items.push({ template: this.parent.createElement('ul', { id: this.parent.element.id + '_flat_layout',
+                attrs: { 'aria-label': this.parent.localeObj.getConstant('flatLayoutMenu') } }) });
+            break;
+        case 'New':
+            items.push({
+                prefixIcon: cls.GRID_NEW + ' ' + cls.ICON, tooltipText: this.parent.localeObj.getConstant('new'),
+                click: this.actionClick.bind(this), id: this.parent.element.id + 'new'
+            });
+            break;
+        case 'Save':
+            items.push({
+                prefixIcon: cls.GRID_SAVE + ' ' + cls.ICON, tooltipText: this.parent.localeObj.getConstant('save'),
+                click: this.actionClick.bind(this), id: this.parent.element.id + 'save'
+            });
+            break;
+        case 'SaveAs':
+            items.push({
+                prefixIcon: cls.GRID_SAVEAS + ' ' + cls.ICON, tooltipText: this.parent.localeObj.getConstant('saveAs'),
+                click: this.actionClick.bind(this), id: this.parent.element.id + 'saveas'
+            });
+            break;
+        case 'Rename':
+            items.push({
+                prefixIcon: cls.GRID_RENAME + ' ' + cls.ICON, tooltipText: this.parent.localeObj.getConstant('rename'),
+                click: this.actionClick.bind(this), id: this.parent.element.id + 'rename'
+            });
+            break;
+        case 'Remove':
+            items.push({
+                prefixIcon: cls.GRID_REMOVE + ' ' + cls.ICON, tooltipText: this.parent.localeObj.getConstant('deleteReport'),
+                click: this.actionClick.bind(this), id: this.parent.element.id + 'remove'
+            });
+            break;
+        case 'Load':
+            items.push({
+                template: '<div><input class=' + cls.GRID_LOAD + ' id=' + this.parent.element.id + '_reportlist></input></div>',
+                click: this.actionClick.bind(this),
+                id: this.parent.element.id + 'load'
+            });
+            break;
+        case 'Grid':
+            {
+                const toDisable: boolean = this.parent.displayOption.view === 'Chart';
+                items.push({
+                    prefixIcon: cls.TOOLBAR_GRID + ' ' + cls.ICON, tooltipText: this.parent.localeObj.getConstant('grid'),
+                    id: this.parent.element.id + 'grid', cssClass: (toDisable ? cls.MENU_DISABLE : '') + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
+                    click: this.menuItemClick.bind(this)
+                });
+            }
+            break;
+        case 'Chart':
+            {
+                const validTypes: boolean = (this.parent.displayOption.view === 'Table');
+                items.push({
+                    template: '<ul id="' + this.parent.element.id + 'chart_menu"></ul>',
+                    id: this.parent.element.id + 'chartmenu', cssClass: (validTypes ? cls.MENU_DISABLE : '') + (this.parent.cssClass ? (' ' + this.parent.cssClass) : '')
+                });
+            }
+            break;
+        case 'MDX':
+            if (this.parent.dataType === 'olap') {
+                items.push({
+                    prefixIcon: cls.GRID_MDX + ' ' + cls.ICON, id: this.parent.element.id + 'mdxQuery',
+                    click: this.actionClick.bind(this), tooltipText: this.parent.localeObj.getConstant('mdxQuery')
+                });
+            }
+            break;
+        case 'Print':
+            items.push({
+                text: 'Print', tooltipText: 'Print',
+                click: () => this.parent.print(), id: this.parent.element.id + 'print'
+            });
+            break;
+        case 'Export':
+            items.push({
+                template: '<ul id="' + this.parent.element.id + 'export_menu"></ul>',
+                id: this.parent.element.id + 'exportmenu'
+            });
+            break;
+        case 'SubTotal':
+            items.push({
+                template: '<ul id="' + this.parent.element.id + 'subtotal_menu"></ul>',
+                id: this.parent.element.id + 'subtotalmenu'
+            });
+            break;
+        case 'GrandTotal':
+            items.push({
+                template: '<ul id="' + this.parent.element.id + 'grandtotal_menu"></ul>',
+                id: this.parent.element.id + 'grandtotalmenu'
+            });
+            break;
+        case 'ConditionalFormatting':
+            items.push({
+                prefixIcon: cls.GRID_FORMATTING + ' ' + cls.ICON, id: this.parent.element.id + 'formatting',
+                click: this.actionClick.bind(this), tooltipText: this.parent.localeObj.getConstant('toolbarFormatting')
+            });
+            break;
+        case 'NumberFormatting':
+            items.push({
+                prefixIcon: cls.FORMATTING_TOOLBAR + ' ' + cls.ICON, id: this.parent.element.id + 'numberFormatting',
+                click: this.actionClick.bind(this), tooltipText: this.parent.localeObj.getConstant('numberFormat')
+            });
+            break;
+        case 'Formatting':
+            items.push({
+                template: '<ul id="' + this.parent.element.id + 'formatting_menu"></ul>',
+                id: this.parent.element.id + 'formattingmenu'
+            });
+            break;
+        case 'FullScreen':
+            items.push(this.getFullScreenItem());
+            break;
+        case 'FieldList':
+            this.addFieldListItem(items);
+            break;
+        default:
+            if (typeof (item) === 'object') {
+                items.push(item as ItemModel);
+            }
+        }
+    }
+
+    private addFieldListItem(items: ItemModel[]): void {
+        const flat: boolean = this.parent.gridSettings.layout === 'Flat';
+        if (flat && (!this.parent.showFieldList || !this.parent.fieldListModule)) { return; }
+        items.push({
+            prefixIcon: cls.TOOLBAR_FIELDLIST + ' ' + cls.ICON,
+            tooltipText: this.parent.localeObj.getConstant(flat ? 'flatFields' : 'fieldList'),
+            click: flat ? () => this.parent.flatLayoutModule.openFields() : this.actionClick.bind(this),
+            align: 'Right', id: this.parent.element.id + 'fieldlist'
+        });
+        if (this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)) {
+            (this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).style.display = 'none';
+        }
     }
 
     private reportChange(args: ChangeEventArgs): void {
@@ -1008,121 +1073,68 @@ export class Toolbar {
         if (select('#' + this.parent.element.id + 'chart_menu', this.parent.element)) {
             this.createChartMenu();
         }
-        if (select('#' + this.parent.element.id + 'export_menu', this.parent.element)) {
-            const exportMenuElement: HTMLElement = select('#' + this.parent.element.id + 'export_menu', this.parent.element);
+        this.createExportMenu();
+        this.createSubtotalMenu();
+        this.createGrandtotalMenu();
+        this.createFormattingMenu();
+        if (this.parent.gridSettings.layout === 'Flat') { this.updateItemElements(); return; }
+        const saveArgs: SaveReportArgs = {
+            report: this.parent.getPersistData(),
+            reportName: this.parent.localeObj.getConstant('defaultReport')
+        };
+        this.currentReport = this.parent.localeObj.getConstant('defaultReport');
+        this.parent.trigger(events.saveReport, saveArgs);
+        if (select('#' + this.parent.element.id + '_reportlist', this.parent.element)) {
+            const reportListElement: HTMLElement = select('#' + this.parent.element.id + '_reportlist', this.parent.element);
+            const reports: FetchReportArgs = this.fetchReports();
+            const reportList: DropDownList = new DropDownList({
+                dataSource: reports.reportName,
+                popupHeight: '200px',
+                placeholder: this.currentReport === '' ? this.parent.localeObj.getConstant('reportList') : '',
+                enableRtl: this.parent.enableRtl,
+                locale: this.parent.locale,
+                cssClass: cls.REPORT_LIST_DROP + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
+                select: this.reportChange.bind(this),
+                value: this.currentReport
+            });
+            reportList.isStringTemplate = true;
+            reportList.isAngular = this.parent.isModalDialog;
+            reportList.appendTo(reportListElement);
+        }
+        this.updateItemElements();
+    }
+
+    private createFormattingMenu(): void {
+        if (select('#' + this.parent.element.id + 'formatting_menu', this.parent.element)) {
+            const formattingMenuElement: HTMLElement = select('#' + this.parent.element.id + 'formatting_menu', this.parent.element);
             const menu: MenuItemModel[] = [{
-                iconCss: cls.GRID_EXPORT + ' ' + cls.ICON,
+                iconCss: cls.FORMATTING_MENU + ' ' + cls.ICON,
                 items: [
                     {
-                        text: this.parent.localeObj.getConstant('pdf'),
-                        iconCss: cls.GRID_PDF_EXPORT + ' ' + cls.ICON,
-                        id: this.parent.element.id + 'pdf'
+                        text: this.parent.localeObj.getConstant('numberFormatMenu'),
+                        iconCss: cls.NUMBER_FORMATTING_MENU + ' ' + cls.ICON,
+                        id: this.parent.element.id + 'numberFormattingMenu'
                     },
                     {
-                        text: this.parent.localeObj.getConstant('excel'),
-                        iconCss: cls.GRID_EXCEL_EXPORT + ' ' + cls.ICON,
-                        id: this.parent.element.id + 'excel'
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('csv'),
-                        iconCss: cls.GRID_CSV_EXPORT + ' ' + cls.ICON,
-                        id: this.parent.element.id + 'csv'
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('png'),
-                        iconCss: cls.GRID_PNG_EXPORT + ' ' + cls.ICON,
-                        id: this.parent.element.id + 'png'
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('jpeg'),
-                        iconCss: cls.GRID_JPEG_EXPORT + ' ' + cls.ICON,
-                        id: this.parent.element.id + 'jpeg'
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('svg'),
-                        iconCss: cls.GRID_SVG_EXPORT + ' ' + cls.ICON,
-                        id: this.parent.element.id + 'svg'
+                        text: this.parent.localeObj.getConstant('conditionalFormattingMenu'),
+                        iconCss: cls.CONDITIONAL_FORMATTING_MENU + ' ' + cls.ICON,
+                        id: this.parent.element.id + 'conditionalFormattingMenu'
                     }
                 ]
             }];
-            const exportMenu: Menu = new Menu({
+            const formattingMenu: Menu = new Menu({
                 items: menu, enableRtl: this.parent.enableRtl,
                 locale: this.parent.locale,  enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
-                select: this.menuItemClick.bind(this), beforeOpen: this.updateExportMenu.bind(this),
-                onClose: () => {
-                    this.focusToolBar();
-                }
+                select: this.menuItemClick.bind(this)
             });
-            exportMenu.isStringTemplate = true;
-            exportMenu.isAngular = this.parent.isModalDialog;
-            exportMenu.appendTo(exportMenuElement);
+            formattingMenu.isStringTemplate = true;
+            formattingMenu.isAngular = this.parent.isModalDialog;
+            formattingMenu.appendTo(formattingMenuElement);
         }
-        if (select('#' + this.parent.element.id + 'subtotal_menu', this.parent.element)) {
-            const subTotalMenuElement: HTMLElement = select('#' + this.parent.element.id + 'subtotal_menu', this.parent.element);
-            const menu: MenuItemModel[] = [{
-                iconCss: cls.GRID_SUB_TOTAL + ' ' + cls.ICON,
-                items: [
-                    {
-                        text: this.parent.localeObj.getConstant('showSubTotals'),
-                        id: this.parent.element.id + 'subtotal',
-                        iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('doNotShowSubTotals'),
-                        id: this.parent.element.id + 'notsubtotal',
-                        iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('showSubTotalsRowsOnly'),
-                        id: this.parent.element.id + 'subtotalrow',
-                        iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('showSubTotalsColumnsOnly'),
-                        id: this.parent.element.id + 'subtotalcolumn',
-                        iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
-                    },
-                    {
-                        separator: true
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('subTotalPosition'),
-                        id: this.parent.element.id + 'subtotalpositions',
-                        iconCss: cls.PIVOT_DISABLE_ICON + ' ' + cls.ICON,
-                        items: [
-                            {
-                                text: this.parent.localeObj.getConstant('auto'),
-                                id: this.parent.element.id + 'sub-none-position',
-                                iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
-                            },
-                            {
-                                text: this.parent.localeObj.getConstant('top'),
-                                id: this.parent.element.id + 'sub-top-position',
-                                iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
-                            },
-                            {
-                                text: this.parent.localeObj.getConstant('bottom'),
-                                id: this.parent.element.id + 'sub-bottom-position',
-                                iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
-                            }
-                        ]
-                    }
-                ]
-            }];
-            const subTotalMenu: Menu = new Menu({
-                items: menu, enableRtl: this.parent.enableRtl,
-                locale: this.parent.locale,  enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
-                cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
-                select: this.menuItemClick.bind(this), beforeOpen: this.updateSubtotalSelection.bind(this),
-                onClose: () => {
-                    this.focusToolBar();
-                }
-            });
-            subTotalMenu.isStringTemplate = true;
-            subTotalMenu.isAngular = this.parent.isModalDialog;
-            subTotalMenu.appendTo(subTotalMenuElement);
-        }
+    }
+
+    private createGrandtotalMenu(): void {
         if (select('#' + this.parent.element.id + 'grandtotal_menu', this.parent.element)) {
             const grandTotalMenuElement: HTMLElement = select('#' + this.parent.element.id + 'grandtotal_menu', this.parent.element);
             const menu: MenuItemModel[] = [{
@@ -1188,58 +1200,133 @@ export class Toolbar {
             grandTotalMenu.isAngular = this.parent.isModalDialog;
             grandTotalMenu.appendTo(grandTotalMenuElement);
         }
-        if (select('#' + this.parent.element.id + 'formatting_menu', this.parent.element)) {
-            const formattingMenuElement: HTMLElement = select('#' + this.parent.element.id + 'formatting_menu', this.parent.element);
+    }
+
+    private createSubtotalMenu(): void {
+        if (select('#' + this.parent.element.id + 'subtotal_menu', this.parent.element)) {
+            const subTotalMenuElement: HTMLElement = select('#' + this.parent.element.id + 'subtotal_menu', this.parent.element);
             const menu: MenuItemModel[] = [{
-                iconCss: cls.FORMATTING_MENU + ' ' + cls.ICON,
+                iconCss: cls.GRID_SUB_TOTAL + ' ' + cls.ICON,
                 items: [
                     {
-                        text: this.parent.localeObj.getConstant('numberFormatMenu'),
-                        iconCss: cls.NUMBER_FORMATTING_MENU + ' ' + cls.ICON,
-                        id: this.parent.element.id + 'numberFormattingMenu'
+                        text: this.parent.localeObj.getConstant('showSubTotals'),
+                        id: this.parent.element.id + 'subtotal',
+                        iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
                     },
                     {
-                        text: this.parent.localeObj.getConstant('conditionalFormattingMenu'),
-                        iconCss: cls.CONDITIONAL_FORMATTING_MENU + ' ' + cls.ICON,
-                        id: this.parent.element.id + 'conditionalFormattingMenu'
+                        text: this.parent.localeObj.getConstant('doNotShowSubTotals'),
+                        id: this.parent.element.id + 'notsubtotal',
+                        iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('showSubTotalsRowsOnly'),
+                        id: this.parent.element.id + 'subtotalrow',
+                        iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('showSubTotalsColumnsOnly'),
+                        id: this.parent.element.id + 'subtotalcolumn',
+                        iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
+                    },
+                    {
+                        separator: true
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('subTotalPosition'),
+                        id: this.parent.element.id + 'subtotalpositions',
+                        iconCss: cls.PIVOT_DISABLE_ICON + ' ' + cls.ICON,
+                        items: [
+                            {
+                                text: this.parent.localeObj.getConstant('auto'),
+                                id: this.parent.element.id + 'sub-none-position',
+                                iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
+                            },
+                            {
+                                text: this.parent.localeObj.getConstant('top'),
+                                id: this.parent.element.id + 'sub-top-position',
+                                iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
+                            },
+                            {
+                                text: this.parent.localeObj.getConstant('bottom'),
+                                id: this.parent.element.id + 'sub-bottom-position',
+                                iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
+                            }
+                        ]
                     }
                 ]
             }];
-            const formattingMenu: Menu = new Menu({
+            const subTotalMenu: Menu = new Menu({
                 items: menu, enableRtl: this.parent.enableRtl,
                 locale: this.parent.locale,  enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
-                select: this.menuItemClick.bind(this)
+                select: this.menuItemClick.bind(this), beforeOpen: this.updateSubtotalSelection.bind(this),
+                onClose: () => {
+                    this.focusToolBar();
+                }
             });
-            formattingMenu.isStringTemplate = true;
-            formattingMenu.isAngular = this.parent.isModalDialog;
-            formattingMenu.appendTo(formattingMenuElement);
+            subTotalMenu.isStringTemplate = true;
+            subTotalMenu.isAngular = this.parent.isModalDialog;
+            subTotalMenu.appendTo(subTotalMenuElement);
         }
-        if (this.parent.gridSettings.layout === 'Flat') { this.updateItemElements(); return; }
-        const saveArgs: SaveReportArgs = {
-            report: this.parent.getPersistData(),
-            reportName: this.parent.localeObj.getConstant('defaultReport')
-        };
-        this.currentReport = this.parent.localeObj.getConstant('defaultReport');
-        this.parent.trigger(events.saveReport, saveArgs);
-        if (select('#' + this.parent.element.id + '_reportlist', this.parent.element)) {
-            const reportListElement: HTMLElement = select('#' + this.parent.element.id + '_reportlist', this.parent.element);
-            const reports: FetchReportArgs = this.fetchReports();
-            const reportList: DropDownList = new DropDownList({
-                dataSource: reports.reportName,
-                popupHeight: '200px',
-                placeholder: this.currentReport === '' ? this.parent.localeObj.getConstant('reportList') : '',
-                enableRtl: this.parent.enableRtl,
-                locale: this.parent.locale,
-                cssClass: cls.REPORT_LIST_DROP + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
-                select: this.reportChange.bind(this),
-                value: this.currentReport
+    }
+
+    private createExportMenu(): void {
+        if (select('#' + this.parent.element.id + 'export_menu', this.parent.element)) {
+            const exportMenuElement: HTMLElement = select('#' + this.parent.element.id + 'export_menu', this.parent.element);
+            const menu: MenuItemModel[] = [{
+                iconCss: cls.GRID_EXPORT + ' ' + cls.ICON,
+                items: [
+                    {
+                        text: this.parent.localeObj.getConstant('pdf'),
+                        iconCss: cls.GRID_PDF_EXPORT + ' ' + cls.ICON,
+                        id: this.parent.element.id + 'pdf'
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('excel'),
+                        iconCss: cls.GRID_EXCEL_EXPORT + ' ' + cls.ICON,
+                        id: this.parent.element.id + 'excel'
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('csv'),
+                        iconCss: cls.GRID_CSV_EXPORT + ' ' + cls.ICON,
+                        id: this.parent.element.id + 'csv'
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('html'),
+                        iconCss: cls.GRID_HTML_EXPORT + ' ' + cls.ICON,
+                        id: this.parent.element.id + 'html'
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('png'),
+                        iconCss: cls.GRID_PNG_EXPORT + ' ' + cls.ICON,
+                        id: this.parent.element.id + 'png'
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('jpeg'),
+                        iconCss: cls.GRID_JPEG_EXPORT + ' ' + cls.ICON,
+                        id: this.parent.element.id + 'jpeg'
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('svg'),
+                        iconCss: cls.GRID_SVG_EXPORT + ' ' + cls.ICON,
+                        id: this.parent.element.id + 'svg'
+                    }
+                ]
+            }];
+            const exportMenu: Menu = new Menu({
+                items: menu, enableRtl: this.parent.enableRtl,
+                showItemOnClick: this.parent.gridSettings.layout === 'Flat',
+                locale: this.parent.locale,  enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
+                cssClass: cls.TOOLBAR_MENU + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
+                select: this.menuItemClick.bind(this), beforeOpen: this.updateExportMenu.bind(this),
+                onClose: () => {
+                    this.focusToolBar();
+                }
             });
-            reportList.isStringTemplate = true;
-            reportList.isAngular = this.parent.isModalDialog;
-            reportList.appendTo(reportListElement);
+            exportMenu.isStringTemplate = true;
+            exportMenu.isAngular = this.parent.isModalDialog;
+            exportMenu.appendTo(exportMenuElement);
         }
-        this.updateItemElements();
     }
     private getCurrentReport(): string {
         let reportStr: string = this.parent.getPersistData();
@@ -1340,12 +1427,19 @@ export class Toolbar {
     }
     private updateExportMenu(args: BeforeOpenCloseMenuEventArgs): void {
         const items: HTMLElement[] = [].slice.call(args.element.querySelectorAll('li'));
-        if (this.parent.currentView === 'Table') {
-            addClass(items.slice(3), cls.MENU_HIDE);
-            removeClass(items.slice(1, 3), cls.MENU_HIDE);
-        } else {
-            addClass(items.slice(1, 3), cls.MENU_HIDE);
-            removeClass(items.slice(3), cls.MENU_HIDE);
+        // Visibility is controlled by export capability below, not by menu position.
+        // Keep legacy chart-only images available without the composition export opt-in.
+        removeClass(items, cls.MENU_HIDE);
+        if (this.parent.currentView !== 'Table') {
+            addClass(items.filter((item: HTMLElement) => /(?:excel|csv)$/.test(item.id)), cls.MENU_HIDE);
+        }
+        const imageItems: HTMLElement[] = items.filter((item: HTMLElement) => /(?:png|jpeg|svg)$/.test(item.id));
+        imageItems.forEach((item: HTMLElement) => {
+            item.style.display = this.parent.allowImageExport || this.parent.currentView !== 'Table' ? '' : 'none';
+        });
+        const htmlItem: HTMLElement = args.element.querySelector('#' + this.parent.element.id + 'html');
+        if (htmlItem) {
+            htmlItem.style.display = this.parent.allowHtmlExport ? '' : 'none';
         }
     }
     private updateSubtotalSelection(args: BeforeOpenCloseMenuEventArgs): void {
@@ -1482,7 +1576,6 @@ export class Toolbar {
             }
             return;
         }
-        let exportArgs: BeforeExportEventArgs = {};
         let type: string;
         const itemType: string = (!isNullOrUndefined(args.item) && !isNullOrUndefined(args.item.id)) ?
             args.item.id.split(this.parent.element.id + '_')[1] : '';
@@ -1513,333 +1606,420 @@ export class Toolbar {
         }
         try {
             switch (args.item.id) {
-            case (this.parent.element.id + 'grid'): {
-                const emptyChartElement: HTMLElement = select('#' + this.parent.element.id + '_chart', this.parent.element);
-                let chartInstance: Chart | AccumulationChart = getInstance(emptyChartElement, Chart) as Chart;
-                chartInstance = !isNullOrUndefined(chartInstance) ? chartInstance : this.parent.chart;
-                if (this.parent.grid && chartInstance && (this.parent.displayOption.view !== 'Table' &&
-                    !(this.parent.displayOption.view === 'Both' && this.parent.displayOption.primary === 'Table'))) {
-                    if (this.parent.grid.element && this.parent.grid.element.style) {
-                        this.parent.grid.element.style.display = '';
-                    }
-                    if (chartInstance.element && chartInstance.element.style) {
-                        chartInstance.element.style.display = 'none';
-                    }
-                    if (this.parent.chartSettings.enableMultipleAxis && this.parent.chartSettings.enableScrollOnMultiAxis) {
-                        (this.parent.element.querySelector('.e-pivotchart') as HTMLElement).style.display = 'none';
-                    }
-                    this.parent.currentView = 'Table';
-                    this.parent.setProperties({ displayOption: { primary: 'Table' } }, true);
-                    if (this.parent.showGroupingBar && this.parent.groupingBarModule) {
-                        if (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement) {
-                            (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement).style.display = '';
-                        }
-                        if (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement) {
-                            (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = 'none';
-                        }
-                    }
-                    const actionInfo: PivotActionInfo = {
-                        toolbarInfo: {
-                            displayOption: this.parent.displayOption as DisplayOption,
-                            gridSettings: this.parent.gridSettings as GridSettings
-                        }
-                    };
-                    this.parent.actionObj.actionInfo = actionInfo;
-                    this.parent.layoutRefresh();
-                }
-                break;
-            }
+            case (this.parent.element.id + 'grid'): return this.selectGridMenu();
+            case (this.parent.element.id + 'html'):
+                return this.selectHtmlMenu();
             case (this.parent.element.id + 'pdf'):
-                if (isNullOrUndefined(this.parent.pdfExportModule) && this.parent.dataSourceSettings.mode !== 'Server') {
-                    return;
-                }
-                if (this.parent.currentView === 'Table') {
-                    this.parent.pdfExport({ fileName: 'Export.pdf' }, false, undefined, false);
-                } else {
-                    this.parent.chartExport('PDF', { fileName: 'result' }, undefined, null, undefined);
-                }
-                break;
+                return this.selectPdfMenu();
             case (this.parent.element.id + 'excel'):
-                if (isNullOrUndefined(this.parent.excelExportModule) && this.parent.dataSourceSettings.mode !== 'Server') {
-                    return;
-                }
-                exportArgs = {
-                    excelExportProperties: { fileName: 'Export.xlsx' },
-                    isBlob: undefined,
-                    isMultipleExport: undefined,
-                    workbook: undefined
-                };
-                this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
-                    this.parent.excelExport(
-                        observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob
-                    );
-                });
-                break;
+                return this.selectExcelMenu();
             case (this.parent.element.id + 'csv'):
-                if (isNullOrUndefined(this.parent.excelExportModule) && this.parent.dataSourceSettings.mode !== 'Server') {
-                    return;
-                }
-                exportArgs = {
-                    excelExportProperties: { fileName: 'Export.csv' },
-                    isBlob: false,
-                    isMultipleExport: false,
-                    workbook: undefined
-                };
-                this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
-                    if (this.parent.dataSourceSettings.mode === 'Server') {
-                        this.parent.getEngine(
-                            'onCsvExport', null, null, null, null, null, null, null, null, observedArgs.excelExportProperties
-                        );
-                    } else {
-                        this.parent.csvExport(
-                            observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob
-                        );
-                    }
-                });
-                break;
+                return this.selectCsvMenu();
             case (this.parent.element.id + 'png'):
-                this.parent.chartExport('PNG', { fileName: 'result' }, undefined, null, undefined);
-                break;
+                return this.selectPngMenu();
             case (this.parent.element.id + 'jpeg'):
-                this.parent.chartExport('JPEG', { fileName: 'result' }, undefined, null, undefined);
-                break;
+                return this.selectJpegMenu();
             case (this.parent.element.id + 'svg'):
-                this.parent.chartExport('SVG', { fileName: 'result' }, undefined, null, undefined);
-                break;
+                return this.selectSvgMenu();
             case (this.parent.element.id + 'notsubtotal'):
-                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.hideSubTotals, {
-                    toolbarInfo: {
-                        showSubTotals: false
-                    }
-                })) {
-                    return;
-                }
-                this.parent.setProperties(
-                    { dataSourceSettings: { showSubTotals: false, showColumnSubTotals: false, showRowSubTotals: false } },
-                    true);
-                this.parent.refreshData();
-                break;
+                return this.selectNotsubtotalMenu();
             case (this.parent.element.id + 'subtotalrow'):
-                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.subTotalsRow, {
-                    toolbarInfo: {
-                        showRowSubTotals: true
-                    }
-                })) {
-                    return;
-                }
-                this.parent.setProperties(
-                    { dataSourceSettings: { showSubTotals: true, showColumnSubTotals: false, showRowSubTotals: true } },
-                    true);
-                this.parent.refreshData();
-                break;
+                return this.selectSubtotalrowMenu();
             case (this.parent.element.id + 'subtotalcolumn'):
-                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.subTotalsColumn, {
-                    toolbarInfo: {
-                        showColumnSubTotals: true
-                    }
-                })) {
-                    return;
-                }
-                this.parent.setProperties(
-                    { dataSourceSettings: { showSubTotals: true, showColumnSubTotals: true, showRowSubTotals: false } },
-                    true);
-                this.parent.refreshData();
-                break;
+                return this.selectSubtotalcolumnMenu();
             case (this.parent.element.id + 'subtotal'):
-                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.showSubTotals, {
-                    toolbarInfo: {
-                        showSubTotals: true
-                    }
-                })) {
-                    return;
-                }
-                this.parent.setProperties(
-                    { dataSourceSettings: { showSubTotals: true, showColumnSubTotals: true, showRowSubTotals: true } },
-                    true);
-                this.parent.refreshData();
-                break;
+                return this.selectSubtotalMenu();
             case (this.parent.element.id + 'notgrandtotal'):
-                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.hideGrandTotals, {
-                    toolbarInfo: {
-                        showGrandTotals: false
-                    }
-                })) {
-                    return;
-                }
-                this.parent.setProperties(
-                    { dataSourceSettings: { showGrandTotals: false, showColumnGrandTotals: false, showRowGrandTotals: false } },
-                    true);
-                this.parent.refreshData();
-                break;
+                return this.selectNotgrandtotalMenu();
             case (this.parent.element.id + 'grandtotalrow'):
-                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.grandTotalsRow, {
-                    toolbarInfo: {
-                        showRowGrandTotals: true
-                    }
-                })) {
-                    return;
-                }
-                this.parent.setProperties(
-                    { dataSourceSettings: { showGrandTotals: true, showColumnGrandTotals: false, showRowGrandTotals: true } },
-                    true);
-                this.parent.refreshData();
-                break;
+                return this.selectGrandtotalrowMenu();
             case (this.parent.element.id + 'grandtotalcolumn'):
-                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.grandTotalsColumn, {
-                    toolbarInfo: {
-                        showColumnGrandTotals: true
-                    }
-                })) {
-                    return;
-                }
-                this.parent.setProperties(
-                    { dataSourceSettings: { showGrandTotals: true, showColumnGrandTotals: true, showRowGrandTotals: false } },
-                    true);
-                this.parent.refreshData();
-                break;
+                return this.selectGrandtotalcolumnMenu();
             case (this.parent.element.id + 'grandtotal'):
-                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.showGrandTotals, {
-                    toolbarInfo: {
-                        showGrandTotals: true
-                    }
-                })) {
-                    return;
-                }
-                this.parent.setProperties(
-                    { dataSourceSettings: { showGrandTotals: true, showColumnGrandTotals: true, showRowGrandTotals: true } },
-                    true);
-                this.parent.refreshData();
-                break;
+                return this.selectGrandtotalMenu();
             case (this.parent.element.id + 'top-position'):
-                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.grandTotalsPosition, {
-                    toolbarInfo: {
-                        grandTotalsPosition: 'Top'
-                    }
-                })) {
-                    return;
-                }
-                this.parent.setProperties(
-                    { dataSourceSettings: { grandTotalsPosition: 'Top' } }, true);
-                this.parent.refreshData();
-                break;
+                return this.selectTopPositionMenu();
             case (this.parent.element.id + 'bottom-position'):
-                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.grandTotalsPosition, {
-                    toolbarInfo: {
-                        grandTotalsPosition: 'Bottom'
-                    }
-                })) {
-                    return;
-                }
-                this.parent.setProperties(
-                    { dataSourceSettings: { grandTotalsPosition: 'Bottom' } }, true);
-                this.parent.refreshData();
-                break;
+                return this.selectBottomPositionMenu();
             case (this.parent.element.id + 'sub-top-position'):
-                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.subTotalsPosition, {
-                    toolbarInfo: {
-                        subTotalsPosition: 'Top'
-                    }
-                })) {
-                    return;
-                }
-                this.parent.setProperties(
-                    { dataSourceSettings: { subTotalsPosition: 'Top' } }, true);
-                this.parent.refreshData();
-                break;
+                return this.selectSubTopPositionMenu();
             case (this.parent.element.id + 'sub-bottom-position'):
-                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.subTotalsPosition, {
-                    toolbarInfo: {
-                        subTotalsPosition: 'Bottom'
-                    }
-                })) {
-                    return;
-                }
-                this.parent.setProperties(
-                    { dataSourceSettings: { subTotalsPosition: 'Bottom' } }, true);
-                this.parent.refreshData();
-                break;
+                return this.selectSubBottomPositionMenu();
             case (this.parent.element.id + 'sub-none-position'):
-                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.subTotalsPosition, {
-                    toolbarInfo: {
-                        subTotalsPosition: 'Auto'
-                    }
-                })) {
-                    return;
-                }
-                this.parent.setProperties(
-                    { dataSourceSettings: { subTotalsPosition: 'Auto' } }, true);
-                this.parent.refreshData();
-                break;
+                return this.selectSubNonePositionMenu();
             case (this.parent.element.id + 'numberFormattingMenu'):
-                if (this.parent.numberFormattingModule) {
-                    this.parent.numberFormattingModule.showNumberFormattingDialog();
-                }
-                break;
+                return this.selectNumberFormattingMenuMenu();
             case (this.parent.element.id + 'conditionalFormattingMenu'):
-                if (this.parent.conditionalFormattingModule) {
-                    this.parent.conditionalFormattingModule.showConditionalFormattingDialog();
-                }
-                break;
+                return this.selectConditionalFormattingMenuMenu();
             case (this.parent.element.id + '_' + type):
-                if (args.item && args.item.text) {
-                    if (type === 'ChartMoreOption') {
-                        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.openChartTypeDialog, {})) {
-                            return;
-                        }
-                        this.createChartTypeDialog();
-                        this.parent.actionObj.actionName = '';
-                    } else if (type === 'multipleAxes') {
-                        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.multipleAxis)) {
-                            return;
-                        }
-                        if (this.parent.chartSettings.enableScrollOnMultiAxis) {
-                            this.isMultiAxisChange = true;
-                        }
-                        this.parent.chartSettings.enableMultipleAxis = !this.parent.chartSettings.enableMultipleAxis;
-                        this.updateChartType(this.parent.chartSettings.chartSeries.type, true);
-                        PivotUtil.invokeActionMethod(
-                            this.parent, events.actionComplete,
-                            this.parent.chartSettings.enableMultipleAxis ? events.multipleAxisEnabled : events.multipleAxisDisabled,
-                            {
-                                toolbarInfo: {
-                                    enableMultipleAxis: this.parent.chartSettings.enableMultipleAxis
-                                }
-                            }
-                        );
-                    } else if (this.getAllChartItems().indexOf(type) > -1) {
-                        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.chartView, {
-                            toolbarInfo: {
-                                chartType: type as ChartSeriesType
-                            }
-                        })) {
-                            return;
-                        }
-                        this.updateChartType(type as ChartSeriesType, false);
-                    } else if (type === 'showLegend') {
-                        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.showLegend)) {
-                            return;
-                        }
-                        this.parent.chart.legendSettings.visible = !this.showLableState;
-                        if (this.parent.chartSettings.legendSettings) {
-                            this.parent.chartSettings.legendSettings.visible = !this.showLableState;
-                        } else {
-                            this.parent.setProperties({ chartSettings: { legendSettings: { visible: !this.showLableState } } }, true);
-                        }
-                        this.updateChartType(this.parent.chartSettings.chartSeries.type, true);
-                        PivotUtil.invokeActionMethod(
-                            this.parent, events.actionComplete, !this.showLableState ? events.legendShown : events.legendHidden,
-                            {
-                                toolbarInfo: {
-                                    legendVisible: !this.showLableState
-                                }
-                            }
-                        );
-                    }
-                }
-                break;
+                return this.selectChartMenu(args, type);
             }
         } catch (execption) {
             this.parent.actionFailureMethod(execption);
+        }
+    }
+
+    private selectGridMenu(): void {
+        const emptyChartElement: HTMLElement = select('#' + this.parent.element.id + '_chart', this.parent.element);
+        let chartInstance: Chart | AccumulationChart = getInstance(emptyChartElement, Chart) as Chart;
+        chartInstance = !isNullOrUndefined(chartInstance) ? chartInstance : this.parent.chart;
+        if (this.parent.grid && chartInstance && (this.parent.displayOption.view !== 'Table' &&
+            !(this.parent.displayOption.view === 'Both' && this.parent.displayOption.primary === 'Table'))) {
+            if (this.parent.grid.element && this.parent.grid.element.style) {
+                this.parent.grid.element.style.display = '';
+            }
+            if (chartInstance.element && chartInstance.element.style) {
+                chartInstance.element.style.display = 'none';
+            }
+            if (this.parent.chartSettings.enableMultipleAxis && this.parent.chartSettings.enableScrollOnMultiAxis) {
+                (this.parent.element.querySelector('.e-pivotchart') as HTMLElement).style.display = 'none';
+            }
+            this.parent.currentView = 'Table';
+            this.parent.setProperties({ displayOption: { primary: 'Table' } }, true);
+            if (this.parent.showGroupingBar && this.parent.groupingBarModule) {
+                if (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement) {
+                    (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement).style.display = '';
+                }
+                if (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement) {
+                    (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = 'none';
+                }
+            }
+            const actionInfo: PivotActionInfo = {
+                toolbarInfo: {
+                    displayOption: this.parent.displayOption as DisplayOption,
+                    gridSettings: this.parent.gridSettings as GridSettings
+                }
+            };
+            this.parent.actionObj.actionInfo = actionInfo;
+            this.parent.layoutRefresh();
+        }
+    }
+
+    private selectHtmlMenu(): void {
+        if (this.parent.allowHtmlExport && this.parent.htmlExportModule) {
+            this.parent.exportToHTML({ fileName: 'Export.html' });
+        }
+    }
+
+    private selectPdfMenu(): void {
+        if (isNullOrUndefined(this.parent.pdfExportModule) && this.parent.dataSourceSettings.mode !== 'Server') {
+            return;
+        }
+        if (this.parent.currentView === 'Table') {
+            this.parent.pdfExport({ fileName: 'Export.pdf' }, false, undefined, false);
+        } else {
+            this.parent.chartExport('PDF', { fileName: 'result' }, undefined, null, undefined);
+        }
+    }
+
+    private selectExcelMenu(): void {
+        if (isNullOrUndefined(this.parent.excelExportModule) && this.parent.dataSourceSettings.mode !== 'Server') {
+            return;
+        }
+        const exportArgs: BeforeExportEventArgs = {
+            excelExportProperties: { fileName: 'Export.xlsx' },
+            isBlob: undefined,
+            isMultipleExport: undefined,
+            workbook: undefined
+        };
+        this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
+            this.parent.excelExport(
+                observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob
+            );
+        });
+    }
+
+    private selectCsvMenu(): void {
+        if (isNullOrUndefined(this.parent.excelExportModule) && this.parent.dataSourceSettings.mode !== 'Server') {
+            return;
+        }
+        const exportArgs: BeforeExportEventArgs = {
+            excelExportProperties: { fileName: 'Export.csv' },
+            isBlob: false,
+            isMultipleExport: false,
+            workbook: undefined
+        };
+        this.parent.trigger(events.beforeExport, exportArgs, (observedArgs: BeforeExportEventArgs) => {
+            if (this.parent.dataSourceSettings.mode === 'Server') {
+                this.parent.getEngine(
+                    'onCsvExport', null, null, null, null, null, null, null, null, observedArgs.excelExportProperties
+                );
+            } else {
+                this.parent.csvExport(
+                    observedArgs.excelExportProperties, observedArgs.isMultipleExport, observedArgs.workbook, observedArgs.isBlob
+                );
+            }
+        });
+    }
+
+    private selectPngMenu(): void {
+        if (this.parent.allowImageExport && this.parent.htmlExportModule) {
+            this.parent.exportToImage('PNG', { fileName: 'Export.png' });
+        } else if (this.parent.currentView !== 'Table') {
+            this.parent.chartExport('PNG', { fileName: 'result' }, undefined, null, undefined);
+        }
+    }
+
+    private selectJpegMenu(): void {
+        if (this.parent.allowImageExport && this.parent.htmlExportModule) {
+            this.parent.exportToImage('JPEG', { fileName: 'Export.jpeg' });
+        } else if (this.parent.currentView !== 'Table') {
+            this.parent.chartExport('JPEG', { fileName: 'result' }, undefined, null, undefined);
+        }
+    }
+
+    private selectSvgMenu(): void {
+        if (this.parent.allowImageExport && this.parent.htmlExportModule) {
+            this.parent.exportToImage('SVG', { fileName: 'Export.svg' });
+        } else if (this.parent.currentView !== 'Table') {
+            this.parent.chartExport('SVG', { fileName: 'result' }, undefined, null, undefined);
+        }
+    }
+
+    private selectNotsubtotalMenu(): void {
+        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.hideSubTotals, {
+            toolbarInfo: {
+                showSubTotals: false
+            }
+        })) {
+            return;
+        }
+        this.parent.setProperties(
+            { dataSourceSettings: { showSubTotals: false, showColumnSubTotals: false, showRowSubTotals: false } },
+            true);
+        this.parent.refreshData();
+    }
+
+    private selectSubtotalrowMenu(): void {
+        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.subTotalsRow, {
+            toolbarInfo: {
+                showRowSubTotals: true
+            }
+        })) {
+            return;
+        }
+        this.parent.setProperties(
+            { dataSourceSettings: { showSubTotals: true, showColumnSubTotals: false, showRowSubTotals: true } },
+            true);
+        this.parent.refreshData();
+    }
+
+    private selectSubtotalcolumnMenu(): void {
+        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.subTotalsColumn, {
+            toolbarInfo: {
+                showColumnSubTotals: true
+            }
+        })) {
+            return;
+        }
+        this.parent.setProperties(
+            { dataSourceSettings: { showSubTotals: true, showColumnSubTotals: true, showRowSubTotals: false } },
+            true);
+        this.parent.refreshData();
+    }
+
+    private selectSubtotalMenu(): void {
+        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.showSubTotals, {
+            toolbarInfo: {
+                showSubTotals: true
+            }
+        })) {
+            return;
+        }
+        this.parent.setProperties(
+            { dataSourceSettings: { showSubTotals: true, showColumnSubTotals: true, showRowSubTotals: true } },
+            true);
+        this.parent.refreshData();
+    }
+
+    private selectNotgrandtotalMenu(): void {
+        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.hideGrandTotals, {
+            toolbarInfo: {
+                showGrandTotals: false
+            }
+        })) {
+            return;
+        }
+        this.parent.setProperties(
+            { dataSourceSettings: { showGrandTotals: false, showColumnGrandTotals: false, showRowGrandTotals: false } },
+            true);
+        this.parent.refreshData();
+    }
+
+    private selectGrandtotalrowMenu(): void {
+        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.grandTotalsRow, {
+            toolbarInfo: {
+                showRowGrandTotals: true
+            }
+        })) {
+            return;
+        }
+        this.parent.setProperties(
+            { dataSourceSettings: { showGrandTotals: true, showColumnGrandTotals: false, showRowGrandTotals: true } },
+            true);
+        this.parent.refreshData();
+    }
+
+    private selectGrandtotalcolumnMenu(): void {
+        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.grandTotalsColumn, {
+            toolbarInfo: {
+                showColumnGrandTotals: true
+            }
+        })) {
+            return;
+        }
+        this.parent.setProperties(
+            { dataSourceSettings: { showGrandTotals: true, showColumnGrandTotals: true, showRowGrandTotals: false } },
+            true);
+        this.parent.refreshData();
+    }
+
+    private selectGrandtotalMenu(): void {
+        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.showGrandTotals, {
+            toolbarInfo: {
+                showGrandTotals: true
+            }
+        })) {
+            return;
+        }
+        this.parent.setProperties(
+            { dataSourceSettings: { showGrandTotals: true, showColumnGrandTotals: true, showRowGrandTotals: true } },
+            true);
+        this.parent.refreshData();
+    }
+
+    private selectTopPositionMenu(): void {
+        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.grandTotalsPosition, {
+            toolbarInfo: {
+                grandTotalsPosition: 'Top'
+            }
+        })) {
+            return;
+        }
+        this.parent.setProperties(
+            { dataSourceSettings: { grandTotalsPosition: 'Top' } }, true);
+        this.parent.refreshData();
+    }
+
+    private selectBottomPositionMenu(): void {
+        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.grandTotalsPosition, {
+            toolbarInfo: {
+                grandTotalsPosition: 'Bottom'
+            }
+        })) {
+            return;
+        }
+        this.parent.setProperties(
+            { dataSourceSettings: { grandTotalsPosition: 'Bottom' } }, true);
+        this.parent.refreshData();
+    }
+
+    private selectSubTopPositionMenu(): void {
+        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.subTotalsPosition, {
+            toolbarInfo: {
+                subTotalsPosition: 'Top'
+            }
+        })) {
+            return;
+        }
+        this.parent.setProperties(
+            { dataSourceSettings: { subTotalsPosition: 'Top' } }, true);
+        this.parent.refreshData();
+    }
+
+    private selectSubBottomPositionMenu(): void {
+        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.subTotalsPosition, {
+            toolbarInfo: {
+                subTotalsPosition: 'Bottom'
+            }
+        })) {
+            return;
+        }
+        this.parent.setProperties(
+            { dataSourceSettings: { subTotalsPosition: 'Bottom' } }, true);
+        this.parent.refreshData();
+    }
+
+    private selectSubNonePositionMenu(): void {
+        if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.subTotalsPosition, {
+            toolbarInfo: {
+                subTotalsPosition: 'Auto'
+            }
+        })) {
+            return;
+        }
+        this.parent.setProperties(
+            { dataSourceSettings: { subTotalsPosition: 'Auto' } }, true);
+        this.parent.refreshData();
+    }
+
+    private selectNumberFormattingMenuMenu(): void {
+        if (this.parent.numberFormattingModule) {
+            this.parent.numberFormattingModule.showNumberFormattingDialog();
+        }
+    }
+
+    private selectConditionalFormattingMenuMenu(): void {
+        if (this.parent.conditionalFormattingModule) {
+            this.parent.conditionalFormattingModule.showConditionalFormattingDialog();
+        }
+    }
+
+    private selectChartMenu(args: ClickEventArgs, type: string): void {
+        if (args.item && args.item.text) {
+            if (type === 'ChartMoreOption') {
+                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.openChartTypeDialog, {})) {
+                    return;
+                }
+                this.createChartTypeDialog();
+                this.parent.actionObj.actionName = '';
+            } else if (type === 'multipleAxes') {
+                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.multipleAxis)) {
+                    return;
+                }
+                if (this.parent.chartSettings.enableScrollOnMultiAxis) {
+                    this.isMultiAxisChange = true;
+                }
+                this.parent.chartSettings.enableMultipleAxis = !this.parent.chartSettings.enableMultipleAxis;
+                this.updateChartType(this.parent.chartSettings.chartSeries.type, true);
+                PivotUtil.invokeActionMethod(
+                    this.parent, events.actionComplete,
+                    this.parent.chartSettings.enableMultipleAxis ? events.multipleAxisEnabled : events.multipleAxisDisabled,
+                    {
+                        toolbarInfo: {
+                            enableMultipleAxis: this.parent.chartSettings.enableMultipleAxis
+                        }
+                    }
+                );
+            } else if (this.getAllChartItems().indexOf(type) > -1) {
+                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.chartView, {
+                    toolbarInfo: {
+                        chartType: type as ChartSeriesType
+                    }
+                })) {
+                    return;
+                }
+                this.updateChartType(type as ChartSeriesType, false);
+            } else if (type === 'showLegend') {
+                if (PivotUtil.invokeActionMethod(this.parent, events.actionBegin, events.showLegend)) {
+                    return;
+                }
+                this.parent.chart.legendSettings.visible = !this.showLableState;
+                if (this.parent.chartSettings.legendSettings) {
+                    this.parent.chartSettings.legendSettings.visible = !this.showLableState;
+                } else {
+                    this.parent.setProperties({ chartSettings: { legendSettings: { visible: !this.showLableState } } }, true);
+                }
+                this.updateChartType(this.parent.chartSettings.chartSeries.type, true);
+                PivotUtil.invokeActionMethod(
+                    this.parent, events.actionComplete, !this.showLableState ? events.legendShown : events.legendHidden,
+                    {
+                        toolbarInfo: {
+                            legendVisible: !this.showLableState
+                        }
+                    }
+                );
+            }
         }
     }
     /**
@@ -1995,8 +2175,8 @@ export class Toolbar {
         const dropModeOptionDiv: HTMLElement = createElement('div', { id: this.parent.element.id + '_AxisModeOption' });
         optionWrapperDiv.appendChild(optionTextDiv);
         optionWrapperDiv.appendChild(dropOptionDiv);
-        const chartTypeDatasource: { [key: string]: Object }[] = [];
-        const multipleAxisModeDatasource: { [key: string]: Object }[] = [
+        const chartTypeDatasource: { value: string; text: string }[] = [];
+        const multipleAxisModeDatasource: { value: string; text: string }[] = [
             { value: 'Stacked', text: this.parent.localeObj.getConstant('stacked') },
             { value: 'Single', text: this.parent.localeObj.getConstant('single') },
             { value: 'Combined', text: this.parent.localeObj.getConstant('combined') }];

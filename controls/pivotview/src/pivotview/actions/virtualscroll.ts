@@ -130,6 +130,7 @@ export class VirtualScroll {
 
     /**
      * Releases pivot axis handlers while Grid owns the Flat viewport.
+     *
      * @returns {void}
      * @hidden
      */

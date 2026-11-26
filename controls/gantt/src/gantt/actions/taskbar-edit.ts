@@ -1291,6 +1291,9 @@ export class TaskbarEdit extends DateProcessor {
             this.currentSegmentIndex = segmentIndex;
             this.setItemPosition();
             this.updateEditedItem();
+            if (this.taskBarEditAction === 'ProgressResizing') {
+                this.parent.notify('refreshProgressLine', {});
+            }
             this.tooltipValue = (e.type === 'touchmove' || e.type === 'touchstart' || e.type === 'touchend') ? e['changedTouches'][0].pageX : e.pageX;
             if ((!this.taskBarEditRecord.ganttProperties.segments || segmentIndex !== -1)) {
                 this.editTooltip.updateTooltip(segmentIndex);
@@ -2897,6 +2900,8 @@ export class TaskbarEdit extends DateProcessor {
                 totalProgressWidth = totalProgressWidth - segment.width;
                 fixedWidth = false;
             }
+            segment.progress = segment.progressWidth > 0 && segment.width > 0 ?
+                Math.min(100, Math.round((segment.progressWidth / segment.width) * 100)) : 0;
         }
     }
 

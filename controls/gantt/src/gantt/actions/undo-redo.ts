@@ -331,6 +331,9 @@ export class UndoRedo {
             let args: Object = {};
             args = extend([], [], [this.getUndoCollection[this.getUndoCollection.length - 1]], true)[0];
             args['requestType'] = 'afterUndoAction';
+            if (this.parent.sCurveModule) {
+                this.parent.sCurveModule.refreshSCurve();
+            }
             this.parent.trigger('onAfterUndo', args);
             if ((updateAction['action'] === 'RowDragAndDrop' || updateAction['action'] === 'TaskbarDragAndDrop') ||
                 (updateAction['action'] === 'Indent' || updateAction['action'] === 'Outdent')) {

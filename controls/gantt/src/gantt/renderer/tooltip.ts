@@ -3,7 +3,7 @@ import { Tooltip as TooltipComponent, TooltipEventArgs } from '@syncfusion/ej2-p
 import { parentsUntil } from '../base/utils';
 import * as cls from '../base/css-constants';
 import { extend, isNullOrUndefined, getValue, EventHandler, closest, SanitizeHtmlHelper, initializeCSPTemplate, append } from '@syncfusion/ej2-base';
-import { ITaskData, IGanttData, BeforeTooltipRenderEventArgs, PredecessorTooltip, IPredecessor } from '../base/interface';
+import { ITaskData, IGanttData, ITaskSegment, BeforeTooltipRenderEventArgs, PredecessorTooltip, IPredecessor } from '../base/interface';
 import { EventMarkerModel, TaskFieldsModel } from '../models/models';
 import { Deferred } from '@syncfusion/ej2-data';
 
@@ -34,7 +34,8 @@ export class Tooltip {
             '.e-gantt-parent-taskbar, .e-gantt-milestone, .e-gantt-unscheduled-taskbar' +
             '.e-event-markers, .e-baseline-bar, .e-event-markers,' +
             '.e-connector-line-container, .e-indicator-span, .e-notes-info, .e-gantt-manualparent-milestone,' +
-            '.e-taskbar-left-resizer, .e-taskbar-right-resizer, .e-baseline-gantt-milestone-container, .e-gantt-manualparenttaskbar';
+            '.e-taskbar-left-resizer, .e-taskbar-right-resizer, .e-baseline-gantt-milestone-container, .e-gantt-manualparenttaskbar,' +
+            '.e-gantt-scurve-svg-point, .e-gantt-split-gap';
         this.toolTipObj.position = 'BottomCenter';
         this.toolTipObj.openDelay = 700;
         this.toolTipObj.enableRtl = this.parent.enableRtl;
@@ -106,17 +107,31 @@ export class Tooltip {
                 } else {
                     void element;
                 }
+                // Enrich argsData.data with the hovered segment for split-task taskbars
+                if (parent.tooltipSettings.showSegmentTooltip && data && !isNullOrUndefined(data.ganttProperties.segments) &&
+                    data.ganttProperties.segments.length > 0) {
+                    const segmentEl: Element = args.target.hasAttribute('data-segment-index')
+                        ? args.target : args.target.closest('[data-segment-index]');
+                    if (!isNullOrUndefined(segmentEl)) {
+                        const segIdx: number = parseInt(segmentEl.getAttribute('data-segment-index'), 10);
+                        if (!isNaN(segIdx) && !isNullOrUndefined(data.ganttProperties.segments[segIdx as number])) {
+                            argsData.segmentIndex = segIdx;
+                        }
+                    }
+                }
                 if (args.target.classList.contains('e-gantt-child-taskbar') ||
                     args.target.classList.contains('e-gantt-parent-taskbar') ||
                     args.target.classList.contains('e-gantt-milestone') ||
                     args.target.classList.contains('e-gantt-unscheduled-taskbar') ||
                     args.target.classList.contains('e-taskbar-left-resizer') ||
                     args.target.classList.contains('e-taskbar-right-resizer') ||
+                    args.target.classList.contains('e-gantt-split-gap') ||
                     (args.target.classList.contains('e-gantt-manualparenttaskbar') && parent.tooltipSettings.taskbar)) {
                     let taskbarTemplateNode: NodeList;
                     if (parent.tooltipSettings.taskbar) {
                         taskbarTemplateNode = parent.tooltipModule.templateCompiler(
-                            parent.tooltipSettings.taskbar, parent, data, 'TooltipTaskbarTemplate');
+                            parent.tooltipSettings.taskbar, parent, argsData.data, 'TooltipTaskbarTemplate',
+                            argsData.segmentIndex);
                     } else {
                         void parent.tooltipSettings.taskbar;
                     }
@@ -147,6 +162,19 @@ export class Tooltip {
                     argsData.content = this.toolTipObj.content = baseLineTemplateNode ? (baselineTemplate as HTMLElement) : data ?
                         parent.tooltipModule.getTooltipContent(
                             (data.ganttProperties.isMilestone ? 'milestone' : 'baseline'), data, parent, args) as string | HTMLElement : '';
+                } else if (args.target.classList.contains(cls.scurvePoint)) {
+                    if (parent.sCurveModule) {
+                        const pointData: Object = parent.sCurveModule.getTooltipData(args.target);
+                        argsData.data = pointData;
+                        const pointTemplate: NodeList = parent.tooltipSettings.sCurve ? parent.tooltipModule.templateCompiler(
+                            parent.tooltipSettings.sCurve, parent, extend({}, pointData), 'TooltipSCurveTemplate') : null;
+                        const pointTooltip: Element = document.createElement('div');
+                        if (pointTemplate) {
+                            append(pointTemplate, pointTooltip);
+                        }
+                        argsData.content = this.toolTipObj.content = pointTemplate ? (pointTooltip as HTMLElement) :
+                            parent.sCurveModule.getDefaultTooltipContent(args.target);
+                    }
                 } else if (args.target.classList.contains('e-event-markers')) {
                     argsData.content = this.toolTipObj.content = parent.tooltipModule.getTooltipContent('marker', data, parent, args) as string | HTMLElement;
                 } else if (args.target.classList.contains('e-connector-line-container')) {
@@ -392,13 +420,41 @@ export class Tooltip {
         case 'taskbar':
         {
             const scheduledTask: boolean = !ganttData.hasChildRecords || data.isAutoSchedule ? true : false;
+            // Detect the hovered segment (split tasks only)
+            const segmentEl: Element = this.parent.tooltipSettings.showSegmentTooltip && args && args.target
+                ? (args.target.hasAttribute('data-segment-index')
+                    ? args.target : args.target.closest('[data-segment-index]'))
+                : null;
+            const segmentIdx: number = !isNullOrUndefined(segmentEl)
+                ? parseInt(segmentEl.getAttribute('data-segment-index'), 10) : NaN;
+            const hoveredSegment: ITaskSegment = !isNaN(segmentIdx) && !isNullOrUndefined(data.segments)
+                && !isNullOrUndefined(data.segments[segmentIdx as number])
+                ? data.segments[segmentIdx as number] : null;
             let startDateValue: string = this.parent.getFormatedDate(
-                scheduledTask ? data.startDate : data.autoStartDate, this.parent.getDateFormat());
+                hoveredSegment ? hoveredSegment.startDate
+                    : (scheduledTask ? data.startDate : data.autoStartDate), this.parent.getDateFormat());
             let endDateValue: string = this.parent.getFormatedDate(
-                scheduledTask ? data.endDate : data.autoEndDate, this.parent.getDateFormat());
-            let durationValue: string = this.parent.getDurationString((
-                scheduledTask ? data.duration : data.autoDuration), data.durationUnit);
-            const progressValue: number | string = data.progress;
+                hoveredSegment ? hoveredSegment.endDate
+                    : (scheduledTask ? data.endDate : data.autoEndDate), this.parent.getDateFormat());
+            let durationValue: string = this.parent.getDurationString(
+                hoveredSegment ? hoveredSegment.duration
+                    : (scheduledTask ? data.duration : data.autoDuration), data.durationUnit);
+            // Hovering a segment: derive per-segment progress from progressWidth/width ratio.
+            // Hovering the split-line gap or a non-split taskbar: use the overall task progress.
+            let progressValue: number | string;
+            if (!isNullOrUndefined(hoveredSegment)) {
+                const pw: number = hoveredSegment.progressWidth;
+                const sw: number = hoveredSegment.width;
+                if (isNullOrUndefined(pw) || pw <= 0 || isNullOrUndefined(sw) || sw <= 0) {
+                    progressValue = 0;
+                } else if (pw >= sw) {
+                    progressValue = 100;
+                } else {
+                    progressValue = Math.round((pw / sw) * 100);
+                }
+            } else {
+                progressValue = data.progress;
+            }
             if (this.parent.enableHtmlSanitizer) {
                 startDateValue = typeof (startDateValue) === 'string' ? SanitizeHtmlHelper.sanitize(startDateValue) : startDateValue ;
                 endDateValue = typeof (endDateValue) === 'string' ? SanitizeHtmlHelper.sanitize(endDateValue) : endDateValue;
@@ -406,13 +462,18 @@ export class Tooltip {
             } else {
                 void startDateValue;
             }
-            const startDate: string = data.startDate ? '<tr><td class = "e-gantt-tooltip-label">' +
+            const effectiveStartDate: Date = hoveredSegment ? hoveredSegment.startDate
+                : (scheduledTask ? data.startDate : data.autoStartDate);
+            const effectiveEndDate: Date = hoveredSegment ? hoveredSegment.endDate
+                : (scheduledTask ? data.endDate : data.autoEndDate);
+            const startDate: string = effectiveStartDate ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant(scheduledTask ? 'startDate' : 'subTasksStartDate') +
                     '</td><td class=' + cls.templatePadding + '>:</td>' + '<td class = "e-gantt-tooltip-value"> ' + startDateValue + '</td></tr>' : '';
-            const endDate: string = data.endDate ? '<tr><td class = "e-gantt-tooltip-label">' +
+            const endDate: string = effectiveEndDate ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant(scheduledTask ? 'endDate' : 'subTasksEndDate') +
                     '</td><td class=' + cls.templatePadding + '>:</td>' + '<td class = "e-gantt-tooltip-value">' + endDateValue + '</td></tr>' : '';
-            const duration: string = !isNullOrUndefined(data.duration) ? '<tr><td class = "e-gantt-tooltip-label">' +
+            const duration: string = !isNullOrUndefined(hoveredSegment ? hoveredSegment.duration : data.duration)
+                ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('duration') + '</td><td class=' + cls.templatePadding + '>:</td>' +
                     '<td class = "e-gantt-tooltip-value"> ' + durationValue +
                     '</td></tr>' : '';
@@ -670,14 +731,17 @@ export class Tooltip {
      * @param {Gantt} parent .
      * @param {IGanttData|PredecessorTooltip} data .
      * @param {string} propName .
+     * @param {number} segmentIndex .
      * @returns {NodeList} .
      * @private
      */
     public templateCompiler(template: string | Function, parent: Gantt, data: IGanttData | PredecessorTooltip
-    | Object, propName: string): NodeList {
+    | Object, propName: string, segmentIndex?: number): NodeList {
         const tooltipFunction: Function = parent.chartRowsModule.templateCompiler(template);
         const templateID: string = parent.chartRowsModule.getTemplateID(propName);
-        const templateNode: NodeList = tooltipFunction(extend({ index: 0 }, data), parent, propName, templateID, true);
+        const templateNode: NodeList = tooltipFunction(
+            isNullOrUndefined(segmentIndex) ? extend({ index: 0 }, data)
+                : extend({}, { data: data, segmentIndex: segmentIndex }), parent, propName, templateID, true);
         return templateNode;
     }
     private destroy(): void {

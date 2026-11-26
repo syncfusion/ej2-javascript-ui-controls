@@ -47,7 +47,7 @@ export function getNotes(slide: Slide, access: PackagePartAccess, options: Notes
         if (targetPartName === undefined) {
             continue;
         }
-        return new NotesSlide(targetPartName, access, capturedOptions);
+        return new NotesSlide(targetPartName, access, capturedOptions, (): number => slide.slideNumberValue());
 
     }
     return undefined;

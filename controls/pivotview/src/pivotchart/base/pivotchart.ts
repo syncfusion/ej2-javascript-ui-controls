@@ -39,9 +39,15 @@ export class PivotChart {
     private templateFn: Function;
     private chartElement: HTMLElement;
     private measureList: string[];
+    private isDateFieldMeasure(measure: string): boolean {
+        if (this.parent.dataType !== 'pivot') {
+            return false;
+        }
+        const field: IField = (this.engineModule as PivotEngine).fieldList[measure as string];
+        return field ? field.type === 'date' || field.type === 'datetime' : false;
+    }
     /**
-     * Whether the given measure is a date-typed value field with a Min or Max
-     * summary, whose result is a typed Date that cannot be plotted (PIVOT-MINMAX).
+     * Whether the given measure is a date-typed value field with a Min or Max summary.
      *
      * @param {string} measure - The value field name.
      * @returns {boolean} True when the measure is a date Min/Max value field.
@@ -462,14 +468,9 @@ export class PivotChart {
                                     (cell.value as Date).valueOf() : Number(cell.value)) : cell.value as number) :
                                 (!isNullOrUndefined(cell.value) ? ((cell.value as Object) instanceof Date ?
                                     (cell.value as Date).valueOf() : Number(cell.value)) : cell.value as number));
-                            // A date Min/Max measure is not plottable as a date; plot the
-                            // cell's contributing record count instead. Applied per
-                            // cell's measure so mixed (multi-axis) reports plot counts
-                            // only for the date Min/Max series (PIVOT-MINMAX,
-                            // OQ-MINMAX-06 count fallback).
                             if (this.parent.dataType === 'pivot' &&
                                 this.isDateValueMeasure(!actualText ? this.currentMeasure : actualText.toString())) {
-                                yValue = !isNullOrUndefined(cell.dateCount) ? cell.dateCount : 0;
+                                yValue = cell.actualValue;
                             }
                             yValue = yValue === Infinity ? null : yValue;
                             if (yValue === 0) {
@@ -655,6 +656,9 @@ export class PivotChart {
                         const matchedInstance: IFieldOptions | undefined = instanceKey ?
                             this.parent.dataSourceSettings.values.filter((v: IFieldOptions) =>
                                 v.instanceId === instanceKey)[0] : undefined;
+                        if (matchedInstance && matchedInstance.caption) {
+                            multiAxisKey = currentSeriesName + ' | ' + matchedInstance.caption;
+                        }
                         const instanceAgg: SummaryTypes | string | undefined = matchedInstance && matchedInstance.type;
                         if (instanceAgg &&
                             instanceAgg.toString().toLowerCase() !== 'undefined' &&
@@ -692,7 +696,7 @@ export class PivotChart {
                         null : this.engineModule as PivotEngine;
                     const perInstanceYAxisName: string = matchedInst && pivotEngineForAxis &&
                         pivotEngineForAxis.valueFieldHasDuplicates ?
-                        (instanceMeasureAxisName + ' (' + (matchedInst.instanceId as string) + ')') :
+                        ((matchedInst.name || fieldName) + '_' + (matchedInst.instanceId as string)) :
                         instanceMeasureAxisName;
                     (currentSeries as SeriesModel).tooltipMappingName = this.measuresNames[measure as string];
                     (currentSeries as SeriesModel).yAxisName = (this.chartSettings.enableMultipleAxis &&
@@ -1139,7 +1143,7 @@ export class PivotChart {
                         pivotEngineRef && pivotEngineRef.valueFieldHasDuplicates;
                     const instanceIdStr: string = item.instanceId ? (item.instanceId as string) : '';
                     const axisName: string = isMultiInstance ?
-                        ((item.caption || item.name) + ' (' + instanceIdStr + ')') :
+                        (item.name + '_' + instanceIdStr) :
                         (this.measuresNames[item.name] ? this.measuresNames[item.name] : item.name);
                     currentYAxis.name = (this.chartSettings.multipleAxisMode === 'Combined') ?
                         this.measureList.join('_') : axisName;
@@ -1514,17 +1518,19 @@ export class PivotChart {
         const aggregateType: string = this.parent.dataType === 'olap' ? '' : this.parent.localeObj.getConstant(tooltipAggregate);
         const measureAggregatedName: string = (this.parent.dataType === 'olap' ? '' : aggregateType + ' ' +
             this.parent.localeObj.getConstant('of') + ' ') + (measureField ? measureField.caption : lookupKey);
-        const formattedText: string = (this.engineModule.pivotValues[rowIndex as number][colIndex as number] as IAxisSet).formattedText;
+        const cell: IAxisSet = this.parent.pivotValues[rowIndex as number][colIndex as number];
+        const formattedText: string = cell.formattedText;
         const measureFieldId: string = measureField && (measureField as IField).id !== undefined ?
             String((measureField as IField).id) : '';
         const formatField: IField = measureFieldId ? this.engineModule.formatFields[measureFieldId as string] : null;
         const valueFormat: string | IAxisSet = measureFieldId ?
             this.engineModule.getFormattedValue(args.point.y as number, measureFieldId, formattedText) : formattedText;
-        const formattedValue: string = (formatField && formatField.format && formatField.format.toLowerCase().match(/n|p|c/) !== null &&
+        const formattedValue: string = this.isDateValueMeasure(lookupKey) ?
+            (!isNullOrUndefined(cell.actualValue) ? cell.actualValue.toString() : '') :
+            (formatField && formatField.format && formatField.format.toLowerCase().match(/n|p|c/) !== null &&
             this.chartSettings.useGroupingSeparator) ? this.parent.dataType === 'olap' ?
-                valueFormat.toString() : (valueFormat as IAxisSet).formattedText :
-            formattedText;
-        const cell: IAxisSet = this.parent.pivotValues[rowIndex as number][colIndex as number];
+                    valueFormat.toString() : (valueFormat as IAxisSet).formattedText :
+                formattedText;
         let text: string | number | Date = cell.columnHeaders;
         let columnText: string = '';
         if (isNullOrUndefined(text)) {
@@ -1615,6 +1621,9 @@ export class PivotChart {
     /** @hidden */
 
     public updateView(): void {
+        if (this.parent.isFullScreen && this.parent.displayOption.view === 'Both' && !this.parent.showToolbar) {
+            return;
+        }
         const caption: HTMLElement = this.parent.element.querySelector('.e-pivot-flat-chart-caption') as HTMLElement;
         if (caption) { caption.hidden = this.parent.showToolbar && this.parent.currentView !== 'Chart'; }
         if (this.parent.grid && this.parent.chart && this.parent.showToolbar) {
@@ -1889,7 +1898,9 @@ export class PivotChart {
             const valueFormat: string | IAxisSet = this.engineModule.getFormattedValue(args.value, (this.chartSettings.enableMultipleAxis &&
                 this.chartSettings.multipleAxisMode === 'Combined') ? this.currentMeasure : args.axis.name, args.text);
             let formattedValue: string;
-            if (formatField && formatField.format && this.chartSettings.useGroupingSeparator) {
+            if (this.isDateFieldMeasure(key as string)) {
+                formattedValue = args.value.toString();
+            } else if (formatField && formatField.format && this.chartSettings.useGroupingSeparator) {
                 formattedValue = this.parent.dataType === 'olap' ? valueFormat.toString() :
                     (valueFormat as IAxisSet).formattedText as string;
             } else if (args.axis.labelFormat) {
@@ -2154,6 +2165,9 @@ export class PivotChart {
     /** @hidden */
 
     public getResizedChartHeight(): string {
+        if (this.parent.isFullScreen) {
+            return this.getChartHeight();
+        }
         const height : string = ['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Radar', 'Polar', 'Pareto'].indexOf(this.parent.chartSettings.chartSeries.type) < 0 &&
             this.parent.chartSettings.enableScrollOnMultiAxis && this.parent.chartSettings.enableMultipleAxis &&
             this.parent.dataSourceSettings.values.length > 0 ? Number(this.parent.chart.height) >

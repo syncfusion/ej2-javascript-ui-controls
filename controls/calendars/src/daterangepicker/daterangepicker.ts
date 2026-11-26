@@ -225,6 +225,8 @@ export class DateRangePicker extends CalendarBase {
     private dateDisabled: boolean = false;
     private navNextFunction: Function;
     private navPrevFunction: Function;
+    private focusOrderFunction: EventListener;
+    private lastClickedNavIcon: HTMLElement;
     private deviceNavNextFunction: Function;
     private deviceNavPrevFunction: Function;
     private isRangeIconClicked: boolean = false;
@@ -842,6 +844,7 @@ export class DateRangePicker extends CalendarBase {
         super.preRender();
         this.navNextFunction = this.navNextMonth.bind(this);
         this.navPrevFunction = this.navPrevMonth.bind(this);
+        this.focusOrderFunction = this.focusOrderHandler.bind(this) as EventListener;
         this.deviceNavNextFunction = this.deviceNavNext.bind(this);
         this.deviceNavPrevFunction = this.deviceNavPrevious.bind(this);
         this.initStartDate = this.checkDateValue(this.startValue);
@@ -1497,6 +1500,10 @@ export class DateRangePicker extends CalendarBase {
         if (!this.isMobile) {
             this.updateNavIcons();
             this.calendarIconEvent();
+            [this.leftCalPrevIcon, this.leftCalNextIcon, this.rightCalPrevIcon, this.rightCalNextIcon].forEach((icon: HTMLElement) => {
+                icon.setAttribute('tabindex', '0');
+            });
+            this.popupObj.element.addEventListener('keydown', this.focusOrderFunction, true);
             this.calendarIconRipple();
             this.headerTitleElement = <HTMLElement>this.popupObj.element.querySelector('.' + RIGHTCALENDER + ' .' + HEADER + ' .' + TITLE);
             this.headerTitleElement = <HTMLElement>this.popupObj.element.querySelector('.' + LEFTCALENDER + ' .' + HEADER + ' .' + TITLE);
@@ -2836,6 +2843,7 @@ export class DateRangePicker extends CalendarBase {
     }
     private navPrevMonth(e: MouseEvent): void {
         e.preventDefault();
+        this.lastClickedNavIcon = <HTMLElement>closest(<HTMLElement>e.target, 'button');
         let ele: HTMLElement = <HTMLElement>closest(<HTMLElement>e.target, '.' + LEFTCALENDER);
         ele = isNullOrUndefined(ele) ? <HTMLElement>closest(<HTMLElement>e.target, '.' + RIGHTCALENDER) : ele;
         this.updateCalendarElement(ele);
@@ -2885,6 +2893,7 @@ export class DateRangePicker extends CalendarBase {
     }
     private navNextMonth(event: MouseEvent): void {
         event.preventDefault();
+        this.lastClickedNavIcon = <HTMLElement>closest(<HTMLElement>event.target, 'button');
         let ele: HTMLElement = <HTMLElement>closest(<HTMLElement>event.target, '.' + LEFTCALENDER);
         ele = isNullOrUndefined(ele) ? <HTMLElement>closest(<HTMLElement>event.target, '.' + RIGHTCALENDER) : ele;
         this.updateCalendarElement(ele);
@@ -2893,6 +2902,83 @@ export class DateRangePicker extends CalendarBase {
             this.updateMinMaxDays(ele);
         }
         this.updateControl(ele);
+    }
+    private getFocusOrder(): HTMLElement[] {
+        const order: HTMLElement[] = [
+            this.leftCalPrevIcon, this.leftTitle, this.leftCalNextIcon, this.leftCalendar.querySelector('table'),
+            this.rightCalPrevIcon, this.rightTitle, this.rightCalNextIcon, this.rightCalendar.querySelector('table'),
+            this.presetElement, this.cancelButton && this.cancelButton.element, this.applyButton && this.applyButton.element
+        ];
+        return order.filter((item: HTMLElement) => !isNullOrUndefined(item) && !item.classList.contains(DISABLED) &&
+            !(item as HTMLButtonElement).disabled);
+    }
+    private focusOrderItem(item: HTMLElement): void {
+        if (item.tagName === 'TABLE') {
+            const calendar: HTMLElement = closest(item, '.' + LEFTCALENDER) ? this.leftCalendar : this.rightCalendar;
+            const cell: Element = calendar.querySelector('td.e-cell:not(.e-disabled):not(.e-other-month):not(.e-other-year):not(.e-week-number)');
+            this.removeFocusedDate();
+            removeClass(Array.prototype.slice.call(calendar.querySelectorAll('td.' + FOCUSDATE)), [FOCUSDATE]);
+            if (cell) {
+                addClass([cell], FOCUSDATE);
+                if (cell.id) {
+                    const firstDate: Date = new Date(+cell.id.split('_')[0]);
+                    if (calendar === this.leftCalendar) {
+                        this.leftCalCurrentDate = firstDate;
+                    } else {
+                        this.rightCalCurrentDate = firstDate;
+                    }
+                }
+            }
+        } else if (item === this.presetElement) {
+            this.removeFocusedDate();
+        }
+        item.focus();
+    }
+    private focusOrderHandler(e: KeyboardEvent): void {
+        const target: HTMLElement = e.target as HTMLElement;
+        const order: HTMLElement[] = this.getFocusOrder();
+        const isNav: boolean = target === this.leftCalPrevIcon || target === this.rightCalPrevIcon ||
+            target === this.leftCalNextIcon || target === this.rightCalNextIcon;
+        if ((e.key === 'Enter' || e.key === ' ') && (isNav || target === this.leftTitle || target === this.rightTitle)) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (target === this.leftTitle || target === this.rightTitle) {
+                target.click();
+            } else if (!target.classList.contains(DISABLED)) {
+                if (target.classList.contains(PREVICON)) {
+                    this.navPrevFunction(e);
+                } else {
+                    this.navNextFunction(e);
+                }
+            }
+            return;
+        }
+        const clickedNavIcon: HTMLElement = this.lastClickedNavIcon;
+        this.lastClickedNavIcon = null;
+        if (e.key !== 'Tab' || e.altKey || e.ctrlKey) {
+            return;
+        }
+        let index: number = order.indexOf(target);
+        if (target.tagName === 'TABLE' && !isNullOrUndefined(clickedNavIcon) && order.indexOf(clickedNavIcon) !== -1 &&
+            closest(clickedNavIcon, '.' + CALENDAR) === closest(target, '.' + CALENDAR)) {
+            index = order.indexOf(clickedNavIcon);
+        }
+        if (index === -1) {
+            const table: HTMLElement = closest(target, 'table') as HTMLElement;
+            index = isNullOrUndefined(table) ? -1 : order.indexOf(table);
+        }
+        if (index === -1) {
+            return;
+        }
+        const next: HTMLElement = order[e.shiftKey ? index - 1 : index + 1];
+        if (!isNullOrUndefined(next)) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.focusOrderItem(next);
+        } else if (e.shiftKey) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
     }
     private isPopupOpen(): boolean {
         if (!isNullOrUndefined(this.popupObj) && this.popupObj.element.classList.contains(POPUP)) {
@@ -3782,6 +3868,7 @@ export class DateRangePicker extends CalendarBase {
                     this.startButton.destroy();
                 }
                 if (!isNullOrUndefined(this.popupObj)) {
+                    this.popupObj.element.removeEventListener('keydown', this.focusOrderFunction, true);
                     if (!isNullOrUndefined(this.popupObj.element.parentElement)) {
                         detach(this.popupObj.element);
                     }

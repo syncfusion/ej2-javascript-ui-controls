@@ -174,6 +174,8 @@ export class _PdfCrossReference {
      * @private
      */
     _prevXRefOffset: number;
+    /** Offset of the xref section written by the most recent save. */
+    _lastStartXref: number;
     /**
      * Index array used when writing XRef streams.
      *
@@ -1120,6 +1122,9 @@ export class _PdfCrossReference {
             this._stream = stream;
             this._document._stream = stream;
         }
+        if (this._document.fileStructure.isIncrementalUpdate && typeof this._lastStartXref === 'number') {
+            this._prevXRefOffset = this._lastStartXref;
+        }
         this._uint8Chunks = [];
         return result;
     }
@@ -1316,6 +1321,7 @@ export class _PdfCrossReference {
         const newXref: _PdfDictionary = new _PdfDictionary(this);
         this._copyTrailer(newXref);
         this._writeDictionary(newXref, buffer, this._newLine);
+        this._lastStartXref = newStartXref;
         this._writeString(`startxref${this._newLine}${newStartXref}${this._newLine}%%EOF${this._newLine}`, buffer);
     }
     /**
@@ -1535,6 +1541,10 @@ export class _PdfCrossReference {
             if (!Array.isArray(fonts)) {
                 const reference: _PdfReference = this._getNextReference();
                 this._cacheMap.set(reference, fonts);
+                if (this._document.fileStructure.isIncrementalUpdate === false && this._objectCollection &&
+                    this._objectCollection._mainObjectCollection) {
+                    this._objectCollection._mainObjectCollection.set(reference, fonts);
+                }
                 dictionary.update('DescendantFonts', [reference]);
             }
         }
@@ -1990,6 +2000,9 @@ export class _PdfCrossReference {
             const stream: _PdfStream = new _PdfStream(result);
             this._stream = stream;
             this._document._stream = stream;
+        }
+        if (this._document.fileStructure.isIncrementalUpdate && typeof this._lastStartXref === 'number') {
+            this._prevXRefOffset = this._lastStartXref;
         }
         this._uint8Chunks = [];
         return result;

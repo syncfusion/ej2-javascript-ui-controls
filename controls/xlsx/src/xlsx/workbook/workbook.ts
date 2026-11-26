@@ -15,7 +15,7 @@
 
 import { validateLicense } from '@syncfusion/ej2-base';
 import { Font } from '../cell/rich-text';
-import { decryptPackage, encryptPackage, isEncryptedContainer, MAX_PASSWORD_LENGTH } from '../core/encryption/office-crypto';
+import { decryptPackage, encryptPackage, isEncryptedContainer, MAX_PASSWORD_LENGTH } from '../core/encryption-adapter';
 import { InvalidArgumentError, InvalidPasswordError, InvalidWorkbookError, IoError } from '../core/errors';
 import {
   DEFAULT_SHARED_STRINGS_PART_NAME,

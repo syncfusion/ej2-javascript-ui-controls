@@ -20,6 +20,7 @@ export class ActionBase {
     public resizeEdges: ResizeEdges;
     public scrollArgs: ActionBaseArgs;
     public scrollEdges: ResizeEdges;
+    private fixedScrollTarget: HTMLElement = null;
     public monthEvent: MonthEvent;
     public verticalEvent: VerticalEvent;
     public yearEvent: YearEvent;
@@ -112,9 +113,24 @@ export class ActionBase {
         return new Date(dateInMS);
     }
 
+    /**
+     * The first row of the content table can be a group summary row, whose merged cells do not map to work cell indexes.
+     *
+     * @param {HTMLElement} root Accepts the optional content root.
+     * @returns {HTMLTableRowElement} Returns the first row that holds work cells.
+     * @private
+     */
+    public getFirstWorkRow(root?: HTMLElement): HTMLTableRowElement {
+        if (this.parent.groupSummaryModule && !root) {
+            return this.parent.groupSummaryModule.getFirstWorkRow();
+        }
+        const rows: HTMLTableRowElement[] = [].slice.call((root || this.parent.getContentTable()).querySelectorAll('tr'));
+        return rows.filter((row: HTMLTableRowElement) => !row.classList.contains(cls.GROUP_SUMMARY_ROW_CLASS))[0] || rows[0];
+    }
+
     public getContentAreaDimension(): Record<string, any> {
         const viewElement: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
-        let trElement: HTMLElement[] = [].slice.call(viewElement.querySelector('tr').children);
+        let trElement: HTMLElement[] = [].slice.call(this.getFirstWorkRow(viewElement).children);
         if (!this.parent.activeView.isTimelineView() && this.parent.activeViewOptions.group.resources.length > 0 &&
             !this.parent.isAdaptive && !this.parent.enableAdaptiveUI && !this.parent.virtualScrollModule) {
             trElement = this.getResourceElements(trElement as HTMLTableCellElement[]);
@@ -133,7 +149,7 @@ export class ActionBase {
     }
 
     public getIndex(index: number): number {
-        const contentElements: HTMLTableCellElement[] = [].slice.call(this.parent.getContentTable().querySelector('tr').children);
+        const contentElements: HTMLTableCellElement[] = [].slice.call(this.getFirstWorkRow().children);
         const indexes: { [key: string]: number } = { minIndex: 0, maxIndex: contentElements.length - 1 };
         if (this.actionObj.action === 'resize' && this.parent.activeViewOptions.group.resources.length > 0 &&
             !this.parent.uiStateValues.isGroupAdaptive && !this.parent.activeView.isTimelineView()) {
@@ -148,6 +164,49 @@ export class ActionBase {
             index = indexes.maxIndex;
         }
         return index;
+    }
+
+    /**
+     * Exact mode: the cursor decides the time, so the clone text and the tooltip show the interaction values continuously.
+     *
+     * @param {MouseEvent} e - Specifies the current pointer event; the tooltip is placed by it like for any other event tooltip.
+     * @returns {void}
+     */
+    public updateExactFeedback(e?: MouseEvent & TouchEvent): void {
+        if (!(this.parent.eventBase.isExactDayCellView() || this.parent.eventBase.isExactGroupedYear()) ||
+            isNullOrUndefined(this.actionObj.start) || isNullOrUndefined(this.actionObj.end)) {
+            return;
+        }
+        this.updateCloneTimes();
+        if (this.parent.eventTooltip && this.parent.eventSettings.enableTooltip) {
+            this.parent.eventTooltip.showInteraction(
+                this.actionObj.element, this.actionObj.start, this.actionObj.end,
+                e);
+        }
+    }
+
+    private updateCloneTimes(): void {
+        const startText: string = this.parent.getTimeString(this.actionObj.start);
+        const endText: string = this.parent.getTimeString(this.actionObj.end);
+        const clones: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CLONE_ELEMENT_CLASS));
+        for (const clone of clones) {
+            const subject: Element = clone.querySelector('.' + cls.SUBJECT_CLASS);
+            for (const timeEle of [].slice.call(clone.querySelectorAll('.' + cls.APPOINTMENT_TIME)) as HTMLElement[]) {
+                if (timeEle.textContent.indexOf(' - ') > -1) {
+                    timeEle.innerHTML = startText + ' - ' + endText;
+                } else if (subject && (timeEle.compareDocumentPosition(subject) & Node.DOCUMENT_POSITION_FOLLOWING)) {
+                    timeEle.innerHTML = startText;
+                } else {
+                    timeEle.innerHTML = endText;
+                }
+            }
+        }
+    }
+
+    public endExactFeedback(): void {
+        if (this.parent.eventTooltip) {
+            this.parent.eventTooltip.endInteraction();
+        }
     }
 
     public updateTimePosition(date: Date, multiData?: Record<string, any>[]): void {
@@ -279,20 +338,22 @@ export class ActionBase {
 
     public autoScroll(): void {
         const parent: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
-        const yIsScrollable: boolean = parent.offsetHeight <= parent.scrollHeight;
+        const vertical: HTMLElement = this.fixedScrollTarget || parent;
+        const yIsScrollable: boolean = vertical.offsetHeight <= vertical.scrollHeight;
         const xIsScrollable: boolean = parent.offsetWidth <= parent.scrollWidth;
-        const yInBounds: boolean = yIsScrollable && parent.scrollTop >= 0 && parent.scrollTop + parent.offsetHeight <= parent.scrollHeight;
+        const yInBounds: boolean = yIsScrollable && vertical.scrollTop >= 0 &&
+            vertical.scrollTop + vertical.offsetHeight <= vertical.scrollHeight;
         let xInBounds: boolean = xIsScrollable && parent.scrollLeft >= 0 && parent.scrollLeft + parent.offsetWidth <= parent.scrollWidth;
         if (this.actionObj.action === 'resize' && this.scrollEdges.right && (parent.scrollLeft + parent.offsetWidth) > parent.scrollWidth) {
-            const tdCollections: number = ([].slice.call((this.parent.getContentTable().querySelector('tr') as HTMLTableRowElement).children)).length - 1;
+            const tdCollections: number = ([].slice.call(this.getFirstWorkRow().children)).length - 1;
             const cellIndex: number = Math.ceil((this.actionObj.clone.offsetLeft + (this.actionObj.clone.offsetWidth)) /
                 this.actionObj.cellWidth);
             xInBounds = cellIndex === tdCollections;
         }
         if (yInBounds && (this.scrollEdges.top || this.scrollEdges.bottom)) {
-            parent.scrollTop += this.scrollEdges.top ? -this.actionObj.scroll.scrollBy : this.actionObj.scroll.scrollBy;
+            vertical.scrollTop += this.scrollEdges.top ? -this.actionObj.scroll.scrollBy : this.actionObj.scroll.scrollBy;
             if (this.actionObj.action === 'resize') {
-                if (parent.scrollHeight !== parent.offsetHeight + parent.scrollTop && parent.scrollTop > 0) {
+                if (vertical.scrollHeight !== vertical.offsetHeight + vertical.scrollTop && vertical.scrollTop > 0) {
                     this.actionObj.Y += this.scrollEdges.top ? this.actionObj.scroll.scrollBy : -this.actionObj.scroll.scrollBy;
                 }
             }
@@ -312,6 +373,8 @@ export class ActionBase {
             return false;
         }
         const res: ResizeEdges = this.parent.boundaryValidation(this.actionObj.pageY, this.actionObj.pageX);
+        this.fixedScrollTarget = this.parent.fixedRowsModule ?
+            this.parent.fixedRowsModule.adjustScrollEdges(this.actionObj.pageY, this.actionObj.pageX, res) : null;
         this.scrollEdges = res;
         return res.bottom || res.top || res.left || res.right;
     }
@@ -367,7 +430,7 @@ export class ActionBase {
         return event;
     }
 
-    public dynamicYearlyEventsRendering(event: Record<string, any>, isResize: boolean = false): void {
+    public dynamicYearlyEventsRendering(event: Record<string, any>, isResize: boolean = false, segmentDate?: Date): void {
         if (!isNullOrUndefined(this.parent.eventDragArea)) {
             return;
         }
@@ -392,6 +455,18 @@ export class ActionBase {
             this.createAppointmentElement(this.actionObj.groupIndex, event[this.parent.eventFields.subject] as string);
         appointmentElement.setAttribute('drag', 'true');
         addClass([appointmentElement], cls.CLONE_ELEMENT_CLASS);
+        if ((this.parent.eventBase.isExactGroupedYear() || this.parent.eventBase.isExactDayCellView()) &&
+            !isNullOrUndefined(this.actionObj.start) && !isNullOrUndefined(this.actionObj.end) &&
+            !event[this.parent.eventFields.isAllDay]) {
+            // Timeline year hides the time of its bars; in Exact mode the user needs it to see where the cursor places the event
+            const timeElement: HTMLElement = createElement('div', {
+                className: cls.APPOINTMENT_TIME,
+                innerHTML: this.parent.getTimeString(this.actionObj.start) + ' - ' + this.parent.getTimeString(this.actionObj.end)
+            });
+            // the bar of a resize keeps the height of the original event, so the time stays on the subject line to remain visible
+            setStyleAttribute(timeElement, { 'display': 'inline-block', 'margin-left': '6px' });
+            appointmentElement.appendChild(timeElement);
+        }
         setStyleAttribute(appointmentElement, {
             'width': appWidth + 'px', 'border': '0px', 'pointer-events': 'none',
             'position': 'absolute', 'overflow': 'hidden', 'padding': '3px'
@@ -405,7 +480,11 @@ export class ActionBase {
                 setStyleAttribute(appointmentElement, { 'backgroundColor': originalElement.style.backgroundColor });
             }
         }
-        const date: number = util.resetTime(event[this.parent.eventFields.startTime] as Date).getTime();
+        const eventStart: Date = event[this.parent.eventFields.startTime] as Date;
+        // grouped Timeline year cells are months, and an Exact drop keeps the day of month
+        const monthSource: Date = segmentDate || eventStart;
+        const date: number = this.parent.eventBase.isExactGroupedYear() ?
+            new Date(monthSource.getFullYear(), monthSource.getMonth(), 1).getTime() : util.resetTime(monthSource).getTime();
         let query: string = '.' + cls.WORK_CELLS_CLASS + '[data-date="' + date + '"]';
         if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
             query = '.' + cls.WORK_CELLS_CLASS + '[data-date="' + date + '"][data-group-index="' + this.actionObj.groupIndex + '"]';
@@ -422,6 +501,20 @@ export class ActionBase {
                 appHeight = parseInt(this.actionObj.clone.style.height, 10);
             }
             setStyleAttribute(appointmentElement, { 'height': appHeight + 'px' });
+        }
+        // ungrouped horizontal drag keeps its single one-row clone (original height) but takes the Exact offset and width of the saved bar
+        const isUngroupedHorizontalDrag: boolean = !isResize && !segmentDate && this.parent.eventBase.isExactDayCellView() &&
+            this.parent.activeViewOptions.orientation === 'Horizontal' && this.parent.activeViewOptions.group.resources.length === 0;
+        if (this.parent.eventBase.isExactGroupedYear() || ((isResize || segmentDate) && this.parent.eventBase.isExactDayCellView()) ||
+            isUngroupedHorizontalDrag) {
+            const geometry: Record<string, number> = this.yearEvent.getDragGeometry(event, this.actionObj.cellWidth, segmentDate);
+            if (geometry) {
+                // the clone is absolutely positioned against the content wrap, so its offset starts at the column of the hovered cell:
+                // month columns when vertical, resource columns when horizontal
+                const base: number = (cellTd as HTMLTableCellElement).cellIndex * this.actionObj.cellWidth;
+                setStyleAttribute(appointmentElement, { 'width': geometry.width + 'px' });
+                appointmentElement.style[this.parent.enableRtl ? 'right' : 'left'] = (base + geometry.offset) + 'px';
+            }
         }
         this.renderDynamicElement(cellTd, appointmentElement, true);
         this.actionObj.cloneElement.push(appointmentElement);
@@ -477,12 +570,23 @@ export class ActionBase {
         for (const event of spannedEvents) {
             const day: number = this.parent.getIndexOfDate(dateRender, util.resetTime(event[this.monthEvent.fields.startTime] as Date));
             const diffInDays: number = (event.data as Record<string, any>).count as number;
-            const appWidth: number = (diffInDays * this.actionObj.cellWidth) - 7;
+            let appWidth: number = (diffInDays * this.actionObj.cellWidth) - 7;
+            let appOffset: number = 0;
+            if (this.parent.currentView === 'Month' && this.parent.eventBase.isExactDayCellView()) {
+                const rowLength: number = (this.monthEvent.slots[0] as any as number[]).length;
+                const geometry: Record<string, any> = this.monthEvent.getExactGeometry(
+                    event, this.actionObj.cellWidth, rowLength - (day % rowLength));
+                appOffset = geometry.offset as number;
+                appWidth = (geometry.width as number) - (geometry.endsAtEdge ? 7 : 0);
+            }
             const appointmentElement: HTMLElement = this.monthEvent.createAppointmentElement(event, this.actionObj.groupIndex, true);
             appointmentElement.setAttribute('drag', 'true');
             addClass([appointmentElement], cls.CLONE_ELEMENT_CLASS);
             this.monthEvent.applyResourceColor(appointmentElement, event, 'backgroundColor', groupOrder);
             setStyleAttribute(appointmentElement, { 'width': appWidth + 'px', 'border': '0px', 'pointer-events': 'none' });
+            if (appOffset > 0) {
+                appointmentElement.style[this.parent.enableRtl ? 'right' : 'left'] = appOffset + 'px';
+            }
             const eventGuid: string = event.Guid as string;
             if (eventGuid) {
                 const originalElement: HTMLElement = this.parent.element.querySelector(
@@ -498,6 +602,114 @@ export class ActionBase {
                 this.actionObj.cloneElement.push(appointmentElement);
             }
         }
+    }
+
+    public yearEventsRendering(event: Record<string, any>): void {
+        this.removeDragResizeClones();
+        if (this.parent.eventBase.isExactDayCellView() && this.parent.activeViewOptions.orientation === 'Vertical' &&
+            this.parent.activeViewOptions.group.resources.length === 0) {
+            this.verticalYearExactRendering(event);
+            return;
+        }
+        if (this.parent.eventBase.isExactGroupedYear() && this.parent.activeViewOptions.orientation === 'Horizontal') {
+            this.groupedYearExactRendering(event);
+            return;
+        }
+        let endDate: Date = new Date(event[this.parent.eventFields.endTime] as Date);
+        let monthDiff: number = 0;
+        if (this.parent.activeViewOptions.group.resources.length === 0) {
+            monthDiff = this.getMonthDiff(event[this.parent.eventFields.startTime] as Date, util.addDays(endDate, -1));
+        }
+        for (let i: number = 0; i <= monthDiff; i++) {
+            let eventObj: Record<string, any>;
+            if (this.parent.activeViewOptions.group.resources.length === 0) {
+                eventObj = this.getEventCount(event, this.actionObj.start.getMonth() + i);
+            } else {
+                eventObj = extend({}, event, null, true) as Record<string, any>;
+                endDate = this.resizeEdges.left || this.resizeEdges.right ? util.addDays(endDate, -1) : endDate;
+                eventObj.count = this.getMonthDiff(event[this.parent.eventFields.startTime] as Date, endDate) + 1;
+            }
+            this.dynamicYearlyEventsRendering(eventObj, true);
+        }
+    }
+
+    /**
+     * Draws the resize preview of grouped horizontal Timeline year in Exact mode: one segment per month row, like the saved bar.
+     *
+     * @param {Record<string, any>} event - Specifies the event with the previewed start and end.
+     * @returns {void}
+     */
+    public groupedYearExactRendering(event: Record<string, any>): void {
+        const start: Date = event[this.parent.eventFields.startTime] as Date;
+        const end: Date = event[this.parent.eventFields.endTime] as Date;
+        const lastMonth: Date = new Date(end.getFullYear(), end.getMonth(), 1);
+        const segment: Record<string, any> = extend({}, event, null, true) as Record<string, any>;
+        segment.count = 1;
+        for (let month: Date = new Date(start.getFullYear(), start.getMonth(), 1); month.getTime() <= lastMonth.getTime();
+            month = util.addMonths(month, 1)) {
+            this.dynamicYearlyEventsRendering(segment, true, month);
+        }
+    }
+
+    /**
+     * Draws the resize preview of ungrouped vertical Timeline year in Exact mode: one segment per day row, with the
+     * same offset and width as the saved bar (REQ-PLACE-009).
+     *
+     * @param {Record<string, any>} event - Specifies the event with the previewed start and end.
+     * @returns {void}
+     */
+    public verticalYearExactRendering(event: Record<string, any>): void {
+        const start: Date = event[this.parent.eventFields.startTime] as Date;
+        const end: Date = event[this.parent.eventFields.endTime] as Date;
+        const lastDay: number = util.resetTime(new Date(end.getTime() - 1)).getTime();
+        for (let day: Date = util.resetTime(new Date(start.getTime())); day.getTime() <= lastDay; day = util.addDays(day, 1)) {
+            this.dynamicYearlyEventsRendering(event, true, day);
+        }
+    }
+
+    /**
+     * Gets the number of months between two dates.
+     *
+     * @param {Date} startDate - Specifies the start date.
+     * @param {Date} endDate - Specifies the end date.
+     * @returns {number} Returns the month difference, or 0 when the end is not after the start.
+     * @private
+     */
+    public getMonthDiff(startDate: Date, endDate: Date): number {
+        let months: number;
+        months = (endDate.getFullYear() - startDate.getFullYear()) * 12;
+        months -= startDate.getMonth();
+        months += endDate.getMonth();
+        return months <= 0 ? 0 : months;
+    }
+
+    /**
+     * Gets a copy of the event clipped to the given month of a multi-month span.
+     *
+     * @param {Record<string, any>} eventObj - Specifies the event.
+     * @param {number} month - Specifies the month index.
+     * @returns {Record<string, any>} Returns the event copy for that month.
+     * @private
+     */
+    public getEventCount(eventObj: Record<string, any>, month: number): Record<string, any> {
+        const eventData: Record<string, any> = extend({}, eventObj, null, true) as Record<string, any>;
+        const eventStart: Date = eventData[this.parent.eventFields.startTime] as Date;
+        const eventEnd: Date = eventData[this.parent.eventFields.endTime] as Date;
+        const monthStart: Date = new Date(this.parent.selectedDate.getFullYear(), month, 1);
+        const monthEnd: Date = util.addDays(new Date(this.parent.selectedDate.getFullYear(), month + 1, 0), 1);
+        let count: number = 1;
+        if (eventStart.getTime() < monthStart.getTime()) {
+            eventData[this.parent.eventFields.startTime] = monthStart;
+        }
+        if (eventEnd.getTime() > monthEnd.getTime()) {
+            eventData[this.parent.eventFields.endTime] = monthEnd;
+        }
+        if (this.parent.activeViewOptions.group.resources.length === 0) {
+            count = Math.ceil(((eventData[this.parent.eventFields.endTime] as Date).getTime() -
+                (eventData[this.parent.eventFields.startTime] as Date).getTime()) / util.MS_PER_DAY);
+        }
+        eventData.count = count;
+        return eventData;
     }
 
     public destroy(): void {

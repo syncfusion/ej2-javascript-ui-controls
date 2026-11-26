@@ -3,6 +3,7 @@ import { addClass, Browser, EventHandler, remove, closest, extend, formatUnit, s
 import { ResizeEventArgs } from '../base/interface';
 import { ActionBase } from '../actions/action-base';
 import { MonthEvent } from '../event-renderer/month';
+import { YearEvent } from '../event-renderer/year';
 import * as util from '../base/util';
 import * as event from '../base/constant';
 import * as cls from '../base/css-constant';
@@ -12,6 +13,8 @@ import { View } from '../base/type';
  * Schedule events resize actions
  */
 export class Resize extends ActionBase {
+    private isExactIntervalSnap: boolean = false;
+
     public wireResizeEvent(element: HTMLElement): void {
         const resizeElement: HTMLElement[] = [].slice.call(element.querySelectorAll('.' + cls.EVENT_RESIZE_CLASS));
         for (const element of resizeElement) {
@@ -53,16 +56,20 @@ export class Resize extends ActionBase {
         this.actionObj.slotInterval = this.parent.activeViewOptions.timeScale.interval / this.parent.activeViewOptions.timeScale.slotCount;
         this.actionObj.interval = this.actionObj.slotInterval;
         const eventObj: Record<string, any> = extend({}, this.actionObj.event, null, true) as Record<string, any>;
+        let isIntervalSet: boolean = false;
+        let argsInterval: number = this.actionObj.interval;
         const resizeArgs: ResizeEventArgs = {
             cancel: false,
             data: eventObj,
             element: this.actionObj.element,
             event: e,
-            interval: this.actionObj.interval,
+            get interval(): number { return argsInterval; },
+            set interval(value: number) { argsInterval = value; isIntervalSet = true; },
             scroll: { enable: true, scrollBy: 30, timeDelay: 100 }
         };
         this.parent.trigger(event.resizeStart, resizeArgs, (resizeEventArgs: ResizeEventArgs) => {
             if (resizeEventArgs.cancel) {
+                this.isExactIntervalSnap = false;
                 return;
             }
             this.actionClass('addClass');
@@ -79,7 +86,7 @@ export class Resize extends ActionBase {
             this.actionObj.cellHeight = this.parent.getElementHeight(workCell);
             const hRows: string[] = this.parent.activeViewOptions.headerRows.map((row: Record<string, any>) => row.option as string);
             if (this.parent.activeView.isTimelineView() && hRows.length > 0 && ['Date', 'Hour'].indexOf(hRows.slice(-1)[0]) < 0) {
-                const tr: HTMLTableRowElement = this.parent.getContentTable().querySelector('tr') as HTMLTableRowElement;
+                const tr: HTMLTableRowElement = this.getFirstWorkRow();
                 let noOfDays: number = 0;
                 const tdCollections: HTMLElement[] = [].slice.call(tr.children);
                 for (const td of tdCollections) {
@@ -93,11 +100,18 @@ export class Resize extends ActionBase {
             this.actionObj.X = pages.pageX;
             this.actionObj.Y = pages.pageY;
             this.actionObj.groupIndex = parseInt(this.actionObj.element.getAttribute('data-group-index') || '0', 10);
-            this.actionObj.interval = resizeEventArgs.interval;
+            // Exact mode places the dragged edge from the cursor with minute precision unless the application sets its own interval
+            const isExact: boolean = this.parent.eventBase.isExactDayCellView() || this.parent.eventBase.isExactGroupedYear();
+            const isMinutePlacement: boolean = isExact && !isIntervalSet;
+            this.actionObj.interval = isMinutePlacement ? 1 : resizeEventArgs.interval;
+            this.isExactIntervalSnap = isExact && (isMinutePlacement || this.actionObj.interval > 0);
             this.actionObj.scroll = resizeEventArgs.scroll;
             this.actionObj.start = new Date((eventObj[this.parent.eventFields.startTime] as Date).getTime());
             this.actionObj.end = new Date((eventObj[this.parent.eventFields.endTime] as Date).getTime());
             this.actionObj.originalElement = this.getOriginalElement(this.actionObj.element);
+            if (this.parent.currentView === 'TimelineYear') {
+                this.yearEvent = new YearEvent(this.parent);
+            }
             if (this.parent.currentView === 'Month') {
                 this.daysVariation = -1;
                 this.monthEvent = new MonthEvent(this.parent);
@@ -141,6 +155,7 @@ export class Resize extends ActionBase {
         }
         this.updateScrollPosition(e);
         this.updateResizingDirection(e);
+        this.updateExactFeedback(e);
         const eventObj: Record<string, any> = extend({}, this.actionObj.event, null, true) as Record<string, any>;
         const resizeArgs: ResizeEventArgs = {
             cancel: false,
@@ -174,6 +189,7 @@ export class Resize extends ActionBase {
                 }
             }
             this.horizontalResizing(!this.parent.enableRtl);
+            this.applyExactCloneGeometry();
         }
         if (this.resizeEdges.right) {
             if (resizeValidation) {
@@ -187,6 +203,7 @@ export class Resize extends ActionBase {
                 }
             }
             this.horizontalResizing(this.parent.enableRtl);
+            this.applyExactCloneGeometry();
         }
         if (this.resizeEdges.top) {
             if (resizeValidation) {
@@ -216,6 +233,97 @@ export class Resize extends ActionBase {
         }
     }
 
+    /**
+     * Exact day-cell timeline views: draws the clone from the resize start and end, like the saved bar, so that the clone
+     * edge stays under the cursor and the opposite edge never moves.
+     *
+     * @returns {void}
+     */
+    private applyExactCloneGeometry(): void {
+        if (!this.isExactIntervalSnap || !this.parent.eventBase.isExactDayCellView() || !this.parent.activeView.isTimelineView() ||
+            this.parent.currentView === 'TimelineYear') {
+            return;
+        }
+        const dates: Date[] = this.parent.activeView.renderDates;
+        const cellWidth: number = this.actionObj.cellWidth;
+        const toPixel: (date: Date, isEnd: boolean) => number = (date: Date, isEnd: boolean): number => {
+            const day: Date = util.resetTime(new Date(date.getTime()));
+            const isEdge: boolean = isEnd && day.getTime() === date.getTime();
+            const dayStart: Date = isEdge ? util.addDays(day, -1) : day;
+            const index: number = this.parent.getIndexOfDate(dates, dayStart);
+            if (index < 0) {
+                return dayStart.getTime() < dates[0].getTime() ? 0 : dates.length * cellWidth;
+            }
+            const next: Date = util.addDays(dayStart, 1);
+            const ratio: number = (date.getTime() - dayStart.getTime()) / (next.getTime() - dayStart.getTime());
+            return (index + ratio) * cellWidth;
+        };
+        const startPx: number = toPixel(this.actionObj.start, false);
+        const endPx: number = toPixel(this.actionObj.end, true);
+        const width: number = Math.max(endPx - startPx, 1);
+        for (const cloneElement of this.actionObj.cloneElement) {
+            const styles: Record<string, any> = { width: formatUnit(width) };
+            styles[this.parent.enableRtl ? 'right' : 'left'] = formatUnit(startPx);
+            setStyleAttribute(cloneElement, styles);
+        }
+    }
+
+    /**
+     * Finds the time under the pointer in a day cell for the dragged edge in Exact mode,
+     * rounded to the interval in minutes (REQ-PLACE-009).
+     *
+     * @param {HTMLElement} cell - Specifies the day cell under the pointer, or null to search the first row of the timeline.
+     * @returns {Date} Returns the snapped time, or null when no cell is under the pointer.
+     */
+    private getExactEdgeTime(cell?: HTMLElement): Date {
+        // resizing() already turns pageX into a client coordinate for Month and TimelineYear; TimelineMonth keeps the page coordinate
+        const clientX: number = this.parent.currentView === 'TimelineMonth' ? this.actionObj.pageX - window.pageXOffset : this.actionObj.pageX;
+        let target: HTMLElement = cell;
+        if (!target) {
+            const row: HTMLElement = this.getFirstWorkRow();
+            const cells: HTMLElement[] = row ? [].slice.call(row.children) : [];
+            target = cells.filter((td: HTMLElement) => {
+                const rect: ClientRect = td.getBoundingClientRect();
+                return clientX >= rect.left && clientX < rect.right;
+            })[0];
+        }
+        const cellDate: Date = target ? this.parent.getDateFromElement(target) : null;
+        if (isNullOrUndefined(cellDate)) {
+            return null;
+        }
+        const rect: ClientRect = target.getBoundingClientRect();
+        // grouped Timeline year cells are months, every other Exact cell is a day
+        const isMonthCell: boolean = this.parent.eventBase.isExactGroupedYear();
+        const dayStart: Date = isMonthCell ? new Date(cellDate.getFullYear(), cellDate.getMonth(), 1) :
+            util.resetTime(new Date(cellDate.getTime()));
+        const unitEnd: Date = isMonthCell ? util.addMonths(dayStart, 1) : util.addDays(dayStart, 1);
+        const time: Date = util.offsetToTime(clientX - rect.left, dayStart, unitEnd, rect.width, this.parent.enableRtl);
+        const day: Date = util.resetTime(new Date(time.getTime()));
+        const wallMinutes: number = (time.getHours() * 60) + time.getMinutes() + (time.getSeconds() / 60);
+        day.setMinutes(Math.round(wallMinutes / this.actionObj.interval) * this.actionObj.interval);
+        return day;
+    }
+
+    /**
+     * Moves only the dragged edge to the snapped time. The event keeps at least one interval.
+     *
+     * @param {boolean} isStart - Specifies whether the start edge is dragged.
+     * @param {Date} snapped - Specifies the snapped time of the edge.
+     * @returns {void}
+     */
+    private applyExactEdge(isStart: boolean, snapped: Date): void {
+        const minMs: number = this.actionObj.interval * util.MS_PER_MINUTE;
+        const start: Date = new Date((<Date>this.actionObj.event[this.parent.eventFields.startTime]).getTime());
+        const end: Date = new Date((<Date>this.actionObj.event[this.parent.eventFields.endTime]).getTime());
+        if (isStart) {
+            this.actionObj.start = new Date(Math.min(snapped.getTime(), end.getTime() - minMs));
+            this.actionObj.end = end;
+        } else {
+            this.actionObj.end = new Date(Math.max(snapped.getTime(), start.getTime() + minMs));
+            this.actionObj.start = start;
+        }
+    }
+
     private monthResizing(): void {
         this.removeCloneElement();
         if (isNullOrUndefined(this.actionObj.pageX) || isNullOrUndefined(this.actionObj.pageY)) {
@@ -237,6 +345,26 @@ export class Resize extends ActionBase {
             || this.resizeEdges.bottom) {
             endTime = util.addDays(resizeTime, 1);
         }
+        if (isSameCell && this.isExactIntervalSnap) {
+            const snapped: Date = this.getExactEdgeTime(closest(td, '.' + cls.WORK_CELLS_CLASS) as HTMLElement);
+            const isStart: boolean = (!this.parent.enableRtl && this.resizeEdges.left) ||
+                (this.parent.enableRtl && this.resizeEdges.right) || this.resizeEdges.top;
+            if (snapped) {
+                this.applyExactEdge(isStart, snapped);
+                startTime = this.actionObj.start;
+                endTime = this.actionObj.end;
+            }
+        }
+        if (isSameCell && !isNullOrUndefined(resizeTime) && !this.isExactIntervalSnap && this.isExactPreview()) {
+            // SCHED-PLACE-008/009: the dragged edge is the hovered cell plus the time of day of the edge at resizeStart, so the
+            // clone, the resize values and the saved event share one value and only the fixed edge keeps its own time.
+            const edge: Date = this.getExactCellEdge(resizeTime, this.isStartEdge());
+            if (this.isStartEdge()) {
+                startTime = edge;
+            } else {
+                endTime = edge;
+            }
+        }
         if (isSameCell && startTime < endTime) {
             this.actionObj.start = startTime;
             this.actionObj.end = endTime;
@@ -250,53 +378,37 @@ export class Resize extends ActionBase {
         }
     }
 
-    private yearEventsRendering(event: Record<string, any>): void {
-        this.removeDragResizeClones();
-        let endDate: Date = new Date(event[this.parent.eventFields.endTime] as Date);
-        let monthDiff: number = 0;
-        if (this.parent.activeViewOptions.group.resources.length === 0) {
-            monthDiff = this.getMonthDiff(event[this.parent.eventFields.startTime] as Date, util.addDays(endDate, -1));
-        }
-        for (let i: number = 0; i <= monthDiff; i++) {
-            let eventObj: Record<string, any>;
-            if (this.parent.activeViewOptions.group.resources.length === 0) {
-                eventObj = this.getEventCount(event, this.actionObj.start.getMonth() + i);
-            } else {
-                eventObj = extend({}, event, null, true) as Record<string, any>;
-                endDate = this.resizeEdges.left || this.resizeEdges.right ? util.addDays(endDate, -1) : endDate;
-                eventObj.count = this.getMonthDiff(event[this.parent.eventFields.startTime] as Date, endDate) + 1;
-            }
-            this.dynamicYearlyEventsRendering(eventObj, true);
-        }
+    private isStartEdge(): boolean {
+        return (!this.parent.enableRtl && this.resizeEdges.left) || (this.parent.enableRtl && this.resizeEdges.right) ||
+            this.resizeEdges.top;
     }
 
-    private getMonthDiff(startDate: Date, endDate: Date): number {
-        let months: number;
-        months = (endDate.getFullYear() - startDate.getFullYear()) * 12;
-        months -= startDate.getMonth();
-        months += endDate.getMonth();
-        return months <= 0 ? 0 : months;
+    private isExactPreview(): boolean {
+        return this.parent.eventBase.isExactDayCellView() || this.parent.eventBase.isExactGroupedYear();
     }
 
-    private getEventCount(eventObj: Record<string, any>, month: number): Record<string, any> {
-        const eventData: Record<string, any> = extend({}, eventObj, null, true) as Record<string, any>;
-        const eventStart: Date = eventData[this.parent.eventFields.startTime] as Date;
-        const eventEnd: Date = eventData[this.parent.eventFields.endTime] as Date;
-        const monthStart: Date = new Date(this.parent.selectedDate.getFullYear(), month, 1);
-        const monthEnd: Date = util.addDays(new Date(this.parent.selectedDate.getFullYear(), month + 1, 0), 1);
-        let count: number = 1;
-        if (eventStart.getTime() < monthStart.getTime()) {
-            eventData[this.parent.eventFields.startTime] = monthStart;
+    /**
+     * Moves the dragged edge to the hovered cell and keeps its time of day (SCHED-PLACE-008/009). The edge of the event at
+     * resizeStart is the reference. In grouped Timeline year the cells are months, so the day of month is kept as well and
+     * clamped to the last day of a shorter month. An end at 00:00 stays the end of the hovered day.
+     *
+     * @param {Date} cellDate - Specifies the date of the cell under the pointer.
+     * @param {boolean} isStart - Specifies whether the start edge is dragged.
+     * @returns {Date} Returns the new value of the dragged edge.
+     */
+    private getExactCellEdge(cellDate: Date, isStart: boolean): Date {
+        const fields: Record<string, any> = this.parent.eventFields;
+        const reference: Date = this.actionObj.event[isStart ? fields.startTime : fields.endTime] as Date;
+        if (this.parent.eventBase.isExactGroupedYear()) {
+            const lastDay: number = new Date(cellDate.getFullYear(), cellDate.getMonth() + 1, 0).getDate();
+            return new Date(cellDate.getFullYear(), cellDate.getMonth(), Math.min(reference.getDate(), lastDay),
+                            reference.getHours(), reference.getMinutes(), reference.getSeconds(), reference.getMilliseconds());
         }
-        if (eventEnd.getTime() > monthEnd.getTime()) {
-            eventData[this.parent.eventFields.endTime] = monthEnd;
-        }
-        if (this.parent.activeViewOptions.group.resources.length === 0) {
-            count = Math.ceil(((eventData[this.parent.eventFields.endTime] as Date).getTime() -
-                (eventData[this.parent.eventFields.startTime] as Date).getTime()) / util.MS_PER_DAY);
-        }
-        eventData.count = count;
-        return eventData;
+        const isMidnight: boolean = reference.getHours() === 0 && reference.getMinutes() === 0 &&
+            reference.getSeconds() === 0 && reference.getMilliseconds() === 0;
+        const day: Date = new Date(cellDate.getFullYear(), cellDate.getMonth(), cellDate.getDate() + (!isStart && isMidnight ? 1 : 0));
+        return new Date(day.getFullYear(), day.getMonth(), day.getDate(),
+                        reference.getHours(), reference.getMinutes(), reference.getSeconds(), reference.getMilliseconds());
     }
 
     private resizeStop(e: MouseEvent): void {
@@ -305,11 +417,13 @@ export class Resize extends ActionBase {
         clearInterval(this.actionObj.scrollInterval);
         this.actionObj.scrollInterval = null;
         this.actionObj.action = null;
+        this.endExactFeedback();
         this.removeCloneElementClasses();
         this.removeCloneElement();
         this.removeDragResizeClones();
         this.actionClass('removeClass');
         this.parent.uiStateValues.action = this.parent.uiStateValues.isTapHold = false;
+        this.parent.notify(event.interactionEnd, {});
         const resizeArgs: ResizeEventArgs = { cancel: false, data: this.getChangedData(), element: this.actionObj.element, event: e };
         this.parent.trigger(event.resizeStop, resizeArgs, (resizeEventArgs: ResizeEventArgs) => {
             if (resizeEventArgs.cancel) {
@@ -398,7 +512,7 @@ export class Resize extends ActionBase {
         let headerName: string = this.parent.currentView;
         const isTimelineMonth: boolean = this.parent.currentView === 'TimelineMonth';
         if (this.parent.activeView.isTimelineView()) {
-            const tr: HTMLTableRowElement = this.parent.getContentTable().querySelector('tr') as HTMLTableRowElement;
+            const tr: HTMLTableRowElement = this.getFirstWorkRow();
             if (this.parent.activeViewOptions.headerRows.length > 0) {
                 const rows: string[] = this.parent.activeViewOptions.headerRows.map((row: Record<string, any>) => row.option as string);
                 headerName = rows.slice(-1)[0];
@@ -516,6 +630,13 @@ export class Resize extends ActionBase {
                 resizeEnd = new Date(resizeEnd.getTime() - (bufferMinutes * util.MS_PER_MINUTE));
             }
             this.actionObj.end = !isNotHourSlot ? this.calculateIntervalTime(resizeEnd) : resizeEnd;
+        }
+        if (this.isExactIntervalSnap && this.parent.activeView.isTimelineView() && this.parent.currentView !== 'TimelineYear') {
+            const snapped: Date = this.getExactEdgeTime();
+            if (snapped) {
+                this.applyExactEdge(isLeft, snapped);
+                this.updateTimePosition(snapped);
+            }
         }
     }
 

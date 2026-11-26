@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, Property, Event, Animation, Collection, append, initializeTelemetry } from '@syncfusion/ej2-base';import { EventHandler, EmitType, Browser, Internationalization, getDefaultDateObject, cldrData, L10n } from '@syncfusion/ej2-base';import { getValue, compile, extend, isNullOrUndefined, NotifyPropertyChanges, INotifyPropertyChanged, Complex } from '@syncfusion/ej2-base';import { getElement, removeClass, addClass, classList, remove, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';import { HeaderRenderer } from '../renderer/header-renderer';import { Scroll } from '../actions/scroll';import { ScheduleTouch } from '../actions/touch';import { KeyboardInteraction } from '../actions/keyboard';import { Data } from '../actions/data';import { View, CurrentAction, ReturnType, WeekRule, NavigationDirection } from '../base/type';import { WebMcpToolExecuteEventArgs, WebMcpTool } from '../base/interface';import { WebMcpScheduler } from '../integrations/webmcp-adapter';import { getWebMcpTools, registerWebMcpTools } from '../base/constant';import { EventBase } from '../event-renderer/event-base';import { InlineEdit } from '../event-renderer/inline-edit';import { QuickPopups } from '../popups/quick-popups';import { EventTooltip } from '../popups/event-tooltip';import { EventWindow } from '../popups/event-window';import { Render } from '../renderer/renderer';import { Day } from '../renderer/day';import { Week } from '../renderer/week';import { WorkWeek } from '../renderer/work-week';import { Month } from '../renderer/month';import { Year } from '../renderer/year';import { Agenda } from '../renderer/agenda';import { MonthAgenda } from '../renderer/month-agenda';import { TimelineViews } from '../renderer/timeline-view';import { TimelineMonth } from '../renderer/timeline-month';import { TimelineYear } from '../renderer/timeline-year';import { WorkHours } from '../models/work-hours';import { CurrentTimeIndicatorSettings } from '../models/current-time-indicator-settings';import { TimeScale } from '../models/time-scale';import { QuickInfoTemplates } from '../models/quick-info-templates';import { HeaderRows } from '../models/header-rows';import { Crud } from '../actions/crud';import { Resize } from '../actions/resize';import { DragAndDrop } from '../actions/drag';import { VirtualScroll } from '../actions/virtual-scroll';import { WorkCellInteraction } from '../actions/work-cells';import { WorkHoursModel, ViewsModel, EventSettingsModel, GroupModel, ResourcesModel, TimeScaleModel, ToolbarItemModel, CurrentTimeIndicatorSettingsModel } from '../models/models';import { QuickInfoTemplatesModel, HeaderRowsModel, SchedulerWebMcpSettingsModel } from '../models/models';import { EventSettings } from '../models/event-settings';import { Group } from '../models/group';import { Resources } from '../models/resources';import { SchedulerWebMcpSettings } from '../models/scheduler-webmcp-settings';import { ICalendarExport } from '../exports/calendar-export';import { ICalendarImport } from '../exports/calendar-import';import { ExcelExport } from '../exports/excel-export';import { Print } from '../exports/print';import { IRenderer, ActionEventArgs, NavigatingEventArgs, CellClickEventArgs, RenderCellEventArgs, ScrollCss, TimezoneFields, ExcelExportEventArgs, BeforePasteEventArgs, TooltipOpenEventArgs } from '../base/interface';import { EventClickArgs, EventRenderedArgs, PopupOpenEventArgs, UIStateArgs, DragEventArgs, ResizeEventArgs } from '../base/interface';import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges, StateArgs, ExportOptions, SelectEventArgs } from '../base/interface';import { ViewsData, PopupCloseEventArgs, HoverEventArgs, MoreEventsClickArgs, ScrollEventArgs, CallbackFunction, BeforePrintEventArgs } from '../base/interface';import { CalendarUtil, Gregorian, Islamic, CalendarType } from '../../common/calendar-util';import { ResourceBase } from '../base/resource';import { Timezone, timezoneData } from '../timezone/timezone';import { RecurrenceEditor } from '../../recurrence-editor/recurrence-editor';import * as events from '../base/constant';import * as cls from '../base/css-constant';import * as util from '../base/util';import { ToolbarItem } from '../models/toolbar';
+import { Component, ModuleDeclaration, Property, Event, Animation, Collection, append, initializeTelemetry } from '@syncfusion/ej2-base';import { EventHandler, EmitType, Browser, Internationalization, getDefaultDateObject, cldrData, L10n } from '@syncfusion/ej2-base';import { getValue, compile, extend, isNullOrUndefined, NotifyPropertyChanges, INotifyPropertyChanged, Complex } from '@syncfusion/ej2-base';import { getElement, removeClass, addClass, classList, remove, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';import { HeaderRenderer } from '../renderer/header-renderer';import { Scroll } from '../actions/scroll';import { ScheduleTouch } from '../actions/touch';import { KeyboardInteraction } from '../actions/keyboard';import { Data } from '../actions/data';import { View, CurrentAction, ReturnType, WeekRule, NavigationDirection } from '../base/type';import { WebMcpToolExecuteEventArgs, WebMcpTool } from '../base/interface';import { WebMcpScheduler } from '../integrations/webmcp-adapter';import { getWebMcpTools, registerWebMcpTools } from '../base/constant';import { EventBase } from '../event-renderer/event-base';import { InlineEdit } from '../event-renderer/inline-edit';import { QuickPopups } from '../popups/quick-popups';import { EventTooltip } from '../popups/event-tooltip';import { EventWindow } from '../popups/event-window';import { Render } from '../renderer/renderer';import { Day } from '../renderer/day';import { Week } from '../renderer/week';import { WorkWeek } from '../renderer/work-week';import { Month } from '../renderer/month';import { Year } from '../renderer/year';import { Agenda } from '../renderer/agenda';import { MonthAgenda } from '../renderer/month-agenda';import { TimelineViews } from '../renderer/timeline-view';import { TimelineMonth } from '../renderer/timeline-month';import { TimelineYear } from '../renderer/timeline-year';import { WorkHours } from '../models/work-hours';import { CurrentTimeIndicatorSettings } from '../models/current-time-indicator-settings';import { EventSpacing } from '../models/event-spacing';import { TimeScale } from '../models/time-scale';import { QuickInfoTemplates } from '../models/quick-info-templates';import { HeaderRows } from '../models/header-rows';import { Crud } from '../actions/crud';import { Resize } from '../actions/resize';import { FixedRows } from '../actions/fixed-rows';import { DragAndDrop } from '../actions/drag';import { VirtualScroll } from '../actions/virtual-scroll';import { WorkCellInteraction } from '../actions/work-cells';import { TimelineZoom } from '../actions/timeline-zoom';import { WorkHoursModel, ViewsModel, EventSettingsModel, GroupModel, ResourcesModel, TimeScaleModel, ToolbarItemModel, CurrentTimeIndicatorSettingsModel, EventSpacingModel } from '../models/models';import { QuickInfoTemplatesModel, HeaderRowsModel, SchedulerWebMcpSettingsModel, SummaryRowModel, SummaryColumnModel, GroupSummaryModel } from '../models/models';import { SummaryRow } from '../models/summary-row';import { SummaryColumn } from '../models/summary-column';import { GroupSummary } from '../models/group-summary';import { GroupSummaryModule } from '../summary/group-summary';import { Summary } from '../summary/summary';import { EventSettings } from '../models/event-settings';import { Group } from '../models/group';import { Resources } from '../models/resources';import { SchedulerWebMcpSettings } from '../models/scheduler-webmcp-settings';import { ICalendarExport } from '../exports/calendar-export';import { ICalendarImport } from '../exports/calendar-import';import { ExcelExport } from '../exports/excel-export';import { Print } from '../exports/print';import { IRenderer, ActionEventArgs, NavigatingEventArgs, CellClickEventArgs, RenderCellEventArgs, RenderSummaryCellEventArgs, SummaryCellClickEventArgs, ScrollCss, TimezoneFields, ExcelExportEventArgs, BeforePasteEventArgs, TooltipOpenEventArgs, ZoomLevel } from '../base/interface';import { EventClickArgs, EventRenderedArgs, PopupOpenEventArgs, UIStateArgs, DragEventArgs, ResizeEventArgs, EventSpacingValues } from '../base/interface';import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges, StateArgs, ExportOptions, SelectEventArgs } from '../base/interface';import { ViewsData, PopupCloseEventArgs, HoverEventArgs, MoreEventsClickArgs, ScrollEventArgs, CallbackFunction, BeforePrintEventArgs } from '../base/interface';import { CalendarUtil, Gregorian, Islamic, CalendarType } from '../../common/calendar-util';import { ResourceBase } from '../base/resource';import { Timezone, timezoneData } from '../timezone/timezone';import { RecurrenceEditor } from '../../recurrence-editor/recurrence-editor';import * as events from '../base/constant';import * as cls from '../base/css-constant';import * as util from '../base/util';import { ToolbarItem } from '../models/toolbar';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -64,6 +64,22 @@ export interface ScheduleModel extends ComponentModel{
      * @default { showTime: true, showPreviousDates: true, onTop: true }
      */
     currentTimeIndicatorSettings?: CurrentTimeIndicatorSettingsModel;
+
+    /**
+     * Specifies the space between events, and the space reserved before and after the events of a track, in pixels.
+     * The values apply along the stacking axis of every track: the columns of the Day, Week and WorkWeek views, and the levels of the all-day row,
+     * Month and Timeline views. Spacing never moves an event on the time axis.
+     *
+     * - `gap` - the space between two adjacent events. It is never added before the first or after the last event.
+     * - `leadingSpace` - the space reserved before the first column or level.
+     * - `trailingSpace` - the space reserved after the last column or level. It stays free when the track is full.
+     *
+     * A field that is `null` uses the built-in space of the view. Each field can be overridden for a single view through `views[i].eventSpacing`.
+     * The space belongs to the cell beneath it, so a click, tap or drop in it acts on the cell. The Agenda, Year and MonthAgenda views ignore it.
+     *
+     * @default { gap: null, leadingSpace: null, trailingSpace: null }
+     */
+    eventSpacing?: EventSpacingModel;
 
     /**
      * Defines whether to enable date navigations via swipe in touch devices or not.
@@ -158,6 +174,19 @@ export interface ScheduleModel extends ComponentModel{
     currentView?: View;
 
     /**
+     * Key of the currently selected zoom preset from `zoomLevels`.
+     *
+     * Timeline Zoom is enabled when `zoomLevels` is non-empty. When the
+     * consumer does not supply `zoomLevel`, the first valid preset is
+     * selected silently during `preRender`. An explicit non-null value
+     * that does not match any preset key is treated as invalid and the
+     * first valid preset is used instead, with a non-fatal warning.
+     *
+     * @default null
+     */
+    zoomLevel?: string | null;
+
+    /**
      * This property holds the views collection and its configurations. It accepts either the array of view names or the array of view
      * objects that holds different configurations for each views. By default,
      * Schedule displays all the views namely `Day`, `Week`, `Work Week`, `Month` and `Agenda`.
@@ -171,6 +200,20 @@ export interface ScheduleModel extends ComponentModel{
      * @default '["Day", "Week", "WorkWeek", "Month", "Agenda"]'
      */
     views?: View[] | ViewsModel[];
+
+    /**
+     * Ordered list of Timeline zoom presets that drive the Timeline
+     * Zoom feature.
+     *
+     * Each preset inherits the `ViewsModel` shape and adds a stable
+     * `key` identifier. `zoomLevels[0]` is the broadest preset and
+     * `zoomLevels[zoomLevels.length - 1]` is the finest — the ordering
+     * rule is significant for `Ctrl + Mouse Wheel` and pinch
+     * interactions. The default value `[]` disables Timeline Zoom.
+     *
+     * @default []
+     */
+    zoomLevels?: ZoomLevel[];
 
     /**
      * To mark the active (current) date on the Schedule, `selectedDate` property can be defined.
@@ -615,6 +658,33 @@ export interface ScheduleModel extends ComponentModel{
     quickInfoTemplates?: QuickInfoTemplatesModel;
 
     /**
+     * Allows to render a summary row at the bottom of the content area, with one cell per time unit.
+     * The Scheduler decides the placement, the time range and the resources of each cell, and the application decides the value
+     * in the `renderSummaryCell` event or in the templates. It is applicable to the timeline views.
+     *
+     * @default { enable: false, template: null, cellUnit: null, labelTemplate: null, totalTemplate: null }
+     */
+    summaryRow?: SummaryRowModel;
+
+    /**
+     * Allows to render a summary column at the trailing edge of the content, with one cell per resource row.
+     * The Scheduler decides the placement, the time range and the resources of each cell, and the application decides the value
+     * in the `renderSummaryCell` event or in the templates. It is applicable to the timeline views.
+     *
+     * @default { enable: false, template: null, cellUnit: 'Slot', labelTemplate: null }
+     */
+    summaryColumn?: SummaryColumnModel;
+
+    /**
+     * Allows to turn the parent resource row of one level into the summary of its group, with one cell per time unit.
+     * The cells are customized in the `renderSummaryCell` event or in the template. It is applicable to the timeline views
+     * that are grouped by two or more levels of resources.
+     *
+     * @default {}
+     */
+    groupSummary?: GroupSummaryModel;
+
+    /**
      * Sets the number of days to be displayed by default in Agenda View and in case of virtual scrolling,
      * the number of days will be fetched on each scroll-end based on this count.
      *
@@ -879,6 +949,21 @@ export interface ScheduleModel extends ComponentModel{
      * @event 'renderCell'
      */
     renderCell?: EmitType<RenderCellEventArgs>;
+
+    /**
+     * Triggers for each summary row cell, summary column cell, label cell and grand total cell, first when the layout is rendered
+     * and again after the events are rendered or refreshed.
+     *
+     * @event 'renderSummaryCell'
+     */
+    renderSummaryCell?: EmitType<RenderSummaryCellEventArgs>;
+
+    /**
+     * Triggers when a summary cell or label is clicked, tapped or activated with the Enter key.
+     *
+     * @event 'summaryCellClick'
+     */
+    summaryCellClick?: EmitType<SummaryCellClickEventArgs>;
 
     /**
      * Triggers when the events are single clicked or on single tapping the events on the mobile devices.

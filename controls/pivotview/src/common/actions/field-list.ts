@@ -128,7 +128,9 @@ export class FieldList implements IAction {
                 width: formatUnit(this.parent.element.offsetWidth)
             });
         }
-        this.parent.pivotFieldListModule.update(this.parent);
+        if (!isNullOrUndefined(this.parent.pivotFieldListModule)) {
+            this.parent.pivotFieldListModule.update(this.parent);
+        }
     }
 
     private update(): void {

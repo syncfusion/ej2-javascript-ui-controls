@@ -280,6 +280,14 @@ export class Column {
      */
     public lockColumn: boolean;
 
+    /**
+     * Facilitates multiple header rows (stacked headers) in the Gantt grid header.
+     * Use this property to group child columns under a common header.
+     *
+     * @default null
+     */
+    public columns: Column[] | string[] | ColumnModel[];
+
     constructor(options: ColumnModel) {
         merge(this, options);
     }
@@ -564,4 +572,11 @@ export interface ColumnModel {
      * @default false
      */
     showCheckbox?: boolean;
+    /**
+     * Facilitates multiple header rows (stacked headers) in the Gantt grid header.
+     * Use this property to group child columns under a common header.
+     *
+     * @default null
+     */
+    columns?: Column[] | string[] | ColumnModel[];
 }

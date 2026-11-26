@@ -18,6 +18,7 @@ import {
     RibbonHost
 } from './types';
 import { localize } from '../localization/localization';
+import { applyMobileIconOnly } from './home-tab';
 
 /**
  * Builds a Slideshow button item with label, icon, tooltip (incl. shortcut), and host click.
@@ -138,9 +139,9 @@ export function buildPresenterGroup(host: RibbonHost): RibbonGroupModel {
  * @returns {RibbonTabModel} Tab model
  */
 export function buildSlideshowTab(host: RibbonHost): RibbonTabModel {
-    return {
+    return applyMobileIconOnly({
         id: RibbonTabId.SlideShow,
         header: localize(host.locale, 'SlideShow'),
         groups: [buildStartSlideShowGroup(host), buildPresenterGroup(host)]
-    };
+    }, host);
 }

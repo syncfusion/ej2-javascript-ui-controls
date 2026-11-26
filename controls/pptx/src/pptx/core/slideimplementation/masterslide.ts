@@ -21,6 +21,8 @@ import { walkSlideShapeTree } from '../shapes/walk';
 import { ColorMapping } from '../theme/color-mapping';
 import { OoxmlElement } from '../xml/index';
 import { LayoutSlide } from './layoutslide';
+import { HeadersFooters } from '../headers-footers/header-footer';
+
 import { DirectSlideBackground, readDirectBackground } from '../presentation/background';
 /**
  * Construction options for {@link MasterSlide}.
@@ -293,6 +295,15 @@ export class MasterSlide {
      * @throws {Error} When `shapesPerSlide` or `groupNestingDepth` is exceeded.
      * @returns {ShapeCollection} The result.
      */
+    /**
+     * Header, footer, date and time, and slide number on this master.
+     *
+     * @remarks Direct `p:hf` and placeholders on this master part. Not a resolved view of layouts or slides.
+     * @returns {HeadersFooters} Live entries.
+     */
+    get headersFooters(): HeadersFooters {
+        return new HeadersFooters(this._root, this._limits, this.partName, this._root, this.onMutate, undefined, 'master');
+    }
     get shapes(): ShapeCollection {
         return bindShapeCollection(() => walkSlideShapeTree(this._root, this._limits, this.partName, this.mediaAccess, this.onMutate), {
             addTextBox: (options?: AddTextBoxOptions): Shape => {

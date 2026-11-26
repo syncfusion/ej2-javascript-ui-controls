@@ -216,6 +216,7 @@ export class FormFields {
                                             ? JSON.parse(currentData['CustomData']) : '' : '',
                                     signatureIndicatorSettings: indicatorSettings,
                                     isUnisonSelected: currentData['IsUnisonSelected'],
+                                    isPrint: currentData['IsPrint'] !== false,
                                     actions: !isNullOrUndefined(currentData['Actions']) ? currentData['Actions'] : undefined
                                 };
                                 (fieldProperties as unknown as FormFieldModel).isReadOnly = currentData['IsReadonly'];
@@ -793,7 +794,7 @@ export class FormFields {
                             name: this.pdfViewerBase.signatureModule.retriveFieldName(currentData),
                             id: collectionId,
                             isReadOnly: false, type: publicType,
-                            value: this.retriveCurrentValue(currentData) as string, fontName: '', isRequired: currentData.IsRequired, bounds: bounds, pageIndex
+                            value: this.retriveCurrentValue(currentData) as string, fontName: '', isRequired: currentData.IsRequired, isPrint: currentData.IsPrint !== false, bounds: bounds, pageIndex
                             : currentData.PageIndex,
                             symbology: currentData.Symbology as BarcodeSymbology, xDimension: currentData.XDimension,
                             errorCorrectionLevel: currentData.ErrorCorrectionLevel as Pdf417ErrorCorrectionLevel | QRErrorCorrectionLevel,
@@ -2107,54 +2108,95 @@ export class FormFields {
     }
 
     /**
+     * Returns an empty string when a date/time field value does not match the pattern of its
+     * AFDate/AFTime format script; otherwise returns the value unchanged.
+     *
+     * @param {string} value - initial / stored field value
+     * @param {string} script - format script, e.g. AFDate_FormatEx("m/d/yy")
+     * @private
+     * @returns {string} - the value when valid, otherwise an empty string
+     */
+    public getValidDateTimeValue(value: string, script: string): string {
+        const raw: string = isNullOrUndefined(value) ? '' : String(value).trim();
+        if (!raw) {
+            return value;
+        }
+        const match: RegExpMatchArray = (script || '').match(/AF(?:Date|Time)_Format(?:Ex)?\s*\(\s*["']([^"']+)["']\s*\)/i);
+        const pattern: string = (match && match[1]) ? match[1] : 'm/d/yy';
+        return this.isValidDateTimeText(raw, pattern) ? value : '';
+    }
+
+    /**
      * Best-effort validation of typed date/time against an Acrobat-like pattern.
      * Empty is valid (caller skips). Literal separators in pattern must match.
+     *
+     * The pattern match alone only proves that the text *looks* like the pattern.
+     * The captured date tokens are therefore read back and checked against the
+     * calendar, so that an impossible day or month is rejected as well.
      *
      * @param {string} raw - trimmed user text
      * @param {string} pattern - format pattern
      * @private
      * @returns {boolean} - true when acceptable
      */
-    private isValidDateTimeText(raw: string, pattern: string): boolean {
+    public isValidDateTimeText(raw: string, pattern: string): boolean {
         if (!raw) {
             return true;
         }
         const pat: string = pattern || 'm/d/yy';
         // Build a loose regex from known tokens (order: longest first).
         let escaped: string = pat.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const tokenSpecs: { token: string; regex: string }[] = [
-            { token: 'mmmm', regex: '(January|February|March|April|May|June|July|August|September|October|November|December)' },
-            { token: 'mmm', regex: '(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)' },
-            { token: 'yyyy', regex: '\\d{4}' },
-            { token: 'yyy', regex: '\\d{3,4}' },
-            { token: 'yy', regex: '\\d{2}' },
-            { token: 'mm', regex: '\\d{1,2}' },
-            { token: 'dd', regex: '\\d{1,2}' },
-            { token: 'HH', regex: '\\d{1,2}' },
-            { token: 'hh', regex: '\\d{1,2}' },
-            { token: 'MM', regex: '\\d{1,2}' },
-            { token: 'ss', regex: '\\d{1,2}' },
-            { token: 'tt', regex: '(AM|PM|am|pm)' },
-            { token: 'm', regex: '\\d{1,2}' },
-            { token: 'd', regex: '\\d{1,2}' },
-            { token: 'H', regex: '\\d{1,2}' },
-            { token: 'h', regex: '\\d{1,2}' },
-            { token: 's', regex: '\\d{1,2}' }
+        const tokenSpecs: { token: string; regex: string; kind: string }[] = [
+            { token: 'mmmm', regex: '(January|February|March|April|May|June|July|August|September|October|November|December)', kind: 'month' },
+            { token: 'mmm', regex: '(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)', kind: 'month' },
+            // Numeric token specs: regex fragment is `(\d{N})` where N is the
+            // token's actual length in the pattern (1, 2, 3, or 4). This
+            // rejects truncated values such as "10:2 AM" against "h:mm tt" or
+            // "2026-10-2" against "yyyy-mm-dd" — previously the validator used
+            // `(\d{1,2})` for every numeric token and silently accepted them.
+            { token: 'yyyy', regex: '(\\d{4})', kind: 'year' },
+            { token: 'yyy',  regex: '(\\d{3,4})', kind: 'year' },  // ambiguous by spec, kept as-is
+            { token: 'yy',   regex: '(\\d{2})', kind: 'year' },
+            { token: 'mm',   regex: '(\\d{2})', kind: 'month' },
+            { token: 'dd',   regex: '(\\d{2})', kind: 'day' },
+            { token: 'HH',   regex: '(\\d{2})', kind: 'hour24' },
+            { token: 'hh',   regex: '(\\d{2})', kind: 'hour12' },
+            { token: 'MM',   regex: '(\\d{2})', kind: 'minute' },
+            { token: 'ss',   regex: '(\\d{2})', kind: 'second' },
+            { token: 'm',    regex: '(\\d{1,2})', kind: 'month' },  // single `m`/`d`/`h`/`H`/`s` are deliberately tolerant (matches "1" or "12" for "m")
+            { token: 'd',    regex: '(\\d{1,2})', kind: 'day' },
+            { token: 'H',    regex: '(\\d{1,2})', kind: 'hour24' },
+            { token: 'h',    regex: '(\\d{1,2})', kind: 'hour12' },
+            { token: 's',    regex: '(\\d{1,2})', kind: 'second' },
+            { token: 'tt',   regex: '([AaPp][Mm])', kind: 'meridiem' }
         ];
         // Replace case-sensitively where needed: MM minutes vs mm month handled by order after escape.
         // Work on original pattern with placeholders to avoid double-replace.
         let work: string = pat;
         const holders: string[] = [];
+        const holderKinds: string[] = [];
         for (let t: number = 0; t < tokenSpecs.length; t++) {
-            const spec: { token: string; regex: string } = tokenSpecs[parseInt(t.toString(), 10)];
+            const spec: { token: string; regex: string; kind: string } = tokenSpecs[parseInt(t.toString(), 10)];
             const flags: string = (spec.token === 'mmm' || spec.token === 'mmmm' || spec.token === 'tt') ? 'gi' : 'g';
             // eslint-disable-next-line security/detect-non-literal-regexp
             const re: RegExp = new RegExp(spec.token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), flags);
             work = work.replace(re, () => {
                 const key: string = '@@' + holders.length + '@@';
                 holders.push(spec.regex);
+                holderKinds.push(spec.kind);
                 return key;
             });
+        }
+        // The date tokens are captured, so their values can be read back in pattern order.
+        const orderedKinds: string[] = [];
+        const orderRe: RegExp = /@@(\d+)@@/g;
+        let orderMatch: RegExpExecArray | null = orderRe.exec(work);
+        while (orderMatch) {
+            const kind: string = holderKinds[parseInt(orderMatch[1], 10)];
+            if (kind) {
+                orderedKinds.push(kind);
+            }
+            orderMatch = orderRe.exec(work);
         }
         escaped = work.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         for (let h: number = 0; h < holders.length; h++) {
@@ -2165,10 +2207,135 @@ export class FormFields {
         try {
             // eslint-disable-next-line security/detect-non-literal-regexp
             const full: RegExp = new RegExp('^\\s*' + escaped + '\\s*$');
-            return full.test(raw);
+            const matched: RegExpExecArray | null = full.exec(raw);
+            if (!matched) {
+                return false;
+            }
+            return this.isDateTimeTextInCalendarRange(matched, orderedKinds);
         } catch (e) {
             return false;
         }
+    }
+
+    /**
+     * Calendar range check for the date tokens captured by the pattern match.
+     * The captured groups hold the day, the month and the year in pattern order,
+     * so the check works for every supported format - `dd/mm/yy` and `mm/dd/yy`
+     * are read the way their pattern declares them.
+     *
+     * A value without a day or a month token (a time only format) is not range
+     * checked.
+     *
+     * @param {RegExpExecArray} matched - the pattern match, group 0 is the whole value
+     * @param {string[]} orderedKinds - 'day' / 'month' / 'year' per captured group
+     * @private
+     * @returns {boolean} - true when the value is a real calendar date
+     */
+    private isDateTimeTextInCalendarRange(matched: RegExpExecArray, orderedKinds: string[]): boolean {
+        let day: number = -1;
+        let month: number = -1;
+        let year: number = -1;
+        for (let g: number = 0; g < orderedKinds.length; g++) {
+            // eslint-disable-next-line security/detect-object-injection
+            const kind: string = orderedKinds[g];
+            const value: string = matched[g + 1];
+            if (value === undefined || value === null) {
+                continue;
+            }
+            const numeric: number = parseInt(value, 10);
+            if (kind === 'day') {
+                day = numeric;
+                if (isNaN(day)) {
+                    return true;
+                }
+            } else if (kind === 'month') {
+                const named: number = this.getMonthNumberFromName(value);
+                month = named !== -1 ? named : numeric;
+                if (isNaN(month)) {
+                    return true;
+                }
+            } else if (kind === 'year') {
+                year = numeric;
+                if (isNaN(year)) {
+                    return true;
+                }
+            } else if (kind === 'hour24') {
+                // 24-hour clock token (H / HH): 00-23.
+                if (!isNaN(numeric) && (numeric < 0 || numeric > 23)) {
+                    return false;
+                }
+            } else if (kind === 'hour12') {
+                // 12-hour clock token (h / hh): 01-12.
+                if (!isNaN(numeric) && (numeric < 1 || numeric > 12)) {
+                    return false;
+                }
+            } else if (kind === 'minute' || kind === 'second') {
+                // Minutes and seconds (M / MM / s / ss): 00-59.
+                if (!isNaN(numeric) && (numeric < 0 || numeric > 59)) {
+                    return false;
+                }
+            }
+        }
+        if (month === -1 && day === -1) {
+            // Time only pattern - the date tokens are absent; the time tokens
+            // were range checked above.
+            return true;
+        }
+        if (month !== -1 && (month < 1 || month > 12)) {
+            return false;
+        }
+        if (day !== -1 && day < 1) {
+            return false;
+        }
+        if (day !== -1 && month !== -1) {
+            const checkYear: number = year === -1 ? 2000 : (year < 100 ? 2000 + year : year);
+            if (day > this.getDaysInMonth(checkYear, month)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns the month number of a month name, or -1 when the text is not a month name.
+     *
+     * @param {string} value - month name typed by the user
+     * @private
+     * @returns {number} - 1..12 or -1
+     */
+    private getMonthNumberFromName(value: string): number {
+        const monthsLong: string[] = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+            'August', 'September', 'October', 'November', 'December'];
+        const monthsShort: string[] = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const text: string = (value || '').toLowerCase();
+        for (let i: number = 0; i < monthsLong.length; i++) {
+            // eslint-disable-next-line security/detect-object-injection
+            if (monthsLong[i].toLowerCase() === text) {
+                return i + 1;
+            }
+        }
+        for (let i: number = 0; i < monthsShort.length; i++) {
+            // eslint-disable-next-line security/detect-object-injection
+            if (monthsShort[i].toLowerCase() === text) {
+                return i + 1;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Returns the number of days in the given month of the given year.
+     *
+     * @param {number} year - full year
+     * @param {number} month - month, 1 based
+     * @private
+     * @returns {number} - days in that month (28..31)
+     */
+    private getDaysInMonth(year: number, month: number): number {
+        const probe: Date = new Date(0);
+        probe.setFullYear(year, month, 0);
+        probe.setHours(0, 0, 0, 0);
+        return probe.getDate();
     }
 
     public updateFormFields(event: MouseEvent): void {
@@ -2199,6 +2366,10 @@ export class FormFields {
         }
         for (let m: number = 0; m < this.pdfViewer.formFieldCollections.length; m++) {
             if (currentTarget.id === this.pdfViewer.formFieldCollections[parseInt(m.toString(), 10)].id) {
+                if (this.pdfViewer.formDesignerModule || this.pdfViewer.annotationModule) {
+                    this.pdfViewer.fireFormFieldClickEvent('formFieldClicked',
+                                                           this.pdfViewer.formFieldCollections[parseInt(m.toString(), 10)]);
+                }
                 if (currentTarget.className === 'e-pdfviewer-signatureformfields' || currentTarget.className === 'e-pdfviewer-signatureformfields-signature' || currentTarget.className === 'e-pdfviewer-signatureformfields e-pv-signature-focus' || currentTarget.className === 'e-pdfviewer-signatureformfields-signature  e-pv-signature-focus') {
                     this.pdfViewerBase.signatureModule.setFocus(currentTarget.id);
                 }
@@ -2349,7 +2520,7 @@ export class FormFields {
             for (let i: number = 0; i < this.formFieldsData.length; i++) {
                 const currentField: PdfRenderedFields = this.formFieldsData[parseInt(i.toString(), 10)] as PdfRenderedFields;
                 if ((event.target as HTMLInputElement).name === currentField.FieldName
-                    && (event.target as HTMLInputElement).id !== currentField.uniqueID) {
+                    && (event.target as HTMLInputElement).id !== currentField.uniqueID && !currentField.IsReadonly) {
                     const currentTarget: HTMLElement =
                         document.getElementById((this.formFieldsData[parseInt(i.toString(), 10)] as PdfRenderedFields).uniqueID);
                     if (currentTarget) {
@@ -2374,6 +2545,14 @@ export class FormFields {
         const currentTarget: HTMLInputElement = event.target as HTMLInputElement;
         let fieldIndex: number;
         let nextFields: FormFieldModel;
+        const keyEvent: KeyboardEvent = event as KeyboardEvent;
+        if ((keyEvent.ctrlKey || keyEvent.metaKey) && !keyEvent.shiftKey && !keyEvent.altKey && keyEvent.key &&
+            keyEvent.key.toLowerCase() === 'a' && currentTarget && typeof currentTarget.select === 'function' &&
+            (currentTarget.tagName === 'INPUT' || currentTarget.tagName === 'TEXTAREA')) {
+            currentTarget.select();
+            event.preventDefault();
+            return;
+        }
         if ((currentTarget as HTMLInputElement & { InsertSpaces?: boolean }).InsertSpaces && !this.isKeyDownCheck) {
             const font: number = parseInt(currentTarget.style.width, 10) + (parseInt(currentTarget.style.height, 10) / 2);
             currentTarget.style.width = '' + font + 'px';
@@ -2521,6 +2700,11 @@ export class FormFields {
                     }
                 }
             }
+        }
+        // DateTime textbox (IsDateField): the change event commits the typed
+        // value, so it has to be validated before the value is stored.
+        if (currentTarget && currentTarget.classList && currentTarget.classList.contains('e-pv-datetime-text')) {
+            this.validateDateTimeTextOnBlur(currentTarget);
         }
         this.pdfViewerBase.signatureModule.updateDataInSession(currentTarget);
     }
@@ -3028,7 +3212,7 @@ export class FormFields {
                 openPicker();
             }
         });
-        nativePicker.addEventListener('change', () => {
+        const commitPickerValue: () => void = (): void => {
             // Format native picker ISO value with the field AFDate/AFTime pattern (designer parity).
             textInput.value = this.formatFillNativeDateTimeValue(nativePicker.value, data);
             // Keep controls interactive for a later click; do not auto-enter edit mode after pick.
@@ -3063,6 +3247,14 @@ export class FormFields {
                 textInput.style.outline = 'none';
                 wrapper.style.boxShadow = 'none';
             }
+        };
+        nativePicker.addEventListener('change', commitPickerValue);
+        // Live preview: reflect each hour/minute/AM-PM selection immediately without validating or closing the picker.
+        nativePicker.addEventListener('input', () => {
+            if (!nativePicker.value) {
+                return;
+            }
+            textInput.value = this.formatFillNativeDateTimeValue(nativePicker.value, data);
         });
 
         // Bind fill events on the text input (value source), not the wrapper.
@@ -4502,7 +4694,10 @@ export class FormFields {
             (sanitized as unknown as IFormField).radiobuttonItem = (formField as unknown as IFormField).radiobuttonItem;
         } else if (type === 'SignatureField' || type === 'InitialField') {
             sanitized.signatureType = formField.signatureType;
-            (sanitized as unknown as IFormField).lineBound = (formField as unknown as IFormField).lineBound;
+            const lineBound: IFormFieldBound | undefined = (formField as unknown as IFormField).lineBound;
+            (sanitized as unknown as IFormField).lineBound =
+                lineBound && lineBound.constructor && lineBound.constructor.name === 'PdfBounds' ?
+                    this.normalizeBounds(lineBound) : lineBound;
             (sanitized as unknown as IFormField).signatureBound = (formField as unknown as IFormField).signatureBound;
             sanitized.signatureIndicatorSettings = formField.signatureIndicatorSettings;
         }

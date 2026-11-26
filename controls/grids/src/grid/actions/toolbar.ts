@@ -576,18 +576,6 @@ export class Toolbar {
             } else {
                 disableItems.push(this.gridID + '_update', this.gridID + '_cancel');
             }
-            if (edit.enableUndoRedo) {
-                if (gObj.isUndoStackAvailable()) {
-                    enableItems.push(this.gridID + '_undo');
-                } else {
-                    disableItems.push(this.gridID + '_undo');
-                }
-                if (gObj.isRedoStackAvailable()) {
-                    enableItems.push(this.gridID + '_redo');
-                } else {
-                    disableItems.push(this.gridID + '_redo');
-                }
-            }
         } else {
             if ((gObj.isEdit || edit.showAddNewRow) && (edit.allowAdding || edit.allowEditing)) {
                 enableItems = addRow ? [this.gridID + '_update', this.gridID + '_cancel', this.gridID + '_edit', this.gridID + '_delete'] :
@@ -598,6 +586,21 @@ export class Toolbar {
                 disableItems.push(this.gridID + '_update');
                 disableItems.push(this.gridID + '_cancel');
             }
+        }
+        if (edit.enableUndoRedo) {
+            if (gObj.isUndoStackAvailable()) {
+                enableItems.push(this.gridID + '_undo');
+            } else {
+                disableItems.push(this.gridID + '_undo');
+            }
+            if (gObj.isRedoStackAvailable()) {
+                enableItems.push(this.gridID + '_redo');
+            } else {
+                disableItems.push(this.gridID + '_redo');
+            }
+        } else {
+            disableItems.push(this.gridID + '_undo');
+            disableItems.push(this.gridID + '_redo');
         }
         this.enableItems(enableItems, true);
         this.enableItems(disableItems, false);
@@ -700,14 +703,10 @@ export class Toolbar {
                         gObj.deleteRecord();
                         break;
                     case gID + '_undo':
-                        if (gObj.editSettings.mode === 'Batch') {
-                            gObj.undoEdit();
-                        }
+                        gObj.undoEdit();
                         break;
                     case gID + '_redo':
-                        if (gObj.editSettings.mode === 'Batch') {
-                            gObj.redoEdit();
-                        }
+                        gObj.redoEdit();
                         break;
                     case gID + '_find':
                         if (toolbarargs.originalEvent && toolbarargs.originalEvent.target) {

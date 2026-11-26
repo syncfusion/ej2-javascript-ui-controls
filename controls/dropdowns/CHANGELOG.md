@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 35.2.14 (2026-11-26)
+
+### DropdownList
+
+#### Bug Fixes
+
+- `#I886354` - Resolved popup misalignment when the component position changes dynamically due to validation messages rendered with delay.
+
 ## 35.2.12 (2026-11-18)
 
 ### DropdownList

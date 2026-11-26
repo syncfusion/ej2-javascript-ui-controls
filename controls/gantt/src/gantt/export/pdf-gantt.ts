@@ -1,4 +1,4 @@
-import { IEventMarkerInfo, TimelineDetails } from './../base/interface';
+import { IEventMarkerInfo, TimelineDetails, IGanttData } from './../base/interface';
 import { PdfGanttTaskbarCollection } from './pdf-taskbar';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PageDetail } from '../base/interface';
@@ -12,6 +12,9 @@ import { Timeline } from '../renderer/timeline';
 import { PdfGanttPredecessor } from './pdf-connector-line';
 import { TimelineViewMode } from '../base/enum';
 import {EventMarker} from './pdf-event-marker';
+import { ProgressLine } from '../actions/progress-line';
+import { IPdfProgressLinePage, IPdfProgressLineRow, PdfProgressLine } from './pdf-progress-line';
+import { PdfSCurve } from './pdf-scurve';
 
 /**
  *
@@ -34,16 +37,21 @@ export class PdfGantt extends PdfTreeGrid {
     public chartHeader: PdfTimeline;
     public chartPageIndex: number;
     public eventMarker : EventMarker;
+    public sCurve: PdfSCurve;
     public changeCloneProjectDates: boolean = false;
     public changeCloneTimelineDates: boolean = false;
     public currentPage: number = 0;
     public parent: Gantt;
+    public progressLineRecords: IGanttData[] = [];
+    private progressLineRenderer: PdfProgressLine;
 
     constructor(parent: Gantt) {
         super();
         this.parent = parent;
+        this.progressLineRenderer = new PdfProgressLine(parent);
         this.chartHeader = new PdfTimeline(this);
         this.eventMarker = new EventMarker(parent);
+        this.sCurve = new PdfSCurve(parent);
         this.predecessor = new PdfGanttPredecessor(parent, this);
         this.headerDetails = [];
         this.pdfPageDetail = [];
@@ -377,19 +385,32 @@ export class PdfGantt extends PdfTreeGrid {
         let cumulativeWidth: number = 0;
         let cumulativeHeight: number = 0;
         let pageData: PageDetail;
+        const statusDateX: number = ProgressLine.getStatusDateX(this.parent);
+        const hasProgressLine: boolean = !isNullOrUndefined(statusDateX);
+        const statusX: number = hasProgressLine ? statusDateX - this.parent.dataOperation.getTaskLeft(
+            this.headerDetails[0].startDate, false, this.parent.defaultCalendarContext, true
+        ) : statusDateX;
+        const isAutoFit: boolean = this.parent.pdfExportModule.gantt.taskbar.isAutoFit();
+        const taskbarProgressX: number[] = this.progressLineRecords.map((record: IGanttData) =>
+            ProgressLine.getProgressX(record));
         this.headerDetails.forEach((detail: TimelineDetails, index: number): void => {
             this.currentPage = 0;
             const page: PdfPage = this.result.page.section.getPages()[this.startPageIndex] as PdfPage;
             page['contentWidth'] = (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) ? pointToPixel(this.headerDetails[index as number].endPoint - this.headerDetails[index as number].startPoint) : this.headerDetails[index as number].endPoint - this.headerDetails[index as number].startPoint;
             this.chartHeader.drawTimeline(page, this.startPoint, detail, 0);
-            taskbarPoint.y = taskbarPoint.y + pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60); // headerHeight
+            const headerHeightPoint: number = this.enableHeader ? this.layouter.headerHeight : 0;
+            taskbarPoint.y = taskbarPoint.y + headerHeightPoint;
             pageStartX = taskbarPoint.x;
-            cumulativeHeight = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60); // headerHeight
+            cumulativeHeight = headerHeightPoint;
             this.headerDetails[this.headerDetails.indexOf(detail)].startIndex = this.startPageIndex;
             this.headerDetails[this.headerDetails.indexOf(detail)].pageStartPoint = taskbarPoint;
+            const progressLineRows: IPdfProgressLineRow[] = [];
+            const progressLinePages: IPdfProgressLinePage[] = [];
+            const progressLinePageMap: { [key: number]: IPdfProgressLinePage } = {};
+            let globalRowTop: number = 0;
             for (let i: number = 0; i < this.taskbarCollection.length; i++) {
                 const task: PdfGanttTaskbarCollection = this.taskbarCollection[i as number];
-                const rowHeight: number = this.rows.getRow(i + 1).height;
+                const rowHeight: number = this.rows.getRow(i + this.headerRowCount).height;
                 const pdfPage: PdfPage = this.result.page.section.getPages()[this.startPageIndex] as PdfPage;
                 const graphics: PdfGraphics = pdfPage.graphics;
                 const pen: PdfPen = new PdfPen(new PdfColor(this.ganttStyle.chartGridLineColor));
@@ -403,7 +424,7 @@ export class PdfGantt extends PdfTreeGrid {
                     this.taskbarCollection[parseInt(i.toString(), 10)], lineWidth, index);
                 if (isNextPage) {
                     if (this.enableHeader) {
-                        taskbarPoint.y = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60);
+                        taskbarPoint.y = this.layouter.headerHeight;
                     } else {
                         taskbarPoint.y = 0;
                     }
@@ -427,11 +448,48 @@ export class PdfGantt extends PdfTreeGrid {
                         cumulativeHeight = 0;
                     }
                 }
+                if (hasProgressLine) {
+                    const rowPage: PdfPage = this.result.page.section.getPages()[this.startPageIndex] as PdfPage;
+                    const rowTop: number = taskbarPoint.y;
+                    const chartWidth: number = rowPage['contentWidth'];
+                    const taskbarTop: number = this.parent.renderBaseline ?
+                        pixelToPoint((this.parent.rowHeight - task.height) / 4.5) :
+                        pixelToPoint((this.parent.rowHeight - task.height) / 2);
+                    const isManualParent: boolean = task.isParentTask && !task.isAutoSchedule;
+                    const taskbarCenter: number = task.isMilestone ?
+                        globalRowTop + task.getMilestoneCenterOffset() :
+                        globalRowTop + taskbarTop +
+                        (isManualParent ? 10 + pixelToPoint(12) / 2 : pixelToPoint(task.height) / 2);
+                    progressLineRows.push({
+                        globalTop: globalRowTop,
+                        rowHeight: rowHeight,
+                        taskbarCenter: taskbarCenter,
+                        progressX: taskbarProgressX[i as number]
+                    });
+                    if (chartWidth > 0) {
+                        let pageLayout: IPdfProgressLinePage = progressLinePageMap[this.startPageIndex];
+                        if (!pageLayout) {
+                            pageLayout = {
+                                page: rowPage,
+                                left: pageStartX,
+                                top: rowTop,
+                                right: pageStartX + chartWidth,
+                                bottom: rowTop + rowHeight,
+                                globalTop: globalRowTop
+                            };
+                            progressLinePageMap[this.startPageIndex] = pageLayout;
+                            progressLinePages.push(pageLayout);
+                        } else {
+                            pageLayout.bottom = rowTop + rowHeight;
+                        }
+                    }
+                }
                 taskbarPoint.y += rowHeight;
+                globalRowTop += rowHeight;
                 cumulativeHeight += rowHeight;
                 this.eventMarker.renderHeight = this.layouter.pageHeightCollection[this.currentPage].totalHeight;
                 this.parent.eventMarkerColloction.map((eventMarker: IEventMarkerInfo) => {
-                    const timelimeHeight: number = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60);
+                    const timelimeHeight: number = this.layouter.headerHeight;
                     if (this.currentPage !== 0) {
                         this.eventMarker.renderHeight = this.layouter.pageHeightCollection[this.currentPage].totalHeight + timelimeHeight;
                     }
@@ -441,6 +499,25 @@ export class PdfGantt extends PdfTreeGrid {
                 });
             }
 
+            if (hasProgressLine) {
+                this.progressLineRenderer.drawProgressLine(
+                    this.progressLineRecords, statusX, progressLineRows, progressLinePages, detail, isAutoFit
+                );
+            }
+            const timelineHeight: number = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60);
+            const firstPageIndex: number = this.headerDetails[index as number].startIndex;
+            for (let k: number = firstPageIndex; k <= this.startPageIndex; k++) {
+                const sCurvePage: PdfPage = this.result.page.section.getPages()[k as number] as PdfPage;
+                const pageHeight: { totalHeight: number } = this.layouter.pageHeightCollection[k - firstPageIndex];
+                if (pageHeight) {
+                    const contentWidth: number = sCurvePage['contentWidth'];
+                    const isAutoFit: boolean = this.parent.pdfExportModule.gantt.taskbar.isAutoFit();
+                    const curveWidth: number = contentWidth ? (isAutoFit ? pixelToPoint(contentWidth) : contentWidth) :
+                        detail.totalWidth;
+                    this.sCurve.drawSCurve(sCurvePage, taskbarPoint, cumulativeWidth, detail, timelineHeight,
+                                           pageHeight.totalHeight - timelineHeight, curveWidth);
+                }
+            }
             this.headerDetails[index as number].endIndex = this.startPageIndex;
             cumulativeWidth += detail.totalWidth;
             pageData = {};

@@ -158,6 +158,12 @@ export class ViewBase {
 
     public scrollTopPanel(target: HTMLElement): void {
         (this.getDatesHeaderElement().firstElementChild as Element).scrollLeft = target.scrollLeft;
+        if (this.parent.fixedRowsModule) {
+            this.parent.fixedRowsModule.syncScroll(target);
+        }
+        if (this.parent.summaryModule) {
+            this.parent.summaryModule.syncScroll(target);
+        }
     }
 
     public scrollHeaderLabels(target: HTMLElement): void {
@@ -509,6 +515,12 @@ export class ViewBase {
     public setResourceHeaderContent(tdElement: Element, tdData: TdData, className: string = cls.TEXT_ELLIPSIS): void {
         if (this.parent.activeViewOptions.resourceHeaderTemplate) {
             const data: ResourceDetails = { resource: tdData.resource, resourceData: tdData.resourceData, date: tdData.date };
+            if (this.parent.fixedRowsModule && this.parent.resourceBase) {
+                const fixedIndex: number = this.parent.resourceBase.fixedResourceLevel.indexOf(tdData);
+                data.isFixed = fixedIndex > -1;
+                data.fixedIndex = fixedIndex;
+                this.parent.fixedRowsModule.extendTemplateContext(data, tdData);
+            }
             const scheduleId: string = this.parent.element.id + '_';
             const viewName: string = this.parent.activeViewOptions.resourceHeaderTemplateName;
             const templateId: string = scheduleId + viewName + 'resourceHeaderTemplate';
@@ -546,12 +558,27 @@ export class ViewBase {
         if (this.isTimelineView()) {
             const colElements: HTMLElement[] = this.getColElements();
             const contentBody: HTMLElement = this.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody') as HTMLElement;
-            const colWidth: number = (this.parent.getElementWidth(contentBody) / (colElements.length / 2));
+            const activeCellWidth: number | null | undefined = this.parent.activeViewOptions && this.parent.activeViewOptions.cellWidth;
+            const configuredWidth: number | undefined = typeof activeCellWidth === 'number'
+                ? activeCellWidth
+                : undefined;
+            const computedWidth: number = (this.parent.getElementWidth(contentBody) / (colElements.length / 2));
+            const colWidth: number = (typeof configuredWidth === 'number' && isFinite(configuredWidth) && configuredWidth > 0)
+                ? configuredWidth
+                : computedWidth;
+            if (colWidth === configuredWidth) {
+                for (const col of colElements) {
+                    setStyleAttribute(col, { 'width': formatUnit(colWidth) });
+                }
+            }
             if (content.offsetHeight !== content.clientHeight) {
                 const resourceColumn: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS);
                 if (!isNullOrUndefined(resourceColumn) && resourceColumn.offsetHeight !== content.clientHeight) {
                     setStyleAttribute(resourceColumn, { 'height': formatUnit(content.clientHeight) });
                 }
+            }
+            if (this.parent.fixedRowsModule) {
+                this.parent.fixedRowsModule.syncColumns();
             }
             const cssClass: string = `.${cls.HEADER_CELLS_CLASS},.${cls.TIME_SLOT_CLASS},.${cls.HEADER_WEEK_CELLS_CLASS},.${cls.HEADER_MONTH_CELLS_CLASS},.${cls.HEADER_YEAR_CELLS_CLASS}`;
             const headerCellElements: HTMLElement[] = [].slice.call(this.element.querySelectorAll(cssClass));

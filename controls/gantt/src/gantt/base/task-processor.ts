@@ -3877,6 +3877,10 @@ export class TaskProcessor extends DateProcessor {
                     }
                 }
             }
+            for (const seg of segments) {
+                seg.progress = seg.progressWidth > 0 && seg.width > 0 ?
+                    Math.min(100, Math.round((seg.progressWidth / seg.width) * 100)) : 0;
+            }
             this.parent.setRecordValue('segments', ganttRecord.segments, ganttRecord, true);
             this.parent.dataOperation.updateMappingData(data, 'segments');
         }

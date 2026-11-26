@@ -2149,6 +2149,19 @@ export class CartesianAxisLayoutPanel {
                                                 chart.enableRtl, chart.themeStyle.axisLabelFont);
                     }
                 }
+                if ((axis.opposedPosition || islabelInside) && !isAxisBreakLabel && typeof options.text === 'string') {
+                    // Opposed or inside-label axis: trim labels that run past the left/right chart edge so the tooltip can show the full text.
+                    const cosValue: number = Math.cos(angle * Math.PI / 180);
+                    const extendsRight: boolean = (cosValue > 0) !== isEndAnchor;
+                    const available: number = (extendsRight ? chart.availableSize.width - pointX : pointX) / Math.abs(cosValue);
+                    if (Math.abs(cosValue) > 0.01 && available > 0 && label.size.width > available) {
+                        const trimmedText: string = textTrim(available, label.text as string, label.labelStyle,
+                                                             chart.enableRtl, chart.themeStyle.axisLabelFont);
+                        if (trimmedText.length < options.text.length) {
+                            options.text = trimmedText;
+                        }
+                    }
+                }
             }
             if (this.chart.redraw && ((chart.pointsAdded && !chart.pointsRemoved) || this.chart.zoomRedraw) &&
                 !getElement(options.id) && i !== 0 && !this.chart.enableCanvas && axis.visible) {

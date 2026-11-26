@@ -17,6 +17,8 @@ import { getFilterMenuPostion, parentsUntil, appendChildren, resetDialogAppend, 
 import * as events from '../base/constant';
 import { IXLFilter } from '../common/filter-interface';
 import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
+import { renderToolPanelFooter, resetToolPanelHost } from '../common/tool-panel-filter-host';
+import { Button } from '@syncfusion/ej2-buttons';
 
 /**
  * `filter menu` render boolean column.
@@ -44,6 +46,10 @@ export class FilterMenuRenderer {
     private maxHeight: string = '350px';
     private isMenuCheck: boolean = false;
     private currentDialogCreatedColumn: Column;
+    private toolPanelBtns: Button[] = [];
+    private toolPanelClasses: string[] = [];
+    private valueUI: NumberFilterUI | StringFilterUI | DateFilterUI;
+    private restoreRangeFocus: boolean = false;
 
     private colTypes: Object = {
         'string': StringFilterUI, 'number': NumberFilterUI, 'date': DateFilterUI, 'dateonly': DateFilterUI, 'boolean': BooleanFilterUI, 'datetime': DateFilterUI
@@ -69,7 +75,7 @@ export class FilterMenuRenderer {
         this.filterBtnClick(args.col);
     }
 
-    private openDialog(args: IFilterArgs): void {
+    public openDialog(args: IFilterArgs): void {
         this.options = args;
         this.col = this.parent.getColumnByField(args.field);
         if (isNullOrUndefined(this.col.filter) || (isNullOrUndefined(this.col.filter.type) || this.col.filter.type === 'Menu')) {///
@@ -78,15 +84,19 @@ export class FilterMenuRenderer {
 
     }
 
-    private closeDialog(target?: Element): void {
-        if (!this.dlgObj) { return; }
-        const elem: Element = document.getElementById(this.dlgObj.element.id);
-        if (this.dlgObj && !this.dlgObj.isDestroyed && elem) {
-            const argument: Object = { cancel: false, column: this.col, target: target, element: elem };
+    public closeDialog(target?: Element): void {
+        const isPanel: boolean = !!(this.options && this.options.isToolPanel);
+        if (!this.dlgObj && !isPanel) { return; }
+        const elem: Element = isPanel ? this.dlgDiv : document.getElementById(this.dlgObj.element.id);
+        if ((isPanel || (this.dlgObj && !this.dlgObj.isDestroyed)) && elem) {
+            const argument: Object = {
+                cancel: false, column: this.col, target: target, element: elem, isToolPanel: this.options.isToolPanel };
             if ((<{ cancel?: boolean }>argument).cancel) {
                 this.parent.isColumnMenuFilterClosing = false;
                 return;
             }
+            this.restoreRangeFocus = !isPanel && this.flMuiObj && this.flMuiObj.dropOptr && !this.flMuiObj.dropOptr.isDestroyed &&
+                this.flMuiObj.dropOptr.value === 'between';
             this.parent.notify(events.filterMenuClose, argument);
             this.isDialogOpen = false;
             if (this.isMenuCheck) {
@@ -103,25 +113,41 @@ export class FilterMenuRenderer {
                 }
                 (temp as Function)();
             }
+            const destroyContent: Function = (): void => {
+                if (isPanel) {
+                    resetToolPanelHost(this.dlgDiv, this.toolPanelBtns, this.toolPanelClasses);
+                    this.toolPanelBtns = [];
+                    this.dlgDiv = null;
+                } else {
+                    this.dlgObj.destroy();
+                }
+            };
             if ((this.parent.isReact || this.parent.isVue) && this.col.filterTemplate && this.col.filterTemplate instanceof Function) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (this.parent as any).clearTemplate(['filterTemplate'], undefined, () => {
-                    this.dlgObj.destroy();
-                });
+                (this.parent as any).clearTemplate(['filterTemplate'], undefined, destroyContent);
             }
             else {
-                this.dlgObj.destroy();
-                remove(elem);
+                destroyContent();
+                if (!isPanel) { remove(elem); }
             }
-            if (!this.parent.showColumnChooser) {
+            if (this.restoreRangeFocus) {
+                this.restoreRangeFocus = false;
+                const filterIcon: HTMLElement = this.parent.getColumnHeaderByUid(this.col.uid) ?
+                    this.parent.getColumnHeaderByUid(this.col.uid).querySelector('.e-filtermenudiv') as HTMLElement : null;
+                if (filterIcon && !this.parent.showColumnMenu) { filterIcon.focus(); }
+            }
+            if (!this.parent.showColumnChooser && !isPanel) {
                 let gridPopup: HTMLElement = document.getElementById(this.parent.element.id + '_e-popup');
                 if (!isNullOrUndefined(gridPopup)) {
                     remove(gridPopup);
                     gridPopup = null;
                 }
             }
-            if (!isNullOrUndefined(this.dlgObj['storeActiveElement'])) {
+            if (this.dlgObj && !isNullOrUndefined(this.dlgObj['storeActiveElement'])) {
                 this.dlgObj['storeActiveElement'].focus();
+            }
+            if (this.options.isToolPanel && this.options.toolPanelClose) {
+                this.options.toolPanelClose();
             }
         }
         this.parent.notify(events.filterDialogClose, {});
@@ -137,6 +163,10 @@ export class FilterMenuRenderer {
         this.parent.trigger(events.actionBegin, args);
 
         const mainDiv: HTMLElement = this.parent.createElement('div', { className: 'e-flmenu-maindiv', id: column.uid + '-flmenu' });
+        if (this.options.isToolPanel) {
+            this.renderToolPanel(target as HTMLElement, column, mainDiv);
+            return;
+        }
         this.dlgDiv = this.parent.createElement('div', { className: 'e-flmenu', id: column.uid + '-flmdlg' });
         this.dlgDiv.setAttribute('aria-label', this.l10n.getConstant('FilterMenuDialogARIA'));
         if (this.parent.enableAdaptiveUI) {
@@ -177,6 +207,23 @@ export class FilterMenuRenderer {
         this.dlgObj.appendTo(this.dlgDiv);
     }
 
+    private renderToolPanel(host: HTMLElement, column: Column, mainDiv: HTMLElement): void {
+        const cssClass: string = this.parent.cssClass ? ' ' + this.parent.cssClass : '';
+        this.toolPanelClasses = ['e-flmenu', 'e-filter-popup'].concat(this.parent.cssClass ? this.parent.cssClass.split(' ') : []);
+        this.dlgDiv = host;
+        host.id = column.uid + '-flmdlg';
+        host.setAttribute('aria-label', this.l10n.getConstant('FilterMenuDialogARIA'));
+        host.classList.add(...this.toolPanelClasses);
+        host.appendChild(mainDiv);
+        this.toolPanelBtns = renderToolPanelFooter(host, [
+            { content: this.l10n.getConstant('FilterButton'), isPrimary: true, cssClass: 'e-flmenu-okbtn' + cssClass,
+                click: this.filterBtnClick.bind(this, column) },
+            { content: this.l10n.getConstant('ClearButton'), cssClass: 'e-flmenu-cancelbtn' + cssClass,
+                click: this.clearBtnClick.bind(this, column) }
+        ]);
+        this.dialogCreated(host, column);
+    }
+
     private renderResponsiveDialog(): void {
         const gObj: IGrid = this.parent;
         if (gObj.enableAdaptiveUI) {
@@ -189,11 +236,12 @@ export class FilterMenuRenderer {
     }
 
     private dialogCreated(target: Element, column: Column): void {
-        if (!Browser.isDevice && target) {
-            getFilterMenuPostion(target, this.dlgObj, this.parent);
-        }
-        else if (!this.options.isResponsiveFilter) {
-            this.dlgObj.position = { X: 'center', Y: 'center' };
+        if (!this.options.isToolPanel) {
+            if (!Browser.isDevice && target) {
+                getFilterMenuPostion(target, this.dlgObj, this.parent);
+            } else if (!this.options.isResponsiveFilter) {
+                this.dlgObj.position = { X: 'center', Y: 'center' };
+            }
         }
         this.currentDialogCreatedColumn = column;
         this.renderFilterUI(target, column);
@@ -222,22 +270,25 @@ export class FilterMenuRenderer {
      */
     public afterRenderFilterUI(): void {
         const column: Column = this.currentDialogCreatedColumn;
-        if (column.showColumnMenu) {
+        if (column.showColumnMenu && !this.options.isToolPanel) {
             this.parent.notify(events.filterDialogCreated, {});
         }
-        if (this.parent.enableAdaptiveUI) {
-            this.dlgObj.element.style.left = '0px';
-            this.dlgObj.element.style.maxHeight = 'none';
-        } else {
-            this.dlgObj.element.style.maxHeight = this.maxHeight;
+        if (!this.options.isToolPanel) {
+            if (this.parent.enableAdaptiveUI) {
+                this.dlgObj.element.style.left = '0px';
+                this.dlgObj.element.style.maxHeight = 'none';
+            } else {
+                this.dlgObj.element.style.maxHeight = this.maxHeight;
+            }
+            this.dlgObj.show();
         }
-        this.dlgObj.show();
-        if ((this.parent.getContent().firstElementChild as HTMLElement).offsetHeight < this.dlgObj.element.offsetHeight &&
+        if (!this.options.isToolPanel && (this.parent.getContent().firstElementChild as HTMLElement).offsetHeight <
+            this.dlgObj.element.offsetHeight &&
             !parentsUntil(this.parent.element, 'e-gantt-dialog')) {
             resetDialogAppend(this.parent, this.dlgObj);
         }
         const optrValue: string = this.flMuiObj.getFlOperator();
-        const valInput: HTMLInputElement = this.dlgObj.element.querySelector('.e-flmenu-valuediv').querySelector('input');
+        const valInput: HTMLInputElement = this.getDlgElement().querySelector('.e-flmenu-valuediv').querySelector('input');
         if (optrValue === 'isempty' || optrValue === 'isnotempty' ||
             optrValue === 'isnull' || optrValue === 'isnotnull') {
             if (!isNullOrUndefined(valInput['ej2_instances'])) {
@@ -254,7 +305,7 @@ export class FilterMenuRenderer {
             }
         }
         if (!column.filterTemplate) {
-            this.writeMethod(column, this.dlgObj.element.querySelector('#' + getParsedFieldID(column.uid + '-flmenu')));
+            this.writeMethod(column, this.getDlgElement().querySelector('#' + getParsedFieldID(column.uid + '-flmenu')));
         }
         const args: Object = {
             requestType: events.filterAfterOpen,
@@ -270,10 +321,14 @@ export class FilterMenuRenderer {
 
     private renderFilterUI(target: Element, col: Column): void {
 
-        const dlgConetntEle: Element = this.dlgObj.element.querySelector('.e-flmenu-maindiv');
+        const dlgConetntEle: Element = this.getDlgElement().querySelector('.e-flmenu-maindiv');
         this.parent.log('column_type_missing', {column: col});
         this.renderOperatorUI(dlgConetntEle, target, col);
         this.renderFlValueUI(dlgConetntEle, target, col);
+    }
+
+    private getDlgElement(): HTMLElement {
+        return this.dlgObj ? this.dlgObj.element : this.dlgDiv;
     }
 
     private renderOperatorUI(dlgConetntEle: Element, target: Element, column: Column): void {
@@ -287,6 +342,7 @@ export class FilterMenuRenderer {
         if (isNullOrUndefined(column.type)) { return; }
         const instanceofFilterUI: NumberFilterUI | StringFilterUI | DateFilterUI =
             new this.colTypes[column.type](this.parent, this.serviceLocator, this.parent.filterSettings);
+        this.valueUI = instanceofFilterUI;
         if (column.filterTemplate) {
             const fltrData: Object = {};
             const valueInString: string = 'value';
@@ -329,8 +385,8 @@ export class FilterMenuRenderer {
                 });
             } else {
                 instanceofFilterUI.create({
-                    column: column, target: valueDiv,
-                    getOptrInstance: this.flMuiObj, localizeText: this.l10n, dialogObj: this.dlgObj
+                    column: column, target: valueDiv, getOptrInstance: this.flMuiObj, localizeText: this.l10n, dialogObj: this.dlgObj,
+                    afterRenderFilterUI: this.afterRenderFilterUI.bind(this)
                 });
             }
         }
@@ -340,12 +396,18 @@ export class FilterMenuRenderer {
     private writeMethod(col: Column, dlgContentEle: Element): void {
         let flValue: string | number | Date | boolean | (string | number | boolean | Date)[];
         const target: Element = dlgContentEle.querySelector('.e-flmenu-valinput');
-        const instanceofFilterUI: NumberFilterUI | StringFilterUI | DateFilterUI =
+        const instanceofFilterUI: NumberFilterUI | StringFilterUI | DateFilterUI = this.valueUI ||
             new this.colTypes[col.type](this.parent, this.serviceLocator, this.parent.filterSettings);
         const columns: PredicateModel[] = this.filterSettings.columns;
         for (const column of columns) {
             if (col.uid === column.uid) {
-                flValue = column.value;
+                if (column.isRange) {
+                    const rangeValues: Date[] = Array.isArray(flValue) ? flValue as Date[] : [];
+                    rangeValues.push(column.value as Date);
+                    flValue = rangeValues;
+                } else {
+                    flValue = column.value;
+                }
             }
         }
         if (!isNullOrUndefined(col.filter) && !isNullOrUndefined(col.filter.ui)
@@ -354,17 +416,19 @@ export class FilterMenuRenderer {
             if (typeof temp === 'string') {
                 temp = getValue(temp, window);
             }
-            (temp as Function)({ column: col, target: target, parent: this.parent, filteredValue: flValue });
+            (temp as Function)({
+                column: col, target: target, parent: this.parent, filteredValue: flValue, getOptrInstance: this.flMuiObj });
         } else {
-            instanceofFilterUI.write({ column: col, target: target, parent: this.parent, filteredValue: flValue });
+            instanceofFilterUI.write({
+                column: col, target: target, parent: this.parent, filteredValue: flValue, getOptrInstance: this.flMuiObj });
         }
     }
 
     private filterBtnClick(col: Column): void {
         let flValue: string | number | Date | boolean;
-        const targ: HTMLInputElement = this.dlgObj.element.querySelector('.e-flmenu-valuediv input') as HTMLInputElement;
+        const targ: HTMLInputElement = this.getDlgElement().querySelector('.e-flmenu-valuediv input') as HTMLInputElement;
         const flOptrValue: string = this.flMuiObj.getFlOperator();
-        const instanceofFilterUI: NumberFilterUI | StringFilterUI | DateFilterUI =
+        const instanceofFilterUI: NumberFilterUI | StringFilterUI | DateFilterUI = this.valueUI ||
             new this.colTypes[col.type](this.parent, this.serviceLocator, this.parent.filterSettings);
         if (col.filterTemplate) {
             const element: Element = this.dlgDiv.querySelector('.e-flmenu-valuediv');
@@ -401,6 +465,7 @@ export class FilterMenuRenderer {
 
             }
         }
+        if ((instanceofFilterUI as DateFilterUI).rangeInvalid) { return; }
         this.closeDialog();
         if (this.parent.showColumnMenu) {
             this.parent.notify(events.afterFilterColumnMenuClose, {});

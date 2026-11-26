@@ -193,7 +193,9 @@ export class TextSelection {
      */
     private liveSurface(): TextBodySurface {
         const presentation = this.slide.getPresentation();
-        if (presentation === undefined) {
+        if (presentation === undefined || this.shape.getPartName() !== this.slide.partName) {
+            // Notes, master, and layout matches are not on the slide part. Rebinding
+            // by shape id would land on a different shape that happens to share the id.
             return this.surface;
         }
         const model = (presentation as unknown as { model: { slides: ReadonlyArray<Slide> } }).model;

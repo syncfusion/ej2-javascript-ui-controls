@@ -1,4 +1,4 @@
-import { Property, ChildProperty } from '@syncfusion/ej2-base';
+import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';import { FixedRowsSettings } from './fixed-rows-settings';import { FixedRowsSettingsModel } from './fixed-rows-settings-model';
 
 /**
  * Interface for a class Group
@@ -65,5 +65,12 @@ export interface GroupModel {
      * @default false
      */
     hideNonWorkingDays?: boolean;
+
+    /**
+     * Configures the fixed rows of the timeline views. It requires the `FixedRows` module to be injected.
+     *
+     * @default { enable: false, showSeparator: true }
+     */
+    fixedRows?: FixedRowsSettingsModel;
 
 }

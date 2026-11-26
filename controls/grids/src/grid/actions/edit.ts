@@ -25,6 +25,7 @@ import { DataUtil } from '@syncfusion/ej2-data';
 import { Row } from '../models/row';
 import { addRemoveEventListener, padZero, getParentIns } from '../base/util';
 import { CellEdit } from './cell-edit';
+import { UndoRedo } from './undo-redo';
 import { Matrix } from '../services/focus-strategy';
 import * as literals from '../base/string-literals';
 import { FormulaCellEditor } from './formula-edit';
@@ -37,6 +38,8 @@ export class Edit implements IAction {
     protected renderer: EditRender;
     /** @hidden */
     public editModule: IEdit;
+    /** @hidden */
+    public undoRedoModule: UndoRedo;
     /** @hidden */
     public formObj: FormValidator;
     /** @hidden */
@@ -88,6 +91,7 @@ export class Edit implements IAction {
         this.serviceLocator = serviceLocator;
         this.l10n = this.serviceLocator.getService<L10n>('localization');
         this.addEventListener();
+        this.undoRedoModule = new UndoRedo(this.parent);
         this.updateEditObj();
         this.createAlertDlg();
         this.createConfirmDlg();
@@ -146,6 +150,11 @@ export class Edit implements IAction {
                 if (gObj.editSettings.allowAdding || gObj.editSettings.allowEditing || gObj.editSettings.allowDeleting) {
                     this.initialEnd();
                 }
+                break;
+            case 'enableUndoRedo':
+            case 'enableBatchUndoRedo':
+            case 'undoRedoLimit':
+                gObj.notify(events.toolbarRefresh, {});
                 break;
             case 'mode':
                 this.updateEditObj();
@@ -429,6 +438,21 @@ export class Edit implements IAction {
      */
     public editFormValidate(): boolean {
         return this.formObj ? this.formObj.validate() : true;
+    }
+
+    /**
+     * Renders the dialog edit form of the given columns inside the tool panel, without starting an edit.
+     *
+     * @param {Column[]} cols - columns rendered in the form
+     * @param {Object} rowData - record that fills the editors
+     * @param {string} formId - id of the form element
+     * @param {HTMLElement} host - element that receives the form; the editors are written after it is attached
+     * @param {Object} foreignKeyData - foreign key data of the record
+     * @returns {HTMLElement} the edited row element that contains the form
+     * @hidden
+     */
+    public renderToolPanelForm(cols: Column[], rowData: Object, formId: string, host: HTMLElement, foreignKeyData?: Object): HTMLElement {
+        return this.renderer.renderToolPanelForm(cols, rowData, formId, host, foreignKeyData);
     }
 
     /**
@@ -930,6 +954,10 @@ export class Edit implements IAction {
             gridElement.querySelector( '.' + literals.gridContent) ? true : false;
         if (hasGridChild) { this.destroyForm(); }
         this.removeEventListener();
+        if (this.undoRedoModule) {
+            this.undoRedoModule.destroy();
+            this.undoRedoModule = null;
+        }
         let elem: Element = this.dialogObj.element;
         if (elem.childElementCount > 0) {
             this.dialogObj.destroy();
@@ -975,10 +1003,14 @@ export class Edit implements IAction {
      * @hidden
      */
     public isUndoStackAvailable(): boolean {
-        if (this.editModule && this.editModule.isUndoStackAvailable) {
-            return this.editModule.isUndoStackAvailable();
+        if (!this.parent.editSettings.enableUndoRedo) {
+            return false;
         }
-        return false;
+        if (this.parent.editSettings.mode === 'Batch' && this.editModule && this.editModule.isUndoStackAvailable &&
+            this.editModule.isUndoStackAvailable()) {
+            return true;
+        }
+        return this.undoRedoModule ? this.undoRedoModule.isUndoStackAvailable() : false;
     }
 
     /**
@@ -988,10 +1020,63 @@ export class Edit implements IAction {
      * @hidden
      */
     public isRedoStackAvailable(): boolean {
-        if (this.editModule && this.editModule.isRedoStackAvailable) {
-            return this.editModule.isRedoStackAvailable();
+        if (!this.parent.editSettings.enableUndoRedo) {
+            return false;
         }
-        return false;
+        if (this.parent.editSettings.mode === 'Batch' && this.editModule && this.editModule.isRedoStackAvailable &&
+            this.editModule.isRedoStackAvailable()) {
+            return true;
+        }
+        return this.undoRedoModule ? this.undoRedoModule.isRedoStackAvailable() : false;
+    }
+
+    /**
+     * Reverses the most recent eligible edit operation. In Batch mode the pending virtual history
+     * is reversed first and the committed history is used when the virtual history is empty.
+     *
+     * @returns {void}
+     * @hidden
+     */
+    public undoEdit(): void {
+        if (!this.parent.editSettings.enableUndoRedo) {
+            return;
+        }
+        if (this.undoRedoModule && this.undoRedoModule.isEditorOpen()) {
+            return;
+        }
+        if (this.parent.editSettings.mode === 'Batch' && this.editModule && this.editModule.isUndoStackAvailable &&
+            this.editModule.isUndoStackAvailable()) {
+            this.editModule.undoBatchEdit();
+            return;
+        }
+        if (this.undoRedoModule) {
+            this.parent.focusModule.clearIndicator();
+            this.undoRedoModule.undo();
+        }
+    }
+
+    /**
+     * Reapplies the most recently undone edit operation. In Batch mode the pending virtual history
+     * is reapplied first and the committed history is used when the virtual history is empty.
+     *
+     * @returns {void}
+     * @hidden
+     */
+    public redoEdit(): void {
+        if (!this.parent.editSettings.enableUndoRedo) {
+            return;
+        }
+        if (this.undoRedoModule && this.undoRedoModule.isEditorOpen()) {
+            return;
+        }
+        if (this.parent.editSettings.mode === 'Batch' && this.editModule && this.editModule.isRedoStackAvailable &&
+            this.editModule.isRedoStackAvailable()) {
+            this.editModule.redoBatchEdit();
+            return;
+        }
+        if (this.undoRedoModule) {
+            this.undoRedoModule.redo();
+        }
     }
 
     private keyPressHandler(e: KeyboardEventArgs): void {

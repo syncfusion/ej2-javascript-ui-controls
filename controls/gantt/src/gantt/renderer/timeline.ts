@@ -103,6 +103,7 @@ export class Timeline {
             this.parent.updateTimelineDates(
                 this.parent.cloneTimelineStartDate, this.parent.cloneTimelineEndDate, this.parent.isTimelineRoundOff);
         }
+        this.syncTimelineHeaderHeight();
         const timelineContainer: number = this.parent.element.getElementsByClassName('e-timeline-header-container')[0]['offsetHeight'];
         this.parent.element.getElementsByClassName('e-gridcontent')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
         this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
@@ -2902,5 +2903,30 @@ export class Timeline {
         args.action = 'TimescaleUpdate';
         this.parent.trigger(eventType, args);
         return args;
+    }
+
+    public syncTimelineHeaderHeight(): void {
+        const gridHeader: HTMLElement = this.parent.element.querySelector('.e-gridheader') as HTMLElement;
+        const timelineHeader: HTMLElement =
+            this.parent.element.querySelector('.e-timeline-header-container') as HTMLElement;
+
+        if (isNullOrUndefined(gridHeader) || isNullOrUndefined(timelineHeader)) {
+            return;
+        }
+
+        const rows: NodeListOf<HTMLTableRowElement> =
+            timelineHeader.querySelectorAll('thead.e-timeline-header-table-body tr');
+
+        if (rows.length === 0) {
+            return;
+        }
+
+        const headerHeight: number = gridHeader.offsetHeight;
+        const tierHeight: number = Math.floor(headerHeight / rows.length);
+
+        timelineHeader.style.height = headerHeight + 'px';
+        for (let i: number = 0; i < rows.length; i++) {
+            rows[i as number].style.height = tierHeight + 'px';
+        }
     }
 }

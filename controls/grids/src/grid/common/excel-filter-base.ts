@@ -8,7 +8,7 @@ import { RadioButton, CheckBox } from '@syncfusion/ej2-buttons';
 import {
     distinctStringValues, isComplexField, getComplexFieldID, getCustomDateFormat, applyBiggerTheme,
     performComplexDataOperation, registerEventHandlers, removeEventHandlers, clearReactVueTemplates,
-    isMatDialogContainer, isAngularMatContainer
+    isMatDialogContainer, isAngularMatContainer, getParsedFieldID
 } from '../base/util';
 import { Column } from '../models/column';
 import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
@@ -412,7 +412,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         if (options.cancel) {
             return;
         }
-        this.dialogObj.dataBind();
+        if (this.dialogObj) { this.dialogObj.dataBind(); }
         const filterLength: number = (this.existingPredicate[options.field] && this.existingPredicate[options.field].length) ||
             this.options.filteredColumns.filter((col: Predicate) => {
                 return this.options.field === col.field;
@@ -420,9 +420,9 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         this.createMenu(options.type, filterLength > 0, (filterLength === 1 || filterLength === 2), options);
         this.dlg.insertBefore(this.menu, this.dlg.firstChild);
         this.dlg.classList.add('e-excelfilter');
-        if ((this.parent as IGrid) && !isNullOrUndefined((this.parent as IGrid).getContent) && (this.parent as IGrid).getContent()
-            && ((this.parent as IGrid).getContent().firstElementChild as HTMLElement)
-                .offsetHeight < (this.dlg as HTMLElement).offsetHeight && !parentsUntil(this.parent.element, 'e-gantt-dialog')) {
+        if (!options.isToolPanel && (this.parent as IGrid) && !isNullOrUndefined((this.parent as IGrid).getContent)
+            && (this.parent as IGrid).getContent() && ((this.parent as IGrid).getContent().firstElementChild as HTMLElement)
+            .offsetHeight < (this.dlg as HTMLElement).offsetHeight && !parentsUntil(this.parent.element, 'e-gantt-dialog')) {
             resetDialogAppend((this.parent as IGrid), this.dialogObj);
         }
         if (this.parent.enableRtl) {
@@ -436,7 +436,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 menuItem.setAttribute('title', menuItem.textContent);
             }
         });
-        if (options.column.showColumnMenu) {
+        if (options.column.showColumnMenu && !options.isToolPanel) {
             this.parent.notify(events.filterDialogCreated, {});
         }
         this.wireExEvents();
@@ -516,10 +516,10 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                         (this.parent as any).parentDetails.parentInstObj.isReact;
                     if (isReactCompiler || isReactChild) {
                         this.parent.renderTemplates(function(): void {
-                            (row.querySelector('#' + templateField + '-xlfl-frstvalue')as HTMLElement).focus();
+                            (row.querySelector('#' + getParsedFieldID(templateField + '-xlfl-frstvalue'))as HTMLElement).focus();
                         });
                     } else {
-                        (row.querySelector('#' + templateField + '-xlfl-frstvalue')as HTMLElement).focus();
+                        (row.querySelector('#' + getParsedFieldID(templateField + '-xlfl-frstvalue'))as HTMLElement).focus();
                     }
                 } else {
                     //(row.cells[1].querySelector('input:not([type=hidden])') as HTMLElement).focus();
@@ -641,20 +641,20 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         let firstValue: NumericTextBox | HTMLInputElement;
         let secondValue: NumericTextBox | HTMLInputElement;
         if (this.options.type === 'string' && isNullOrUndefined(this.options.template)) {
-            firstValue = <HTMLInputElement>this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstvalue');
-            secondValue = <HTMLInputElement>this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndvalue');
+            firstValue = <HTMLInputElement>this.dlgDiv.querySelector('#' + getParsedFieldID(colValue + '-xlfl-frstvalue'));
+            secondValue = <HTMLInputElement>this.dlgDiv.querySelector('#' + getParsedFieldID(colValue + '-xlfl-secndvalue'));
         } else {
-            firstValue = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstvalue')).ej2_instances[0];
-            secondValue = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndvalue')).ej2_instances[0];
+            firstValue = (<EJ2Intance>this.dlgDiv.querySelector('#' + getParsedFieldID(colValue + '-xlfl-frstvalue'))).ej2_instances[0];
+            secondValue = (<EJ2Intance>this.dlgDiv.querySelector('#' + getParsedFieldID(colValue + '-xlfl-secndvalue'))).ej2_instances[0];
         }
-        const fOperator: DropDownList = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-frstoptr')).ej2_instances[0];
-        const sOperator: DropDownList = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlfl-secndoptr')).ej2_instances[0];
+        const fOperator: DropDownList = (<EJ2Intance>this.dlgDiv.querySelector('#' + getParsedFieldID(colValue + '-xlfl-frstoptr'))).ej2_instances[0];
+        const sOperator: DropDownList = (<EJ2Intance>this.dlgDiv.querySelector('#' + getParsedFieldID(colValue + '-xlfl-secndoptr'))).ej2_instances[0];
         let checkBoxValue: boolean;
         if (this.options.type === 'string') {
-            const checkBox: CheckBox = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + '-xlflmtcase')).ej2_instances[0];
+            const checkBox: CheckBox = (<EJ2Intance>this.dlgDiv.querySelector('#' + getParsedFieldID(colValue + '-xlflmtcase'))).ej2_instances[0];
             checkBoxValue = checkBox.checked;
         }
-        const predicateSelector: CheckBox = (<EJ2Intance>this.dlgDiv.querySelector('#' + colValue + 'e-xlfl-frstpredicate')).ej2_instances[0];
+        const predicateSelector: CheckBox = (<EJ2Intance>this.dlgDiv.querySelector('#' + getParsedFieldID(colValue + 'e-xlfl-frstpredicate'))).ej2_instances[0];
         const predicate: string = (predicateSelector.checked ? 'and' : 'or');
         this.filterByColumn(
             this.options.field, fOperator.value as string, firstValue.value, predicate,
@@ -791,7 +791,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     }
 
     private dropDownOpen(args: { popup: Popup }): void {
-        args.popup.element.style.zIndex = (this.dialogObj.zIndex + 1).toString();
+        args.popup.element.style.zIndex = ((this.dialogObj || this.dlgObj).zIndex + 1).toString();
     }
 
     private dropDownValueChange(args: ChangeEventArgs): void {
@@ -1172,13 +1172,13 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             const isComplex: boolean = !isNullOrUndefined(column) && isComplexField(column);
             const complexFieldName: string = !isNullOrUndefined(column) && getComplexFieldID(column);
             const columnvalue: string = isComplex ? complexFieldName : column;
-            actObj.filterType = ((<EJ2Intance>this.dlgDiv.querySelector('#' + columnvalue +
-                (inputValue.id === (columnvalue + '-xlfl-frstvalue') ?
-                    '-xlfl-frstoptr' :
-                    '-xlfl-secndoptr')
-            )).ej2_instances[0] as DropDownList).value as 'Contains';
+            const operatorSuffix: string = inputValue.id === (columnvalue + '-xlfl-frstvalue') ?
+                '-xlfl-frstoptr' : '-xlfl-secndoptr';
+            const operatorSelector: string = '#' + getParsedFieldID(columnvalue + operatorSuffix);
+            actObj.filterType = ((<EJ2Intance>this.dlgDiv.querySelector(operatorSelector))
+                .ej2_instances[0] as DropDownList).value as 'Contains';
             actObj.ignoreCase = options.type === 'string' ?
-                !((<EJ2Intance>this.dlgDiv.querySelector('#' + columnvalue + '-xlflmtcase')).ej2_instances[0] as CheckBox).checked :
+                !((<EJ2Intance>this.dlgDiv.querySelector('#' + getParsedFieldID(columnvalue + '-xlflmtcase'))).ej2_instances[0] as CheckBox).checked :
                 true;
             actObj.filterType = !isNullOrUndefined(actObj.filterType) ? actObj.filterType :
                 'equal' as 'StartsWith' | 'Contains' | 'EndsWith';

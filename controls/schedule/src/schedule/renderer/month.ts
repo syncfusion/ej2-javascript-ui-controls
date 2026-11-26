@@ -75,7 +75,8 @@ export class Month extends ViewBase implements IRenderer {
         const headerHeight: number = this.getHeaderBarHeight();
         const header: HTMLElement = this.getDatesHeaderElement();
         const content: HTMLElement = this.getContentAreaElement();
-        const height: number = this.parent.element.offsetHeight - headerHeight - header.offsetHeight;
+        const height: number = this.parent.element.offsetHeight - headerHeight - header.offsetHeight -
+            (this.parent.summaryModule ? this.parent.summaryModule.getRowHeight() : 0);
         const leftPanel: HTMLElement = this.getLeftPanelElement();
         if (this.parent.height !== 'auto') {
             this.setContentHeight(content, leftPanel, height);

@@ -2,7 +2,7 @@
 import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';
 import { Query, DataManager } from '@syncfusion/ej2-data';
 import { SortComparerFunction } from '../base/interface';
-import { SpannedEventPlacement } from '../base/type';
+import { SpannedEventPlacement, EventPlacement } from '../base/type';
 import { Field } from './fields';
 import { FieldModel } from './fields-model';
 
@@ -186,6 +186,16 @@ export class EventSettings extends ChildProperty<EventSettings> {
      */
     @Property(false)
     public enableMaxHeight: boolean;
+
+    /**
+     * Defines how events are placed within a day cell. The `Exact` value positions and sizes the event from its true start and end time,
+     * whereas `Slot` makes the event fill the slots it touches. A value set in `views.eventPlacement` takes precedence.
+     * When not set, Timeline day, week and work week views with a time scale use `Exact`; all other applicable views use `Slot`.
+     *
+     * @default null
+     */
+    @Property(null)
+    public placement: EventPlacement;
 
     /**
      * This property enables the event to occupy the full height that remaining from the header and more indicator.

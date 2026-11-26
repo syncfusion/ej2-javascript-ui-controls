@@ -30,6 +30,8 @@ export class FocusStrategy {
     public isInfiniteScroll: boolean = false;
     /** @hidden */
     public virtualSelectionInfo: VirtualSelectionInfo = {};
+    /** @hidden */
+    public domVirtualFocusCell: HTMLElement | null = null;
     private forget: boolean = false;
     private skipFocus: boolean = true;
     private focusByClick: boolean = false;
@@ -475,6 +477,7 @@ export class FocusStrategy {
         }
         this.setActiveByKey(e.action, this.getContent());
         let returnVal: boolean = this.content && this.content.lastIdxCell ? false : this.getContent().onKeyPress(e);
+        if (returnVal === false && this.focusNextDomVirtualRow(e)) { return; }
         if (e.target && !this.parent.enableHeaderFocus) {
             if (e.action === 'tab' && ((e.target as Element).classList.contains('e-grid') ||
                 closest((e.target as Element), '.e-groupdroparea') || closest((e.target as Element), '.e-toolbar-item') ||
@@ -819,6 +822,30 @@ export class FocusStrategy {
             e.preventDefault();
             this.parent.element.focus();
         }
+    }
+
+    private focusDomVirtualCell(): void {
+        const cell: HTMLTableCellElement = this.domVirtualFocusCell as HTMLTableCellElement;
+        this.domVirtualFocusCell = null;
+        if (!cell.parentElement) { return; }
+        this.setActive(true);
+        this.getContent().matrix.current = [(cell.parentElement as HTMLTableRowElement).rowIndex, cell.cellIndex];
+        this.isVirtualScroll = true;
+        this.focus();
+        if (!(this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
+            this.isVirtualScroll = false;
+        }
+    }
+
+    private focusNextDomVirtualRow(e: KeyboardEventArgs): boolean {
+        if (!this.parent.isRowDomVirtualization() || (e.action !== 'tab' && e.action !== 'shiftTab') || !e.target
+            || !parentsUntil(e.target as Element, literals.gridContent)) { return false; }
+        const args: { action: string, isHandled: boolean } = { action: e.action, isHandled: false };
+        this.parent.notify(event.domVirtualTabFocus, args);
+        if (args.isHandled) {
+            e.preventDefault();
+        }
+        return args.isHandled;
     }
 
     private allowToPaging(e: KeyboardEventArgs): boolean {
@@ -1251,6 +1278,9 @@ export class FocusStrategy {
                     }
                 }
                 this.virtualSelectionInfo = {};
+            }
+            if (content && e && e.args && e.args.requestType === 'dom-virtualscroll' && this.domVirtualFocusCell) {
+                this.focusDomVirtualCell();
             }
             if (e && e.args && e.args.requestType === 'infiniteScroll') {
                 this.isInfiniteScroll = true;

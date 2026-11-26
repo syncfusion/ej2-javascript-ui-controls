@@ -2,7 +2,7 @@ import { extend, addClass, removeClass, setValue, closest, select, EventHandler 
 import { remove, classList } from '@syncfusion/ej2-base';
 import { FormValidator } from '@syncfusion/ej2-inputs';
 import { isNullOrUndefined, KeyboardEventArgs, isUndefined } from '@syncfusion/ej2-base';
-import { IGrid, BeforeBatchAddArgs, BeforeBatchDeleteArgs, BeforeBatchSaveArgs, ISelectedCellDetails, IAutoFill, IDeleteAction, EditEventArgs } from '../base/interface';
+import { IGrid, IEdit, BeforeBatchAddArgs, BeforeBatchDeleteArgs, BeforeBatchSaveArgs, ISelectedCellDetails, IAutoFill, IDeleteAction, EditEventArgs, ICommittedRecord } from '../base/interface';
 import { BatchAddArgs, CellEditArgs, CellSaveArgs, CellFocusArgs, BatchCancelArgs, IUndoRedoAction } from '../base/interface';
 import { CellType } from '../base/enum';
 import { parentsUntil, refreshForeignData, getObject, addRemoveEventListener, getCellFromRow } from '../base/util';
@@ -811,10 +811,101 @@ export class BatchEdit {
             if (beforeBatchSaveArgs.cancel) {
                 return;
             }
+            this.registerPendingBatchTransaction();
             this.clearStacks();
             gObj.showSpinner();
             gObj.notify(events.bulkSave, { changes: changes, original: original });
         });
+    }
+
+    /**
+     * Hands the pending Batch transaction to the shared undo/redo history, so that it can be
+     * committed as a single history entry once the save has succeeded.
+     *
+     * @returns {void}
+     * @hidden
+     */
+    private registerPendingBatchTransaction(): void {
+        const undoRedoModule: IEdit['undoRedoModule'] = this.parent.editModule && this.parent.editModule.undoRedoModule;
+        if (!this.parent.editSettings.enableUndoRedo || !this.parent.editSettings.enableBatchUndoRedo ||
+            !undoRedoModule || !undoRedoModule.setPendingBatchTransaction) {
+            return;
+        }
+        const gObj: IGrid = this.parent;
+        const primaryKey: string = gObj.getPrimaryKeyFieldNames()[0];
+        if (!primaryKey) {
+            return;
+        }
+        const changedRecords: ICommittedRecord[] = [];
+        const addedRecords: ICommittedRecord[] = [];
+        const deletedRecords: ICommittedRecord[] = [];
+        const records: ICommittedRecord[] = [];
+        const rows: Row<Column>[] = gObj.getRowsObject() as Row<Column>[];
+        for (let i: number = 0; i < rows.length; i++) {
+            const row: Row<Column> = rows[parseInt(i.toString(), 10)];
+            if (!row.isDirty) {
+                continue;
+            }
+            const rowData: Object = row.edit === 'add' ? (row.changes || row.data) : row.data;
+            const keyValue: string | number = getObject(primaryKey, rowData);
+            if (isNullOrUndefined(keyValue)) {
+                continue;
+            }
+            const newRecord: Object = row.edit === 'add' ? rowData :
+                (row.edit === 'delete' ? undefined : extend({}, row.data, row.changes));
+            const record: ICommittedRecord = {
+                primaryKey: primaryKey,
+                keyValue: keyValue,
+                previousRecord: row.edit === 'add' ? undefined : this.cloneCommittedRecord(row.data),
+                newRecord: this.cloneCommittedRecord(newRecord),
+                rowIndex: row.index,
+                changeType: row.edit === 'add' ? 'added' : (row.edit === 'delete' ? 'deleted' : 'changed')
+            };
+            records.push(record);
+            if (row.edit === 'add') {
+                addedRecords.push(record);
+            } else if (row.edit === 'delete') {
+                record.newRecord = undefined;
+                deletedRecords.push(record);
+            } else {
+                changedRecords.push(record);
+            }
+        }
+        if (!changedRecords.length && !addedRecords.length && !deletedRecords.length) {
+            return;
+        }
+        undoRedoModule.setPendingBatchTransaction({
+            type: 'batch-transaction',
+            primaryKey: primaryKey,
+            keyValue: undefined,
+            rowIndex: -1,
+            previousRecord: undefined,
+            newRecord: undefined,
+            changedRecords: changedRecords,
+            addedRecords: addedRecords,
+            deletedRecords: deletedRecords,
+            records: records,
+            sequence: 0
+        });
+    }
+
+    /**
+     * Creates a deep copy of the given record, so that a later mutation of the original record
+     * cannot rewrite the captured history.
+     *
+     * @param {Object} record - The record to copy.
+     * @returns {Object} The copied record.
+     * @hidden
+     */
+    private cloneCommittedRecord(record: Object): Object {
+        if (isNullOrUndefined(record)) {
+            return record;
+        }
+        const undoRedoModule: IEdit['undoRedoModule'] = this.parent.editModule && this.parent.editModule.undoRedoModule;
+        if (undoRedoModule && undoRedoModule.cloneRecord) {
+            return undoRedoModule.cloneRecord(record);
+        }
+        return extend({}, {}, record, true);
     }
 
     public getBatchChanges(): Object {
@@ -1605,17 +1696,17 @@ export class BatchEdit {
     }
 
     private keyDownHandler(e: KeyboardEventArgs): void {
-        if (this.parent.editSettings.enableUndoRedo && e) {
+        if (this.parent.editSettings.enableUndoRedo && e && !this.parent.isEdit) {
             const isCtrlOrCmd: boolean = e.ctrlKey || e.metaKey;
             if ((isCtrlOrCmd && e.key === 'z' && !e.shiftKey) || e.action === 'ctrlPlusZ') {
                 e.preventDefault();
-                this.undoBatchEdit();
+                this.parent.undoEdit();
                 return;
             }
             if ((isCtrlOrCmd && e.key === 'y' && !e.shiftKey) || (isCtrlOrCmd && e.key === 'z' && e.shiftKey)
                 || e.action === 'ctrlPlusY') {
                 e.preventDefault();
-                this.redoBatchEdit();
+                this.parent.redoEdit();
                 return;
             }
         }

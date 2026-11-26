@@ -311,6 +311,8 @@ export class Column {
      * * ui.create – It is used for creating custom components.
      * * ui.read -  It is used for read the value from the component.
      * * ui.write - It is used to apply component model as dynamically.
+     * * dateRanges - It is used to show preset ranges in the date range picker of the `between` operator.
+     * It has `enablePresets`, `presetMode` (`Default`, `Custom` or `Both`) and `customPresetRanges` options.
      * {% codeBlock src="grid/filter-menu-api/index.ts" %}{% endcodeBlock %}
      *
      * > Check the [`Filter UI`](../../grid/filtering/filter-menu/#custom-component-in-filter-menu) for its customization.

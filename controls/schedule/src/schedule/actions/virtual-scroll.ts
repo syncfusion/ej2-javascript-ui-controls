@@ -42,6 +42,14 @@ export class VirtualScroll {
         this.parent.off(events.virtualScroll, this.virtualScrolling);
     }
 
+    private getExpandedIndex(groupIndex: number): number {
+        if (this.parent.resourceBase.fixedResourceLevel.length === 0) {
+            return groupIndex;
+        }
+        const index: number = this.parent.resourceBase.expandedResources.map((r: TdData) => r.groupIndex).indexOf(groupIndex);
+        return index < 0 ? groupIndex : index;
+    }
+
     public getRenderedCount(): number {
         this.setItemSize();
         const containerSize: number = this.isHorizontalScroll ? this.parent.element.clientWidth : this.parent.element.clientHeight;
@@ -131,7 +139,7 @@ export class VirtualScroll {
                 this.enableTransition = false;
                 removeClass([conWrap, resWrap], 'e-transition');
             }
-            let firstTDIndex: number = parseInt(resWrap.querySelector('tbody td').getAttribute('data-group-index'), 10);
+            let firstTDIndex: number = this.getExpandedIndex(parseInt(resWrap.querySelector('tbody td').getAttribute('data-group-index'), 10));
             const endIndex: number = (firstTDIndex + this.renderedLength);
             firstTDIndex = (endIndex > this.parent.resourceBase.expandedResources.length) ?
                 (this.parent.resourceBase.expandedResources.length - this.renderedLength) : firstTDIndex;
@@ -182,7 +190,7 @@ export class VirtualScroll {
                 addClass([conWrap, resWrap], 'e-transition');
             }
             this.renderedLength = resWrap.querySelector('tbody').children.length;
-            const firstTDIndex: number = parseInt(resWrap.querySelector('tbody td').getAttribute('data-group-index'), 10);
+            const firstTDIndex: number = this.getExpandedIndex(parseInt(resWrap.querySelector('tbody td').getAttribute('data-group-index'), 10));
             const scrollHeight: number = this.parent.rowAutoHeight ?
                 (conTable.offsetHeight - conWrap.offsetHeight) : this.bufferCount * this.itemSize;
             let resCollection: TdData[] = [];
@@ -437,6 +445,13 @@ export class VirtualScroll {
             }
         }
         append(eventRows, eventWrap);
+        if (this.parent.summaryModule) {
+            this.parent.summaryModule.onVirtualRowsChanged();
+        }
+        // The lazy loading path does not notify contentReady, so the group summary rows of the new block are built here.
+        if (this.parent.groupSummaryModule) {
+            this.parent.groupSummaryModule.build();
+        }
     }
 
     private removeObsoleteRows(elements: HTMLElement[], currentGroupIndices: number[]): void {

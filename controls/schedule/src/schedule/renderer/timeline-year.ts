@@ -136,6 +136,9 @@ export class TimelineYear extends Year {
         }
         tdCollection.push(lastTd);
         append(tdCollection, tr);
+        if (this.parent.fixedRowsModule) {
+            this.parent.fixedRowsModule.renderRegion(tr);
+        }
         const content: HTMLElement = createElement('div', { className: cls.CONTENT_WRAP_CLASS });
         lastTd.appendChild(content);
         const contentTable: HTMLElement = this.createTableLayout(cls.CONTENT_TABLE_CLASS) as HTMLElement;
@@ -378,6 +381,10 @@ export class TimelineYear extends Year {
         if (this.parent.activeViewOptions.orientation === 'Vertical') {
             this.collapseRows(this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS));
         }
+    }
+
+    public createColGroup(table: Element): void {
+        table.appendChild(this.createTableColGroup(this.columnCount));
     }
 
     private renderDayMonthHeaderTemplate(date: Date, column: number, type: string): Element[] {

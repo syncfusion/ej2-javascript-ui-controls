@@ -177,6 +177,12 @@ export abstract class PdfField {
      */
     _setAppearance: boolean;
     /**
+     * Indicates whether complex-script text rendering is enabled for the field content.
+     *
+     * @private
+     */
+    _complexScript: boolean = false;
+    /**
      * String formatting applied to field text.
      *
      * @private
@@ -335,6 +341,58 @@ export abstract class PdfField {
      */
     get form(): PdfForm {
         return this._form;
+    }
+    /**
+     * Gets a value indicating whether complex-script text rendering is enabled for the field content.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the text box field
+     * let field: PdfTextBoxField = document.form.fieldAt(0) as PdfTextBoxField;
+     * // Read the complex-script state of the field
+     * let enabled: boolean = field.complexScript;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     *
+     * @returns {boolean} True when complex-script rendering is enabled for the field.
+     */
+    get complexScript(): boolean {
+        return this._complexScript;
+    }
+    /**
+     * Sets a value indicating whether complex-script text rendering is enabled for the field content.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the text box field
+     * let field: PdfTextBoxField = document.form.fieldAt(0) as PdfTextBoxField;
+     * // Enable complex-script shaping for the field.
+     * field.complexScript = true;
+     * // Regenerate the field appearance.
+     * field.setAppearance(true);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     *
+     * @param {boolean} value True to enable complex-script rendering.
+     */
+    set complexScript(value: boolean) {
+        this._complexScript = value;
+    }
+    /**
+     * Returns the effective complex-script state combining the field-level and form-level settings.
+     *
+     * @private
+     * @returns {boolean} Effective complex-script state.
+     */
+    get _effectiveComplexScript(): boolean {
+        return this._complexScript || (this._form !== null && typeof this._form !== 'undefined' &&
+            this._form._complexScript);
     }
     /**
      * Gets the name of the field (Read only).
@@ -4044,6 +4102,13 @@ export class PdfTextBoxField extends PdfField {
         if (_isRightToLeftCharacters(text)) {
             this._stringFormat.textDirection = PdfTextDirection.rightToLeft;
         }
+        const effectiveComplexScript: boolean = this._effectiveComplexScript;
+        if (this._stringFormat) {
+            this._stringFormat.complexScript = effectiveComplexScript;
+        }
+        if (stringFormat) {
+            stringFormat.complexScript = effectiveComplexScript;
+        }
         if (this._isLoaded && !this.multiLine) {
             if (this._stringFormat) {
                 this._stringFormat.lineLimit = false;
@@ -5452,6 +5517,9 @@ export class PdfButtonField extends PdfField {
      * @returns {void} nothing.
      */
     _drawButton(g: PdfGraphics, parameter: _PaintParameter, text: string, font: PdfFont, format: PdfStringFormat): void {
+        if (format) {
+            format.complexScript = this._effectiveComplexScript;
+        }
         this._drawRectangularControl(g, parameter);
         let rectangle: Rectangle = parameter.bounds;
         if ((g._page &&
@@ -5539,6 +5607,9 @@ export class PdfButtonField extends PdfField {
      * @returns {void} nothing.
      */
     _drawPressedButton(g: PdfGraphics, parameter: _PaintParameter, text: string, font: PdfFont, format: PdfStringFormat): void {
+        if (format) {
+            format.complexScript = this._effectiveComplexScript;
+        }
         switch (parameter.borderStyle) {
         case PdfBorderStyle.inset:
             g.drawRectangle(parameter.bounds, parameter.shadowBrush);
@@ -8890,6 +8961,9 @@ export class PdfComboBoxField extends PdfListField {
             graphics._sw._beginMarkupSequence('Tx');
             graphics._initializeCoordinates();
         }
+        if (parameter.stringFormat) {
+            parameter.stringFormat.complexScript = this._effectiveComplexScript;
+        }
         if (this._isLoaded) {
             let font: PdfFont;
             if (item) {
@@ -8928,6 +9002,9 @@ export class PdfComboBoxField extends PdfListField {
         if (graphics._isTemplateGraphics && parameter.required) {
             graphics.save();
             graphics._initializeCoordinates();
+        }
+        if (stringFormat) {
+            stringFormat.complexScript = this._effectiveComplexScript;
         }
         this._drawRectangularControl(graphics, parameter);
         if (graphics._isTemplateGraphics && parameter.required) {
@@ -9483,6 +9560,9 @@ export class PdfListBoxField extends PdfListField {
         if (graphics._isTemplateGraphics && parameter.required) {
             graphics.save();
             graphics._initializeCoordinates();
+        }
+        if (stringFormat) {
+            stringFormat.complexScript = this._effectiveComplexScript;
         }
         this._drawRectangularControl(graphics, parameter);
         if (graphics._isTemplateGraphics && parameter.required) {

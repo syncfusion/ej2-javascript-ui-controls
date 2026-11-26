@@ -14,7 +14,7 @@
  */
 
 import { formatA1, formatA1Range, parseA1Range } from '../address/cell-address';
-import { secureRandomBytes } from '../core/encryption/random';
+import { secureRandomBytes } from '../core/encryption-adapter';
 import { Workbook } from '../workbook/workbook';
 import { Worksheet } from '../workbook/worksheet';
 

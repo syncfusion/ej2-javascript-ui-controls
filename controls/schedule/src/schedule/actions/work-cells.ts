@@ -25,7 +25,8 @@ export class WorkCellInteraction {
     }
 
     public cellClick(e: Event & MouseEvent): void {
-        if (this.isPreventAction(e)) {
+        if (this.isPreventAction(e) ||
+            (this.parent.groupSummaryModule && this.parent.groupSummaryModule.isGroupTarget(e.target as Element))) {
             return;
         }
         const queryStr: string = '.' + cls.WORK_CELLS_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS + ',.' + cls.HEADER_CELLS_CLASS;

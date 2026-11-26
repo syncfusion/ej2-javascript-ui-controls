@@ -1,4 +1,4 @@
-import { classList, addClass, removeClass, isNullOrUndefined, Browser, KeyboardEventArgs, updateCSSText, remove } from '@syncfusion/ej2-base';
+import { classList, addClass, removeClass, isNullOrUndefined, Browser, KeyboardEventArgs, updateCSSText, remove, Draggable } from '@syncfusion/ej2-base';
 import { Query, DataManager } from '@syncfusion/ej2-data';
 import { Column } from '../models/column';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -14,6 +14,7 @@ import { ResponsiveDialogRenderer } from '../renderer/responsive-dialog-renderer
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { SearchBox } from '../services/focus-strategy';
 import * as literals from '../base/string-literals';
+import { renderToolPanelFooter, resetToolPanelHost } from '../common/tool-panel-filter-host';
 
 /**
  * The `ColumnChooser` module is used to show or hide columns dynamically.
@@ -64,6 +65,16 @@ export class ColumnChooser implements IAction {
     private toggleQueue: Map<string, boolean> | null = null;
     private flushToggleTimer: number | null = null;
     private isEscapePressed: boolean = false;
+    private toolPanelHostElement: HTMLElement;
+    private toolPanelFooterButtons: Button[] = [];
+    private onToolPanelClose: () => void;
+    private reorderDraggable: Draggable;
+    private draggedListItem: HTMLElement;
+    private dropTargetListItem: HTMLElement;
+    private dropAfterTarget: boolean = false;
+    private isDropAllowed: boolean = false;
+    private dropContainer: HTMLElement;
+    private stagedMoves: { uid: string, targetUid: string, after: boolean }[] = [];
 
 
     //Module declarations
@@ -128,6 +139,7 @@ export class ColumnChooser implements IAction {
         }
         this.removeEventListener();
         this.unWireEvents();
+        this.destroyReorder();
         this.infiniteLoadedElement = null;
         this.infiniteDiv = null;
         if (!isNullOrUndefined(this.dlgObj) && this.dlgObj.element && !this.dlgObj.isDestroyed) {
@@ -299,6 +311,9 @@ export class ColumnChooser implements IAction {
      * @hidden
      */
     public renderColumnChooser(x?: number, y?: number, target?: Element): void {
+        if (!this.dlgObj.visible && !this.closeToolPanelChooser()) {
+            return;
+        }
         if (!this.dlgObj.visible && (this.parent.detailTemplate || this.parent.childGrid)) {
             this.hideOpenedDialog();
         }
@@ -409,6 +424,9 @@ export class ColumnChooser implements IAction {
             this.hideDialog();
             return;
         }
+        if (!this.closeToolPanelChooser()) {
+            return;
+        }
         const args: object = this.beforeOpenColumnChooserEvent();
         if ((<{ cancel?: boolean }>args).cancel) {
             return;
@@ -478,8 +496,21 @@ export class ColumnChooser implements IAction {
         this.setFocus(parentsUntil(e.target as Element, 'e-cclist'));
     }
 
+    private getRoot(): HTMLElement {
+        return this.toolPanelHostElement || this.dlgDiv;
+    }
+
+    private getOkButton(): Button {
+        if (this.toolPanelHostElement) {
+            return this.toolPanelFooterButtons[0];
+        }
+        const footer: HTMLElement = this.dlgDiv && this.dlgDiv.querySelector('.e-footer-content') as HTMLElement;
+        const okEle: EJ2Intance = footer && footer.querySelector('.e-btn') as EJ2Intance;
+        return okEle ? okEle.ej2_instances[0] as Button : undefined;
+    }
+
     private setFocus(elem: Element): void {
-        const prevElem: Element = this.dlgDiv.querySelector('.e-colfocus');
+        const prevElem: Element = this.getRoot().querySelector('.e-colfocus');
         if (prevElem) {
             prevElem.classList.remove('e-colfocus');
         }
@@ -698,6 +729,7 @@ export class ColumnChooser implements IAction {
         if (!this.parent.columnChooserSettings.enableSearching) {
             searchDiv.style.display = 'none';
         }
+        this.initReorder(conDiv);
         return this.mainDiv;
     }
 
@@ -711,6 +743,8 @@ export class ColumnChooser implements IAction {
         if (onActionBeginArgs.cancel) {
             return;
         }
+        const stagedMoves: { uid: string, targetUid: string, after: boolean }[] = this.stagedMoves;
+        this.stagedMoves = [];
         this.stateChangeColumns = [];
         this.changedStateColumns = [];
         const columns: Column[] = this.infiniteRenderMode ? this.infiniteColumns : this.parent.getColumns();
@@ -734,6 +768,7 @@ export class ColumnChooser implements IAction {
                 this.parent.notify(events.showAddNewRowFocus, {});
             }
         }
+        this.applyStagedMoves(stagedMoves);
         const onActionCompleteArgs: ColumnChooserActionArgs = {
             requestType: 'columnVisibilityUpdate',
             columns: this.getColumns() as Column[],
@@ -834,6 +869,7 @@ export class ColumnChooser implements IAction {
     }
 
     private clearActions(): void {
+        this.discardStagedMoves();
         this.resetColumnState();
         this.addcancelIcon();
     }
@@ -899,17 +935,13 @@ export class ColumnChooser implements IAction {
             }
         }
         let clearSearch: boolean = false;
-        let okButton: Button;
-        const buttonEle: HTMLElement = this.dlgDiv.querySelector('.e-footer-content');
         let selectedCheckbox: number = this.ulElement && this.ulElement.querySelector('.e-check') &&
         this.ulElement.querySelectorAll('.e-check:not(.e-selectall)').length;
         if (this.infiniteRenderMode) {
             selectedCheckbox = this.infiniteLoadedElement.filter((arr: HTMLElement) => arr.querySelector('.e-check')).length;
         }
         this.isInitialOpen = true;
-        if (buttonEle && buttonEle.querySelector('.e-btn')) {
-            okButton = (buttonEle.querySelector('.e-btn') as EJ2Intance).ej2_instances[0] as Button;
-        }
+        const okButton: Button = this.getOkButton();
         if (searchVal === '') {
             this.removeCancelIcon();
             this.filterColumns = this.selectedColumnModels.length ? this.selectedColumnModels : this.getColumns() as Column[];
@@ -1042,10 +1074,388 @@ export class ColumnChooser implements IAction {
         }
     }
 
+    /**
+     * Whether the Columns tool panel hosts the column chooser content (reorder condition is met).
+     *
+     * @returns {boolean} - true when the panel should host the chooser content
+     * @hidden
+     */
+    public isToolPanelChooserEnabled(): boolean {
+        return !this.parent.enableAdaptiveUI && !!this.dlgObj;
+    }
+
+    /**
+     * Closes the column chooser dialog (discarding un-applied changes) when it is open.
+     *
+     * @returns {void}
+     * @hidden
+     */
+    public closeDialogIfOpen(): void {
+        if (this.dlgObj && !this.dlgObj.isDestroyed && this.dlgObj.visible) {
+            this.dlgObj.hide();
+            this.clearActions();
+            this.refreshCheckboxState();
+            this.isDlgOpen = false;
+        }
+    }
+
+    private closeToolPanelChooser(): boolean {
+        const sideBar: { getOpenedToolPanel?: () => string, closeToolPanel?: () => void } = this.parent.sideBarModule;
+        if (sideBar && sideBar.getOpenedToolPanel && sideBar.getOpenedToolPanel() === 'columns') {
+            sideBar.closeToolPanel();
+            return sideBar.getOpenedToolPanel() !== 'columns';
+        }
+        return true;
+    }
+
+    /**
+     * Renders the column chooser dialog content inside the Columns tool panel.
+     *
+     * @param {HTMLElement} host - the panel element that receives the chooser content
+     * @param {Function} onClose - called after the chooser content is applied or cancelled
+     * @returns {void}
+     * @hidden
+     */
+    public renderToolPanelColumnChooser(host: HTMLElement, onClose?: () => void): void {
+        this.releaseToolPanelChooser();
+        this.closeDialogIfOpen();
+        this.resetColumnState();
+        this.toolPanelHostElement = host;
+        this.onToolPanelClose = onClose;
+        addClass([host], ['e-ccdlg', 'e-cc', 'e-toolpanel-cc-host']);
+        if (this.parent.cssClass) {
+            addClass([host], this.parent.cssClass.split(' ').filter((c: string) => !!c));
+        }
+        host.setAttribute('id', this.parent.element.id + '_toolpanel_ccdlg');
+        host.appendChild(this.renderChooserList());
+        if (this.parent.columnChooserSettings.mode !== 'Immediate') {
+            this.toolPanelFooterButtons = renderToolPanelFooter(host, [
+                {
+                    content: this.l10n.getConstant('OKButton'), isPrimary: true, cssClass: 'e-cc e-cc_okbtn',
+                    click: (): void => { this.confirmDlgBtnClick({}); this.refreshToolPanelChooser(); }
+                },
+                {
+                    content: this.l10n.getConstant('CancelButton'), cssClass: 'e-flat e-cc e-cc-cnbtn',
+                    click: (): void => { this.clearBtnClick(); this.refreshCheckboxState(); }
+                }
+            ]);
+        }
+        if (!this.parent.columnChooserSettings.template) {
+            this.updateIntermediateBtn();
+        }
+        EventHandler.add(host, 'click', this.checkBoxClickHandler, this);
+        EventHandler.add(host, 'keyup', this.keyUpHandler, this);
+        if (this.isReorderEnabled()) {
+            EventHandler.add(host, 'keydown', this.reorderKeyDownHandler, this);
+        }
+        EventHandler.add(this.searchBoxObj.searchBox, 'keyup', this.columnChooserManualSearch, this);
+        this.searchBoxObj.wireEvent();
+        this.isInitialOpen = true;
+    }
+
+    /**
+     * Rebuilds the hosted chooser so it reflects the current columns.
+     *
+     * @returns {void}
+     * @hidden
+     */
+    public refreshToolPanelChooser(): void {
+        if (!this.toolPanelHostElement) { return; }
+        const host: HTMLElement = this.toolPanelHostElement;
+        const onClose: () => void = this.onToolPanelClose;
+        this.renderToolPanelColumnChooser(host, onClose);
+    }
+
+    /**
+     * Removes the chooser content from the Columns tool panel and restores the dialog content.
+     *
+     * @returns {void}
+     * @hidden
+     */
+    public releaseToolPanelChooser(): void {
+        if (!this.toolPanelHostElement) { return; }
+        const host: HTMLElement = this.toolPanelHostElement;
+        EventHandler.remove(host, 'click', this.checkBoxClickHandler);
+        EventHandler.remove(host, 'keyup', this.keyUpHandler);
+        EventHandler.remove(host, 'keydown', this.reorderKeyDownHandler);
+        if (this.searchBoxObj) {
+            EventHandler.remove(this.searchBoxObj.searchBox, 'keyup', this.columnChooserManualSearch);
+            this.searchBoxObj.unWireEvent();
+        }
+        this.discardStagedMoves();
+        this.destroyReorder();
+        resetToolPanelHost(host, this.toolPanelFooterButtons, ['e-ccdlg', 'e-cc', 'e-toolpanel-cc-host']);
+        this.toolPanelFooterButtons = [];
+        this.toolPanelHostElement = null;
+        this.onToolPanelClose = null;
+        this.showColumn = [];
+        this.hideColumn = [];
+        this.changedColumns = [];
+        this.unchangedColumns = [];
+        this.filterColumns = [];
+        this.selectedColumnModels = [];
+        this.searchValue = '';
+        if (this.dlgObj && !this.dlgObj.isDestroyed && this.dlgObj.element) {
+            // The chooser references now point at the panel content; build the dialog content again.
+            this.dlgObj.content = this.renderChooserList();
+            this.dlgObj.dataBind();
+            EventHandler.add(this.searchBoxObj.searchBox, 'keyup', this.columnChooserManualSearch, this);
+            this.searchBoxObj.wireEvent();
+            this.isInitialOpen = false;
+        }
+    }
+
+    private isReorderEnabled(): boolean {
+        const gObj: IGrid = this.parent;
+        const settings: { allowReordering?: boolean, template?: string | Function } = gObj.columnChooserSettings;
+        if (!settings.allowReordering) {
+            return false;
+        }
+        if (!gObj.allowReordering || !gObj.reorderModule) {
+            return false;
+        }
+        return !settings.template && !this.infiniteRenderMode;
+    }
+
+    private warnReorderIgnored(): void {
+        const gObj: IGrid = this.parent;
+        const settings: { allowReordering?: boolean, template?: string | Function } = gObj.columnChooserSettings;
+        if (settings.allowReordering && !this.isReorderEnabled()) {
+            const reason: string = settings.template ? 'columnChooserSettings.template is used.' :
+                'The grid allowReordering property must be enabled and the Reorder module must be injected.';
+            gObj.log('column_chooser_reorder', { reason: reason });
+        }
+    }
+
+    private initReorder(container: HTMLElement): void {
+        this.destroyReorder();
+        this.warnReorderIgnored();
+        const allowChooserReordering: boolean = !!this.parent.columnChooserSettings.allowReordering;
+        if (!allowChooserReordering || this.parent.columnChooserSettings.template || this.infiniteRenderMode) {
+            return;
+        }
+        this.reorderDraggable = new Draggable(container, {
+            dragTarget: '.e-cc-drag',
+            distance: 5,
+            enableTailMode: true,
+            helper: this.reorderHelper.bind(this),
+            dragStart: this.reorderDragStart.bind(this),
+            drag: this.reorderDrag.bind(this),
+            dragStop: this.reorderDragStop.bind(this)
+        });
+    }
+
+    private destroyReorder(): void {
+        if (this.reorderDraggable && !this.reorderDraggable.isDestroyed) {
+            this.reorderDraggable.destroy();
+        }
+        this.reorderDraggable = null;
+    }
+
+    private getColumnFromListItem(listItem: Element): Column {
+        return listItem && listItem.id ? this.parent.getColumnByUid(listItem.id.replace('e-ccli_', '')) : undefined;
+    }
+
+    private reorderHelper(): HTMLElement | boolean {
+        const dragHandle: Element = this.reorderDraggable.currentStateTarget;
+        const listItem: HTMLElement = parentsUntil(dragHandle, 'e-cclist') as HTMLElement;
+        if (!listItem || dragHandle.getAttribute('aria-disabled') === 'true' || !this.getColumnFromListItem(listItem)) {
+            return false;
+        }
+        this.draggedListItem = listItem;
+        const dragClone: HTMLElement = this.parent.createElement('div', {
+            className: 'e-cloneproperties e-dragclone e-cc-dragclone e-defaultcur ' + (this.parent.cssClass || '')
+        });
+        dragClone.textContent = listItem.querySelector('.e-label').textContent;
+        const appendTarget: HTMLElement = this.toolPanelHostElement ? this.parent.element : this.dlgObj.element;
+        appendTarget.appendChild(dragClone);
+        return dragClone;
+    }
+
+    private reorderDragStart(): void {
+        const draggedColumn: Column = this.getColumnFromListItem(this.draggedListItem);
+        this.parent.trigger(events.columnDragStart, {
+            target: this.draggedListItem, draggableType: 'columnchooser', column: draggedColumn
+        });
+    }
+
+    private clearDropIndicator(): void {
+        if (this.dropTargetListItem) {
+            removeClass([this.dropTargetListItem], ['e-cc-drop-above', 'e-cc-drop-below']);
+        }
+        this.dropTargetListItem = null;
+    }
+
+    private canMove(sourceColumn: Column, targetColumn: Column, logWarning: boolean): boolean {
+        const allColumns: Column[] = this.parent.columns as Column[];
+        const isValidMove: boolean = !!sourceColumn && !!targetColumn && sourceColumn !== targetColumn &&
+            sourceColumn.allowReordering && !sourceColumn.lockColumn &&
+            targetColumn.allowReordering && !targetColumn.lockColumn &&
+            allColumns.indexOf(sourceColumn) > -1 && allColumns.indexOf(targetColumn) > -1 &&
+            !!sourceColumn.isFrozen === !!targetColumn.isFrozen;
+        if (!isValidMove && logWarning && sourceColumn && targetColumn && sourceColumn !== targetColumn) {
+            this.parent.log('action_disabled_column', { moduleName: 'reorder', column: sourceColumn, destColumn: targetColumn });
+        }
+        return isValidMove;
+    }
+
+    private reorderDrag(dragArgs: { target: Element, event: MouseEvent, element: HTMLElement }): void {
+        this.clearDropIndicator();
+        this.isDropAllowed = false;
+        const dragClone: HTMLElement = dragArgs.element || this.parent.element.querySelector('.e-cc-dragclone') as HTMLElement;
+        const targetListItem: HTMLElement = parentsUntil(dragArgs.target, 'e-cclist') as HTMLElement;
+        const targetColumn: Column = this.getColumnFromListItem(targetListItem);
+        const sourceColumn: Column = this.getColumnFromListItem(this.draggedListItem);
+        const zoneContainer: HTMLElement = this.toolPanelHostElement ? parentsUntil(dragArgs.target, 'e-toolpanel-zone') as HTMLElement : null;
+        if (this.dropContainer && this.dropContainer !== zoneContainer) {
+            removeClass([this.dropContainer], ['e-toolpanel-zone-over']);
+        }
+        this.dropContainer = null;
+        if (zoneContainer && sourceColumn &&
+            this.parent.sideBarModule.canDropOnZone(zoneContainer.getAttribute('data-zone'), sourceColumn)) {
+            this.dropContainer = zoneContainer;
+            this.isDropAllowed = true;
+            addClass([zoneContainer], ['e-toolpanel-zone-over']);
+        } else if (targetListItem && this.mainDiv.contains(targetListItem) && targetColumn) {
+            const itemRect: ClientRect = targetListItem.getBoundingClientRect();
+            const touchList: { clientY: number }[] = (dragArgs.event as MouseEvent & { changedTouches?: { clientY: number }[] })
+                .changedTouches;
+            const pointerEvent: { clientY: number } = touchList ? touchList[0] : dragArgs.event;
+            this.dropAfterTarget = pointerEvent.clientY > itemRect.top + itemRect.height / 2;
+            this.isDropAllowed = this.isReorderEnabled() && this.canMove(sourceColumn, targetColumn, false);
+            if (this.isDropAllowed) {
+                this.dropTargetListItem = targetListItem;
+                addClass([targetListItem], [this.dropAfterTarget ? 'e-cc-drop-below' : 'e-cc-drop-above']);
+            }
+        }
+        if (dragClone) {
+            classList(dragClone, this.isDropAllowed ? ['e-defaultcur'] : ['e-notallowedcur'],
+                      this.isDropAllowed ? ['e-notallowedcur'] : ['e-defaultcur']);
+        }
+        this.parent.trigger(events.columnDrag, { target: dragArgs.target, draggableType: 'columnchooser', column: sourceColumn });
+    }
+
+    private reorderDragStop(dragArgs: { target: Element, helper: HTMLElement, cancel?: boolean }): void {
+        const sourceColumn: Column = this.getColumnFromListItem(this.draggedListItem);
+        const dropTargetListItem: HTMLElement = this.dropTargetListItem;
+        const insertAfterTarget: boolean = this.dropAfterTarget;
+        const targetColumn: Column = this.getColumnFromListItem(dropTargetListItem);
+        const isAllowed: boolean = this.isDropAllowed;
+        const zoneContainer: HTMLElement = this.dropContainer;
+        if (zoneContainer) {
+            removeClass([zoneContainer], ['e-toolpanel-zone-over']);
+            this.dropContainer = null;
+            this.isDropAllowed = false;
+            remove(dragArgs.helper);
+            if (isAllowed && sourceColumn) {
+                this.parent.sideBarModule.dropOnZone(zoneContainer.getAttribute('data-zone'), sourceColumn);
+            }
+            this.draggedListItem = null;
+            return;
+        }
+        this.clearDropIndicator();
+        this.isDropAllowed = false;
+        remove(dragArgs.helper);
+        if (isAllowed && sourceColumn && targetColumn && this.isReorderEnabled()) {
+            this.moveItem(this.draggedListItem, dropTargetListItem, insertAfterTarget);
+            this.parent.trigger(events.columnDrop, { target: dropTargetListItem, draggableType: 'columnchooser', column: sourceColumn });
+        }
+        this.draggedListItem = null;
+    }
+
+    private moveItem(sourceListItem: HTMLElement, targetListItem: HTMLElement, insertAfter: boolean): void {
+        const sourceColumnUid: string = sourceListItem.id.replace('e-ccli_', '');
+        const targetColumnUid: string = targetListItem.id.replace('e-ccli_', '');
+        targetListItem.parentElement.insertBefore(sourceListItem, insertAfter ? targetListItem.nextSibling : targetListItem);
+        this.announceMove(sourceListItem);
+        if (this.parent.columnChooserSettings.mode === 'Immediate') {
+            window.setTimeout(() => {
+                if (!this.parent.isDestroyed) {
+                    this.applyMove({ uid: sourceColumnUid, targetUid: targetColumnUid, after: insertAfter });
+                }
+            }, this.parent.columnChooserSettings.immediateModeDelay);
+        } else {
+            this.stagedMoves.push({ uid: sourceColumnUid, targetUid: targetColumnUid, after: insertAfter });
+        }
+    }
+
+    private applyMove(stagedMove: { uid: string, targetUid: string, after: boolean }): void {
+        if (!this.isReorderEnabled()) {
+            return;
+        }
+        const sourceColumn: Column = this.parent.getColumnByUid(stagedMove.uid);
+        const targetColumn: Column = this.parent.getColumnByUid(stagedMove.targetUid);
+        if (!this.canMove(sourceColumn, targetColumn, false)) {
+            return;
+        }
+        const remainingColumns: Column[] = (this.parent.columns as Column[]).filter((columnItem: Column) => columnItem !== sourceColumn);
+        const targetIndex: number = remainingColumns.indexOf(targetColumn) + (stagedMove.after ? 1 : 0);
+        this.parent.reorderModule.reorderColumnByTargetIndex(sourceColumn.field, targetIndex);
+    }
+
+    private applyStagedMoves(stagedMoves: { uid: string, targetUid: string, after: boolean }[]): void {
+        stagedMoves.forEach((moveItem: { uid: string, targetUid: string, after: boolean }) => this.applyMove(moveItem));
+    }
+
+    private discardStagedMoves(): void {
+        if (!this.stagedMoves.length) {
+            return;
+        }
+        this.stagedMoves = [];
+        if (this.ulElement) {
+            this.getColumns().forEach((columnItem: Column) => {
+                const listItemElement: Element = this.ulElement.querySelector('[id="e-ccli_' + columnItem.uid + '"]');
+                if (listItemElement) {
+                    this.ulElement.appendChild(listItemElement);
+                }
+            });
+        }
+    }
+
+    private announceMove(movedListItem: HTMLElement): void {
+        let liveRegion: HTMLElement = this.mainDiv.querySelector('.e-cc-live') as HTMLElement;
+        if (!liveRegion) {
+            liveRegion = this.parent.createElement('div', {
+                className: 'e-cc-live', attrs: { role: 'status', 'aria-live': 'polite' }
+            });
+            this.mainDiv.appendChild(liveRegion);
+        }
+        const currentPosition: number = [].slice.call(
+            this.ulElement.querySelectorAll('li[id^="e-ccli_"]')).indexOf(movedListItem) + 1;
+        liveRegion.textContent = this.l10n.getConstant('ColumnChooserMoved')
+            .replace('{0}', movedListItem.querySelector('.e-label').textContent)
+            .replace('{1}', currentPosition.toString());
+    }
+
+    private reorderKeyDownHandler(event: KeyboardEvent): void {
+        if (!this.isReorderEnabled() || !event.altKey || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) {
+            return;
+        }
+        const listItem: HTMLElement = parentsUntil(event.target as Element, 'e-cclist') as HTMLElement;
+        const dragHandle: Element = listItem && listItem.querySelector('.e-cc-drag');
+        if (!dragHandle || dragHandle.getAttribute('aria-disabled') === 'true') {
+            return;
+        }
+        const isMovingUp: boolean = event.key === 'ArrowUp';
+        const adjacentListItem: HTMLElement = (isMovingUp ? listItem.previousElementSibling : listItem.nextElementSibling) as HTMLElement;
+        if (!adjacentListItem || !adjacentListItem.id) {
+            return;
+        }
+        event.preventDefault();
+        if (this.canMove(this.getColumnFromListItem(listItem), this.getColumnFromListItem(adjacentListItem), true)) {
+            this.moveItem(listItem, adjacentListItem, !isMovingUp);
+            const checkboxInput: HTMLElement = listItem.querySelector('input') as HTMLElement;
+            if (checkboxInput) { checkboxInput.focus(); }
+        }
+    }
+
     private wireEvents(): void {
         EventHandler.add(this.dlgObj.element, 'click', this.checkBoxClickHandler, this);
         EventHandler.add(this.searchBoxObj.searchBox, 'keyup', this.columnChooserManualSearch, this);
         EventHandler.add(this.dlgObj.element, 'keyup', this.keyUpHandler, this);
+        if (this.isReorderEnabled()) {
+            EventHandler.add(this.dlgObj.element, 'keydown', this.reorderKeyDownHandler, this);
+        }
         this.searchBoxObj.wireEvent();
     }
 
@@ -1054,6 +1464,7 @@ export class ColumnChooser implements IAction {
         if (this.dlgObj && this.dlgObj.element) {
             EventHandler.remove(this.dlgObj.element, 'click', this.checkBoxClickHandler);
             EventHandler.remove(this.dlgObj.element, 'keyup', this.keyUpHandler);
+            EventHandler.remove(this.dlgObj.element, 'keydown', this.reorderKeyDownHandler);
         }
         if (this.searchBoxObj) {
             EventHandler.remove(this.searchBoxObj.searchBox, 'keyup', this.columnChooserManualSearch);
@@ -1066,6 +1477,10 @@ export class ColumnChooser implements IAction {
             return;
         }
         let checkstate: boolean;
+        if ((e.target as Element).classList.contains('e-cc-drag')) {
+            e.preventDefault();
+            return;
+        }
         const selectAllElement: Element = parentsUntil(e.target as Element, 'e-checkbox-wrapper');
         const columns: Column[] = this.infiniteRenderMode ? this.infiniteColumns : this.parent.getColumns();
         if (selectAllElement) {
@@ -1193,7 +1608,9 @@ export class ColumnChooser implements IAction {
         const selected: number = this.infiniteRenderMode ? this.infiniteLoadedElement.filter(
             (arr: HTMLElement) => arr.querySelector('.e-check')).length : this.ulElement.querySelectorAll('.e-check:not(.e-selectall)').length;
         let btn: Button;
-        if (!this.parent.enableAdaptiveUI && !this.parent.columnChooserSettings.footerTemplate && this.parent.columnChooserSettings.mode !== 'Immediate' &&
+        if (this.toolPanelHostElement && this.toolPanelFooterButtons.length) {
+            this.toolPanelFooterButtons[0].disabled = false;
+        } else if (!this.parent.enableAdaptiveUI && !this.parent.columnChooserSettings.footerTemplate && this.parent.columnChooserSettings.mode !== 'Immediate' &&
             this.dlgObj && (<{ btnObj?: Button[] }>(this.dlgObj as DialogModel)).btnObj &&
             (<{ btnObj?: Button[] }>(this.dlgObj as DialogModel)).btnObj.length) {
             btn = (<{ btnObj?: Button[] }>(this.dlgObj as DialogModel)).btnObj[0];
@@ -1264,8 +1681,8 @@ export class ColumnChooser implements IAction {
         }
         let btn: Button;
         if (!this.parent.enableAdaptiveUI && this.parent.columnChooserSettings.mode !== 'Immediate') {
-            btn = (this.dlgDiv.querySelector('.e-footer-content').querySelector('.e-btn') as EJ2Intance).ej2_instances[0] as Button;
-            btn.disabled = false;
+            btn = this.getOkButton();
+            if (btn) { btn.disabled = false; }
         } else if (this.parent.enableAdaptiveUI && this.responsiveDialogRenderer) {
             this.parent.notify(events.refreshCustomFilterOkBtn, { disabled: false });
         }
@@ -1403,18 +1820,18 @@ export class ColumnChooser implements IAction {
         if (!this.parent.columnChooserSettings.enableSearching && !this.selectedColumnModels.length && this.sortDirection === 'None') {
             return;
         }
-        const searchBox: HTMLInputElement = (<HTMLInputElement>this.dlgObj.element.querySelector('.e-cc.e-input'));
+        const searchBox: HTMLInputElement = (<HTMLInputElement>(this.toolPanelHostElement || this.dlgObj.element).querySelector('.e-cc.e-input'));
         if (searchBox) {
             searchBox.value = '';
         }
         this.columnChooserSearch('', false);
         const gridObject: IGrid = this.parent;
-        const currentCheckBoxColls: NodeListOf<Element> = this.dlgObj.element.querySelectorAll('.e-cc-chbox:not(.e-selectall)');
+        const currentCheckBoxColls: NodeListOf<Element> = (this.toolPanelHostElement || this.dlgObj.element).querySelectorAll('.e-cc-chbox:not(.e-selectall)');
         for (let i: number = 0, itemLen: number = currentCheckBoxColls.length; i < itemLen; i++) {
             const element: HTMLInputElement = currentCheckBoxColls[parseInt(i.toString(), 10)] as HTMLInputElement;
             let columnUID: string;
             if (this.parent.childGrid || this.parent.detailTemplate) {
-                columnUID = parentsUntil(this.dlgObj.element.querySelectorAll('.e-cc-chbox:not(.e-selectall)')[parseInt(i.toString(), 10)],
+                columnUID = parentsUntil((this.toolPanelHostElement || this.dlgObj.element).querySelectorAll('.e-cc-chbox:not(.e-selectall)')[parseInt(i.toString(), 10)],
                                          'e-ccheck').getAttribute('data-uid');
             } else { columnUID = parentsUntil(element, 'e-ccheck').getAttribute('data-uid'); }
             const column: Column = gridObject.getColumnByUid(columnUID, this.infiniteRenderMode);
@@ -1464,6 +1881,16 @@ export class ColumnChooser implements IAction {
                 const columnchooserccheckboxlist: Element =
                     this.createCheckBox(column.headerText, (column.visible && !hideColumnState) || showColumnState, column.uid);
                 columnChooserList.appendChild(columnchooserccheckboxlist);
+                const allowChooserReordering: boolean = this.parent.columnChooserSettings.allowReordering &&
+                    !this.parent.columnChooserSettings.template && !this.infiniteRenderMode;
+                if (allowChooserReordering) {
+                    const handle: HTMLElement = this.parent.createElement('span', {
+                        className: 'e-icons e-icon-rowdragicon e-cc-drag',
+                        attrs: { 'aria-disabled': (this.searchValue || (this.sortDirection && this.sortDirection !== 'None')) ? 'true' : 'false' }
+                    });
+                    const wrapper: Element = columnchooserccheckboxlist.querySelector('.e-checkbox-wrapper');
+                    wrapper.insertBefore(handle, wrapper.querySelector('.e-label'));
+                }
                 if (this.parent.cssClass) {
                     if (this.parent.cssClass.indexOf(' ') !== -1) {
                         addClass([columnchooserccheckboxlist], this.parent.cssClass.split(' '));
@@ -1510,16 +1937,16 @@ export class ColumnChooser implements IAction {
     }
 
     private addcancelIcon(): void {
-        if (this.dlgDiv && this.dlgDiv.querySelector('.e-cc.e-ccsearch-icon')) {
-            this.dlgDiv.querySelector('.e-cc.e-ccsearch-icon').classList.add('e-cc-cancel');
-            this.dlgDiv.querySelector('.e-cc-cancel').setAttribute('title', this.l10n.getConstant('Clear'));
+        if (this.getRoot() && this.getRoot().querySelector('.e-cc.e-ccsearch-icon')) {
+            this.getRoot().querySelector('.e-cc.e-ccsearch-icon').classList.add('e-cc-cancel');
+            this.getRoot().querySelector('.e-cc-cancel').setAttribute('title', this.l10n.getConstant('Clear'));
         }
     }
 
     private removeCancelIcon(): void {
-        if (this.dlgDiv && this.dlgDiv.querySelector('.e-cc.e-ccsearch-icon')) {
-            this.dlgDiv.querySelector('.e-cc.e-ccsearch-icon').classList.remove('e-cc-cancel');
-            this.dlgDiv.querySelector('.e-cc.e-ccsearch-icon').setAttribute('title', this.l10n.getConstant('Search'));
+        if (this.getRoot() && this.getRoot().querySelector('.e-cc.e-ccsearch-icon')) {
+            this.getRoot().querySelector('.e-cc.e-ccsearch-icon').classList.remove('e-cc-cancel');
+            this.getRoot().querySelector('.e-cc.e-ccsearch-icon').setAttribute('title', this.l10n.getConstant('Search'));
         }
     }
 

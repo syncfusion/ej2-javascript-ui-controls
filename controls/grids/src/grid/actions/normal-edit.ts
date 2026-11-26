@@ -1,6 +1,6 @@
 import { extend, select } from '@syncfusion/ej2-base';
 import { remove, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';
-import { IGrid, EJ2Intance, NotifyArgs, EditEventArgs, AddEventArgs, SaveEventArgs, CustomEditEventArgs, CustomAddEventArgs } from '../base/interface';
+import { IGrid, IEdit, EJ2Intance, NotifyArgs, EditEventArgs, AddEventArgs, SaveEventArgs, CustomEditEventArgs, CustomAddEventArgs } from '../base/interface';
 import { parentsUntil, isGroupAdaptive, refreshForeignData, getObject } from '../base/util';
 import * as events from '../base/constant';
 import { EditRender } from '../renderer/edit-renderer';
@@ -284,6 +284,7 @@ export class NormalEdit {
             previousData: gObj.getCurrentViewRecords()[parseInt(index.toString(), 10)],
             row: row
         };
+        this.registerPendingRecord('edit', args.previousData, index);
         gObj.showSpinner();
         if (gObj.enableInfiniteScrolling) {
             this.uid = (args.row as Element).getAttribute('data-uid');
@@ -352,6 +353,7 @@ export class NormalEdit {
         }
         if (isDlg ? dlgWrapper.getElementsByClassName(literals.editedRow).length : eleLength) {
             args.action = 'edit';
+            this.registerPendingRecord('edit', this.previousData, this.editRowIndex);
             gObj.trigger(events.actionBegin, args, (endEditArgs: SaveEventArgs) => {
                 if (endEditArgs.cancel) {
                     return;
@@ -371,6 +373,7 @@ export class NormalEdit {
             args.action = 'add';
             args.selectedRow = 0;
             args.index = this.addedRowIndex;
+            this.registerPendingRecord('add', args.data, this.addedRowIndex);
             gObj.notify(events.virtualScrollEditSuccess, {});
             gObj.notify(events.modelChanged, args);
             this.addedRowIndex = null;
@@ -410,6 +413,23 @@ export class NormalEdit {
         }
         if (this.parent.editSettings.showAddNewRow) {
             this.parent.editModule.applyFormValidation();
+        }
+    }
+
+    /**
+     * Stores the record state before a CRUD operation, so that the shared undo/redo history can
+     * create an entry once the operation has been persisted successfully.
+     *
+     * @param {string} type - The kind of the operation: `add`, `edit` or `delete`.
+     * @param {Object} record - The record state before the operation.
+     * @param {number} rowIndex - The index of the record in the data source.
+     * @returns {void}
+     * @hidden
+     */
+    protected registerPendingRecord(type: string, record: Object, rowIndex: number): void {
+        const undoRedoModule: IEdit['undoRedoModule'] = this.parent.editModule && this.parent.editModule.undoRedoModule;
+        if (undoRedoModule && undoRedoModule.setPendingRecord) {
+            undoRedoModule.setPendingRecord(record, type, rowIndex);
         }
     }
 
@@ -686,6 +706,7 @@ export class NormalEdit {
         const gObj: IGrid = this.parent;
         this.addedRowIndex = index = !isNullOrUndefined(index) ? index : 0;
         if (data) {
+            this.registerPendingRecord('add', data, index);
             gObj.notify(events.modelChanged, {
                 requestType: 'save', type: events.actionBegin, data: data, selectedRow: 0, action: 'add', index: index
             });
@@ -797,8 +818,13 @@ export class NormalEdit {
             this.parent.getRowObjectFromUID(this.parent.getRowByIndex(this.parent.commandDelIndex).getAttribute('data-uid')).data;
         }
         const rowData: Object[] = (<{ data?: Object[] }>args).data;
+        const primaryKey: string = this.parent.getPrimaryKeyFieldNames()[0];
+        for (let i: number = 0; i < rowData.length; i++) {
+            const record: Object = rowData[parseInt(i.toString(), 10)];
+            const index: number = gObj.currentViewData.indexOf(record);
+            this.registerPendingRecord('delete', record, index);
+        }
         if (this.parent.pinnedTopRecords.length && rowData.length) {
-            const primaryKey: string = this.parent.getPrimaryKeyFieldNames()[0];
             for (const row of rowData) {
                 const index: number = this.parent.pinnedTopRecords.findIndex( (rowObj: Object) => rowObj[`${primaryKey}`] === row[`${primaryKey}`]);
                 if (index !== -1 && this.parent.pinnedTopRowKeys[row[`${primaryKey}`]]) {

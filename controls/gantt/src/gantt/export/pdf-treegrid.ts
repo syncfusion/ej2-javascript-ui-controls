@@ -31,6 +31,10 @@ export class PdfTreeGrid extends PdfLayoutElement {
     public enableHeader: boolean = true;
     public isFitToWidth: boolean = false;
     public ganttStyle: IGanttStyle;
+    /**
+     * Number of header rows at the top of `rows` (stacked header depth; 1 when flat).
+     */
+    public headerRowCount: number = 1;
 
     constructor() {
         super();

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 35.2.14 (2026-11-26)
+
+### Toolbar
+
+#### Bug Fixes
+
+- `#I888538` - An issue where overflow scroll arrows were incorrectly displayed in the Toolbar when a nested Tab component was used inside a Toolbar item template has been fixed.
+
 ## 35.2.13 (2026-11-24)
 
 ### Tab

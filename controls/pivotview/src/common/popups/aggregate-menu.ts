@@ -15,7 +15,7 @@ import { CheckBox } from '@syncfusion/ej2-buttons';
 import { ADJACENT_PREVIOUS, ADJACENT_NEXT, isAdjacentToken } from '../../base/adjacent-difference';
 import * as events from '../../common/base/constant';
 import { PivotUtil } from '../../base/util';
-import { AggregateTypes } from '../base/enum';
+import { AggregateTypes, RunningTotalDirection } from '../base/enum';
 import { AggregateMenuOpenEventArgs } from '../base/interface';
 
 /**
@@ -60,7 +60,7 @@ export class AggregateMenu {
     private openContextMenu(args: MouseEventArgs): void {
         const selectedButton: HTMLElement = (args.target as HTMLElement).closest('.' + cls.PIVOT_BUTTON_CLASS) as HTMLElement;
         const fieldName: string = selectedButton.getAttribute('data-uid');
-        const fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(fieldName, this.parent);
+        PivotUtil.getFieldInfo(fieldName, this.parent);
         this.buttonElement = selectedButton;
         this.activeInstanceId = selectedButton.getAttribute('data-instance-id') || '';
         const fieldType: string = this.parent.engineModule.fieldList[fieldName as string].type;
@@ -182,7 +182,11 @@ export class AggregateMenu {
             args.cancel = true;
             return;
         }
-        args.element.style.zIndex = (this.menuInfo[isString as number].element.style.zIndex + 3).toString();
+        const fieldList: PivotFieldList = (this.parent.getModuleName() === 'pivotfieldlist' ? this.parent : null) as PivotFieldList;
+        const dialogIndex: number = fieldList && fieldList.dialogRenderer && fieldList.dialogRenderer.fieldListDialog ?
+            fieldList.dialogRenderer.fieldListDialog.zIndex : 0;
+        const menuIndex: number = parseInt(this.menuInfo[isString as number].element.style.zIndex, 10) || 0;
+        args.element.style.zIndex = (Math.max(menuIndex, dialogIndex) + 3).toString();
         args.element.style.display = 'inline';
     }
     /**
@@ -249,6 +253,7 @@ export class AggregateMenu {
         let baseField: string = buttonElement.getAttribute('data-basefield');
         let baseItem: string = buttonElement.getAttribute('data-baseitem');
         const allowCrossGroup: boolean = buttonElement.getAttribute('data-allowcrossgroup') === 'true';
+        const runningTotalDirection: string = buttonElement.getAttribute('data-runningtotaldirection');
         summaryType = (summaryType.toString() !== 'undefined' ? summaryType : 'Sum');
         const summaryDataSource: { [key: string]: Object }[] = [];
         const summaryItems: AggregateTypes[] = this.parent.aggregateTypes;
@@ -307,153 +312,12 @@ export class AggregateMenu {
                 { value: ADJACENT_NEXT, text: this.parent.localeObj.getConstant('nextItem') }
             ].concat(members.map((member: string) => ({ value: member, text: member })));
         };
-        const mainDiv: HTMLElement = createElement('div', {
-            className: 'e-value-field-div-content', id: this.parentElement.id + '_field_div_content',
-            attrs: { 'data-type': summaryType, 'data-caption': fieldCaption, 'data-basefield': baseField, 'data-baseitem': baseItem }
-        });
-        const textWrappper: HTMLElement = createElement('div', { className: 'e-field-name-text-container' });
-        const filterWrapperDiv1: HTMLElement = createElement('div', { className: 'e-field-option-container' });
-        const optionWrapperDiv1: HTMLElement = createElement('div', { className: 'e-type-option-container' });
-        const optionWrapperDiv2: HTMLElement = createElement('div', { className: 'e-base-field-option-container' });
-        const optionWrapperDiv3: HTMLElement = createElement('div', { className: 'e-base-item-option-container' });
-        const optionWrapperDiv4: HTMLElement = createElement('div', { className: 'e-cross-group-option-container' });
-        const texttitle: HTMLElement = createElement('div', { className: 'e-field-name-title' });
-        texttitle.innerHTML = this.parent.localeObj.getConstant('sourceName') + '&nbsp;';
-        const textContent: HTMLElement = createElement('div', { className: 'e-field-name-content' });
-        textContent.innerText = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(buttonElement.getAttribute('data-uid') ?
-            buttonElement.getAttribute('data-uid') : buttonElement.getAttribute('data-field')) :
-            (buttonElement.getAttribute('data-uid') ? buttonElement.getAttribute('data-uid') : buttonElement.getAttribute('data-field'));
-        this.buttonElement =
-            this.buttonElement ? this.buttonElement : document.getElementsByClassName(textContent.innerText)[0] as HTMLElement;
-        const inputTextDiv1: HTMLElement = createElement('div', {
-            className: 'e-type-option-text'
-        });
-        inputTextDiv1.innerText = this.parent.localeObj.getConstant('sourceCaption');
-        const optionTextDiv1: HTMLElement = createElement('div', {
-            className: 'e-base-field-option-text'
-        });
-        optionTextDiv1.innerText = this.parent.localeObj.getConstant('summarizeValuesBy');
-        const optionTextDiv2: HTMLElement = createElement('div', {
-            className: 'e-base-item-option-text'
-        });
-        optionTextDiv2.innerText = this.parent.localeObj.getConstant('baseField');
-        const optionTextDiv3: HTMLElement = createElement('div', {
-            className: 'e-type-option-text'
-        });
-        optionTextDiv3.innerText = this.parent.localeObj.getConstant('baseItem');
-        const inputDiv1: HTMLElement = createElement('div', { className: 'e-caption-input-container' });
-        const dropOptionDiv1: HTMLElement = createElement('div', { id: this.parentElement.id + '_type_option' });
-        const dropOptionDiv2: HTMLElement = createElement('div', { id: this.parentElement.id + '_base_field_option' });
-        const dropOptionDiv3: HTMLElement = createElement('div', { id: this.parentElement.id + '_base_item_option' });
-        const crossGroupInput: HTMLInputElement = createElement('input', {
-            id: this.parentElement.id + '_cross_group_option', attrs: { 'type': 'checkbox' }
-        }) as HTMLInputElement;
-        const inputField1: HTMLInputElement = createElement('input', {
-            id: this.parentElement.id + 'type_input_option',
-            className: 'e-caption-input-text',
-            attrs: { 'type': 'text' }
-        }) as HTMLInputElement;
-        textWrappper.appendChild(texttitle);
-        textWrappper.appendChild(textContent);
-        inputDiv1.appendChild(inputTextDiv1);
-        inputDiv1.appendChild(inputField1);
-        optionWrapperDiv1.appendChild(optionTextDiv1);
-        optionWrapperDiv2.appendChild(optionTextDiv2);
-        optionWrapperDiv3.appendChild(optionTextDiv3);
-        optionWrapperDiv1.appendChild(dropOptionDiv1);
-        optionWrapperDiv2.appendChild(dropOptionDiv2);
-        optionWrapperDiv3.appendChild(dropOptionDiv3);
-        optionWrapperDiv4.appendChild(crossGroupInput);
-        filterWrapperDiv1.appendChild(textWrappper);
-        filterWrapperDiv1.appendChild(inputDiv1);
-        filterWrapperDiv1.appendChild(optionWrapperDiv1);
-        filterWrapperDiv1.appendChild(optionWrapperDiv2);
-        filterWrapperDiv1.appendChild(optionWrapperDiv3);
-        filterWrapperDiv1.appendChild(optionWrapperDiv4);
-        mainDiv.appendChild(filterWrapperDiv1);
-        const popupInstance: AggregateMenu = this as AggregateMenu;
-        const optionWrapper1: DropDownList = new DropDownList({
-            dataSource: summaryDataSource, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
-            fields: { value: 'value', text: 'text' },
-            value: summaryType,
-            // popupWidth: 'auto',
-            cssClass: cls.VALUE_OPTIONS_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%',
-            change: (args: ChangeEventArgs) => {
-                optionWrapper2.enabled = baseFieldTypes.indexOf(args.value as string) !== -1 ? true : false;
-                optionWrapper3.enabled = baseItemTypes.indexOf(args.value as string) !== -1 ? true : false;
-                if (optionWrapper3.enabled && (optionWrapper3.dataSource as object[]).length === 3) {
-                    optionWrapper3.dataSource = getBaseItemDataSource(fieldItemDataSource);
-                    optionWrapper3.dataBind();
-                }
-                updateCrossGroup();
-            }
-        });
-        optionWrapper1.isStringTemplate = true;
-        optionWrapper1.isAngular = this.parent.isModalDialog;
-        optionWrapper1.appendTo(dropOptionDiv1);
-        const optionWrapper2: DropDownList = new DropDownList({
-            dataSource: fieldDataSource, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
-            fields: { value: 'value', text: 'text' },
-            value: baseField,
-            // popupWidth: 'auto',
-            enabled: (baseFieldTypes.indexOf(summaryType) !== -1 ? true : false),
-            cssClass: cls.VALUE_OPTIONS_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%',
-            change: (args: ChangeEventArgs) => {
-                const isDateField: boolean = PivotUtil.isDateField(args.value as string, this.parent.engineModule as PivotEngine);
-                fieldItemDataSource = (popupInstance.parent.engineModule.fieldList[args.value as string].dateMember).map((item: IAxisSet) =>
-                    isDateField ?  item.formattedText :
-                        this.parent.engineModule.getFormattedValue(item.actualText, args.value as string).formattedText
-                );
-                optionWrapper3.dataSource = getBaseItemDataSource(fieldItemDataSource);
-                optionWrapper3.value = fieldItemDataSource[0];
-                optionWrapper3.filterBarPlaceholder = popupInstance.parent.localeObj.getConstant('example') + ' ' + fieldItemDataSource[0];
-                optionWrapper3['itemData'] = null;
-                optionWrapper3.dataBind();
-            }
-        });
-        optionWrapper2.isStringTemplate = true;
-        optionWrapper2.isAngular = this.parent.isModalDialog;
-        optionWrapper2.appendTo(dropOptionDiv2);
-        const updateCrossGroup: () => void = () => {
-            crossGroupWrapper.disabled = !(baseItemTypes.indexOf(optionWrapper1.value as string) !== -1 &&
-                isAdjacentToken(optionWrapper3.value as string));
-            if (crossGroupWrapper.disabled) {
-                crossGroupWrapper.checked = false;
-            }
-            // Apply now: a deferred update would run against a destroyed checkbox when the dialog closes first.
-            crossGroupWrapper.dataBind();
-        };
-        const optionWrapper3: DropDownList = new DropDownList({
-            dataSource: getBaseItemDataSource(fieldItemDataSource), enableRtl: this.parent.enableRtl, locale: this.parent.locale,
-            fields: { value: 'value', text: 'text' },
-            value: baseItem,
-            // popupWidth: 'auto',
-            allowFiltering: true,
-            filterBarPlaceholder: this.parent.localeObj.getConstant('example') + ' ' + fieldItemDataSource[0],
-            enabled: (baseItemTypes.indexOf(summaryType) !== -1 ? true : false),
-            cssClass: cls.FILTER_OPERATOR_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%',
-            change: () => { updateCrossGroup(); }
-        });
-        optionWrapper3.isStringTemplate = true;
-        optionWrapper3.isAngular = this.parent.isModalDialog;
-        optionWrapper3.appendTo(dropOptionDiv3);
-        const crossGroupWrapper: CheckBox = new CheckBox({
-            label: this.parent.localeObj.getConstant('crossGroupComparison'), enableRtl: this.parent.enableRtl,
-            locale: this.parent.locale, checked: allowCrossGroup && isAdjacentToken(baseItem),
-            disabled: !(baseItemTypes.indexOf(summaryType) !== -1 && isAdjacentToken(baseItem)),
-            cssClass: this.parent.cssClass
-        });
-        crossGroupWrapper.appendTo(crossGroupInput);
-        const inputObj1: MaskedTextBox = new MaskedTextBox({
-            placeholder: 'Enter field caption',
-            // floatLabelType: 'Auto',
-            enableRtl: this.parent.enableRtl,
-            locale: this.parent.locale,
-            value: fieldCaption, width: '100%',
-            cssClass: this.parent.cssClass
-        });
-        inputObj1.isStringTemplate = true;
-        inputObj1.appendTo(inputField1);
+        const { mainDiv, dropOptionDiv1, dropOptionDiv2, dropOptionDiv3, crossGroupInput, inputField1, directionDiv } =
+            this.createFieldOptionElements(buttonElement, summaryType, fieldCaption, baseField, baseItem);
+        this.initializeFieldOptions(
+            summaryDataSource, summaryType, baseFieldTypes, baseItemTypes, fieldItemDataSource, getBaseItemDataSource,
+            fieldDataSource, baseField, baseItem, allowCrossGroup, fieldCaption, dropOptionDiv1, dropOptionDiv2,
+            dropOptionDiv3, crossGroupInput, inputField1, directionDiv, runningTotalDirection);
         return mainDiv;
     }
     private selectOptionInContextMenu(menu: MenuEventArgs): void {
@@ -552,6 +416,11 @@ export class AggregateMenu {
         const baseFieldInstance: DropDownList = getInstance(select('#' + this.parentElement.id + '_base_field_option'), DropDownList) as DropDownList;
         const baseItemInstance: DropDownList = getInstance(select('#' + this.parentElement.id + '_base_item_option'), DropDownList) as DropDownList;
         const crossGroupInstance: CheckBox = getInstance(select('#' + this.parentElement.id + '_cross_group_option'), CheckBox) as CheckBox;
+        const directionInstance: DropDownList = getInstance(select('#' + this.parentElement.id + '_running_total_direction_option'), DropDownList) as DropDownList;
+        const isRunningTotalType: boolean = this.parent.dataSourceSettings.mode !== 'Server' &&
+            (summaryInstance.value === 'RunningTotals' || summaryInstance.value === 'PercentageOfRunningTotals');
+        const runningTotalDirection: RunningTotalDirection = isRunningTotalType ?
+            directionInstance.value as RunningTotalDirection : undefined;
         const allowCrossGroup: boolean = !crossGroupInstance.disabled && crossGroupInstance.checked;
         const fieldName: string = dialogElement.getAttribute('data-field');
         let buttonElement: HTMLElement;
@@ -576,6 +445,11 @@ export class AggregateMenu {
             buttonElement.setAttribute('data-basefield', baseFieldInstance.value as string);
             buttonElement.setAttribute('data-baseitem', baseItemInstance.value as string);
             buttonElement.setAttribute('data-allowcrossgroup', allowCrossGroup ? 'true' : 'false');
+            if (runningTotalDirection) {
+                buttonElement.setAttribute('data-runningtotaldirection', runningTotalDirection);
+            } else {
+                buttonElement.removeAttribute('data-runningtotaldirection');
+            }
         }
         let selectedField: IFieldOptions = selectedInstanceId ?
             this.parent.dataSourceSettings.values.filter((val: IFieldOptions) => val.instanceId === selectedInstanceId)[0] as IFieldOptions
@@ -594,6 +468,7 @@ export class AggregateMenu {
         selectedField.baseField = baseFieldInstance.value as string;
         selectedField.baseItem = baseItemInstance.value as string;
         selectedField.allowCrossGroupCalculation = allowCrossGroup;
+        selectedField.runningTotalDirection = runningTotalDirection;
         // When the same field is added multiple times to the values axis, the
         // shared field-level aggregate type must not change; only the selected
         // instance's aggregation is updated.
@@ -730,7 +605,8 @@ export class AggregateMenu {
         const dropdownSelectors: string[] = [
             '#' + this.parentElement.id + '_type_option',
             '#' + this.parentElement.id + '_base_field_option',
-            '#' + this.parentElement.id + '_base_item_option'
+            '#' + this.parentElement.id + '_base_item_option',
+            '#' + this.parentElement.id + '_running_total_direction_option'
         ];
         for (const selector of dropdownSelectors) {
             const dropdownElement: HTMLElement = select(selector, dialogElement) as HTMLElement;
@@ -786,4 +662,203 @@ export class AggregateMenu {
             }
         };
     }
+    private createFieldOptionElements(
+        buttonElement: HTMLElement, summaryType: string, fieldCaption: string,
+        baseField: string, baseItem: string): {
+            mainDiv: HTMLElement; dropOptionDiv1: HTMLElement; dropOptionDiv2: HTMLElement;
+            dropOptionDiv3: HTMLElement; crossGroupInput: HTMLInputElement; inputField1: HTMLInputElement;
+            directionDiv: HTMLElement;
+        } {
+        const mainDiv: HTMLElement = createElement('div', {
+            className: 'e-value-field-div-content', id: this.parentElement.id + '_field_div_content',
+            attrs: { 'data-type': summaryType, 'data-caption': fieldCaption, 'data-basefield': baseField, 'data-baseitem': baseItem }
+        });
+        const textWrappper: HTMLElement = createElement('div', { className: 'e-field-name-text-container' });
+        const filterWrapperDiv1: HTMLElement = createElement('div', { className: 'e-field-option-container' });
+        const optionWrapperDiv1: HTMLElement = createElement('div', { className: 'e-type-option-container' });
+        const optionWrapperDiv2: HTMLElement = createElement('div', { className: 'e-base-field-option-container' });
+        const optionWrapperDiv3: HTMLElement = createElement('div', { className: 'e-base-item-option-container' });
+        const optionWrapperDiv4: HTMLElement = createElement('div', { className: 'e-cross-group-option-container' });
+        const optionWrapperDiv5: HTMLElement = createElement('div', { className: 'e-base-field-option-container e-running-total-direction-option-container' });
+        const optionTextDiv5: HTMLElement = createElement('div', { className: 'e-base-field-option-text' });
+        optionTextDiv5.innerText = this.parent.localeObj.getConstant('runningTotalDirection');
+        const directionDiv: HTMLElement = createElement('div', { id: this.parentElement.id + '_running_total_direction_option' });
+        optionWrapperDiv5.appendChild(optionTextDiv5);
+        optionWrapperDiv5.appendChild(directionDiv);
+        const texttitle: HTMLElement = createElement('div', { className: 'e-field-name-title' });
+        texttitle.innerHTML = this.parent.localeObj.getConstant('sourceName') + '&nbsp;';
+        const textContent: HTMLElement = createElement('div', { className: 'e-field-name-content' });
+        textContent.innerText = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(buttonElement.getAttribute('data-uid') ?
+            buttonElement.getAttribute('data-uid') : buttonElement.getAttribute('data-field')) :
+            (buttonElement.getAttribute('data-uid') ? buttonElement.getAttribute('data-uid') : buttonElement.getAttribute('data-field'));
+        this.buttonElement =
+            this.buttonElement ? this.buttonElement : document.getElementsByClassName(textContent.innerText)[0] as HTMLElement;
+        const inputTextDiv1: HTMLElement = createElement('div', {
+            className: 'e-type-option-text'
+        });
+        inputTextDiv1.innerText = this.parent.localeObj.getConstant('sourceCaption');
+        const optionTextDiv1: HTMLElement = createElement('div', {
+            className: 'e-base-field-option-text'
+        });
+        optionTextDiv1.innerText = this.parent.localeObj.getConstant('summarizeValuesBy');
+        const optionTextDiv2: HTMLElement = createElement('div', {
+            className: 'e-base-item-option-text'
+        });
+        optionTextDiv2.innerText = this.parent.localeObj.getConstant('baseField');
+        const optionTextDiv3: HTMLElement = createElement('div', {
+            className: 'e-type-option-text'
+        });
+        optionTextDiv3.innerText = this.parent.localeObj.getConstant('baseItem');
+        const inputDiv1: HTMLElement = createElement('div', { className: 'e-caption-input-container' });
+        const dropOptionDiv1: HTMLElement = createElement('div', { id: this.parentElement.id + '_type_option' });
+        const dropOptionDiv2: HTMLElement = createElement('div', { id: this.parentElement.id + '_base_field_option' });
+        const dropOptionDiv3: HTMLElement = createElement('div', { id: this.parentElement.id + '_base_item_option' });
+        const crossGroupInput: HTMLInputElement = createElement('input', {
+            id: this.parentElement.id + '_cross_group_option', attrs: { 'type': 'checkbox' }
+        }) as HTMLInputElement;
+        const inputField1: HTMLInputElement = createElement('input', {
+            id: this.parentElement.id + 'type_input_option',
+            className: 'e-caption-input-text',
+            attrs: { 'type': 'text' }
+        }) as HTMLInputElement;
+        textWrappper.appendChild(texttitle);
+        textWrappper.appendChild(textContent);
+        inputDiv1.appendChild(inputTextDiv1);
+        inputDiv1.appendChild(inputField1);
+        optionWrapperDiv1.appendChild(optionTextDiv1);
+        optionWrapperDiv2.appendChild(optionTextDiv2);
+        optionWrapperDiv3.appendChild(optionTextDiv3);
+        optionWrapperDiv1.appendChild(dropOptionDiv1);
+        optionWrapperDiv2.appendChild(dropOptionDiv2);
+        optionWrapperDiv3.appendChild(dropOptionDiv3);
+        optionWrapperDiv4.appendChild(crossGroupInput);
+        filterWrapperDiv1.appendChild(textWrappper);
+        filterWrapperDiv1.appendChild(inputDiv1);
+        filterWrapperDiv1.appendChild(optionWrapperDiv1);
+        filterWrapperDiv1.appendChild(optionWrapperDiv5);
+        filterWrapperDiv1.appendChild(optionWrapperDiv2);
+        filterWrapperDiv1.appendChild(optionWrapperDiv3);
+        filterWrapperDiv1.appendChild(optionWrapperDiv4);
+        mainDiv.appendChild(filterWrapperDiv1);
+        return { mainDiv, dropOptionDiv1, dropOptionDiv2, dropOptionDiv3, crossGroupInput, inputField1, directionDiv };
+    }
+
+    private initializeFieldOptions(
+        summaryDataSource: { [key: string]: Object }[], summaryType: string,
+        baseFieldTypes: string[], baseItemTypes: string[], fieldItemDataSource: string[],
+        getBaseItemDataSource: (members: string[]) => { value: string; text: string }[],
+        fieldDataSource: { [key: string]: Object }[], baseField: string, baseItem: string, allowCrossGroup: boolean,
+        fieldCaption: string, dropOptionDiv1: HTMLElement, dropOptionDiv2: HTMLElement, dropOptionDiv3: HTMLElement,
+        crossGroupInput: HTMLInputElement, inputField1: HTMLInputElement, directionDiv: HTMLElement,
+        runningTotalDirection: string): void {
+        const popupInstance: AggregateMenu = this as AggregateMenu;
+        const optionWrapper1: DropDownList = new DropDownList({
+            dataSource: summaryDataSource, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
+            fields: { value: 'value', text: 'text' },
+            value: summaryType,
+            // popupWidth: 'auto',
+            cssClass: cls.VALUE_OPTIONS_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%',
+            change: (args: ChangeEventArgs) => {
+                optionWrapper2.enabled = baseFieldTypes.indexOf(args.value as string) !== -1 ? true : false;
+                optionWrapper3.enabled = baseItemTypes.indexOf(args.value as string) !== -1 ? true : false;
+                if (optionWrapper3.enabled && (optionWrapper3.dataSource as object[]).length === 3) {
+                    optionWrapper3.dataSource = getBaseItemDataSource(fieldItemDataSource);
+                    optionWrapper3.dataBind();
+                }
+                updateCrossGroup();
+                updateDirection();
+            }
+        });
+        optionWrapper1.isStringTemplate = true;
+        optionWrapper1.isAngular = this.parent.isModalDialog;
+        optionWrapper1.appendTo(dropOptionDiv1);
+        const optionWrapper2: DropDownList = new DropDownList({
+            dataSource: fieldDataSource, enableRtl: this.parent.enableRtl, locale: this.parent.locale,
+            fields: { value: 'value', text: 'text' },
+            value: baseField,
+            // popupWidth: 'auto',
+            enabled: (baseFieldTypes.indexOf(summaryType) !== -1 ? true : false),
+            cssClass: cls.VALUE_OPTIONS_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%',
+            change: (args: ChangeEventArgs) => {
+                const isDateField: boolean = PivotUtil.isDateField(args.value as string, this.parent.engineModule as PivotEngine);
+                fieldItemDataSource = (popupInstance.parent.engineModule.fieldList[args.value as string].dateMember).map((item: IAxisSet) =>
+                    isDateField ?  item.formattedText :
+                        this.parent.engineModule.getFormattedValue(item.actualText, args.value as string).formattedText
+                );
+                optionWrapper3.dataSource = getBaseItemDataSource(fieldItemDataSource);
+                optionWrapper3.value = fieldItemDataSource[0];
+                optionWrapper3.filterBarPlaceholder = popupInstance.parent.localeObj.getConstant('example') + ' ' + fieldItemDataSource[0];
+                optionWrapper3['itemData'] = null;
+                optionWrapper3.dataBind();
+            }
+        });
+        optionWrapper2.isStringTemplate = true;
+        optionWrapper2.isAngular = this.parent.isModalDialog;
+        optionWrapper2.appendTo(dropOptionDiv2);
+        const isRunningTotal: (type: string) => boolean = (type: string) => {
+            return this.parent.dataType !== 'olap' && this.parent.dataSourceSettings.mode !== 'Server' &&
+                (type === 'RunningTotals' || type === 'PercentageOfRunningTotals');
+        };
+        const directionWrapper: DropDownList = new DropDownList({
+            dataSource: [
+                { value: 'Row', text: this.parent.localeObj.getConstant('runningTotalRow') },
+                { value: 'Column', text: this.parent.localeObj.getConstant('runningTotalColumn') }
+            ],
+            enableRtl: this.parent.enableRtl, locale: this.parent.locale,
+            fields: { value: 'value', text: 'text' },
+            value: runningTotalDirection === 'Row' || runningTotalDirection === 'Column' ? runningTotalDirection :
+                (this.parent.dataSourceSettings.valueAxis === 'row' &&
+                (this.parent.dataSourceSettings.values.length > 1 || this.parent.dataSourceSettings.alwaysShowValueHeader) ? 'Row' : 'Column'),
+            cssClass: cls.VALUE_OPTIONS_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%'
+        });
+        directionWrapper.isStringTemplate = true;
+        directionWrapper.isAngular = this.parent.isModalDialog;
+        directionWrapper.appendTo(directionDiv);
+        const updateDirection: () => void = () => {
+            directionWrapper.enabled = isRunningTotal(optionWrapper1.value as string);
+            directionWrapper.dataBind();
+        };
+        updateDirection();
+        const updateCrossGroup: () => void = () => {
+            crossGroupWrapper.disabled = !(baseItemTypes.indexOf(optionWrapper1.value as string) !== -1 &&
+                isAdjacentToken(optionWrapper3.value as string));
+            if (crossGroupWrapper.disabled) {
+                crossGroupWrapper.checked = false;
+            }
+            // Apply now: a deferred update would run against a destroyed checkbox when the dialog closes first.
+            crossGroupWrapper.dataBind();
+        };
+        const optionWrapper3: DropDownList = new DropDownList({
+            dataSource: getBaseItemDataSource(fieldItemDataSource), enableRtl: this.parent.enableRtl, locale: this.parent.locale,
+            fields: { value: 'value', text: 'text' },
+            value: baseItem,
+            // popupWidth: 'auto',
+            allowFiltering: true,
+            filterBarPlaceholder: this.parent.localeObj.getConstant('example') + ' ' + fieldItemDataSource[0],
+            enabled: (baseItemTypes.indexOf(summaryType) !== -1 ? true : false),
+            cssClass: cls.FILTER_OPERATOR_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%',
+            change: () => { updateCrossGroup(); }
+        });
+        optionWrapper3.isStringTemplate = true;
+        optionWrapper3.isAngular = this.parent.isModalDialog;
+        optionWrapper3.appendTo(dropOptionDiv3);
+        const crossGroupWrapper: CheckBox = new CheckBox({
+            label: this.parent.localeObj.getConstant('crossGroupComparison'), enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale, checked: allowCrossGroup && isAdjacentToken(baseItem),
+            disabled: !(baseItemTypes.indexOf(summaryType) !== -1 && isAdjacentToken(baseItem)),
+            cssClass: this.parent.cssClass
+        });
+        crossGroupWrapper.appendTo(crossGroupInput);
+        const inputObj1: MaskedTextBox = new MaskedTextBox({
+            placeholder: 'Enter field caption',
+            // floatLabelType: 'Auto',
+            enableRtl: this.parent.enableRtl,
+            locale: this.parent.locale,
+            value: fieldCaption, width: '100%',
+            cssClass: this.parent.cssClass
+        });
+        inputObj1.isStringTemplate = true;
+        inputObj1.appendTo(inputField1);
+    }
+
 }

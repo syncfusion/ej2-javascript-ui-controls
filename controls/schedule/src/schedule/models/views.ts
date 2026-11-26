@@ -1,7 +1,11 @@
 import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';
-import { View, Orientation } from '../base/type';
+import { View, Orientation, EventPlacement } from '../base/type';
 import { TimeScale } from '../models/time-scale';
-import { TimeScaleModel, GroupModel, HeaderRowsModel } from '../models/models';
+import { TimeScaleModel, GroupModel, HeaderRowsModel, EventSpacingModel, SummaryRowModel, SummaryColumnModel, GroupSummaryModel } from '../models/models';
+import { EventSpacing } from '../models/event-spacing';
+import { SummaryRow } from './summary-row';
+import { SummaryColumn } from './summary-column';
+import { GroupSummary } from './group-summary';
 import { Group } from '../models/group';
 import { HeaderRows } from './header-rows';
 
@@ -359,6 +363,31 @@ export class Views extends ChildProperty<Views> {
     public timeScale: TimeScaleModel;
 
     /**
+     * Allows to set a different summary row configuration on each view. The summary row shows one cell per time unit at the bottom of the content area.
+     *
+     * @default { enable: false, template: null, cellUnit: null, labelTemplate: null, totalTemplate: null }
+     */
+    @Complex<SummaryRowModel>({}, SummaryRow)
+    public summaryRow: SummaryRowModel;
+
+    /**
+     * Allows to set a different summary column configuration on each view. The summary column shows one cell per resource row at the trailing edge of the content.
+     *
+     * @default { enable: false, template: null, cellUnit: 'Slot', labelTemplate: null }
+     */
+    @Complex<SummaryColumnModel>({}, SummaryColumn)
+    public summaryColumn: SummaryColumnModel;
+
+    /**
+     * Allows to set a different group summary configuration on each view. The group summary turns the parent resource row of one level into the summary of its group.
+     * It is applicable to the timeline views.
+     *
+     * @default {}
+     */
+    @Complex<GroupSummaryModel>({}, GroupSummary)
+    public groupSummary: GroupSummaryModel;
+
+    /**
      * Allows to set different resource grouping options on all available schedule view modes.
      *
      * @default { byDate: false, byGroupID: true, allowGroupEdit: false, resources:[], hideNonWorkingDays: false }
@@ -419,4 +448,43 @@ export class Views extends ChildProperty<Views> {
      */
     @Property(0)
     public maxEventStack: number;
+
+    /**
+     * Specifies the space between events, and the space reserved before and after the events of a track, for this view.
+     * The value overrides the component level `eventSpacing` for this view only. A field that is not set here uses the component level value,
+     * and a field that is not set at either level uses the built-in space of the view.
+     * It applies to the Day, Week, WorkWeek, Month, TimelineDay, TimelineWeek, TimelineWorkWeek, TimelineMonth and TimelineYear views,
+     * and is ignored by the Agenda, Year and MonthAgenda views.
+     *
+     * @default { gap: null, leadingSpace: null, trailingSpace: null }
+     */
+    @Complex<EventSpacingModel>({}, EventSpacing)
+    public eventSpacing: EventSpacingModel;
+
+    /**
+     * Optional pixel width for each Timeline column under this preset.
+     *
+     * When defined, the Timeline header and content `<col>` elements are
+     * sized to this value instead of the calculated width
+     * (`contentBody.offsetWidth / totalColumns`). When `null`, the
+     * pre-existing calculated behaviour is preserved verbatim.
+     *
+     * Typical use: visual-only zoom progression alongside the existing
+     * `interval` / `timeScale.interval` / `timeScale.slotCount` knobs —
+     * e.g. three TimelineWeek presets that share the same `timeScale`
+     * but render cells at 120 / 90 / 60 pixels for finer user control.
+     *
+     * @default null
+     */
+    @Property(null)
+    public cellWidth: number;
+
+    /**
+     * Defines how events are placed within a day cell in this view, overriding `eventSettings.placement`.
+     * It applies to the timeline views and the Month view only.
+     *
+     * @default null
+     */
+    @Property(null)
+    public eventPlacement: EventPlacement;
 }

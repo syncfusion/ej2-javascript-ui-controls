@@ -363,7 +363,8 @@ export class RowDD {
         gObj.trigger(events.rowDrop, args, () => {
             if ((!(parentsUntil(target, literals.row) || parentsUntil(target, 'e-emptyrow')
                 || parentsUntil(target,  literals.gridContent)) || args.cancel)
-                || (this.parent.pinnedTopRowModels.length && parentsUntil(target,  literals.headerContent))) {
+                || (this.parent.pinnedTopRowModels.length && parentsUntil(target,  literals.headerContent))
+                || (gObj.isRowNonDeselectable && gObj.checkAllRows === 'Check')) {
                 this.dragTarget = null;
                 remove(e.helper);
                 return;

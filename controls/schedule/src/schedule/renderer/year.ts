@@ -19,6 +19,7 @@ export class Year extends ViewBase implements IRenderer {
     public rowCount: number;
     public columnCount: number;
     private yearEventModule: YearEvent = null;
+    private renderedRowHeight: number = 0;
 
     constructor(parent: Schedule) {
         super(parent);
@@ -323,6 +324,12 @@ export class Year extends ViewBase implements IRenderer {
         if (headerWrapper) {
             (<HTMLElement>headerWrapper.firstElementChild).scrollLeft = target.scrollLeft;
         }
+        if (this.parent.fixedRowsModule) {
+            this.parent.fixedRowsModule.syncScroll(target);
+        }
+        if (this.parent.summaryModule) {
+            this.parent.summaryModule.syncScroll(target);
+        }
         const scrollTopSelector: string = `.${cls.MONTH_HEADER_WRAPPER},.${cls.RESOURCE_COLUMN_WRAP_CLASS}`;
         const scrollTopElement: HTMLElement = this.element.querySelector(scrollTopSelector) as HTMLElement;
         if (scrollTopElement) {
@@ -340,6 +347,12 @@ export class Year extends ViewBase implements IRenderer {
         const headerWrapper: HTMLElement = this.element.querySelector('.' + cls.DATE_HEADER_CONTAINER_CLASS) as HTMLElement;
         if (headerWrapper) {
             height -= headerWrapper.offsetHeight;
+        }
+        if (this.parent.fixedRowsModule && this.parent.height !== 'auto') {
+            height = this.parent.fixedRowsModule.adjustHeight(height);
+        }
+        if (this.parent.summaryModule) {
+            height -= this.parent.summaryModule.getRowHeight();
         }
         const contentWrapper: HTMLElement = this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
         if (contentWrapper) {
@@ -375,6 +388,19 @@ export class Year extends ViewBase implements IRenderer {
             }
         }
         this.retainScrollPosition();
+        this.refreshEventsOnRowResize();
+    }
+
+    // The summary row takes room after the events were laid out, so the rows shrink and the +n more indicators would be left behind.
+    private refreshEventsOnRowResize(): void {
+        const row: HTMLElement = this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' tbody tr') as HTMLElement;
+        if (!this.yearEventModule || !this.parent.summaryModule || !row) {
+            return;
+        }
+        if (this.renderedRowHeight !== row.offsetHeight) {
+            this.renderedRowHeight = row.offsetHeight;
+            this.yearEventModule.renderAppointments();
+        }
     }
 
     public getStartDate(): Date {
@@ -434,6 +460,8 @@ export class Year extends ViewBase implements IRenderer {
     public onDataReady(args: NotifyEventArgs): void {
         this.yearEventModule = new YearEvent(this.parent);
         this.yearEventModule.renderAppointments();
+        const row: HTMLElement = this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' tbody tr') as HTMLElement;
+        this.renderedRowHeight = row ? row.offsetHeight : 0;
         this.parent.notify(event.eventsLoaded, args);
     }
 

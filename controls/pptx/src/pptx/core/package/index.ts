@@ -4,7 +4,8 @@
  * @packageDocumentation
  */
 export { OpenPresentationInput, OpenPresentationOptions } from './open';
-export { Presentation, CreatePresentationOptions, HostPartRelationshipAccess, PackagePartAccess } from './presentation';
+export { Presentation, CreatePresentationOptions, HostPartRelationshipAccess, PackagePartAccess, FormatType,
+    getFormatTypeFromContentType, getFormatTypeFromExtension } from './presentation';
 export { PackagePart } from './package-model';
 export { PackageRelationship, RelationshipTargetMode } from './relationships';
 export { COMMENT_AUTHORS_CONTENT_TYPE, COMMENT_AUTHORS_REL_TYPE, COMMENTS_CONTENT_TYPE, COMMENTS_REL_TYPE,

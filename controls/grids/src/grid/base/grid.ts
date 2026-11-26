@@ -79,6 +79,11 @@ import { Edit } from '../actions/edit';
 import { Highlight } from '../actions/highlight';
 import { Row } from '../models/row';
 import { ColumnChooser } from '../actions/column-chooser';
+import { SideBar } from '../actions/side-bar';
+import { ToolpanelSettings } from '../models/tool-panel-settings';
+import { ToolpanelSettingsModel } from '../models/models';
+import { ToolPanelEventArgs, ToolPanelCreatedEventArgs, ToolPanelColumnDropEventArgs } from './interface';
+import { ToolPanelPosition } from './enum';
 import { AdvancedFilter } from '../actions/advanced-filter';
 import { ExcelExport } from '../actions/excel-export';
 import { PdfExport } from '../actions/pdf-export';
@@ -310,6 +315,13 @@ export class Predicate extends ChildProperty<Predicate> {
      */
     @Property()
     public type: string;
+
+    /**
+     * @hidden
+     * Set to true on both predicates created from the `between` date range operator.
+     */
+    @Property(false)
+    public isRange: boolean;
 
     /**
      * @hidden
@@ -1031,6 +1043,20 @@ export class EditSettings extends ChildProperty<EditSettings> {
     public enableUndoRedo: boolean;
 
     /**
+     * If enableBatchUndoRedo is set to true, a committed Batch Update or batchSave() can be undone and redone
+     * through the Grid data source. It requires `enableUndoRedo` to be `true` as well and it is ignored
+     * in the `Normal`, `Cell` and `Dialog` edit modes.
+     *
+     * > Undoing a committed Batch transaction against a remote data source is best-effort and is not atomic.
+     * The transaction is replayed as a sequence of per-record CRUD requests and a failing request stops the
+     * replay, leaving the already replayed records in their replayed state.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableBatchUndoRedo: boolean;
+
+    /**
      * Defines the maximum number of undo/redo actions to store in the stack.
      *
      * @default 20
@@ -1484,6 +1510,20 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @hidden
      */
     public columnChooserModule: ColumnChooser;
+
+    /**
+     * `sideBarModule` is used to render the side bar tool panels.
+     *
+     * @hidden
+     */
+    public sideBarModule: SideBar;
+
+    /**
+     * Panel-managed aggregates restored from persisted state.
+     *
+     * @hidden
+     */
+    public toolPanelAggregates: { field: string, type: string }[];
 
     /**
      * Provides the Advanced Filter module for creating and applying complex multi-condition filters.
@@ -2114,6 +2154,22 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public columnChooserSettings: ColumnChooserSettingsModel;
 
     /**
+     * If `enableToolPanel` is set to true, a side bar with the configured tool panels is rendered.
+     * Inject the `SideBar` module to use this feature.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableToolPanel: boolean;
+    /**
+     * Configures the side bar tool panels. Ignored while `enableToolPanel` is false.
+     *
+     * @default { position: 'Right', type: 'Push', width: '280px' }
+     */
+    @Complex<ToolpanelSettingsModel>({}, ToolpanelSettings)
+    public toolPanelSettings: ToolpanelSettingsModel;
+
+    /**
      * If `enableHeaderFocus` set to true, then header element will be focused when focus moves to grid.
      *
      * @default true
@@ -2477,6 +2533,17 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     @Property(null)
     public isRowSelectable: RowSelectable | string;
+
+    /**
+     * Prevents deselection after a row is selected when the callback returns true.
+     * Requires Multiple row selection and a primary-key column. Does not override isRowSelectable.
+     * Configuring this callback automatically enables selectionSettings.persistSelection, overriding explicit false.
+     * Removing the callback does not disable persistSelection.
+     *
+     * @default null
+     */
+    @Property(null)
+    public isRowNonDeselectable: RowSelectable | string;
 
     /**
      * Determines if a row should be pinned at the top. When not set, no rows are pinned.
@@ -2973,6 +3040,59 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public beforeOpenColumnChooser: EmitType<ColumnChooserEventArgs>;
 
     /**
+     * Triggers before a tool panel opens. Set `args.cancel` to true to prevent opening.
+     *
+     * @event toolPanelOpen
+     */
+    @Event()
+    public toolPanelOpen: EmitType<ToolPanelEventArgs>;
+    /**
+     * Triggers after a tool panel is opened.
+     *
+     * @event toolPanelOpened
+     */
+    @Event()
+    public toolPanelOpened: EmitType<ToolPanelEventArgs>;
+    /**
+     * Triggers before a tool panel closes. Set `args.cancel` to true to prevent closing.
+     *
+     * @event toolPanelClose
+     */
+    @Event()
+    public toolPanelClose: EmitType<ToolPanelEventArgs>;
+    /**
+     * Triggers after a tool panel is closed.
+     *
+     * @event toolPanelClosed
+     */
+    @Event()
+    public toolPanelClosed: EmitType<ToolPanelEventArgs>;
+
+    /**
+     * Triggers before a column dropped on the Columns tool panel zones is applied. Set `cancel` to veto it.
+     *
+     * @event toolPanelColumnDrop
+     */
+    @Event()
+    public toolPanelColumnDrop: EmitType<ToolPanelColumnDropEventArgs>;
+
+    /**
+     * Triggers after a column drop on the Columns tool panel zones was applied.
+     *
+     * @event toolPanelColumnDropped
+     */
+    @Event()
+    public toolPanelColumnDropped: EmitType<ToolPanelColumnDropEventArgs>;
+
+    /**
+     * Triggers when the body of a tool panel is rendered for the first time.
+     *
+     * @event toolPanelCreated
+     */
+    @Event()
+    public toolPanelCreated: EmitType<ToolPanelCreatedEventArgs>;
+
+    /**
      * Triggers before adaptive filter and sort dialogs open.
      *
      * @event beforeOpenAdaptiveDialog
@@ -3395,6 +3515,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (isAngularCaptionTemplate) {
             this.groupSettings.captionTemplate = captionTemplateRef;
         }
+        if (this.sideBarModule) {
+            const managed: { field: string, type: string }[] = this.sideBarModule.getManagedAggregates();
+            if (managed.length) {
+                const parsed: { [key: string]: Object } = JSON.parse(persistData);
+                parsed['toolPanelAggregates'] = managed;
+                return JSON.stringify(parsed);
+            }
+        }
         return persistData;
     }
 
@@ -3596,6 +3724,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 name: 'ColumnChooser'
             });
         }
+        if (this.enableToolPanel) {
+            modules.push({
+                member: 'sideBar',
+                args: [this, this.serviceLocator],
+                name: 'SideBar'
+            });
+        }
         if (!isNullOrUndefined(this.columns as Column[]) && this.isForeignKeyEnabled(this.columns as Column[])) {
             modules.push({ member: 'foreignKey', args: [this, this.serviceLocator], name: 'ForeignKey' });
         }
@@ -3703,6 +3838,24 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             Wordexport: 'Word Export',
             Csvexport: 'CSV Export',
             Search: 'Search',
+            ToolPanelColumns: 'Columns',
+            ToolPanelRowGroups: 'Row Groups',
+            ToolPanelValues: 'Values',
+            ToolPanelGroupDropArea: 'Drag here to group its column',
+            ToolPanelAggregateDropArea: 'Drag here to aggregate its column',
+            ToolPanelAggSum: 'Sum',
+            ToolPanelAggAverage: 'Average',
+            ToolPanelAggMin: 'Min',
+            ToolPanelAggMax: 'Max',
+            ToolPanelAggCount: 'Count',
+            ToolPanelAggTrueCount: 'True Count',
+            ToolPanelAggFalseCount: 'False Count',
+            ToolPanelFilters: 'Filters',
+            ToolPanelEdit: 'Edit',
+            SideBarLabel: 'Grid tool panels',
+            NoRowSelected: 'Select rows to edit',
+            EditRecordDetails: 'Edit Record Details',
+            MultiRowPlaceholder: 'Multiple values - enter to update all',
             Find: 'Find',
             FindNext: 'Next match',
             FindPrevious: 'Previous match',
@@ -3723,6 +3876,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             ConfirmDelete: 'Are you sure you want to Delete Record?',
             CancelEdit: 'Are you sure you want to Cancel the changes?',
             ChooseColumns: 'Choose Column',
+            ColumnChooserMoved: 'Column {0} moved to position {1}',
             ColumnMenu: 'Column Menu',
             SearchColumns: 'search columns',
             Matchs: 'No matches found',
@@ -3792,6 +3946,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             DateTimeFilter: 'DateTime Filters',
             MatchCase: 'Match Case',
             Between: 'Between',
+            BetweenFromAria: 'From date',
+            BetweenToAria: 'To date',
+            PresetThisWeek: 'This Week',
+            PresetThisMonth: 'This Month',
+            PresetThisYear: 'This Year',
+            PresetLastWeek: 'Last Week',
+            PresetLastMonth: 'Last Month',
+            PresetLast3Months: 'Last 3 Months',
+            PresetLast6Months: 'Last 6 Months',
+            PresetLastYear: 'Last Year',
             CustomFilter: 'Custom Filter',
             CustomFilterPlaceHolder: 'Enter the value',
             CustomFilterDatePlaceHolder: 'Choose a date',
@@ -3958,6 +4122,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         if (typeof this.isRowSelectable === 'string') {
             this.isRowSelectable = getValue(this.isRowSelectable, window);
+        }
+        if (typeof this.isRowNonDeselectable === 'string') {
+            this.isRowNonDeselectable = getValue(this.isRowNonDeselectable, window);
+        }
+        if (this.isRowNonDeselectable) {
+            this.selectionSettings.persistSelection = true;
         }
         if (typeof this.isRowPinned === 'string') {
             this.isRowPinned = getValue(this.isRowPinned, window);
@@ -5072,6 +5242,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this.toolbarModule.refreshToolbarItems();
             }
             this.notify(events.uiUpdate, { module: 'columnChooser', enable: this.showColumnChooser }); break;
+        case 'enableToolPanel':
+        case 'toolPanelSettings':
+            this.notify(events.toolPanelPropertyChanged, { module: 'sideBar', properties: newProp }); break;
         case 'columnChooserSettings':
             this.notify(events.inBoundModelChanged, { module: 'columnChooser', properties: newProp.columnChooserSettings }); break;
         case 'filterSettings':
@@ -5083,7 +5256,17 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.notify(events.inBoundModelChanged, { module: 'find', properties: newProp.findSettings }); break;
         case 'sortSettings':
             this.notify(events.inBoundModelChanged, { module: 'sort' }); break;
+        case 'isRowNonDeselectable':
+            if (this.isRowNonDeselectable && !this.selectionSettings.persistSelection) {
+                this.setProperties({ selectionSettings: { persistSelection: true } }, true);
+                this.notify(events.inBoundModelChanged, { module: 'selection', properties: { persistSelection: true } });
+            }
+            break;
         case 'selectionSettings':
+            if (this.isRowNonDeselectable) {
+                this.setProperties({ selectionSettings: { persistSelection: true } }, true);
+                newProp.selectionSettings.persistSelection = true;
+            }
             this.notify(events.inBoundModelChanged, { module: 'selection', properties: newProp.selectionSettings }); break;
         case 'editSettings':
             this.notify(events.inBoundModelChanged, { module: 'edit', properties: newProp.editSettings }); break;
@@ -8265,6 +8448,35 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.selectionModule.selectRows(rowIndexes);
         }
     }
+    /**
+     * Deselects a row by the given index. Rows marked non-deselectable via
+     * `isRowNonDeselectable` are deselected as well; the non-deselectable
+     * restriction applies only to user interactions.
+     *
+     * @param  {number} index - Defines the row index.
+     *
+     * @returns {void}
+     */
+    public deselectRow(index: number): void {
+        if (this.selectionModule) {
+            this.selectionModule.deselectRow(index);
+        }
+    }
+    /**
+     * Deselects a collection of rows by indexes. Indexes that are not
+     * currently selected are ignored. Rows marked non-deselectable via
+     * `isRowNonDeselectable` are deselected as well; the non-deselectable
+     * restriction applies only to user interactions.
+     *
+     * @param  {number[]} rowIndexes - Defines the row indexes to deselect.
+     *
+     * @returns {void}
+     */
+    public deselectRows(rowIndexes: number[]): void {
+        if (this.selectionModule) {
+            this.selectionModule.deselectRows(rowIndexes);
+        }
+    }
 
     /**
      * Deselects the current selected rows and cells.
@@ -8566,8 +8778,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public undoEdit(): void {
-        if (this.editSettings.mode === 'Batch' && this.editModule) {
-            this.editModule.undoBatchEdit();
+        if (this.editModule && this.editModule.undoEdit) {
+            this.editModule.undoEdit();
         }
     }
 
@@ -8577,8 +8789,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public redoEdit(): void {
-        if (this.editSettings.mode === 'Batch' && this.editModule) {
-            this.editModule.redoBatchEdit();
+        if (this.editModule && this.editModule.redoEdit) {
+            this.editModule.redoEdit();
         }
     }
 
@@ -8589,10 +8801,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @hidden
      */
     public isUndoStackAvailable(): boolean {
-        if (this.editSettings.mode !== 'Batch' || !this.editModule) {
-            return false;
-        }
-        return this.editModule.isUndoStackAvailable();
+        return !!(this.editModule && this.editModule.isUndoStackAvailable && this.editModule.isUndoStackAvailable());
     }
 
     /**
@@ -8602,10 +8811,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @hidden
      */
     public isRedoStackAvailable(): boolean {
-        if (this.editSettings.mode !== 'Batch' || !this.editModule) {
-            return false;
-        }
-        return this.editModule.isRedoStackAvailable();
+        return !!(this.editModule && this.editModule.isRedoStackAvailable && this.editModule.isRedoStackAvailable());
     }
 
     /**
@@ -9746,7 +9952,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private dblClickHandler(e: MouseEvent | TouchEventArgs): void {
         const grid: Element = parentsUntil(e.target as Element, 'e-grid');
-        if (isNullOrUndefined(grid) || grid.id !== this.element.id || closest(<Node>e.target, '.e-unboundcelldiv')) {
+        if (isNullOrUndefined(grid) || grid.id !== this.element.id || closest(<Node>e.target, '.e-unboundcelldiv') ||
+            closest(<Node>e.target, '.e-toolpanel')) {
             return;
         }
         let dataRow: boolean = false;
@@ -10290,6 +10497,67 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
 
+    /**
+     * Opens the tool panel with the given id. Switches the panel if another one is open.
+     *
+     * @param {string} id - Defines the id of the tool panel.
+     * @returns {void}
+     */
+    public openToolPanel(id: string): void {
+        if (this.sideBarModule) { this.sideBarModule.openToolPanel(id); }
+    }
+    /**
+     * Closes the currently opened tool panel.
+     *
+     * @returns {void}
+     */
+    public closeToolPanel(): void {
+        if (this.sideBarModule) { this.sideBarModule.closeToolPanel(); }
+    }
+    /**
+     * Shows or hides the whole side bar.
+     *
+     * @param {boolean} show - Shows the side bar when true, hides when false. Toggles when omitted.
+     * @returns {void}
+     */
+    public toggleSideBar(show?: boolean): void {
+        if (this.sideBarModule) { this.sideBarModule.toggleSideBar(show); }
+    }
+    /**
+     * Returns the id of the opened tool panel, or null when none is open.
+     *
+     * @returns {string | null} - Id of the opened tool panel.
+     */
+    public getOpenedToolPanel(): string | null {
+        return this.sideBarModule ? this.sideBarModule.getOpenedToolPanel() : null;
+    }
+    /**
+     * Returns true when a tool panel is currently showing.
+     *
+     * @returns {boolean} - Whether a tool panel is open.
+     */
+    public isToolPanelShowing(): boolean {
+        return this.sideBarModule ? this.sideBarModule.isToolPanelShowing() : false;
+    }
+    /**
+     * Re-renders the content of the given tool panel, or of the opened panel when no id is given.
+     *
+     * @param {string} id - Defines the id of the tool panel.
+     * @returns {void}
+     */
+    public refreshToolPanel(id?: string): void {
+        if (this.sideBarModule) { this.sideBarModule.refreshToolPanel(id); }
+    }
+    /**
+     * Changes the dock edge of the side bar.
+     *
+     * @param {ToolPanelPosition} position - Defines `Left` or `Right`.
+     * @returns {void}
+     */
+    public setSideBarPosition(position: ToolPanelPosition): void {
+        if (this.sideBarModule) { this.sideBarModule.setSideBarPosition(position); }
+    }
+
     private scrollRefresh(): void {
         const refresh: Function = () => {
             this.scrollModule.refresh();
@@ -10358,11 +10626,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Deselects the currently selected rows.
      *
+     * @param {boolean} includeNonDeselectableRows - Include protected rows; defaults to false.
+     *
      * @returns {void}
      */
-    public clearRowSelection(): void {
+    public clearRowSelection(includeNonDeselectableRows?: boolean): void {
         if (this.selectionModule) {
-            this.selectionModule.clearRowSelection();
+            this.selectionModule.clearRowSelection(includeNonDeselectableRows);
         }
     }
 

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 35.2.14 (2026-11-26)
+
+### Tree Grid
+
+#### Features
+
+- Added support for multiple row drag and drop targets in TreeGrid, enabling hierarchical records to be dragged and dropped between configured TreeGrid instances.
+
 ## 35.1.46 (2026-11-11)
 
 ### Tree Grid

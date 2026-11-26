@@ -369,6 +369,18 @@ export class PdfGanttPredecessor {
      * @returns {number} .
      * @private
      */
+    /**
+     * Returns the header height offset applied when a connector line crosses a page
+     * boundary: the computed timeline header height plus the 2-point border correction.
+     *
+     * @returns {number} .
+     * @private
+     */
+    private getHeaderOffset(): number {
+        const borderCorrection: number = this.parent.timelineModule.isSingleTier ? 0 : 2;
+        return this.pdfGantt.layouter.headerHeight + borderCorrection;
+    }
+
     private findPageIndex(point: PointF): number {
         let pageIndex: number = -1;
         for (let index: number = 0; index < this.pdfGantt.pdfPageDetail.length; index++) {
@@ -428,14 +440,14 @@ export class PdfGanttPredecessor {
                 newStartPoint.y = pageRectBottom;
                 checkStartPoint.y += 1;
                 if (this.pdfGantt.enableHeader) {
-                    newStartPoint.y += this.parent.timelineModule.isSingleTier ? pixelToPoint(45) : pixelToPoint(62);
+                    newStartPoint.y += this.getHeaderOffset();
                 }
             } else if (pageRectTop > endPoint.y) {
                 newStartPoint.y = checkStartPoint.y = pageRectTop - 1;
                 endPoint.y = pageRectTop;
                 if (this.pdfGantt.enableHeader) {
-                    checkStartPoint.y += this.parent.timelineModule.isSingleTier ? pixelToPoint(45) : pixelToPoint(62);
-                    endPoint.y += this.parent.timelineModule.isSingleTier ? pixelToPoint(45) : pixelToPoint(62);
+                    checkStartPoint.y += this.getHeaderOffset();
+                    endPoint.y += this.getHeaderOffset();
                 }
             }
             pageIndex = this.findPageIndex(checkStartPoint);

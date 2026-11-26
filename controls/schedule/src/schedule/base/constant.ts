@@ -106,6 +106,14 @@ export const cellMouseDown: string = 'cell-mouse-down';
  * Notification routing keys for WebMcpAdapter pub/sub via Component.notify/on.
  */
 /** @private */
+export const interactionEnd: string = 'interactionEnd';
+/** @private */
 export const getWebMcpTools: string = 'getWebMcpTools';
 /** @private */
 export const registerWebMcpTools: string = 'registerWebMcpTools';
+/** @private */
+export const renderSummaryCell: string = 'renderSummaryCell';
+/** @private */
+export const summaryCellClick: string = 'summaryCellClick';
+/** @private */
+export const summaryRefresh: string = 'summaryRefresh';

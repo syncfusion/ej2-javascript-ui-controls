@@ -95,6 +95,12 @@ export abstract class PdfFont {
      */
     _height: number;
     /**
+     * Retains shaped glyph lists by source text for reuse.
+     *
+     * @private
+     */
+    _shapedGlyphs: Map<string, any>; // eslint-disable-line
+    /**
      * Reference to the owning PDF document.
      *
      * @private
@@ -685,9 +691,13 @@ export abstract class PdfFont {
                   && (arg3 instanceof PdfStringFormat || arg3 === null) && typeof arg4 === 'number' && typeof arg5 === 'number') {
             const temparg3: PdfStringFormat = arg3 as PdfStringFormat;
             return this.measureString(text, {width: arg2, height: 0}, temparg3, arg4, arg5);
+        } else if (typeof text === 'string' && typeof arg2 === 'number' && (arg3 instanceof PdfStringFormat || arg3 === null) &&
+                  typeof arg4 === 'undefined') {
+            return this.measureString(text, {width: arg2, height: 0}, arg3 as PdfStringFormat, 0, 0);
         } else if (typeof text === 'string' && typeof arg2 === 'number' && arg3 === true) {
             const layouter: _PdfStringLayouter = new _PdfStringLayouter();
-            return layouter._layout(text, this, null, [arg2, Number.MAX_VALUE])._actualSize;
+            const gridFormat: PdfStringFormat = this._retainedShapedFormat(text);
+            return layouter._layout(text, this, gridFormat, [arg2, Number.MAX_VALUE])._actualSize;
         } else {
             const temparg3: PdfStringFormat = arg3 as PdfStringFormat;
             const layouter: _PdfStringLayouter = new _PdfStringLayouter();
@@ -709,6 +719,35 @@ export abstract class PdfFont {
             }
         }
         return realWidth;
+    }
+    /**
+     * Gets the retained complex-script format for the specified text.
+     *
+     * @private
+     * @param {string} text Text to check.
+     * @returns {PdfStringFormat} Retained format or null.
+     */
+    _retainedShapedFormat(text: string): PdfStringFormat {
+        if (this._retainedShapedList(text) !== null) {
+            const format: PdfStringFormat = new PdfStringFormat();
+            format.complexScript = true;
+            return format;
+        }
+        return null;
+    }
+    /**
+     * Returns the shaped glyph list retained for the given text, or null.
+     *
+     * @private
+     * @param {string} text - Text to look up.
+     * @returns {any} Retained shaped glyph list or null.
+     */
+    _retainedShapedList(text: string): any { // eslint-disable-line
+        if (this._shapedGlyphs !== null && typeof this._shapedGlyphs !== 'undefined' &&
+            this._shapedGlyphs.has(text)) {
+            return this._shapedGlyphs.get(text);
+        }
+        return null;
     }
     /**
      * Applies character and word spacing adjustments to the measured width.
@@ -1816,6 +1855,10 @@ export class PdfTrueTypeFont extends PdfFont {
     _getCharacterWidthInternal(charCode: string): number {
         let code: number = charCode.charCodeAt(0);
         code = (code >= 0 && code !== 128) ? code : 0;
+        const widths: number[] = (this._metrics._widthTable as _StandardWidthTable).widths;
+        if (widths && code >= widths.length && this._fontInternal) {
+            return this._fontInternal._getCharacterWidth(charCode);
+        }
         return this._metrics._widthTable._itemAt(code);
     }
 }

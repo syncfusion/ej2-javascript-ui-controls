@@ -77,7 +77,8 @@ export class EventWindow {
             visible: false,
             width: '500px',
             beforeOpen: this.onBeforeOpen.bind(this),
-            beforeClose: this.onBeforeClose.bind(this)
+            beforeClose: this.onBeforeClose.bind(this),
+            close: () => this.parent.notify(event.interactionEnd, {})
         };
         if (this.parent.isAdaptive) {
             dialogModel.cssClass = cls.EVENT_WINDOW_DIALOG_CLASS + ' ' + cls.DEVICE_CLASS;

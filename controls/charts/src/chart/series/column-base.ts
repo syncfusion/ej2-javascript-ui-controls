@@ -4,13 +4,122 @@ import { appendChildElement, redrawElement, pathAnimation, valueToCoefficient, g
 import { getAnimationFunction, getPoint, ChartLocation, getMinPointsDelta } from '../../common/utils/helper';
 import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
-import { Column, Row } from '../axis/axis';
+import { Axis, Column, Row } from '../axis/axis';
+import { VisibleRangeModel } from '../../common/model/interface';
 import { Series, Points } from './chart-series';
 import { AnimationModel, BorderModel } from '../../common/model/base-model';
 import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
 import { pointRender } from '../../common/model/constants';
 import { CylinderSeriesOption } from './column-series';
 import { SeriesModel } from './chart-series-model';
+
+const sideBySideTypes: string[] = ['Column', 'StackingColumn', 'StackingColumn100', 'Bar', 'StackingBar', 'StackingBar100',
+    'Histogram', 'RangeColumn', 'Waterfall', 'Candle', 'Hilo', 'HiloOpenClose', 'BoxAndWhisker'];
+
+/**
+ * Converts the effective DateTime axis label interval to milliseconds.
+ * Years and months are measured from `startValue` (the start of the smallest data gap) so calendar lengths
+ * (leap years, 28-31 day months) are honoured the same way the data gap itself is.
+ *
+ * @param {Axis} axis - The DateTime axis.
+ * @param {number} startValue - Reference date in milliseconds, or null to use the axis minimum.
+ * @returns {number} Interval in milliseconds, or 0 when it cannot be determined.
+ * @private
+ */
+function getAxisIntervalInMs(axis: Axis, startValue: number): number {
+    const range: VisibleRangeModel = axis.visibleRange;
+    if (!range || !(range.interval > 0)) {
+        return 0;
+    }
+    const reference: number = isNullOrUndefined(startValue) ? range.min : startValue;
+    const start: Date = new Date(reference);
+    const end: Date = new Date(reference);
+    switch (axis.actualIntervalType) {
+    case 'Years':
+        end.setFullYear(end.getFullYear() + range.interval);
+        return end.getTime() - start.getTime();
+    case 'Months':
+        end.setMonth(end.getMonth() + range.interval);
+        return end.getTime() - start.getTime();
+    case 'Days':
+        return range.interval * 86400000;
+    case 'Hours':
+        return range.interval * 3600000;
+    case 'Minutes':
+        return range.interval * 60000;
+    case 'Seconds':
+        return range.interval * 1000;
+    default:
+        return 0;
+    }
+}
+
+/**
+ * Finds where the smallest non-zero x gap of the given series starts (first occurrence wins).
+ * Single pass over the points; a copy is sorted only when a series is not already ascending.
+ *
+ * @param {Series[]} participants - Series to scan.
+ * @returns {number} Start of the smallest gap, or null when no series has two distinct x-values.
+ * @private
+ */
+function getSmallestGapStart(participants: Series[]): number {
+    let smallest: number = Number.MAX_VALUE;
+    let start: number = null;
+    for (const item of participants) {
+        let values: number[] = [];
+        let sorted: boolean = true;
+        for (const point of item.points) {
+            if (isNullOrUndefined(point.xValue) || !isFinite(point.xValue)) {
+                continue;
+            }
+            if (values.length && point.xValue < values[values.length - 1]) {
+                sorted = false;
+            }
+            values.push(point.xValue);
+        }
+        if (!sorted) {
+            values = values.sort((a: number, b: number) => a - b);
+        }
+        for (let i: number = 1; i < values.length; i++) {
+            const gap: number = values[i as number] - values[i - 1];
+            if (gap > 0 && gap < smallest) {
+                smallest = gap;
+                start = values[i - 1];
+            }
+        }
+    }
+    return start;
+}
+
+/**
+ * Gets the x-value interval used to size side-by-side rectangles (columns, bars, ...).
+ * Non-DateTime axes use the smallest point gap of all visible series, as before.
+ * On a DateTime axis only visible rectangle-type series sharing the axis take part, each contributes its own smallest
+ * non-zero gap (so identical x-values across series never give a zero width) and the shortest wins. The result is
+ * then capped by the effective axis label interval (explicit or Auto), so a column never spans several
+ * labels and reads as belonging to one tick (e.g. points 5 h apart on a 1 h axis get 1 h slots).
+ *
+ * @param {Axis} axis - The x-axis.
+ * @param {Series[]} visibleSeries - The visible series of the chart.
+ * @returns {number} The interval, in axis units.
+ * @private
+ */
+export function getSideBySideInterval(axis: Axis, visibleSeries: Series[]): number {
+    if (axis.valueType !== 'DateTime') {
+        return getMinPointsDelta(axis, visibleSeries);
+    }
+    const participants: Series[] = [];
+    for (const item of visibleSeries) {
+        if (item.visible && item.xAxis === axis && sideBySideTypes.indexOf(item.type) > -1) {
+            participants.push(item);
+        }
+    }
+    const dataInterval: number = getMinPointsDelta(axis, participants.length ? participants : visibleSeries);
+    // The effective (explicit or Auto) label interval caps the width so a column never spans several labels.
+    const calendarUnit: boolean = axis.actualIntervalType === 'Years' || axis.actualIntervalType === 'Months';
+    const axisInterval: number = getAxisIntervalInMs(axis, calendarUnit ? getSmallestGapStart(participants) : null);
+    return axisInterval > 0 ? Math.min(dataInterval, axisInterval) : dataInterval;
+}
 
 /**
  * Base class for column series.
@@ -43,7 +152,7 @@ export class ColumnBase {
         const seriesSpacing: number = series.chart.enableSideBySidePlacement ? series.columnSpacing : 0; // Column Spacing
         const pointSpacing: number = (series.columnWidth === null || isNaN(+series.columnWidth)) ? ((series.type === 'Histogram') ? 1 : 0.7) :
             Math.min(series.columnWidth, 1); // Column width
-        const minimumPointDelta: number = getMinPointsDelta(series.xAxis, visibleSeries);
+        const minimumPointDelta: number = getSideBySideInterval(series.xAxis, visibleSeries);
         const width: number = minimumPointDelta * pointSpacing;
         let radius: number;
         const location: number = (position) / rectCount - 0.5;

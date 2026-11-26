@@ -9,7 +9,7 @@ export { CustomProperties, CustomPropertyValue } from './core/properties/custom-
 export { DEFAULT_SECURITY_LIMITS, EncryptedPackageError, InvalidPackageError, InvalidPasswordError, PackageLimitError,
     resolveLimits, UnsupportedEncryptionError, XmlLimitError, SecurityErrorOptions, SecurityLimits } from './core/security/index';
 export { MarkupCompatibilityError, MarkupCompatibilityErrorCode } from './core/xml/index';
-export { Presentation, COMMENT_AUTHORS_CONTENT_TYPE, COMMENT_AUTHORS_REL_TYPE, COMMENTS_CONTENT_TYPE,
+export { Presentation, FormatType, getFormatTypeFromContentType, getFormatTypeFromExtension, COMMENT_AUTHORS_CONTENT_TYPE, COMMENT_AUTHORS_REL_TYPE, COMMENTS_CONTENT_TYPE,
     COMMENTS_REL_TYPE, CONTENT_TYPES_PART_NAME, DIGITAL_SIGNATURE_CONTENT_TYPE, DIGITAL_SIGNATURE_ORIGIN_CONTENT_TYPE,
     DIGITAL_SIGNATURE_ORIGIN_PART_NAME, DIGITAL_SIGNATURE_ORIGIN_REL_TYPE, DIGITAL_SIGNATURE_REL_TYPE, IMAGE_GIF_CONTENT_TYPE, IMAGE_JPEG_CONTENT_TYPE, IMAGE_PNG_CONTENT_TYPE, IMAGE_REL_TYPE, OFFICE_DOCUMENT_REL_TYPE, PACKAGE_RELS_PART_NAME, PRESENTATION_MAIN_CONTENT_TYPES, SLIDE_CONTENT_TYPE, SLIDE_LAYOUT_CONTENT_TYPE, SLIDE_LAYOUT_REL_TYPE, SLIDE_MASTER_CONTENT_TYPE, SLIDE_MASTER_REL_TYPE, SLIDE_REL_TYPE, THEME_CONTENT_TYPE, THEME_REL_TYPE, VBA_PROJECT_CONTENT_TYPE, VBA_PROJECT_REL_TYPE, DEFAULT_SLIDE_LAYOUT_TYPE, SlideLayoutType, isSlideLayoutType, AddSlideOptions, CreatePresentationOptions, HostPartRelationshipAccess, OpenPresentationInput, OpenPresentationOptions, PackagePart, PackagePartAccess, PackageRelationship, RelationshipTargetMode, SlideCollection, SlideLayoutTypeValue } from './core/package/index';
 export { DEFAULT_PICTURE_NAME, DEFAULT_PICTURE_BOUNDS, PICTURE_INSERT_CONTENT_TYPES, Picture, AddPictureOptions,
@@ -22,7 +22,7 @@ export {
     PictureResolvedRelationshipSnapshot, PictureResolvedSnapshot, PictureStretchSnapshot,
     PictureTileAlignment, PictureTileFlip, PictureTileSnapshot
 } from './worker/picture-render-snapshot';
-export { BackgroundFill, DirectSlideBackground, HyperlinkView, LayoutSlide, MasterSlide, PictureBackgroundFill, PresentationSection, Section, SectionCollection,
+export { BackgroundFill, DirectSlideBackground, DateTimeFormatType, HeaderFooter, HeadersFooters, HyperlinkView, LayoutSlide, MasterSlide, PictureBackgroundFill, PresentationSection, Section, SectionCollection,
     ResolvedSlideBackground, Slide, OFFICE_REL_ATTR_NS, PML_NS, ShapeType, ST_SLIDE_ID_MAX_EXCLUSIVE,
     ST_SLIDE_ID_MIN } from './core/presentation/index';
 export { AutoShapeType, DML_NS, DEFAULT_AUTO_SHAPE_BOUNDS, DEFAULT_TEXT_BOX_BOUNDS, DEFAULT_TEXT_BOX_NAME,

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createElement, remove, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, remove, isNullOrUndefined  } from '@syncfusion/ej2-base';
 import { View } from './type';
+import { EventSpacingValues, StackLayout, SpacingFrame } from './interface';
 
 /**
  * Schedule common utilities
@@ -60,6 +61,159 @@ export function isBufferView(viewName: View): boolean {
  */
 export function getValidBufferMinutes(value: any): number {
     return typeof value === 'number' && isFinite(value) && value >= 0 && Math.floor(value) === value ? value : 0;
+}
+
+/**
+ * Converts a raw event spacing value to a valid number of pixels.
+ * A finite number greater than or equal to 0 is returned as given, and a finite non-negative numeric string is converted.
+ * Any other value is silently treated as 0, so the layout never throws.
+ *
+ * @param {any} value The raw spacing value (gap, leadingSpace or trailingSpace).
+ * @returns {number} The valid spacing in pixels, or 0 when the value is invalid.
+ * @private
+ */
+export function sanitizeSpacing(value: any): number {
+    const result: number = typeof value === 'number' ? value : typeof value === 'string' && value.trim() !== '' ? Number(value) : NaN;
+    return isFinite(result) && result >= 0 ? result : 0;
+}
+
+/**
+ * Resolves each event spacing field on its own: the view value first, then the component value, then null (the built-in space).
+ * A set field is sanitised, so it is never negative or NaN.
+ *
+ * @param {Record<string, any>} viewSpacing The `eventSpacing` of the active view, which includes a zoom preset.
+ * @param {Record<string, any>} componentSpacing The `eventSpacing` of the component.
+ * @returns {EventSpacingValues} The resolved gap, leadingSpace and trailingSpace.
+ * @private
+ */
+export function resolveEventSpacing(
+    viewSpacing: Record<string, any>, componentSpacing: Record<string, any>
+): EventSpacingValues {
+    const resolve: (field: string) => number | null = (field: string): number | null => {
+        const raw: any = viewSpacing && !isNullOrUndefined(viewSpacing[`${field}`]) ? viewSpacing[`${field}`] :
+            componentSpacing ? componentSpacing[`${field}`] : null;
+        return isNullOrUndefined(raw) ? null : sanitizeSpacing(raw);
+    };
+    return { gap: resolve('gap'), leadingSpace: resolve('leadingSpace'), trailingSpace: resolve('trailingSpace') };
+}
+
+/**
+ * Returns the spacing when at least one of its fields is set, otherwise null, so a renderer can keep its unchanged layout path.
+ *
+ * @param {EventSpacingValues} spacing The resolved spacing of the active view, or null when the view ignores spacing.
+ * @returns {EventSpacingValues | null} The spacing, or null when no field is set.
+ * @private
+ */
+export function spacingIfSet(spacing: EventSpacingValues | null): EventSpacingValues | null {
+    return spacing && (spacing.gap !== null || spacing.leadingSpace !== null || spacing.trailingSpace !== null) ? spacing : null;
+}
+
+/**
+ * Tells whether a change to `views` only touches `eventSpacing`, so the layout can be refreshed without rebuilding the views.
+ * The change is an eventSpacing-only change when both arrays have the same length, every entry is equal once `eventSpacing` is
+ * removed, and at least one `eventSpacing` differs.
+ *
+ * @param {Object} changed The new `views` value from onPropertyChanged.
+ * @param {Object} previous The old `views` value from onPropertyChanged.
+ * @returns {boolean} True when only eventSpacing changed in at least one view.
+ * @private
+ */
+export function isEventSpacingOnlyChange(changed: unknown, previous: unknown): boolean {
+    if (!Array.isArray(changed) || !Array.isArray(previous) || changed.length === 0 || changed.length !== previous.length) {
+        return false;
+    }
+    const withoutSpacing: (view: unknown) => string = (view: unknown): string => JSON.stringify(view, (key: string, value: unknown) =>
+        key === 'eventSpacing' ? undefined : typeof value === 'function' ? 'fn:' + String(value) : value);
+    const spacingOf: (view: unknown) => string = (view: unknown): string =>
+        JSON.stringify(view && typeof view === 'object' ? (view as Record<string, unknown>).eventSpacing : undefined);
+    let spacingChanged: boolean = false;
+    for (let i: number = 0; i < changed.length; i++) {
+        if (withoutSpacing(changed[parseInt(i.toString(), 10)]) !== withoutSpacing(previous[parseInt(i.toString(), 10)])) {
+            return false;
+        }
+        spacingChanged = spacingChanged ||
+            spacingOf(changed[parseInt(i.toString(), 10)]) !== spacingOf(previous[parseInt(i.toString(), 10)]);
+    }
+    return spacingChanged;
+}
+
+/**
+ * Reduces event spacing to the last value that fits, so a value that is too large for its track never pushes events out of it.
+ * The spacing (leading space, trailing space and `gapCount` gaps) may take at most `budget` pixels. A set that fits is returned as it is.
+ * Otherwise the gap gives way first, down to the space the leading and trailing values leave. When that is not enough the gap is 0 and
+ * the larger of leading and trailing space is cut down towards the smaller one, and when the smaller one alone takes half the budget both get half.
+ * A value that is not the cause of the excess keeps its value, and a huge value ends at the same result as a larger one.
+ *
+ * @param {number} budget The pixels of the track that spacing may use. It is the track extent minus what the events need.
+ * @param {number} gapCount The number of gaps between the events that the track holds.
+ * @param {number} gap The space between two adjacent events, in pixels.
+ * @param {number} lead The space before the first event, in pixels.
+ * @param {number} trail The space after the last event, in pixels.
+ * @returns {SpacingFrame} The gap, lead and trail that fit, never negative.
+ * @private
+ */
+export function fitSpacing(budget: number, gapCount: number, gap: number, lead: number, trail: number): SpacingFrame {
+    if (budget <= 0) {
+        return { gap: 0, lead: 0, trail: 0 };
+    }
+    if (lead + trail + gapCount * gap <= budget) {
+        return { gap: gap, lead: lead, trail: trail };
+    }
+    const remaining: number = budget - lead - trail;
+    if (gapCount > 0 && remaining >= 0) {
+        return { gap: remaining / gapCount, lead: lead, trail: trail };
+    }
+    const kept: number = gapCount > 0 ? 0 : gap;
+    const low: number = Math.min(lead, trail);
+    if (low * 2 >= budget) {
+        return { gap: kept, lead: budget / 2, trail: budget / 2 };
+    }
+    return lead <= trail ? { gap: kept, lead: lead, trail: budget - lead } : { gap: kept, lead: budget - trail, trail: trail };
+}
+
+/**
+ * Computes the level layout of an event track on its block axis (all-day row, Month, Timeline and TimelineYear rows).
+ * Level i starts at lead + i * (level + gap). When every level fits (lead + n * level + (n - 1) * gap + trail is less than the area),
+ * all levels are visible and no indicator is needed. Otherwise the visible levels are the largest k for which the last visible level,
+ * one gap, the indicator and the trailing space still fit, and the indicator sits one gap after level k with the trailing space free below it.
+ *
+ * @param {number} area The extent of the track on the block axis, in pixels. It is ignored when auto is true.
+ * @param {number} levels The number of levels the track needs.
+ * @param {number} level The height of one level, in pixels.
+ * @param {number} gap The space between two adjacent levels, in pixels.
+ * @param {number} lead The space before the first level, in pixels.
+ * @param {number} trail The space after the last level or the indicator, in pixels.
+ * @param {number} indicator The height of the more indicator, in pixels.
+ * @param {boolean} auto True when the track grows to fit its levels, so every level is visible.
+ * @param {boolean} reserveIndicator True to keep the indicator slot reserved even when every level fits, as the layout does when trailing space is unset.
+ * @param {number} maxLevels A fixed number of visible levels (maxEventsPerRow). When it is set and fewer than the levels needed, exactly this many levels are visible and the indicator stays in the slot at the bottom of the row that the row height reserves.
+ * @returns {StackLayout} The top of each level, the visible level count, the top of the indicator (null when not shown) and the height that fits all levels.
+ * @private
+ */
+export function getStackLayout(
+    area: number, levels: number, level: number, gap: number, lead: number, trail: number, indicator: number, auto: boolean,
+    reserveIndicator: boolean = false, maxLevels: number = 0
+): StackLayout {
+    const top: (index: number) => number = (index: number): number => lead + index * (level + gap);
+    const slot: number = reserveIndicator ? indicator : 0;
+    const height: number = (levels > 0 ? lead + levels * level + (levels - 1) * gap + trail : lead + trail) + slot;
+    if (levels <= 0) {
+        return { top: top, visible: 0, indicatorTop: null, height: height };
+    }
+    if (maxLevels > 0 && levels > maxLevels) {
+        return { top: top, visible: maxLevels, indicatorTop: null, height: height };
+    }
+    if (auto || height < area) {
+        return { top: top, visible: levels, indicatorTop: null, height: height };
+    }
+    let visible: number = 1;
+    for (let k: number = levels - 1; k >= 1; k--) {
+        if (lead + k * level + (k - 1) * gap + gap + indicator + trail < area) {
+            visible = k;
+            break;
+        }
+    }
+    return { top: top, visible: visible, indicatorTop: top(visible), height: height };
 }
 
 /**
@@ -540,4 +694,63 @@ export function getElementHeight(element: HTMLElement, isTransformed?: boolean):
  */
 export function getElementTop(element: HTMLElement, isTransformed?: boolean): number {
     return isTransformed ? element.offsetTop : element.getBoundingClientRect().top;
+}
+
+/**
+ * Returns the number of rows that follow the given row and belong to its subtree in the same list.
+ *
+ * @param {Object[]} rows Accepts the resource rows of one region in resource order.
+ * @param {number} index Accepts the position of the parent row.
+ * @returns {number} Returns the number of descendants present in the rows.
+ * @private
+ */
+export function getDescendantCount(rows: { groupOrder?: string[] }[], index: number): number {
+    const order: string[] = rows[parseInt(index.toString(), 10)].groupOrder;
+    let count: number = 0;
+    while (order && index + count + 1 < rows.length) {
+        const next: string[] = rows[index + count + 1].groupOrder;
+        const isChild: boolean = !!next && next.length > order.length &&
+            order.every((id: string, level: number) => next[parseInt(level.toString(), 10)] === id);
+        if (!isChild) {
+            break;
+        }
+        count++;
+    }
+    return count;
+}
+
+/**
+ * Converts a time within a day cell to an inline offset in pixels. The cell spans from `cellStart` to `cellEnd`,
+ * so days that are longer or shorter because of daylight saving scale by their own length.
+ *
+ * @param {Date} time - Specifies the time to convert.
+ * @param {Date} cellStart - Specifies the start of the day cell.
+ * @param {Date} cellEnd - Specifies the end of the day cell.
+ * @param {number} cellSize - Specifies the inline size of the cell in pixels.
+ * @param {boolean} isRtl - Specifies whether the offset is measured from the right edge.
+ * @returns {number} Returns the offset in pixels, measured from the inline start edge.
+ * @private
+ */
+export function timeToOffset(time: Date, cellStart: Date, cellEnd: Date, cellSize: number, isRtl?: boolean): number {
+    const span: number = cellEnd.getTime() - cellStart.getTime();
+    const ratio: number = Math.min(Math.max((time.getTime() - cellStart.getTime()) / span, 0), 1);
+    const offset: number = ratio * cellSize;
+    return isRtl ? cellSize - offset : offset;
+}
+
+/**
+ * Converts an inline offset in pixels within a day cell to a time. It is the inverse of `timeToOffset`.
+ *
+ * @param {number} offset - Specifies the offset in pixels from the inline start edge.
+ * @param {Date} cellStart - Specifies the start of the day cell.
+ * @param {Date} cellEnd - Specifies the end of the day cell.
+ * @param {number} cellSize - Specifies the inline size of the cell in pixels.
+ * @param {boolean} isRtl - Specifies whether the offset is measured from the right edge.
+ * @returns {Date} Returns the time at the offset.
+ * @private
+ */
+export function offsetToTime(offset: number, cellStart: Date, cellEnd: Date, cellSize: number, isRtl?: boolean): Date {
+    const clamped: number = Math.min(Math.max(offset, 0), cellSize);
+    const ratio: number = (isRtl ? cellSize - clamped : clamped) / cellSize;
+    return new Date(cellStart.getTime() + Math.round(ratio * (cellEnd.getTime() - cellStart.getTime())));
 }

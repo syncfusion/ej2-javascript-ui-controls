@@ -1,4 +1,6 @@
-import { Property, ChildProperty } from '@syncfusion/ej2-base';
+import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';
+import { FixedRowsSettings } from './fixed-rows-settings';
+import { FixedRowsSettingsModel } from './fixed-rows-settings-model';
 
 /**
  * A class that holds the resource grouping related configurations on Schedule.
@@ -71,5 +73,13 @@ export class Group extends ChildProperty<Group> {
      */
     @Property(false)
     public hideNonWorkingDays: boolean;
+
+    /**
+     * Configures the fixed rows of the timeline views. It requires the `FixedRows` module to be injected.
+     *
+     * @default { enable: false, showSeparator: true }
+     */
+    @Complex<FixedRowsSettingsModel>({}, FixedRowsSettings)
+    public fixedRows: FixedRowsSettingsModel;
 
 }

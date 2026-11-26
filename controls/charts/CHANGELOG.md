@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 35.2.13 (2026-11-24)
+## 35.2.14 (2026-11-26)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I891299` - Rotated category axis labels are no longer clipped when the value axis is inverted. A tooltip now shows the full text of truncated category axis labels on hover.
+- `#I1064955` - Column and bar series on a DateTime axis are now sized from visible column and bar series only and capped by the axis interval, so columns no longer become too thin or span several labels.
+
+## 35.2.12 (2026-11-18)
 
 ### Chart
 

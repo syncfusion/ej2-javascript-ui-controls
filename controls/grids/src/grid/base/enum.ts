@@ -1031,3 +1031,18 @@ export type ActiveName =
 export type FormulaCalculationMode =
     'Automatic' |
     'Manual';
+
+/**
+ * Defines the dock edge of the side bar tool panel.
+ */
+export type ToolPanelPosition = 'Left' | 'Right';
+
+/**
+ * Defines how the side bar tool panel is displayed. `Push` shrinks the Grid, `Over` overlays it.
+ */
+export type ToolPanelDisplayType = 'Push' | 'Over';
+
+/**
+ * Defines the type of a tool panel.
+ */
+export type ToolPanelType = 'Columns' | 'Filters' | 'Edit' | 'Custom';

@@ -731,6 +731,13 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             previousItem: '(previous)',
             nextItem: '(next)',
             crossGroupComparison: 'Compare across groups',
+            runningTotalDirection: 'Running total direction',
+            runningTotalRow: 'Rows',
+            runningTotalColumn: 'Columns',
+            runningTotalRowCaption: 'Running Totals of Row of {0}',
+            runningTotalColumnCaption: 'Running Totals of Column of {0}',
+            runningTotalRowPercentCaption: '% of Running Totals of Row of {0}',
+            runningTotalColumnPercentCaption: '% of Running Totals of Column of {0}',
             adjacentNotApplicable: 'N/A',
             adjacentPreviousCaption: 'Difference from previous {0} of {1}',
             adjacentNextCaption: 'Difference from next {0} of {1}',
@@ -858,7 +865,15 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             } else {
                 const request: Fetch = new Fetch(this.dataSourceSettings.url, 'GET');
                 request.send().then((response: Response) => typeof (response) === 'string' ? response : response.text())
-                    .then(this.onReadyStateChange.bind(this));
+                    .then(this.onReadyStateChange.bind(this))
+                    .catch((error: Error | Response) => {
+                        const status: number = typeof (error as Response).status === 'number' ?
+                            (error as Response).status : 0;
+                        const message: string = status ?
+                            'Unable to load CSV URL "' + this.dataSourceSettings.url + '" (HTTP ' + status + ').' :
+                            'Unable to load CSV URL "' + this.dataSourceSettings.url + '".';
+                        this.actionFailureMethod(new Error(message));
+                    });
             }
         } else {
             this.initialLoad();

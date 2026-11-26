@@ -234,6 +234,8 @@ export interface ITaskSegment {
     width?: number;
     /** Defines the width representing progress within the segment. */
     progressWidth?: number;
+    /** Represents the progress value of the segment. */
+    progress?: number;
     /** Specifies the left position of the segment in the Gantt chart timeline. */
     left?: number;
     /** Indicates the index of the segment within the task. */
@@ -591,6 +593,8 @@ export interface BeforeTooltipRenderEventArgs {
     content?: string | Element | Function;
     /** Determines whether the tooltip rendering should be canceled. */
     cancel?: boolean;
+    /** Indicates the index of the segment that triggered the tooltip. */
+    segmentIndex?: number;
 }
 
 export interface QueryCellInfoEventArgs {
@@ -614,6 +618,12 @@ export interface QueryCellInfoEventArgs {
  * Extends IGanttData and PredecessorTooltip to provide data for the BeforeTooltipRenderEventArgs interface.
  */
 export interface BeforeTooltipRenderEventArgsData extends IGanttData, PredecessorTooltip {
+    /**
+     * Specifies the hovered segment when the tooltip target is a split-task segment bar.
+     * Populated only when the user hovers over an individual segment of a split task.
+     * Use this in a `tooltipSettings.taskbar` template to display per-segment dates.
+     */
+    segment?: ITaskSegment;
 }
 
 export interface IDependencyEventArgs {

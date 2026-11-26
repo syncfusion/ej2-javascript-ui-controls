@@ -21,9 +21,9 @@ import { PdfExportProperties, ISplitterResizedEventArgs } from './interface';
 import { ZoomEventArgs, IActionBeginEventArgs, CellSelectingEventArgs, RowDeselectEventArgs, PdfQueryCellInfoEventArgs } from './interface';
 import { ITimeSpanEventArgs, ZoomTimelineSettings, QueryCellInfoEventArgs, RowDataBoundEventArgs, RowSelectEventArgs } from './interface';
 import { TaskFieldsModel, TimelineSettingsModel, SplitterSettingsModel, SortSettings, SortSettingsModel, CalendarSettingsModel, CalendarSettings, CalendarExceptionModel, GanttWebMcpSettings } from '../models/models';
-import { EventMarkerModel, AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, EditSettingsModel } from '../models/models';
+import { EventMarkerModel, ProgressLineSettingsModel, AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, EditSettingsModel } from '../models/models';
 import { HolidayModel, DayWorkingTimeModel, FilterSettingsModel, SelectionSettingsModel, LoadingIndicatorModel, LoadingIndicator } from '../models/models';
-import { TaskFields, TimelineSettings, Holiday, EventMarker, DayWorkingTime, EditSettings, SelectionSettings } from '../models/models';
+import { TaskFields, TimelineSettings, Holiday, EventMarker, ProgressLineSettings, DayWorkingTime, EditSettings, SelectionSettings } from '../models/models';
 import { GanttWebMcpSettingsModel } from '../models/models';
 import { FilterSettings, SplitterSettings, TooltipSettings, LabelSettings, LabelSettingsModel } from '../models/models';
 import { SearchSettingsModel, SearchSettings, ResourceFields, ResourceFieldsModel } from '../models/models';
@@ -52,11 +52,15 @@ import { Splitter } from './splitter';
 import { ResizeEventArgs, ResizingEventArgs } from '@syncfusion/ej2-layouts';
 import { TooltipSettingsModel } from '../models/tooltip-settings-model';
 import { Tooltip } from '../renderer/tooltip';
+import { SCurveSettings } from '../models/scurve-settings';
+import { SCurveSettingsModel } from '../models/scurve-settings-model';
+import { SCurve } from '../renderer/scurve';
 import { ToolbarItem, ColumnMenuItem, RowPosition, DurationUnit, SortDirection, GanttAction, ViolationType, DependencyType } from './enum';
 import { GridLine, ContextMenuItem, ScheduleMode, ViewType } from './enum';
 import { Selection } from '../actions/selection';
 import { ExcelExport } from '../actions/excel-export';
 import { DayMarkers } from '../actions/day-markers';
+import { ProgressLine } from '../actions/progress-line';
 import { ContextMenu } from './../actions/context-menu';
 import { RowSelectingEventArgs } from './interface';
 import { ContextMenuOpenEventArgs as CMenuOpenEventArgs, ContextMenuClickEventArgs as CMenuClickEventArgs, CalendarExceptionResult  } from './interface';
@@ -420,6 +424,14 @@ export class Gantt extends Component<HTMLElement>
      * It allows customization of how markers are displayed on specific days, helping to highlight important dates or milestones.
      */
     public dayMarkersModule: DayMarkers;
+    /**
+     * The `progressLineModule` renders the progress line that relates task progress to the configured status date.
+     */
+    public progressLineModule: ProgressLine;
+    /**
+     * The `sCurveModule` renders and updates the Timeline S-Curve overlay.
+     */
+    public sCurveModule: SCurve;
     /**
      * The `criticalPathModule` is used to determine the critical path in the Gantt chart.
      * It identifies the sequence of tasks that directly affect the project's duration and highlights them.
@@ -1213,6 +1225,15 @@ export class Gantt extends Component<HTMLElement>
     @Collection<EventMarkerModel>([], EventMarker)
     public eventMarkers: EventMarkerModel[];
     /**
+     * Configures the progress line settings of the Gantt chart.
+     * The progress line indicates task progress against a specified status date.
+     * It is displayed only when a valid `statusDate` is provided and the `ProgressLine` module is injected.
+     *
+     * @default {}
+     */
+    @Complex<ProgressLineSettingsModel>({}, ProgressLineSettings)
+    public progressLine: ProgressLineSettingsModel;
+    /**
      * Defines the mapping properties used to extract task-related values—such as ID, start date, end date, duration, and progress—from the data source.
      * This ensures that the Gantt chart correctly maps the provided data to the corresponding task fields and renders them accurately.
      * {% codeBlock src='gantt/taskFields/index.md' %}{% endcodeBlock %}
@@ -1283,6 +1304,16 @@ export class Gantt extends Component<HTMLElement>
      */
     @Complex<TooltipSettingsModel>({}, TooltipSettings)
     public tooltipSettings: TooltipSettingsModel;
+    /**
+     * Configures the S-Curve settings of the Gantt chart.
+     * The S-Curve displays cumulative project progress and duration over time.
+     * It helps monitor project progress and identify deviations from the planned schedule.
+     * Requires the SCurve module to be injected.
+     *
+     * @default { visible: false, dataSet: [] }
+     */
+    @Complex<SCurveSettingsModel>({}, SCurveSettings)
+    public sCurveSettings: SCurveSettingsModel;
     /**
      * Configures the settings for selection in the Gantt chart.
      * {% codeBlock src='gantt/selectionSettings/index.md' %}{% endcodeBlock %}
@@ -2783,12 +2814,15 @@ export class Gantt extends Component<HTMLElement>
         checkModule('domVirtualization', this.enableDomVirtualization, this.injectedModules, failureCases);
         let freeze: boolean;
         const hasFreezeProp: boolean = Array.isArray(this.columns) &&
-        (this.columns as ColumnModel[]).some((col: ColumnModel) => !!col.freeze);
+        this.columnHasFreeze(this.columns as ColumnModel[]);
         if (this.frozenColumns || hasFreezeProp || this.getFrozenColumnsCount()) {
             freeze = true;
         }
         checkModule('freeze', freeze, this.injectedModules, failureCases);
         checkModule('webMcpGantt', this.enableWebMcp, this.injectedModules, failureCases);
+        const sCurveConfig: SCurveSettingsModel = this.sCurveSettings;
+        const sCurve: boolean = !!sCurveConfig && sCurveConfig.visible && !!sCurveConfig.dataSet && sCurveConfig.dataSet.length > 0;
+        checkModule('sCurve', sCurve, this.injectedModules, failureCases);
         if (failureCases.length > 0) {
             /* eslint-disable-next-line */
             const failureEventArgs: any = {
@@ -3455,6 +3489,9 @@ export class Gantt extends Component<HTMLElement>
         if (this.dayMarkersModule && this.dayMarkersModule['eventMarkerRender']) {
             this.dayMarkersModule['eventMarkerRender'].updateContainerHeight();
         }
+        if (this.sCurveModule) {
+            this.sCurveModule.updateCoordinates();
+        }
         if (this.enableTimelineVirtualization) {
             this.timelineModule.refreshTimeline();
         }
@@ -3937,22 +3974,39 @@ export class Gantt extends Component<HTMLElement>
             temp = this.columns[this.treeColumnIndex]['template'];
             // field = this.columns[this.treeColumnIndex]['field'];
         }
-        let gridColumn: ColumnModel;
         for (let i: number = 0; i < gridColumns.length; i++) {
-            gridColumn = {};
+            const gridColumn: ColumnModel = {};
+            let topIndex: number = -1;
             for (let j: number = 0; j < this.columns.length; j++) {
-                if (this.columns[j as number]['field'] === gridColumns[i as number].field) {
-                    for (const prop of Object.keys(this.columns[j as number])) {
-                        if (!isUndefined(this.columns[j as number][prop as string])) {
-                            gridColumn[prop as string] = gridColumns[i as number][prop as string];
-                        }
-                        gridColumn.visible = gridColumns[i as number].visible;
-                        gridColumn.width = gridColumns[i as number].width;
-                    }
-                    this.columns[j as number] = (gridColumn);
-                    if (this.columns[j as number]['type'] !== 'checkbox' && (!isNullOrUndefined(temp) && temp !== '')) {
-                        this.columns[j as number]['template'] = temp;
-                    }
+                if ((this.columns[j as number] as ColumnModel).field === gridColumns[i as number].field) {
+                    topIndex = j;
+                    break;
+                }
+            }
+            const source: ColumnModel = topIndex > -1
+                ? this.columns[topIndex as number] as ColumnModel
+                : this.findColumnByField(this.columns as ColumnModel[], gridColumns[i as number].field);
+            if (!source) {
+                continue;
+            }
+            for (const prop of Object.keys(source)) {
+                if (!isUndefined(source[prop as string])) {
+                    gridColumn[prop as string] = gridColumns[i as number][prop as string];
+                }
+                gridColumn.visible = gridColumns[i as number].visible;
+                gridColumn.width = gridColumns[i as number].width;
+            }
+            if (topIndex > -1) {
+                this.columns[topIndex as number] = gridColumn;
+                if (this.columns[topIndex as number]['type'] !== 'checkbox' && (!isNullOrUndefined(temp) && temp !== '')) {
+                    this.columns[topIndex as number]['template'] = temp;
+                }
+            } else {
+                for (const prop of Object.keys(gridColumn)) {
+                    source[prop as string] = gridColumn[prop as string];
+                }
+                if (source['type'] !== 'checkbox' && (!isNullOrUndefined(temp) && temp !== '')) {
+                    source['template'] = temp;
                 }
             }
         }
@@ -3992,6 +4046,7 @@ export class Gantt extends Component<HTMLElement>
         gridContent.classList.add('e-yscroll');
         const treeGridrole: HTMLElement = this.element.getElementsByClassName('e-gridcontent')[0].childNodes[0].childNodes[0] as HTMLElement;
         treeGridrole.setAttribute('role', 'treegrid');
+        this.timelineModule.syncTimelineHeaderHeight();
         const timelineContainer: number = this.element.getElementsByClassName('e-timeline-header-container')[0]['offsetHeight'];
         // gridHeight = 'calc(100% - ' + timelineContainer + 'px)';
         // this.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
@@ -4001,14 +4056,7 @@ export class Gantt extends Component<HTMLElement>
         if (this.filterSettings && this.filterSettings['properties'] && this.filterSettings['properties'].columns) {
             this.filterSettings['properties'].columns.forEach((column: any) => {  // Arrow function to preserve `this`
                 const searchString: string = column.properties.field;
-                let matchedObject: any = null;
-                for (let i: number = 0; i < this.treeGrid.columns.length; i++) {
-                    const treeColumn: any = this.treeGrid.columns[i as number];
-                    if (treeColumn['field'] === searchString) {
-                        matchedObject = treeColumn;
-                        break;
-                    }
-                }
+                const matchedObject: any = this.findColumnByField(this.treeGrid.columns as any[], searchString);
                 if (matchedObject && column.properties.uid !== matchedObject['uid']) {
                     column.properties.uid = matchedObject['uid'];
                 }
@@ -4105,6 +4153,9 @@ export class Gantt extends Component<HTMLElement>
         }
         if (this.undoRedoModule && this.undoRedoModule['isUndoRedoPerformed']) {
             this.undoRedoModule['isUndoRedoPerformed'] = false;
+        }
+        if (this.sCurveModule) {
+            this.sCurveModule.refreshSCurve();
         }
         this.trigger('dataBound', args);
     }
@@ -4268,6 +4319,18 @@ export class Gantt extends Component<HTMLElement>
             case 'eventMarkers':
             case 'highlightWeekends':
                 this.notify('ui-update', { module: 'day-markers', properties: newProp });
+                break;
+            case 'progressLine':
+                if (this.progressLineModule) {
+                    this.notify('refreshProgressLine', {});
+                } else if (this.progressLine && this.progressLine.statusDate) {
+                    this.refresh();
+                }
+                break;
+            case 'sCurveSettings':
+                if (this.sCurveModule) {
+                    this.sCurveModule.refreshSCurve();
+                }
                 break;
             case 'sortSettings':
                 this.treeGrid.sortSettings = getActualProperties(this.sortSettings);
@@ -4655,6 +4718,9 @@ export class Gantt extends Component<HTMLElement>
     private ignoreInArrays(ignoreOnColumn: string[], columns: Column[]): void {
         for (let i: number = 0; i < columns.length; i++) {
             this.ignoreInColumn(ignoreOnColumn, columns[i as number]);
+            if (!isNullOrUndefined(columns[i as number].columns) && columns[i as number].columns.length > 0) {
+                this.ignoreInArrays(ignoreOnColumn, columns[i as number].columns as Column[]);
+            }
         }
     }
 
@@ -4847,6 +4913,19 @@ export class Gantt extends Component<HTMLElement>
                 args: [this]
             });
         }
+        if (this.progressLine && this.progressLine.statusDate) {
+            modules.push({
+                member: 'progressLine',
+                args: [this]
+            });
+        }
+        const sCurveOptions: SCurveSettingsModel = this.sCurveSettings;
+        if (!!sCurveOptions && sCurveOptions.visible && !!sCurveOptions.dataSet && sCurveOptions.dataSet.length > 0) {
+            modules.push({
+                member: 'sCurve',
+                args: [this]
+            });
+        }
         if (this.enableContextMenu) {
             modules.push({
                 member: 'contextMenu',
@@ -4878,7 +4957,7 @@ export class Gantt extends Component<HTMLElement>
             });
         }
         const hasFreezeProp: boolean = Array.isArray(this.columns) &&
-        (this.columns as ColumnModel[]).some((col: ColumnModel) => !!col.freeze);
+        this.columnHasFreeze(this.columns as ColumnModel[]);
         if (this.frozenColumns || hasFreezeProp || this.getFrozenColumnsCount()) {
             modules.push({
                 member: 'freeze',
@@ -4921,10 +5000,43 @@ export class Gantt extends Component<HTMLElement>
         const persist4: string = 'splitFrozenCount';
         this.treeGrid.grid[`${persist4}`].apply(this, [columns]);
     }
+    public findColumnByField(columns: ColumnModel[], field: string): ColumnModel {
+        if (!columns || isNullOrUndefined(field)) {
+            return null;
+        }
+        for (let i: number = 0; i < columns.length; i++) {
+            const column: ColumnModel = columns[i as number];
+            if (column.field === field) {
+                return column;
+            }
+            if (column.columns && column.columns.length > 0) {
+                const nested: ColumnModel = this.findColumnByField(column.columns as ColumnModel[], field);
+                if (nested) {
+                    return nested;
+                }
+            }
+        }
+        return null;
+    }
+    private columnHasFreeze(columns: ColumnModel[]): boolean {
+        if (!columns) {
+            return false;
+        }
+        for (let i: number = 0; i < columns.length; i++) {
+            const col: ColumnModel = columns[i as number];
+            if (col.freeze) {
+                return true;
+            }
+            if (col.columns && col.columns.length > 0 && this.columnHasFreeze(col.columns as ColumnModel[])) {
+                return true;
+            }
+        }
+        return false;
+    }
     private isFrozenGrid(): boolean {
         let isFreeze: boolean;
         const hasFreezeProp: boolean = Array.isArray(this.columns) &&
-        (this.columns as ColumnModel[]).some((col: ColumnModel) => !!col.freeze);
+        this.columnHasFreeze(this.columns as ColumnModel[]);
         if (this.frozenColumns || hasFreezeProp || this.getFrozenColumnsCount()) {
             isFreeze = true;
         }
@@ -5136,6 +5248,9 @@ export class Gantt extends Component<HTMLElement>
             advancedTab: 'Advanced',
             duration: 'Duration',
             progress: 'Progress',
+            sCurve: 'S-Curve',
+            sCurveDate: 'Date',
+            sCurveValue: 'Value',
             dependency: 'Dependency',
             notes: 'Notes',
             criticalPath: 'Critical Path',

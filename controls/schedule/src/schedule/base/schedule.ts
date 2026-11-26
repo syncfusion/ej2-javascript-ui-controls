@@ -32,16 +32,24 @@ import { TimelineMonth } from '../renderer/timeline-month';
 import { TimelineYear } from '../renderer/timeline-year';
 import { WorkHours } from '../models/work-hours';
 import { CurrentTimeIndicatorSettings } from '../models/current-time-indicator-settings';
+import { EventSpacing } from '../models/event-spacing';
 import { TimeScale } from '../models/time-scale';
 import { QuickInfoTemplates } from '../models/quick-info-templates';
 import { HeaderRows } from '../models/header-rows';
 import { Crud } from '../actions/crud';
 import { Resize } from '../actions/resize';
+import { FixedRows } from '../actions/fixed-rows';
 import { DragAndDrop } from '../actions/drag';
 import { VirtualScroll } from '../actions/virtual-scroll';
 import { WorkCellInteraction } from '../actions/work-cells';
-import { WorkHoursModel, ViewsModel, EventSettingsModel, GroupModel, ResourcesModel, TimeScaleModel, ToolbarItemModel, CurrentTimeIndicatorSettingsModel } from '../models/models';
-import { QuickInfoTemplatesModel, HeaderRowsModel, SchedulerWebMcpSettingsModel } from '../models/models';
+import { TimelineZoom } from '../actions/timeline-zoom';
+import { WorkHoursModel, ViewsModel, EventSettingsModel, GroupModel, ResourcesModel, TimeScaleModel, ToolbarItemModel, CurrentTimeIndicatorSettingsModel, EventSpacingModel } from '../models/models';
+import { QuickInfoTemplatesModel, HeaderRowsModel, SchedulerWebMcpSettingsModel, SummaryRowModel, SummaryColumnModel, GroupSummaryModel } from '../models/models';
+import { SummaryRow } from '../models/summary-row';
+import { SummaryColumn } from '../models/summary-column';
+import { GroupSummary } from '../models/group-summary';
+import { GroupSummaryModule } from '../summary/group-summary';
+import { Summary } from '../summary/summary';
 import { EventSettings } from '../models/event-settings';
 import { Group } from '../models/group';
 import { Resources } from '../models/resources';
@@ -50,8 +58,8 @@ import { ICalendarExport } from '../exports/calendar-export';
 import { ICalendarImport } from '../exports/calendar-import';
 import { ExcelExport } from '../exports/excel-export';
 import { Print } from '../exports/print';
-import { IRenderer, ActionEventArgs, NavigatingEventArgs, CellClickEventArgs, RenderCellEventArgs, ScrollCss, TimezoneFields, ExcelExportEventArgs, BeforePasteEventArgs, TooltipOpenEventArgs } from '../base/interface';
-import { EventClickArgs, EventRenderedArgs, PopupOpenEventArgs, UIStateArgs, DragEventArgs, ResizeEventArgs } from '../base/interface';
+import { IRenderer, ActionEventArgs, NavigatingEventArgs, CellClickEventArgs, RenderCellEventArgs, RenderSummaryCellEventArgs, SummaryCellClickEventArgs, ScrollCss, TimezoneFields, ExcelExportEventArgs, BeforePasteEventArgs, TooltipOpenEventArgs, ZoomLevel } from '../base/interface';
+import { EventClickArgs, EventRenderedArgs, PopupOpenEventArgs, UIStateArgs, DragEventArgs, ResizeEventArgs, EventSpacingValues } from '../base/interface';
 import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges, StateArgs, ExportOptions, SelectEventArgs } from '../base/interface';
 import { ViewsData, PopupCloseEventArgs, HoverEventArgs, MoreEventsClickArgs, ScrollEventArgs, CallbackFunction, BeforePrintEventArgs } from '../base/interface';
 import { CalendarUtil, Gregorian, Islamic, CalendarType } from '../../common/calendar-util';
@@ -135,10 +143,20 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public timelineMonthModule: TimelineMonth;
     public timelineYearModule: TimelineYear;
     public resizeModule: Resize;
+    public fixedRowsModule: FixedRows;
+    /** @private */
+    public summaryModule: Summary;
+    /** @private */
+    public get groupSummaryModule(): GroupSummaryModule {
+        return this.summaryModule ? this.summaryModule.groupModule : null;
+    }
+    /** @private */
+    public isFixedRowsWarned: boolean = false;
     public dragAndDropModule: DragAndDrop;
     public excelExportModule: ExcelExport;
     public printModule: Print;
     public webMcpSchedulerModule: WebMcpScheduler;
+    public timelineZoomModule: TimelineZoom;
     public viewOptions: { [key: string]: ViewsData[] };
     public viewCollections: ViewsData[];
     public viewIndex: number;
@@ -160,9 +178,25 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public scrollTop: number;
     public scrollLeft: number;
     public isPrinting: boolean;
+    /** @private */
+    public printSource: Schedule;
     public registeredTemplate: Object;
     public adaptiveGroupIndex: number = 0;
     public activeEventTemplates: string[];
+
+    /**
+     * Resolved active zoom preset, or `null` when Timeline Zoom is
+     * disabled.
+     */
+    public activeZoomPreset: ZoomLevel | null;
+
+    /**
+     * Re-entrancy guard for Zoom preset transitions. Set while
+     * `applyZoomPreset` performs a non-recursive `setProperties` write
+     * so the resulting `onPropertyChanged` does not re-enter the
+     * transition path.
+     */
+    public isApplyingZoom: boolean = false;
 
     // Schedule Options
     /**
@@ -228,6 +262,23 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Complex<CurrentTimeIndicatorSettingsModel>({}, CurrentTimeIndicatorSettings)
     public currentTimeIndicatorSettings: CurrentTimeIndicatorSettingsModel;
+
+    /**
+     * Specifies the space between events, and the space reserved before and after the events of a track, in pixels.
+     * The values apply along the stacking axis of every track: the columns of the Day, Week and WorkWeek views, and the levels of the all-day row,
+     * Month and Timeline views. Spacing never moves an event on the time axis.
+     *
+     * - `gap` - the space between two adjacent events. It is never added before the first or after the last event.
+     * - `leadingSpace` - the space reserved before the first column or level.
+     * - `trailingSpace` - the space reserved after the last column or level. It stays free when the track is full.
+     *
+     * A field that is `null` uses the built-in space of the view. Each field can be overridden for a single view through `views[i].eventSpacing`.
+     * The space belongs to the cell beneath it, so a click, tap or drop in it acts on the cell. The Agenda, Year and MonthAgenda views ignore it.
+     *
+     * @default { gap: null, leadingSpace: null, trailingSpace: null }
+     */
+    @Complex<EventSpacingModel>({}, EventSpacing)
+    public eventSpacing: EventSpacingModel;
 
     /**
      * Defines whether to enable date navigations via swipe in touch devices or not.
@@ -329,6 +380,20 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public currentView: View;
 
     /**
+     * Key of the currently selected zoom preset from `zoomLevels`.
+     *
+     * Timeline Zoom is enabled when `zoomLevels` is non-empty. When the
+     * consumer does not supply `zoomLevel`, the first valid preset is
+     * selected silently during `preRender`. An explicit non-null value
+     * that does not match any preset key is treated as invalid and the
+     * first valid preset is used instead, with a non-fatal warning.
+     *
+     * @default null
+     */
+    @Property(null)
+    public zoomLevel: string | null;
+
+    /**
      * Returns the WebMCP tool schemas for the given tool names.
      * When `toolNames` is omitted, schemas for all available tools are returned.
      *
@@ -356,6 +421,21 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(['Day', 'Week', 'WorkWeek', 'Month', 'Agenda'])
     public views: View[] | ViewsModel[];
+
+    /**
+     * Ordered list of Timeline zoom presets that drive the Timeline
+     * Zoom feature.
+     *
+     * Each preset inherits the `ViewsModel` shape and adds a stable
+     * `key` identifier. `zoomLevels[0]` is the broadest preset and
+     * `zoomLevels[zoomLevels.length - 1]` is the finest — the ordering
+     * rule is significant for `Ctrl + Mouse Wheel` and pinch
+     * interactions. The default value `[]` disables Timeline Zoom.
+     *
+     * @default []
+     */
+    @Property([])
+    public zoomLevels: ZoomLevel[];
 
     /**
      * To mark the active (current) date on the Schedule, `selectedDate` property can be defined.
@@ -842,6 +922,36 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public quickInfoTemplates: QuickInfoTemplatesModel;
 
     /**
+     * Allows to render a summary row at the bottom of the content area, with one cell per time unit.
+     * The Scheduler decides the placement, the time range and the resources of each cell, and the application decides the value
+     * in the `renderSummaryCell` event or in the templates. It is applicable to the timeline views.
+     *
+     * @default { enable: false, template: null, cellUnit: null, labelTemplate: null, totalTemplate: null }
+     */
+    @Complex<SummaryRowModel>({}, SummaryRow)
+    public summaryRow: SummaryRowModel;
+
+    /**
+     * Allows to render a summary column at the trailing edge of the content, with one cell per resource row.
+     * The Scheduler decides the placement, the time range and the resources of each cell, and the application decides the value
+     * in the `renderSummaryCell` event or in the templates. It is applicable to the timeline views.
+     *
+     * @default { enable: false, template: null, cellUnit: 'Slot', labelTemplate: null }
+     */
+    @Complex<SummaryColumnModel>({}, SummaryColumn)
+    public summaryColumn: SummaryColumnModel;
+
+    /**
+     * Allows to turn the parent resource row of one level into the summary of its group, with one cell per time unit.
+     * The cells are customized in the `renderSummaryCell` event or in the template. It is applicable to the timeline views
+     * that are grouped by two or more levels of resources.
+     *
+     * @default {}
+     */
+    @Complex<GroupSummaryModel>({}, GroupSummary)
+    public groupSummary: GroupSummaryModel;
+
+    /**
      * Sets the number of days to be displayed by default in Agenda View and in case of virtual scrolling,
      * the number of days will be fetched on each scroll-end based on this count.
      *
@@ -1133,6 +1243,23 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Event()
     public renderCell: EmitType<RenderCellEventArgs>;
+
+    /**
+     * Triggers for each summary row cell, summary column cell, label cell and grand total cell, first when the layout is rendered
+     * and again after the events are rendered or refreshed.
+     *
+     * @event 'renderSummaryCell'
+     */
+    @Event()
+    public renderSummaryCell: EmitType<RenderSummaryCellEventArgs>;
+
+    /**
+     * Triggers when a summary cell or label is clicked, tapped or activated with the Enter key.
+     *
+     * @event 'summaryCellClick'
+     */
+    @Event()
+    public summaryCellClick: EmitType<SummaryCellClickEventArgs>;
 
     /**
      * Triggers when the events are single clicked or on single tapping the events on the mobile devices.
@@ -1551,7 +1678,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private setViewOptions(isModuleLoad: boolean = false): void {
-        if (isNullOrUndefined(this.views) || this.views.length === 0) {
+        const hasViews: boolean = !isNullOrUndefined(this.views) && this.views.length > 0;
+        const hasZoomLevels: boolean = !isNullOrUndefined(this.zoomLevels) && this.zoomLevels.length > 0;
+        if (!hasViews && !hasZoomLevels) {
             return;
         }
         this.viewOptions = {};
@@ -1561,7 +1690,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         const prevIndex: number = this.viewIndex;
         let count: number = 0;
         this.viewIndex = -1;
-        for (const view of this.views) {
+        const viewList: (View | ViewsModel)[] = this.views || [];
+        for (const view of viewList) {
             const isOptions: boolean = (typeof view === 'string') ? false : true;
             if (typeof view === 'string') {
                 viewName = view;
@@ -1601,12 +1731,15 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             }
             count++;
         }
+        if (this.zoomLevels && this.zoomLevels.length > 0 && this.timelineZoomModule) {
+            this.timelineZoomModule.appendZoomPresets();
+        }
         if (!isModuleLoad && selectedView) {
             this.setProperties({ currentView: selectedView }, true);
         }
         if (this.viewIndex === -1) {
             const currentIndex: number = this.getViewIndex(this.currentView);
-            this.viewIndex = ((typeof this.views[0] !== 'string') && (!isNullOrUndefined(prevIndex) && prevIndex !== -1)) ? prevIndex :
+            this.viewIndex = ((typeof viewList[0] !== 'string') && (!isNullOrUndefined(prevIndex) && prevIndex !== -1)) ? prevIndex :
                 (currentIndex === -1) ? 0 : currentIndex;
         }
     }
@@ -1623,6 +1756,100 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 const ds: any = res && (res.dataSource as any);
                 return Array.isArray(ds) ? ds.length === 0 : !ds;
             });
+    }
+
+    /**
+     * Resolves the index in `viewCollections` for the given view option, falling back to the
+     * active zoom preset's view when the option itself is not registered.
+     *
+     * @param {string} option The view option name to look up.
+     * @returns {number} The matching view index, or `-1` when none is found.
+     * @private
+     */
+    public resolveViewIndexForOption(option: string): number {
+        const idx: number = this.getViewIndex(option as View);
+        if (idx !== -1) {
+            return idx;
+        }
+        if (this.activeZoomPreset) {
+            const activeIdx: number = this.getViewIndex(this.activeZoomPreset.option as View);
+            if (activeIdx !== -1) {
+                return activeIdx;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Returns `true` when the Scheduler is currently in the middle of a
+     * user interaction that should not be torn down by a zoom
+     * transition.
+     *
+     * @returns {boolean} `true` when any active interaction is detected.
+     * @private
+     */
+    public isInteractionInProgress(): boolean {
+        if (this.dragAndDropModule &&
+            (this.dragAndDropModule as any).actionObj &&
+            (this.dragAndDropModule as any).actionObj.action === 'drag') {
+            return true;
+        }
+        if (this.resizeModule &&
+            (this.resizeModule as any).actionObj &&
+            (this.resizeModule as any).actionObj.action === 'resize') {
+            return true;
+        }
+        if (this.crudModule && (this.crudModule as any).crudObj &&
+            (this.crudModule as any).crudObj.isCrudAction === true) {
+            return true;
+        }
+        if (this.inlineModule && (this.inlineModule as any).inlineInputEle) {
+            return true;
+        }
+        if (this.element && this.element.querySelector &&
+            this.element.querySelector('.e-popup-open')) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Returns the slot interval (in minutes) of the active view, or
+     * `null` when the active view has no time-level precision
+     * (`TimelineMonth` with `timeScale.enable === false`).
+     *
+     * @returns {number | null} The slot interval in minutes, or `null`
+     *      when timeScale is disabled.
+     * @private
+     */
+    public getEffectiveSlotMinutes(): number | null {
+        const av: ViewsData = this.activeViewOptions;
+        if (!av || !av.timeScale || !av.timeScale.enable) {
+            return null;
+        }
+        return (av.timeScale.interval || 60) / Math.max(1, av.timeScale.slotCount || 1);
+    }
+
+    private getSummaryOptions<T extends SummaryRowModel | SummaryColumnModel | GroupSummaryModel>(options: T): T {
+        const result: Record<string, any> = {};
+        const source: Record<string, any> = (options as Record<string, any>).properties || options;
+        for (const key of Object.keys(source)) {
+            result[`${key}`] = (options as Record<string, any>)[`${key}`];
+        }
+        return result as T;
+    }
+
+    private isSummaryRequired(): boolean {
+        const enabled: (view: ViewsModel) => boolean = (view: ViewsModel) =>
+            !!(view.summaryRow && view.summaryRow.enable) || !!(view.summaryColumn && view.summaryColumn.enable) ||
+            !!(view.groupSummary && view.groupSummary.enable);
+        return this.summaryRow.enable || this.summaryColumn.enable || this.groupSummary.enable ||
+            (this.viewCollections || []).some((view: ViewsModel) => enabled(view));
+    }
+
+    private isFixedRowsRequired(): boolean {
+        const enabled: (group: GroupModel) => boolean = (group: GroupModel) => !!(group && group.fixedRows && group.fixedRows.enable);
+        return enabled(this.group) || (this.viewCollections || []).some((view: ViewsModel) => enabled(view.group));
     }
 
     private getActiveViewOptions(): ViewsData {
@@ -1648,7 +1875,14 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             resources: groupResources,
             headerTooltipTemplate: this.group.headerTooltipTemplate,
             enableCompactView: this.group.enableCompactView,
-            hideNonWorkingDays: ['Day', 'Week', 'WorkWeek', 'Month'].indexOf(this.currentView)  > -1 ? this.group.hideNonWorkingDays : false
+            hideNonWorkingDays: ['Day', 'Week', 'WorkWeek', 'Month'].indexOf(this.currentView)  > -1 ? this.group.hideNonWorkingDays : false,
+            fixedRows: {
+                enable: this.group.fixedRows.enable,
+                showSeparator: this.group.fixedRows.showSeparator,
+                separatorTemplate: this.group.fixedRows.separatorTemplate,
+                separatorPanelTemplate: this.group.fixedRows.separatorPanelTemplate,
+                separatorTimeTemplate: this.group.fixedRows.separatorTimeTemplate
+            }
         };
         const workDays: number[] = this.viewCollections[this.viewIndex].workDays ? [] : this.workDays;
         const scheduleOptions: ViewsModel = {
@@ -1682,6 +1916,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             timeFormat: this.internalTimeFormat,
             group: group,
             headerRows: this.headerRows,
+            summaryRow: this.getSummaryOptions(this.summaryRow),
+            summaryColumn: this.getSummaryOptions(this.summaryColumn),
+            groupSummary: this.getSummaryOptions(this.groupSummary),
             orientation: 'Horizontal',
             numberOfWeeks: 0,
             displayDate: null,
@@ -1689,6 +1926,11 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         };
         const viewOptions: ViewsData = this.viewCollections[this.viewIndex];
         const viewsData: ViewsData = extend(scheduleOptions, viewOptions, undefined, true);
+        if (this.activeZoomPreset && viewsData.option === this.activeZoomPreset.option) {
+            const presetLayer: ViewsModel = extend({}, this.activeZoomPreset) as ViewsModel;
+            delete (presetLayer as Record<string, any>).key;
+            extend(viewsData, presetLayer, undefined, true);
+        }
         if (this.firstDayOfWeek !== 0 && viewOptions.firstDayOfWeek && this.firstDayOfWeek !== viewOptions.firstDayOfWeek) {
             viewsData.firstDayOfWeek = this.firstDayOfWeek;
         }
@@ -1743,7 +1985,15 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         };
     }
 
-    private initializeView(viewName: View): void {
+    /**
+     * Re-initializes the given view: resolves the active view options and resources, parses
+     * the templates and renders the view. Also used by the TimelineZoom module on preset change.
+     *
+     * @param {View} viewName The view to initialize.
+     * @returns {void}
+     * @private
+     */
+    public initializeView(viewName: View): void {
         this.showSpinner();
         this.activeViewOptions = this.getActiveViewOptions();
         if (this.resourceBase) {
@@ -1870,6 +2120,21 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             showPreviousDates: settings.showPreviousDates !== false,
             onTop: settings.onTop !== false
         };
+    }
+
+    /**
+     * Resolves the event spacing of the active view: the view value (which includes a zoom preset), then the component value, then
+     * null (the built-in space), field by field. Returns `null` for a view that ignores spacing (Agenda, Year and MonthAgenda).
+     * Renderers MUST call this helper and MUST NOT read `eventSpacing` directly, because the component value is deliberately not merged
+     * into `activeViewOptions` (the deep `extend` there would let a `null` view field overwrite it).
+     *
+     * @returns {EventSpacingValues | null} The resolved gap, leadingSpace and trailingSpace, or null when the active view ignores spacing.
+     * @private
+     */
+    public getEventSpacing(): EventSpacingValues | null {
+        const view: string = this.activeViewOptions ? this.activeViewOptions.option : null;
+        return !view || ['Agenda', 'Year', 'MonthAgenda'].indexOf(view) > -1 ? null :
+            util.resolveEventSpacing(this.activeViewOptions.eventSpacing, this.eventSpacing);
     }
 
     /**
@@ -2054,6 +2319,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (this.allowResizing) {
             modules.push({ member: 'resize', args: [this] });
         }
+        if (this.isSummaryRequired()) {
+            modules.push({ member: 'summary', args: [this] });
+        }
+        if (this.isFixedRowsRequired()) {
+            modules.push({ member: 'fixedRows', args: [this] });
+        }
         if (this.enableWebMcp) {
             modules.push({ member: 'webMcpScheduler', args: [this] });
         }
@@ -2100,7 +2371,24 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.currentAction = null;
         this.selectedElements = [];
         this.activeEventTemplates = [];
+        this.activeZoomPreset = null;
+        this.timelineZoomModule = new TimelineZoom(this);
         this.setViewOptions();
+        if (this.zoomLevels && this.zoomLevels.length > 0) {
+            this.activeZoomPreset = this.timelineZoomModule.resolveInitialZoomPreset();
+            if (this.activeZoomPreset) {
+                if (this.currentView !== this.activeZoomPreset.option) {
+                    this.setProperties({ currentView: this.activeZoomPreset.option as View }, true);
+                    const resolvedIndex: number = this.getViewIndex(this.currentView);
+                    if (resolvedIndex !== -1) {
+                        this.viewIndex = resolvedIndex;
+                    }
+                }
+                if (this.zoomLevel !== this.activeZoomPreset.key) {
+                    this.setProperties({ zoomLevel: this.activeZoomPreset.key }, true);
+                }
+            }
+        }
     }
 
     private getDefaultLocale(): void {
@@ -2118,6 +2406,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             noEvents: 'No events',
             emptyContainer: 'There are no events scheduled on this day.',
             allDay: 'All day',
+            summary: 'Summary',
             start: 'Start',
             end: 'End',
             more: 'more',
@@ -2198,7 +2487,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             searchTimezone: 'Search Timezone',
             noRecords: 'No records found',
             scheduler: 'Scheduler',
-            resource: 'Resource'
+            resource: 'Resource',
+            pinnedResources: 'Pinned resources',
+            pinnedSummary: 'Pinned resources summary',
+            pinned: 'pinned'
         };
     }
 
@@ -2208,6 +2500,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         EventHandler.add(document, Browser.touchStartEvent, this.onDocumentClick, this);
         if (this.allowClipboard) {
             EventHandler.add(document, 'paste', this.onDocumentPaste, this);
+        }
+        if (this.timelineZoomModule) {
+            this.timelineZoomModule.initialize();
         }
     }
 
@@ -2253,6 +2548,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @private
      */
     public selectCell(element: HTMLElement & HTMLTableCellElement): void {
+        if (this.groupSummaryModule && this.groupSummaryModule.isGroupTarget(element)) {
+            return;
+        }
         this.removeSelectedClass();
         this.addSelectedClass([element], element);
     }
@@ -2284,7 +2582,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @private
      */
     public getTableRows(): HTMLElement[] {
-        return [].slice.call(this.element.querySelectorAll('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr:not(.' + cls.HIDDEN_CLASS + ')'));
+        const rows: HTMLElement[] = [].slice.call(
+            this.element.querySelectorAll('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr:not(.' + cls.HIDDEN_CLASS + ')'));
+        return this.fixedRowsModule ? this.fixedRowsModule.getTableRows().concat(rows) : rows;
     }
 
     /**
@@ -2707,7 +3007,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 return [];
             }
             return [...workCells].sort(
-                (a: HTMLElement, b: HTMLElement) => (+a.dataset.date! || 0) - (+b.dataset.date! || 0)
+                (a: HTMLElement, b: HTMLElement) => (Number(a.dataset.date) || 0) - (Number(b.dataset.date) || 0)
             );
         }
         return selectedCells;
@@ -2843,6 +3143,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         EventHandler.remove(<HTMLElement & Window><unknown>window, 'orientationchange', this.onScheduleResize);
         EventHandler.remove(document, Browser.touchStartEvent, this.onDocumentClick);
         EventHandler.remove(document, 'paste', this.onDocumentPaste);
+        if (this.timelineZoomModule) {
+            this.timelineZoomModule.destroy();
+        }
     }
 
     /**
@@ -2883,6 +3186,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
             case 'views':
+                if (util.isEventSpacingOnlyChange(newProp.views, oldProp.views)) {
+                    this.setViewOptions();
+                    this.activeViewOptions = this.getActiveViewOptions();
+                    this.refreshEvents(false);
+                    break;
+                }
                 this.setViewOptions();
                 if (this.headerModule) {
                     this.headerModule.updateItems();
@@ -2892,6 +3201,41 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             case 'currentView':
                 state.isView = true;
                 break;
+            case 'zoomLevel':
+                if (this.timelineZoomModule) {
+                    this.timelineZoomModule.applyZoomPreset((
+                        oldProp.zoomLevel === null || typeof oldProp.zoomLevel === 'undefined'
+                    ) ? null : oldProp.zoomLevel as string);
+                }
+                return;
+            case 'zoomLevels': {
+                const prevZoomLevel: string | null = (
+                    oldProp.zoomLevel === null || typeof oldProp.zoomLevel === 'undefined'
+                ) ? null : oldProp.zoomLevel as string;
+                this.setViewOptions();
+                if (this.headerModule) {
+                    this.headerModule.updateItems();
+                }
+                if (this.timelineZoomModule) {
+                    this.timelineZoomModule.destroy();
+                    this.timelineZoomModule.initialize();
+                }
+                const validAfterReassign: ZoomLevel[] = this.timelineZoomModule
+                    ? this.timelineZoomModule.validateZoomLevels()
+                    : [];
+                if (validAfterReassign.length === 0) {
+                    this.activeZoomPreset = null;
+                    if (this.zoomLevel !== null) {
+                        this.setProperties({ zoomLevel: null }, true);
+                    }
+                    state.isView = true;
+                    break;
+                }
+                if (this.timelineZoomModule) {
+                    this.timelineZoomModule.applyZoomPreset(prevZoomLevel);
+                }
+                return;
+            }
             case 'minDate':
             case 'maxDate':
             case 'selectedDate':
@@ -3171,10 +3515,30 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             if (this.eventWindow) { this.eventWindow.refreshDateTimePicker(); }
             state.isLayout = true;
             break;
+        case 'groupSummary':
+            this.activeViewOptions = this.getActiveViewOptions();
+            if (this.summaryModule) {
+                this.summaryModule.onGroupSummaryChanged();
+            } else {
+                this.refreshEvents(false);
+            }
+            break;
+        case 'summaryRow':
+        case 'summaryColumn':
+            this.activeViewOptions = this.getActiveViewOptions();
+            if (this.summaryModule) {
+                this.summaryModule.renderLayout();
+                this.summaryModule.refresh();
+                this.notify(events.scrollUiUpdate, { cssProperties: this.getCssProperties(), module: 'summary' });
+            }
+            break;
         case 'allowDragAndDrop':
         case 'allowResizing':
         case 'eventDragArea':
         case 'allowOverlap':
+            this.refreshEvents(false);
+            break;
+        case 'eventSpacing':
             this.refreshEvents(false);
             break;
         case 'weekRule':
@@ -3274,6 +3638,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                     this.headerModule.updateAddIcon();
                 }
                 if (this.eventWindow) { this.eventWindow.refresh(); }
+                break;
+            case 'placement':
+                this.refreshEvents(false);
                 break;
             case 'spannedEventPlacement':
             case 'minimumEventDuration':
@@ -3436,6 +3803,41 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
+     * Refreshes the summary cells. The `renderSummaryCell` event is triggered in the `Refresh` mode for the given cell,
+     * or for every summary element when no argument is passed. An element that is not a summary element is ignored.
+     *
+     * @function refreshSummary
+     * @param {Element | RenderSummaryCellEventArgs | SummaryCellClickEventArgs} cell Accepts the optional summary element, or the details of it.
+     * @returns {void}
+     */
+    public refreshSummary(cell?: Element | RenderSummaryCellEventArgs | SummaryCellClickEventArgs): void {
+        const element: Element = cell === undefined || cell === null ? undefined : (cell instanceof Element ? cell : cell.element);
+        if (this.groupSummaryModule && this.groupSummaryModule.refreshCells(element) && element) {
+            return;
+        }
+        if (!this.summaryModule) {
+            return;
+        }
+        if (!element) {
+            this.summaryModule.refresh();
+        } else {
+            this.summaryModule.refresh(element);
+        }
+    }
+
+    /**
+     * Retrieves the render type, the time range and the resource scope of a summary element.
+     *
+     * @function getSummaryCellDetails
+     * @param {Element} element Accepts the summary element.
+     * @returns {RenderSummaryCellEventArgs} Returns the details of the summary element, or null when the element is not a summary element.
+     */
+    public getSummaryCellDetails(element: Element): RenderSummaryCellEventArgs {
+        const group: RenderSummaryCellEventArgs = this.groupSummaryModule ? this.groupSummaryModule.getDetails(element) : null;
+        return group || (this.summaryModule ? this.summaryModule.getDetails(element) : null);
+    }
+
+    /**
      * Retrieves the start and end time information of the specific cell element.
      *
      * @function getCellDetails
@@ -3484,6 +3886,36 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             return this.keyboardInteractionModule.selectedCells;
         }
         return this.getSelectedCells();
+    }
+
+    /**
+     * Logs one development warning that the `FixedRows` module is not injected.
+     *
+     * @returns {void}
+     * @private
+     */
+    public warnFixedRowsModule(): void {
+        if (!this.isFixedRowsWarned) {
+            this.isFixedRowsWarned = true;
+            // eslint-disable-next-line no-console
+            console.warn('Scheduler: inject the FixedRows module to use the fixed rows.');
+        }
+    }
+
+    /**
+     * To get the resources that are placed in the fixed region of the timeline views, in the region order.
+     * It returns an empty array in non-timeline views, when the `fixedRows.enable` is `false` for the active view,
+     * or when the `FixedRows` module is not injected.
+     *
+     * @function getFixedResources
+     * @returns {ResourceDetails[]} Returns the fixed resources
+     */
+    public getFixedResources(): ResourceDetails[] {
+        if (!this.fixedRowsModule) {
+            this.warnFixedRowsModule();
+            return [];
+        }
+        return this.fixedRowsModule.getFixedResources();
     }
 
     /**
@@ -4172,6 +4604,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public openEditor(data: Record<string, any>, action: CurrentAction, isEventData?: boolean, repeatType?: number): void {
+        if (action === 'Add' && this.groupSummaryModule && (this.groupSummaryModule.isGroupTarget(data.element as Element) ||
+            this.groupSummaryModule.isGroupIndex(data.groupIndex as number))) {
+            return;
+        }
         if (action === 'Add' && !isEventData) {
             data.startTime = this.getDateTime(<Date>data.startTime);
             data.endTime = this.getDateTime(<Date>data.endTime);
@@ -4478,6 +4914,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.keyboardInteractionModule.destroy();
             this.keyboardInteractionModule = null;
         }
+        if (this.summaryModule) {
+            this.summaryModule.destroy();
+        }
         if (this.scrollModule) {
             this.scrollModule.destroy();
             this.scrollModule = null;
@@ -4507,14 +4946,18 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.webMcpSchedulerModule.destroy();
             this.webMcpSchedulerModule = null;
         }
+        if (this.timelineZoomModule) {
+            this.timelineZoomModule.destroy();
+            this.timelineZoomModule = null;
+        }
         super.destroy();
         const modules: string[] = [
             'dayModule', 'weekModule', 'workWeekModule', 'monthModule', 'monthAgendaModule', 'yearModule', 'agendaModule',
-            'timelineViewsModule', 'timelineMonthModule', 'timelineYearModule', 'resizeModule', 'dragAndDropModule',
+            'timelineViewsModule', 'timelineMonthModule', 'timelineYearModule', 'resizeModule', 'summaryModule', 'fixedRowsModule', 'dragAndDropModule',
             'excelExportModule', 'printModule', 'iCalendarExportModule', 'iCalendarImportModule', 'tzModule', 'eventsData',
             'eventsProcessed', 'blockData', 'blockProcessed', 'uiStateValues', 'viewCollections', 'viewOptions', 'defaultLocale',
             'localeObj', 'selectedElements', 'resourceCollection', 'editorTitles', 'eventFields', 'activeViewOptions',
-            'activeEventData', 'activeCellsData', 'renderModule', 'webMcpSchedulerModule'
+            'activeEventData', 'activeCellsData', 'renderModule', 'webMcpSchedulerModule', 'timelineZoomModule'
         ];
         for (const module of modules) {
             (this as any)[`${module}`] = null;

@@ -33,9 +33,13 @@ import { Emu, isLength, lengthToEmu, Length } from '../core/length';
 import { decodeUtf8, encodeUtf8, escapeXml, escapeXmlText, parseAttrMap, unescapeXml } from '../core/xml/minimal-xml';
 import { FormControlsImpl } from './form-controls';
 
-/** Default note box ~77.25 pt × 28.5 pt (ECMA-376-4 note shape example). */
-const DEFAULT_NOTE_WIDTH_EMU: number = Math.round(77.25 * 12_700);
-const DEFAULT_NOTE_HEIGHT_EMU: number = Math.round(28.5 * 12_700);
+/** Default note box 100.8 pt × 60.6 pt, matching the size MS Excel writes for a new note. */
+const DEFAULT_NOTE_WIDTH_EMU: number = Math.round(100.8 * 12_700);
+const DEFAULT_NOTE_HEIGHT_EMU: number = Math.round(60.6 * 12_700);
+
+/** Default column width (64px) and row height (20px) used for note anchor geometry. */
+const NOTE_DEFAULT_COL_PX: number = 64;
+const NOTE_DEFAULT_ROW_PX: number = 20;
 
 /** Comment note textbox shape type (t202). Citation: ECMA-376-4 note example. */
 // eslint-disable-next-line @typescript-eslint/prefer-as-const -- literal typedef required by tslint:typedef bridge
@@ -1373,10 +1377,22 @@ function serializeNoteShapeXml(e: CommentEntry, shapeId: number): string {
     const heightPx: number = Math.max(1, Math.round(e.heightEmu / 9_525));
     const widthPt: number = e.widthEmu / 12_700;
     const heightPt: number = e.heightEmu / 12_700;
+    // Excel sizes a note from x:Anchor (left col/off, top row/off, right col/off, bottom row/off),
+    // with offsets inside their cell. Start beside the cell and walk cells to reach the size.
+    const startCol: number = e.col0 + 1;
+    const startRow: number = Math.max(e.row0 - 1, 0);
+    const startColOff: number = 15;
+    const startRowOff: number = 2;
+    const endCol: number = startCol + Math.floor((startColOff + widthPx) / NOTE_DEFAULT_COL_PX);
+    const endColOff: number = (startColOff + widthPx) % NOTE_DEFAULT_COL_PX;
+    const endRow: number = startRow + Math.floor((startRowOff + heightPx) / NOTE_DEFAULT_ROW_PX);
+    const endRowOff: number = (startRowOff + heightPx) % NOTE_DEFAULT_ROW_PX;
+    const marginLeftPt: number = (startCol * NOTE_DEFAULT_COL_PX + startColOff) * 0.75;
+    const marginTopPt: number = (startRow * NOTE_DEFAULT_ROW_PX + startRowOff) * 0.75;
     const styleParts: string[] = [
         'position:absolute',
-        'margin-left:0pt',
-        'margin-top:0pt',
+        `margin-left:${formatPtStr(marginLeftPt)}pt`,
+        `margin-top:${formatPtStr(marginTopPt)}pt`,
         `width:${formatPtStr(widthPt)}pt`,
         `height:${formatPtStr(heightPt)}pt`,
         'z-index:1'
@@ -1384,7 +1400,7 @@ function serializeNoteShapeXml(e: CommentEntry, shapeId: number): string {
     if (!e.isVisible) {
         styleParts.push('visibility:hidden');
     }
-    const anchor: string = `${e.col0}, 0, ${e.row0}, 0, ${e.col0}, ${widthPx}, ${e.row0}, ${heightPx}`;
+    const anchor: string = `${startCol}, ${startColOff}, ${startRow}, ${startRowOff}, ${endCol}, ${endColOff}, ${endRow}, ${endRowOff}`;
     const kids: string[] = [
         '<x:MoveWithCells/>',
         '<x:SizeWithCells/>',

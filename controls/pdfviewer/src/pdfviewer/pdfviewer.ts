@@ -11696,6 +11696,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                         if (pickerBtn) {
                             pickerBtn.disabled = true;
                             pickerBtn.style.cursor = 'default';
+                            pickerBtn.classList.add('e-disabled');
                         }
                     } else {
                         inputField.disabled = true;
@@ -11709,6 +11710,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                         if (pickerBtn) {
                             pickerBtn.disabled = false;
                             pickerBtn.style.cursor = 'pointer';
+                            pickerBtn.classList.remove('e-disabled');
                         }
                     } else {
                         inputField.disabled = false;
@@ -15339,7 +15341,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @returns {void}
      */
     public clearFormField(formField?: FormFieldModel): void {
-        this.formFieldsModule.clearFormFields(formField);
+        this.formFieldsModule.clearFormField(formField);
     }
 
     /**

@@ -12,6 +12,7 @@
 		"@syncfusion/ej2-base": "*",
 		"@syncfusion/ej2-compression": "*",
 		"@syncfusion/ej2-file-utils": "*",
+		"@syncfusion/ej2-office-common": "*",
 		"@syncfusion/ej2-xlsx": "*"
 	},
 	"scripts": {

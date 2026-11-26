@@ -15,7 +15,7 @@ import { MaskedTextBox, MaskChangeEventArgs, TextBox } from '@syncfusion/ej2-inp
 import { PivotUtil } from '../../base/util';
 import { IOlapField } from '../../base/olap/engine';
 import { PivotView } from '../../pivotview/base/pivotview';
-import { buildFolderTree, filterFolderTree, isNestedFolderMode, IFolderTree, IFolderField } from './field-folder';
+import { buildFolderTree, filterFolderTree, isNestedFolderMode, parseFolderPath, IFolderTree, IFolderField } from './field-folder';
 import { DataManager, Predicate, Query } from '@syncfusion/ej2-data';
 
 /**
@@ -1090,15 +1090,6 @@ export class TreeViewRenderer implements IAction {
             for (const key of keys) {
                 const member: IField = this.parent.pivotFieldList[key as string];
                 treeDataInfo[key as string] = { id: member.id, pid: member.pid, caption: member.caption, isSelected: member.isSelected };
-                if (!isNullOrUndefined(member.pid) && !treeDataInfo[key as string].hasChildren) {
-                    const parentId: string = member.pid + '_group_name';
-                    treeDataInfo[key as string].pid = parentId;
-                    treeDataInfo[parentId as string] = {
-                        id: parentId, caption: member.pid,
-                        isSelected: treeDataInfo[parentId as string] && treeDataInfo[parentId as string].isSelected
-                            ? treeDataInfo[parentId as string].isSelected : member.isSelected, hasChildren: true
-                    };
-                }
             }
             if (this.parent.isAdaptive) {
                 const fields: IFieldOptions[][] =
@@ -1117,6 +1108,28 @@ export class TreeViewRenderer implements IAction {
             const nested: { [key: string]: Object }[] = this.getNestedFolderData(this.fieldListSort, treeDataInfo);
             if (nested) {
                 return nested;
+            }
+            for (const key of keys) {
+                const member: IField = this.parent.pivotFieldList[key as string];
+                if (!isNullOrUndefined(member.pid) && !treeDataInfo[key as string].hasChildren) {
+                    const names: string[] = parseFolderPath(member.pid);
+                    if (!names) {
+                        treeDataInfo[key as string].pid = undefined;
+                        this.parent.actionObj.actionName = events.folderPathError;
+                        this.parent.actionFailureMethod(new Error('Invalid folder path "' + member.pid + '" for field "' + member.id + '".'));
+                        continue;
+                    }
+                    let parentId: string = names[0] + '_group_name';
+                    while (treeDataInfo[parentId as string] && !treeDataInfo[parentId as string].hasChildren) {
+                        parentId += '~';
+                    }
+                    treeDataInfo[key as string].pid = parentId;
+                    treeDataInfo[parentId as string] = {
+                        id: parentId, caption: names[0],
+                        isSelected: treeDataInfo[parentId as string] && treeDataInfo[parentId as string].isSelected
+                            ? treeDataInfo[parentId as string].isSelected : member.isSelected, hasChildren: true
+                    };
+                }
             }
             const members: string[] = Object.keys(treeDataInfo);
             for (const member of members) {

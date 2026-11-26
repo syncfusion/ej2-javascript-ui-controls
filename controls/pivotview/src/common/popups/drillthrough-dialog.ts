@@ -11,7 +11,7 @@ import * as events from '../../common/base/constant';
 import { IOlapField, OlapEngine } from '../../base/olap/engine';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { PivotUtil } from '../../base/util';
-import { DataManager, GraphQLAdaptor, Query } from '@syncfusion/ej2-data';
+import { DataManager, Query } from '@syncfusion/ej2-data';
 
 /**
  * `DrillThroughDialog` module to create drill-through dialog.
@@ -86,89 +86,7 @@ export class DrillThroughDialog {
                         }, false);
                     },
                     beforeClose: () => {
-                        if (this.parent.editSettings.allowEditing && this.isUpdated) {
-                            if (this.parent.dataSourceSettings.type === 'CSV') {
-                                this.updateData(this.drillThroughGrid.dataSource as IDataSet[]);
-                            }
-                            const gridIndexObjectsValue: string[] = Object.keys(gridIndexObjects);
-                            const previousPosition: number[] = [];
-                            for (const value of gridIndexObjectsValue) {
-                                previousPosition.push(gridIndexObjects[value as string]);
-                            }
-                            let count: number = Object.keys(gridIndexObjects).length;
-                            const addItems: IDataSet[] = [];
-                            const prevItems: IDataSet[] = [];
-                            let index: number = 0;
-                            for (const item of this.drillThroughGrid.dataSource as IDataSet[]) {
-                                if (!this.isEdited && (item['__index'] === '0' || item['__index'] === '')) {
-                                    for (const field of this.engine.fields) {
-                                        if (isNullOrUndefined(item[field as string])) {
-                                            delete item[field as string];
-                                        }
-                                    }
-                                    delete item['__index'];
-                                    addItems.push(item);
-                                } else if (count > 0) {
-                                    delete gridIndexObjects[item['__index'].toString()];
-                                    prevItems.push(item);
-                                    count--;
-                                }
-                                if (this.parent.dataSourceSettings.mode === 'Server') {
-                                    if (item['__index']) {
-                                        delete item['__index'];
-                                    }
-                                    if (gridData[index as number]['__index']) {
-                                        delete gridData[index as number]['__index'];
-                                    }
-                                }
-                                index++;
-                            }
-                            count = 0;
-                            if (this.parent.dataSourceSettings.mode === 'Server') {
-                                const gridIndex: object[] = [];
-                                const keys: string[] = Object.keys(gridIndexObjects);
-                                for (let len: number = 0; len < keys.length; len++) {
-                                    delete this.parent.drillThroughValue.indexObject[gridIndexObjects[keys[len as number]]];
-                                    gridIndex.push({ Key: keys[len as number], Value: gridIndexObjects[keys[len as number]] });
-                                }
-                                this.parent.getEngine('updateRawData', null, null, null, null, null, null, null, {
-                                    'addedData': addItems, 'removedData': gridIndex, 'updatedData': prevItems,
-                                    indexObject: this.parent.drillThroughValue.indexObject as ReturnType<typeof Object>
-                                });
-                            } else {
-                                let items: IDataSet[] = [];
-                                const data: IDataSet[] | string[][] = this.parent.allowDataCompression
-                                    ? this.parent.engineModule.actualData : this.parent.engineModule.data;
-                                for (const item of data as IDataSet[]) {
-                                    delete item['__index'];
-                                    if (gridIndexObjects[count.toString()] === undefined) {
-                                        items.push(item);
-                                    }
-                                    count++;
-                                }
-                                items = items.concat(addItems);
-                                const eventArgs: EditCompletedEventArgs = {
-                                    currentData: this.drillThroughGrid.dataSource as IDataSet[],
-                                    previousData: clonedData,
-                                    previousPosition: previousPosition,
-                                    cancel: false
-                                };
-                                this.parent.trigger(events.editCompleted, eventArgs);
-                                if (!eventArgs.cancel) {
-                                    this.parent.setProperties({ dataSourceSettings: { dataSource: items } }, true);
-                                    (this.engine as PivotEngine).updateGridData(this.parent.dataSourceSettings as IDataOptions);
-                                    this.parent.pivotValues = this.engine.pivotValues;
-                                }
-                            }
-                            this.parent.actionObj.actionName = events.recordUpdated;
-                            const actionInfo: PivotActionInfo = {
-                                editInfo: {
-                                    type: this.drillThroughGrid.editSettings.mode, action: 'Update', currentData: this.drillThroughGrid.dataSource as IDataSet[],
-                                    previousData: clonedData, previousPosition: previousPosition
-                                }
-                            };
-                            this.parent.actionObj.actionInfo = actionInfo;
-                        }
+                        this.commitDrillThroughEdits(gridIndexObjects, clonedData, gridData);
                         this.isUpdated = false;
                         this.isEdited = false;
                         gridIndexObjects = {};
@@ -229,12 +147,21 @@ export class DrillThroughDialog {
             locale: this.parent.locale,
             cssClass: this.parent.cssClass,
             change: () => {
+                if (this.parent.isDestroyed ||
+                    (this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule) !== this.engine) {
+                    return;
+                }
                 const textBoxValue: number = isNullOrUndefined(numericTextBox.value) ? 0 : numericTextBox.value;
                 const indexValue: number = eventArgs.currentCell.indexObject[indexObject as number];
                 eventArgs.rawData[0][actualText as string] = textBoxValue;
                 this.parent.engineModule.data[indexValue as number] = eventArgs.rawData[0];
             },
             blur: () => {
+                // Grid teardown can blur the editor after Pivot has invalidated its engine.
+                if (this.parent.isDestroyed ||
+                    (this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule) !== this.engine) {
+                    return;
+                }
                 const eventArgs: EditCompletedEventArgs = {
                     currentData: [currentData],
                     previousData: [previousData],
@@ -315,33 +242,7 @@ export class DrillThroughDialog {
     private createDrillThroughGrid(eventArgs: DrillThroughEventArgs, gridData: IDataSet[], valueText: string): HTMLElement {
         const drillThroughBody: HTMLElement =
             createElement('div', { id: this.parent.element.id + '_drillthroughbody', className: cls.DRILLTHROUGH_BODY_CLASS });
-        const drillThroughBodyHeader: HTMLElement =
-            createElement('div', {
-                id: this.parent.element.id +
-                    '_drillthroughbodyheader', className: cls.DRILLTHROUGH_BODY_HEADER_CONTAINER_CLASS
-            });
-        if (eventArgs.rowHeaders !== '') {
-            drillThroughBodyHeader.innerHTML = '<span class=' +
-                cls.DRILLTHROUGH_BODY_HEADER_COMMON_CLASS + '><span class=' + cls.DRILLTHROUGH_BODY_HEADER_CLASS + '>' +
-                this.parent.localeObj.getConstant('row') + '</span> : <span class=' +
-                cls.DRILLTHROUGH_BODY_HEADER_VALUE_CLASS + '>' + eventArgs.rowHeaders + '</span></span>';
-        }
-        if (eventArgs.columnHeaders !== '') {
-            drillThroughBodyHeader.innerHTML = drillThroughBodyHeader.innerHTML + '<span class=' +
-                cls.DRILLTHROUGH_BODY_HEADER_COMMON_CLASS + '><span class=' +
-                cls.DRILLTHROUGH_BODY_HEADER_CLASS + '>' + this.parent.localeObj.getConstant('column') +
-                '</span> : <span class=' + cls.DRILLTHROUGH_BODY_HEADER_VALUE_CLASS + '>' +
-                eventArgs.columnHeaders + '</span></span>';
-        }
-        if (eventArgs.value !== '') {
-            const value: string = eventArgs.currentCell.formattedText;
-            if (value !== '0') {
-                drillThroughBodyHeader.innerHTML = drillThroughBodyHeader.innerHTML + '<span class=' +
-                    cls.DRILLTHROUGH_BODY_HEADER_COMMON_CLASS + '><span class=' +
-                    cls.DRILLTHROUGH_BODY_HEADER_CLASS + '>' +
-                    valueText + '</span> : <span class=' + cls.DRILLTHROUGH_BODY_HEADER_VALUE_CLASS + '>' + value + '</span></span>';
-            }
-        }
+        const drillThroughBodyHeader: HTMLElement = this.createDrillThroughHeader(eventArgs, valueText);
         let toolbarItems: string[] = ['ColumnChooser'];
         if (this.parent.editSettings.allowEditing) {
             if (this.parent.editSettings.allowCommandColumns) {
@@ -393,50 +294,7 @@ export class DrillThroughDialog {
             Grid.Inject(Edit, Page);
             try {
                 this.drillThroughGrid.editSettings = this.parent.editSettings;
-                this.drillThroughGrid.actionBegin = (args: ActionEventArgs) => {
-                    const actionName: string = (args.requestType === 'save') ? events.saveEditedRecords :
-                        (args.requestType === 'add') ? events.addNewRecord : (args.requestType === 'delete') ?
-                            events.removeRecord : '';
-                    this.parent.actionObj.actionName = actionName;
-                    if (this.parent.actionObj.actionName) {
-                        if (this.parent.actionBeginMethod()) {
-                            return;
-                        }
-                    }
-                    let primaryKeyColumn: ColumnModel;
-                    for (const column of this.drillThroughGrid.columns) {
-                        const col: ColumnModel = column as ColumnModel;
-                        if (col.isPrimaryKey && col.field !== '__index') {
-                            primaryKeyColumn = col;
-                            break;
-                        }
-                    }
-                    const primaryKeyField: string | undefined = !isNullOrUndefined(primaryKeyColumn) ? primaryKeyColumn.field : undefined;
-                    if (!isNullOrUndefined(this.parent.dataManager) && !isNullOrUndefined(primaryKeyField)) {
-                        const dataManager: DataManager = this.parent.dataManager;
-                        const query: Query = !isNullOrUndefined(this.drillThroughGrid.getQuery()) ?
-                            this.drillThroughGrid.getQuery().clone() : new Query();
-                        if (args.requestType === 'save' && args.action === 'add') {
-                            const { __index, ...recordToInsert } = args.data as { [key: string]: Object };
-                            dataManager.insert(recordToInsert, query.fromTable, query, args.index);
-                        }
-                        else if (args.requestType === 'save' && args.action === 'edit') {
-                            const { __index, ...recordToUpdate } = args.data as { [key: string]: Object };
-                            dataManager.update(
-                                primaryKeyField as string, recordToUpdate, query.fromTable, query, args.previousData
-                            );
-                        }
-                        else if (args.requestType === 'delete') {
-                            const recordToDelete: { [key: string]: Object } = (args.data as Object[])[0] as { [key: string]: Object };
-                            const primaryKeyValue: Object = recordToDelete[primaryKeyField as string];
-                            if (!isNullOrUndefined(primaryKeyValue)) {
-                                dataManager.remove(primaryKeyField, primaryKeyValue);
-                            } else {
-                                this.parent.actionFailureMethod(new Error('Primary key value not found in record to delete'));
-                            }
-                        }
-                    }
-                };
+                this.drillThroughGrid.actionBegin = (args: ActionEventArgs) => this.beginDrillThroughAction(args);
                 if (this.parent.editSettings.allowCommandColumns) {
                     this.drillThroughGrid.editSettings.mode = 'Normal';
                     this.drillThroughGrid.editSettings.allowEditOnDblClick = false;
@@ -665,4 +523,168 @@ export class DrillThroughDialog {
             return;
         }
     }
+    private commitDrillThroughEdits(gridIndexObjects: INumberIndex, clonedData: IDataSet[], gridData: IDataSet[]): void {
+        if (this.parent.editSettings.allowEditing && this.isUpdated) {
+            if (this.parent.dataSourceSettings.type === 'CSV') {
+                this.updateData(this.drillThroughGrid.dataSource as IDataSet[]);
+            }
+            const gridIndexObjectsValue: string[] = Object.keys(gridIndexObjects);
+            const previousPosition: number[] = [];
+            for (const value of gridIndexObjectsValue) {
+                previousPosition.push(gridIndexObjects[value as string]);
+            }
+            let count: number = Object.keys(gridIndexObjects).length;
+            const addItems: IDataSet[] = [];
+            const prevItems: IDataSet[] = [];
+            let index: number = 0;
+            for (const item of this.drillThroughGrid.dataSource as IDataSet[]) {
+                if (!this.isEdited && (item['__index'] === '0' || item['__index'] === '')) {
+                    for (const field of this.engine.fields) {
+                        if (isNullOrUndefined(item[field as string])) {
+                            delete item[field as string];
+                        }
+                    }
+                    delete item['__index'];
+                    addItems.push(item);
+                } else if (count > 0) {
+                    delete gridIndexObjects[item['__index'].toString()];
+                    prevItems.push(item);
+                    count--;
+                }
+                if (this.parent.dataSourceSettings.mode === 'Server') {
+                    if (item['__index']) {
+                        delete item['__index'];
+                    }
+                    if (gridData[index as number]['__index']) {
+                        delete gridData[index as number]['__index'];
+                    }
+                }
+                index++;
+            }
+            count = 0;
+            if (this.parent.dataSourceSettings.mode === 'Server') {
+                const gridIndex: object[] = [];
+                const keys: string[] = Object.keys(gridIndexObjects);
+                for (let len: number = 0; len < keys.length; len++) {
+                    delete this.parent.drillThroughValue.indexObject[gridIndexObjects[keys[len as number]]];
+                    gridIndex.push({ Key: keys[len as number], Value: gridIndexObjects[keys[len as number]] });
+                }
+                this.parent.getEngine('updateRawData', null, null, null, null, null, null, null, {
+                    'addedData': addItems, 'removedData': gridIndex, 'updatedData': prevItems,
+                    indexObject: this.parent.drillThroughValue.indexObject as ReturnType<typeof Object>
+                });
+            } else {
+                let items: IDataSet[] = [];
+                const data: IDataSet[] | string[][] = this.parent.allowDataCompression
+                    ? this.parent.engineModule.actualData : this.parent.engineModule.data;
+                for (const item of data as IDataSet[]) {
+                    delete item['__index'];
+                    if (gridIndexObjects[count.toString()] === undefined) {
+                        items.push(item);
+                    }
+                    count++;
+                }
+                items = items.concat(addItems);
+                const eventArgs: EditCompletedEventArgs = {
+                    currentData: this.drillThroughGrid.dataSource as IDataSet[],
+                    previousData: clonedData,
+                    previousPosition: previousPosition,
+                    cancel: false
+                };
+                this.parent.trigger(events.editCompleted, eventArgs);
+                if (!eventArgs.cancel) {
+                    this.parent.setProperties({ dataSourceSettings: { dataSource: items } }, true);
+                    (this.engine as PivotEngine).updateGridData(this.parent.dataSourceSettings as IDataOptions);
+                    this.parent.pivotValues = this.engine.pivotValues;
+                }
+            }
+            this.parent.actionObj.actionName = events.recordUpdated;
+            const actionInfo: PivotActionInfo = {
+                editInfo: {
+                    type: this.drillThroughGrid.editSettings.mode, action: 'Update', currentData: this.drillThroughGrid.dataSource as IDataSet[],
+                    previousData: clonedData, previousPosition: previousPosition
+                }
+            };
+            this.parent.actionObj.actionInfo = actionInfo;
+        }
+    }
+
+    private beginDrillThroughAction(args: ActionEventArgs): void {
+        const actionName: string = (args.requestType === 'save') ? events.saveEditedRecords :
+            (args.requestType === 'add') ? events.addNewRecord : (args.requestType === 'delete') ?
+                events.removeRecord : '';
+        this.parent.actionObj.actionName = actionName;
+        if (this.parent.actionObj.actionName) {
+            if (this.parent.actionBeginMethod()) {
+                return;
+            }
+        }
+        let primaryKeyColumn: ColumnModel;
+        for (const column of this.drillThroughGrid.columns) {
+            const col: ColumnModel = column as ColumnModel;
+            if (col.isPrimaryKey && col.field !== '__index') {
+                primaryKeyColumn = col;
+                break;
+            }
+        }
+        const primaryKeyField: string | undefined = !isNullOrUndefined(primaryKeyColumn) ? primaryKeyColumn.field : undefined;
+        if (!isNullOrUndefined(this.parent.dataManager) && !isNullOrUndefined(primaryKeyField)) {
+            const dataManager: DataManager = this.parent.dataManager;
+            const query: Query = !isNullOrUndefined(this.drillThroughGrid.getQuery()) ?
+                this.drillThroughGrid.getQuery().clone() : new Query();
+            if (args.requestType === 'save' && args.action === 'add') {
+                const recordToInsert: { [key: string]: Object } = { ...args.data as { [key: string]: Object } };
+                delete recordToInsert.__index;
+                dataManager.insert(recordToInsert, query.fromTable, query, args.index);
+            }
+            else if (args.requestType === 'save' && args.action === 'edit') {
+                const recordToUpdate: { [key: string]: Object } = { ...args.data as { [key: string]: Object } };
+                delete recordToUpdate.__index;
+                dataManager.update(
+                    primaryKeyField as string, recordToUpdate, query.fromTable, query, args.previousData
+                );
+            }
+            else if (args.requestType === 'delete') {
+                const recordToDelete: { [key: string]: Object } = (args.data as Object[])[0] as { [key: string]: Object };
+                const primaryKeyValue: Object = recordToDelete[primaryKeyField as string];
+                if (!isNullOrUndefined(primaryKeyValue)) {
+                    dataManager.remove(primaryKeyField, primaryKeyValue);
+                } else {
+                    this.parent.actionFailureMethod(new Error('Primary key value not found in record to delete'));
+                }
+            }
+        }
+    }
+
+    private createDrillThroughHeader(eventArgs: DrillThroughEventArgs, valueText: string): HTMLElement {
+        const drillThroughBodyHeader: HTMLElement =
+            createElement('div', {
+                id: this.parent.element.id +
+                    '_drillthroughbodyheader', className: cls.DRILLTHROUGH_BODY_HEADER_CONTAINER_CLASS
+            });
+        if (eventArgs.rowHeaders !== '') {
+            drillThroughBodyHeader.innerHTML = '<span class=' +
+                cls.DRILLTHROUGH_BODY_HEADER_COMMON_CLASS + '><span class=' + cls.DRILLTHROUGH_BODY_HEADER_CLASS + '>' +
+                this.parent.localeObj.getConstant('row') + '</span> : <span class=' +
+                cls.DRILLTHROUGH_BODY_HEADER_VALUE_CLASS + '>' + eventArgs.rowHeaders + '</span></span>';
+        }
+        if (eventArgs.columnHeaders !== '') {
+            drillThroughBodyHeader.innerHTML = drillThroughBodyHeader.innerHTML + '<span class=' +
+                cls.DRILLTHROUGH_BODY_HEADER_COMMON_CLASS + '><span class=' +
+                cls.DRILLTHROUGH_BODY_HEADER_CLASS + '>' + this.parent.localeObj.getConstant('column') +
+                '</span> : <span class=' + cls.DRILLTHROUGH_BODY_HEADER_VALUE_CLASS + '>' +
+                eventArgs.columnHeaders + '</span></span>';
+        }
+        if (eventArgs.value !== '') {
+            const value: string = eventArgs.currentCell.formattedText;
+            if (value !== '0') {
+                drillThroughBodyHeader.innerHTML = drillThroughBodyHeader.innerHTML + '<span class=' +
+                    cls.DRILLTHROUGH_BODY_HEADER_COMMON_CLASS + '><span class=' +
+                    cls.DRILLTHROUGH_BODY_HEADER_CLASS + '>' +
+                    valueText + '</span> : <span class=' + cls.DRILLTHROUGH_BODY_HEADER_VALUE_CLASS + '>' + value + '</span></span>';
+            }
+        }
+        return drillThroughBodyHeader;
+    }
+
 }

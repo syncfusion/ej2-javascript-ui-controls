@@ -85,6 +85,8 @@ export const templatePadding: string = 'e-template-padding';
 //event Markers classes
 export const eventMarkersContainer: string = 'e-event-markers-container';
 export const eventMarkersChild: string = 'e-event-markers';
+export const progressLineContainer: string = 'e-progress-line-container';
+export const progressLine: string = 'e-progress-line';
 export const eventMarkersSpan: string = 'e-span-label';
 //holiday classes
 export const nonworkingContainer: string = 'e-nonworking-day-container';
@@ -162,3 +164,7 @@ export const rangeChildMiddleContainer: string = 'e-rg-middlerangdiv';
 //Pop Up
 export const constraintLabel: string = 'e-constraint-label';
 export const drawPreviewTaskbar: string = 'e-draw-preview-taskbar';
+//S-Curve
+export const scurveSvg: string = 'e-gantt-scurve-svg';
+export const scurveLine: string = 'e-gantt-scurve-line';
+export const scurvePoint: string = 'e-gantt-scurve-svg-point';

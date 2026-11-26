@@ -52,6 +52,8 @@ export class FormDesigner {
     private formFieldName: TextBox;
     private formFieldTooltip: TextBox;
     private formFieldValue: TextBox;
+    /** Inline validation text shown under the Name textbox for invalid date field grouping. */
+    private formFieldNameError: HTMLElement;
     private formFieldVisibility: DropDownList;
     private formFieldReadOnly: CheckBox;
     private formFieldChecked: CheckBox;
@@ -3153,6 +3155,10 @@ export class FormDesigner {
         for (let i: number = 0; i < formFieldsData.length; i++) {
             if (formFieldsData[parseInt(i.toString(), 10)].Key.split('_')[0] === (event.target as Element).id.split('_')[0] ||
                 (this.pdfViewer.nameTable[(event.target as Element).id.split('_')[0]] as PdfFormFieldBaseModel).name === formFieldsData[parseInt(i.toString(), 10)].FormField.name) {
+                if (formFieldsData[parseInt(i.toString(), 10)].Key.split('_')[0] !== (event.target as Element).id.split('_')[0] &&
+                    formFieldsData[parseInt(i.toString(), 10)].FormField.isReadonly) {
+                    continue;
+                }
                 const oldValue: string = this.pdfViewerBase.formFieldCollection[parseInt(i.toString(), 10)].FormField.value;
                 // R-FIX-DTP-02-c: short-circuit invalid DateTime values so the
                 // element reverts to the previous valid baseline (collection +
@@ -3868,6 +3874,9 @@ export class FormDesigner {
                 const val: string = !isNullOrUndefined((options as PdfFormFieldBaseModel).value) ? (
                     options as PdfFormFieldBaseModel).value : (obj.value as string);
                 obj.value = (!isNullOrUndefined(maxLen) && maxLen > 0) ? val.substring(0, maxLen) : val;
+                if (isDateField && obj.actions && obj.actions.format) {
+                    obj.value = this.pdfViewer.formFieldsModule.getValidDateTimeValue(obj.value as string, obj.actions.format.script);
+                }
             }
             break;
         case 'Password':
@@ -4344,6 +4353,19 @@ export class FormDesigner {
             (node as PdfFormFieldBaseModel).compressData = data.compressData;
             (node as PdfFormFieldBaseModel).customValue = data.customValue;
             (node as PdfFormFieldBaseModel).caption = data.caption;
+        }
+    }
+
+    /**
+     * @private
+     * @returns {void}
+     */
+    public exitFormFieldCreationMode(): void {
+        this.isSetFormFieldMode = false;
+        this.isAddFormFieldUi = false;
+        if (this.pdfViewer.isFormDesignerToolbarVisible) {
+            const helper: HTMLElement = document.getElementById('FormField_helper_html_element');
+            if (helper) { helper.remove(); }
         }
     }
 
@@ -4913,6 +4935,17 @@ export class FormDesigner {
             if (formFieldObject.name !== options.name) {
                 isNameChanged = true;
             }
+            if (isNameChanged && formFieldObject.isDateField && !(options as TextFieldSettings).isReadOnly) {
+                const peerKeys: string[] = Object.keys(this.pdfViewer.nameTable);
+                for (let k: number = 0; k < peerKeys.length; k++) {
+                    const peer: PdfFormFieldBaseModel =
+                        this.pdfViewer.nameTable[peerKeys[parseInt(k.toString(), 10)]] as PdfFormFieldBaseModel;
+                    if (peer && peer.id !== formFieldObject.id && peer.isDateField && peer.isReadonly && peer.name === options.name) {
+                        (options as TextFieldSettings).isReadOnly = true;
+                        break;
+                    }
+                }
+            }
             formFieldObject.name = options.name;
             const designerName: HTMLElement = document.getElementById(formFieldObject.id + '_designer_name');
             designerName.innerHTML = formFieldObject.name;
@@ -5244,6 +5277,12 @@ export class FormDesigner {
                                                           false, false, false, false, oldValue, newValue);
                 }
             }
+            if (formFieldObject.isDateField && (options as TextFieldSettings).value &&
+                (options as TextFieldSettings).value !== formFieldObject.value &&
+                !this.isValidDateTimeValue((options as TextFieldSettings).value, this.parseDateTimeFormatPattern(formFieldObject))) {
+                // Invalid date/time text: silently skip the value update.
+                (options as TextFieldSettings).value = formFieldObject.value;
+            }
             if ((options as TextFieldSettings).value || (options as TextFieldSettings).isMultiline) {
                 if (!isNullOrUndefined((options as TextFieldSettings).value) && formFieldObject.value !==
                 (options as TextFieldSettings).value) {
@@ -5267,7 +5306,14 @@ export class FormDesigner {
                     formFieldObject.isMultiline = (options as TextFieldSettings).isMultiline;
                 }
                 if (!(formFieldObject.formFieldAnnotationType === 'DropdownList' || formFieldObject.formFieldAnnotationType === 'ListBox') && !isNullOrUndefined((options as TextFieldSettings).value)) {
-                    (htmlElement as IElement).value = (options as TextFieldSettings).value;
+                    const dateTimeInput: HTMLInputElement = (htmlElement && (htmlElement as HTMLElement).classList &&
+                        (htmlElement as HTMLElement).classList.contains('e-pv-datetime-composite')) ?
+                        (htmlElement as HTMLElement).querySelector('.e-pv-formfield-input') as HTMLInputElement : null;
+                    if (dateTimeInput) {
+                        dateTimeInput.value = (options as TextFieldSettings).value;
+                    } else {
+                        (htmlElement as IElement).value = (options as TextFieldSettings).value;
+                    }
                 }
                 else if ( formFieldObject.formFieldAnnotationType === 'DropdownList' || formFieldObject.formFieldAnnotationType === 'ListBox')
                 {
@@ -5955,6 +6001,16 @@ export class FormDesigner {
                         case 'RadioButton': {
                             const inputElement: Element = document.getElementById(collections[parseInt(i.toString(), 10)].id + '_content_html_element').firstElementChild.firstElementChild;
                             (inputElement as HTMLElement).style.pointerEvents = collections[parseInt(i.toString(), 10)].isReadonly ? (collections[parseInt(i.toString(), 10)].isMultiline ? 'auto' : 'none') : 'auto';
+                            if (collections[parseInt(i.toString(), 10)].isDateField) {
+                                const pickerBtn: HTMLElement = (inputElement as HTMLElement).querySelector('.e-pv-datetime-picker-btn');
+                                if (pickerBtn) {
+                                    if (collections[parseInt(i.toString(), 10)].isReadonly) {
+                                        pickerBtn.classList.add('e-disabled');
+                                    } else {
+                                        pickerBtn.classList.remove('e-disabled');
+                                    }
+                                }
+                            }
                             break;
                         }
                         case 'Checkbox': {
@@ -6085,7 +6141,22 @@ export class FormDesigner {
     }
 
     private activateTextboxElement(formFieldType: FormFieldAnnotationType): void {
-        const fieldIndex: number = this.setFormFieldIndex();
+        let fieldIndex: number = this.setFormFieldIndex();
+        if (this.isDateTimeToolPlacement) {
+            const existing: string[] = [];
+            const lists: (FormFieldModel | PdfFormFieldBaseModel)[][] = [this.pdfViewer.formFieldCollections,
+                this.pdfViewer.formFieldCollection];
+            for (let l: number = 0; l < lists.length; l++) {
+                for (let k: number = 0; lists[l as number] && k < lists[l as number].length; k++) {
+                    const item: FormFieldModel | PdfFormFieldBaseModel = lists[l as number][k as number];
+                    if (item && item.name) { existing.push(item.name); }
+                }
+            }
+            while (existing.indexOf('DateTime' + fieldIndex) !== -1) {
+                fieldIndex++;
+            }
+            this.formFieldIndex = fieldIndex;
+        }
         const textboxModel: PdfFormFieldBaseModel = {
             formFieldAnnotationType: formFieldType,
             name: (this.isDateTimeToolPlacement ? 'DateTime' : 'Textbox') + fieldIndex, value: '', fontFamily: 'Helvetica', fontSize: this.defaultFontSize, fontStyle: 'None', color: 'black',
@@ -6959,6 +7030,11 @@ export class FormDesigner {
                 pickerBtn.tabIndex = obj.isReadonly ? -1 : 0;
                 // R2-FIX-09: re-assert 100% height so the button tracks the wrapper after resize.
                 pickerBtn.style.height = '100%';
+                if (obj.isReadonly) {
+                    pickerBtn.classList.add('e-disabled');
+                } else {
+                    pickerBtn.classList.remove('e-disabled');
+                }
             }
         }
         textTarget.style.textAlign = obj.alignment ? obj.alignment.toLowerCase() : 'left';
@@ -7899,8 +7975,104 @@ export class FormDesigner {
         this.propertiesDialog.appendTo(dialogDiv);
     }
 
+    /**
+     * Silently rejects a rename that would group this field with an incompatible same-named field
+     * (different field type, or different DateTime format script) by restoring the previous name.
+     *
+     * @param {PdfFormFieldBaseModel} selectedItem - field being edited
+     * @returns {void}
+     */
+    private rejectIncompatibleGrouping(selectedItem: PdfFormFieldBaseModel): void {
+        if (!selectedItem || !this.formFieldName || this.formFieldName.value === selectedItem.name) {
+            return;
+        }
+        const newName: string = this.formFieldName.value;
+        const selectedScript: string = this.pdfViewerBase.getActionsFormatScript(selectedItem.actions);
+        const nameTable: Record<string, PdfAnnotationBaseModel | PdfFormFieldBaseModel> = this.pdfViewer.nameTable;
+        for (const key of Object.keys(nameTable)) {
+            const other: PdfFormFieldBaseModel = nameTable[`${key}`] as PdfFormFieldBaseModel;
+            if (!other || !other.formFieldAnnotationType || other.id === selectedItem.id || other.name !== newName) {
+                continue;
+            }
+            const otherScript: string = this.pdfViewerBase.getActionsFormatScript(other.actions);
+            const typeMismatch: boolean = other.formFieldAnnotationType !== selectedItem.formFieldAnnotationType ||
+                !!other.isDateField !== !!selectedItem.isDateField;
+            const formatMismatch: boolean = !!selectedScript && !!otherScript && selectedScript !== otherScript;
+            if (typeMismatch || formatMismatch) {
+                this.formFieldName.value = selectedItem.name;
+                return;
+            }
+        }
+        if (selectedItem.isDateField && this.formFieldReadOnly && !this.formFieldReadOnly.checked) {
+            for (const key of Object.keys(nameTable)) {
+                const peer: PdfFormFieldBaseModel = nameTable[`${key}`] as PdfFormFieldBaseModel;
+                if (peer && peer.formFieldAnnotationType && peer.id !== selectedItem.id && peer.name === this.formFieldName.value &&
+                    peer.isDateField && peer.isReadonly) {
+                    this.formFieldReadOnly.checked = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns true when the typed name would group a date field with a field of another type or format.
+     *
+     * @param {PdfFormFieldBaseModel} selectedItem - field being edited
+     * @returns {boolean} - true when the grouping is invalid
+     */
+    private hasInvalidDateGrouping(selectedItem: PdfFormFieldBaseModel): boolean {
+        if (!selectedItem || !this.formFieldName || !this.formFieldName.value) {
+            return false;
+        }
+        const newName: string = this.formFieldName.value;
+        const selectedScript: string = this.pdfViewerBase.getActionsFormatScript(selectedItem.actions);
+        const nameTable: Record<string, PdfAnnotationBaseModel | PdfFormFieldBaseModel> = this.pdfViewer.nameTable;
+        for (const key of Object.keys(nameTable)) {
+            const other: PdfFormFieldBaseModel = nameTable[`${key}`] as PdfFormFieldBaseModel;
+            if (!other || !other.formFieldAnnotationType || other.id === selectedItem.id || other.name !== newName) {
+                continue;
+            }
+            if (!selectedItem.isDateField && !other.isDateField) {
+                continue;
+            }
+            const otherScript: string = this.pdfViewerBase.getActionsFormatScript(other.actions);
+            if (other.formFieldAnnotationType !== selectedItem.formFieldAnnotationType ||
+                !!other.isDateField !== !!selectedItem.isDateField ||
+                (!!selectedScript && !!otherScript && selectedScript !== otherScript)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private updateNameGroupingError(): boolean {
+        const selectedItem: PdfFormFieldBaseModel = this.pdfViewer.selectedItems.formFields[0];
+        const invalid: boolean = this.hasInvalidDateGrouping(selectedItem);
+        if (this.formFieldNameError) {
+            this.formFieldNameError.style.display = invalid ? 'block' : 'none';
+        }
+        return invalid;
+    }
+
     private onOkClicked(args: Event): void {
         const selectedItem: PdfFormFieldBaseModel = this.pdfViewer.selectedItems.formFields[0];
+        if (selectedItem && this.updateNameGroupingError()) {
+            return;
+        }
+        if (selectedItem && selectedItem.isDateField && this.formFieldValue && this.formFieldValue.value &&
+            this.formFieldValue.value !== selectedItem.value) {
+            const pattern: string = this.parseDateTimeFormatPattern(selectedItem);
+            if (!this.isValidDateTimeValue(this.formFieldValue.value, pattern)) {
+                this.pdfViewer.showNotificationDialog = false;
+                this.pdfViewer.showNotificationPopup(
+                    'Invalid date/time. The value entered does not match the required format' +
+                    (typeof pattern === 'string' && pattern ? ': ' + pattern : '.'));
+                this.pdfViewer.showNotificationDialog = true;
+                return;
+            }
+        }
+        this.rejectIncompatibleGrouping(selectedItem);
         const clonedItem: Object = cloneObject(selectedItem);
         this.isAddFormFieldProgrammatically = false;
         if (selectedItem) {
@@ -8343,6 +8515,9 @@ export class FormDesigner {
         pickerBtn.type = 'button';
         pickerBtn.id = id + '_datetime_picker_btn';
         pickerBtn.className = 'e-pv-datetime-picker-btn';
+        if (drawingObject && drawingObject.isReadonly) {
+            pickerBtn.classList.add('e-disabled');
+        }
         pickerBtn.setAttribute('aria-label', 'Open date time picker');
         pickerBtn.tabIndex = 0;
         pickerBtn.style.flex = '0 0 auto';
@@ -8449,7 +8624,7 @@ export class FormDesigner {
                 openNativePicker();
             }
         });
-        nativePicker.addEventListener('change', () => {
+        const commitPickerValue: () => void = (): void => {
             const formatted: string = this.formatNativeDateTimeValue(nativePicker.value, drawingObject);
             (textInput as HTMLInputElement).value = formatted;
             // Keep text editable after picker commit (readonly only when model says so).
@@ -8462,6 +8637,13 @@ export class FormDesigner {
             changeEvent.initEvent('change', true, true);
             Object.defineProperty(changeEvent, 'target', { writable: false, value: textInput });
             this.getTextboxValue(changeEvent);
+        };
+        nativePicker.addEventListener('change', commitPickerValue);
+        // Live preview: reflect each hour/minute/AM-PM selection without running the commit/validation pipeline.
+        nativePicker.addEventListener('input', () => {
+            if (nativePicker.value) {
+                (textInput as HTMLInputElement).value = this.formatNativeDateTimeValue(nativePicker.value, drawingObject);
+            }
         });
         // Stacked fallback host exists when datetime-local unsupported and format needs both.
         if (nativeType === 'date' && !this.supportsDateTimeLocal() &&
@@ -8472,6 +8654,112 @@ export class FormDesigner {
         wrapper.appendChild(pickerBtn);
         wrapper.appendChild(nativePicker);
         return wrapper;
+    }
+
+    /**
+     * Strictly validates date/time text against the field's format pattern.
+     *
+     * @param {string} text - value entered for the field
+     * @param {string} pattern - active format pattern (for example m/d/yy)
+     * @private
+     * @returns {boolean} - true when the text matches the pattern and all parts are in range
+     */
+    private isValidDateTimeValue(text: string, pattern: string): boolean {
+        const value: string = (text || '').trim();
+        if (!value || !pattern) {
+            return false;
+        }
+        const monthNames: string[] = ['january', 'february', 'march', 'april', 'may', 'june', 'july',
+            'august', 'september', 'october', 'november', 'december'];
+        const tokenRegex: RegExp = /yyyy|yyy|yy|mmmm|mmm|mm|m|dd|d|HH|H|hh|h|MM|ss|tt/gi;
+        const order: string[] = [];
+        let source: string = '';
+        let last: number = 0;
+        let match: RegExpExecArray = tokenRegex.exec(pattern);
+        while (match) {
+            source += pattern.substring(last, match.index).replace(/[.*+?^${}()|[\]\\/-]/g, '\\$&');
+            let token: string = match[0];
+            if (token.toLowerCase() === 'tt' || token.toLowerCase() === 'mmmm' || token.toLowerCase() === 'mmm') {
+                token = token.toLowerCase();
+            }
+            order.push(token);
+            if (token === 'yyyy' || token === 'yyy') {
+                source += '(\\d{4})';
+            // eslint-disable-next-line security/detect-possible-timing-attacks
+            } else if (token === 'yy') {
+                source += '(\\d{2})';
+            // eslint-disable-next-line security/detect-possible-timing-attacks
+            } else if (token === 'mmmm') {
+                source += '([A-Za-z]+)';
+            // eslint-disable-next-line security/detect-possible-timing-attacks
+            } else if (token === 'mmm') {
+                source += '([A-Za-z]{3})';
+            // eslint-disable-next-line security/detect-possible-timing-attacks
+            } else if (token === 'tt') {
+                source += '(AM|PM|am|pm)';
+            } else {
+                source += '(\\d{1,2})';
+            }
+            last = match.index + match[0].length;
+            match = tokenRegex.exec(pattern);
+        }
+        source += pattern.substring(last).replace(/[.*+?^${}()|[\]\\/-]/g, '\\$&');
+        // eslint-disable-next-line security/detect-non-literal-regexp
+        const parts: RegExpMatchArray = value.match(new RegExp('^' + source + '$'));
+        if (!parts) {
+            return false;
+        }
+        let year: number = -1;
+        let month: number = -1;
+        let day: number = -1;
+        let hasTt: boolean = false;
+        for (let i: number = 0; i < order.length; i++) {
+            const token: string = order[parseInt(i.toString(), 10)];
+            const part: string = parts[i + 1];
+            const num: number = Number(part);
+            if (token === 'yyyy' || token === 'yyy' || token === 'yy') {
+                year = token === 'yy' ? 2000 + num : num;
+            } else if (token === 'mmmm' || token === 'mmm') {
+                const lower: string = part.toLowerCase();
+                month = monthNames.findIndex((n: string) => token === 'mmmm' ? n === lower : n.substring(0, 3) === lower) + 1;
+                if (month < 1) {
+                    return false;
+                }
+            } else if (token === 'mm' || token === 'm') {
+                month = num;
+                if (month < 1 || month > 12) {
+                    return false;
+                }
+            } else if (token === 'dd' || token === 'd') {
+                day = num;
+                if (day < 1 || day > 31) {
+                    return false;
+                }
+            } else if (token === 'HH' || token === 'H') {
+                if (num > 23) {
+                    return false;
+                }
+            } else if (token === 'hh' || token === 'h') {
+                if (num < 1 || num > 12) {
+                    return false;
+                }
+            } else if (token === 'MM' || token === 'ss') {
+                if (num > 59) {
+                    return false;
+                }
+            // eslint-disable-next-line security/detect-possible-timing-attacks
+            } else if (token === 'tt') {
+                hasTt = true;
+            }
+        }
+        void hasTt;
+        if (day > 0 && month > 0) {
+            const maxDay: number = new Date(year > 0 ? year : 2000, month, 0).getDate();
+            if (day > maxDay) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -9407,6 +9695,12 @@ export class FormDesigner {
      */
     public updateTextboxFormDesignerProperties(selectedItem: PdfFormFieldBaseModel, isUndoRedo?: boolean): void {
         let inputElement: HTMLElement = document.getElementById(selectedItem.id + '_content_html_element').firstElementChild.firstElementChild as HTMLElement;
+        // DateTime fields render as a composite (text input + picker button). The wrapper carries the
+        // chrome (fill, border); the inner input carries the text. Chrome properties must be applied
+        // to the wrapper, text properties to the inner input.
+        const isDateTimeComposite: boolean = !!(selectedItem.isDateField && inputElement &&
+            inputElement.classList && inputElement.classList.contains('e-pv-datetime-composite'));
+        const chromeElement: HTMLElement = isDateTimeComposite ? inputElement : inputElement;
         let isMaxLengthChanged: boolean = false;
         let oldValue: string | number | boolean | string[] | number[] | object; let newValue: string | number | boolean | string[] |
         number[] | object;
@@ -9430,7 +9724,7 @@ export class FormDesigner {
                 this.updateVisibilityPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
             }
             // DateTime text lives on the inner input; styling the composite wrapper is not visible.
-            if (selectedItem.isDateField) {
+            if (isDateTimeComposite) {
                 inputElement = this.getDateTimeTextAppearanceTarget(inputElement);
             }
             if ((this.isAddFormFieldProgrammatically ? selectedItem.fontFamily : this.formFieldFontFamily &&
@@ -9545,13 +9839,13 @@ export class FormDesigner {
                 this.updateColorPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
             }
             if (this.backgroundColorValue || isUndoRedo || this.multilineCheckboxCheckedState) {
-                this.updateBackgroundColorPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
+                this.updateBackgroundColorPropertyChange(selectedItem, chromeElement, isUndoRedo, index, formFieldsData);
             }
             if (this.borderColorValue || isUndoRedo || this.multilineCheckboxCheckedState) {
-                this.updateBorderColorPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
+                this.updateBorderColorPropertyChange(selectedItem, chromeElement, isUndoRedo, index, formFieldsData);
             }
             if (!isNullOrUndefined (this.formFieldBorderWidth) || isUndoRedo) {
-                this.updateBorderThicknessPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
+                this.updateBorderThicknessPropertyChange(selectedItem, chromeElement, isUndoRedo, index, formFieldsData);
             }
             if (this.formFieldReadOnly || isUndoRedo) {
                 this.updateIsReadOnlyPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
@@ -9786,6 +10080,25 @@ export class FormDesigner {
                                      formFieldsData: IFormFieldCollection[],
                                      updateValue?: boolean): void {
         let isValueChanged: boolean = false;
+        let valueTarget: Element = element;
+        if (valueTarget && (valueTarget as HTMLElement).classList
+            && (valueTarget as HTMLElement).classList.contains('e-pv-datetime-composite')) {
+            const innerInput: Element = valueTarget.querySelector('.e-pv-formfield-input');
+            if (innerInput) {
+                valueTarget = innerInput;
+            }
+        }
+        if (!isUndoRedo && selectedItem.isDateField && this.formFieldValue && !updateValue &&
+            !this.isAddFormFieldProgrammatically) {
+            const enteredValue: string = this.formFieldValue.value;
+            if (enteredValue && enteredValue !== selectedItem.value) {
+                if (!this.isValidDateTimeValue(enteredValue, this.parseDateTimeFormatPattern(selectedItem))) {
+                    // Invalid date/time text: silently keep the previous valid value.
+                    this.formFieldValue.value = selectedItem.value;
+                    return;
+                }
+            }
+        }
         let oldValue: string | number | boolean | string[] | number[] | object; let newValue: string | number | boolean | string[] |
         number[] | object;
         if (selectedItem.formFieldAnnotationType !== 'DropdownList' && this.formFieldValue && (selectedItem.value !== this.formFieldValue.value)) {
@@ -9799,7 +10112,8 @@ export class FormDesigner {
             newValue = formFieldsData[parseInt(index.toString(), 10)].FormField.value;
         }
         if (isUndoRedo) {
-            (element as HTMLInputElement).value = selectedItem.value;
+            const target: Element = valueTarget;
+            (target as HTMLInputElement).value = selectedItem.value;
         } else {
             if (updateValue) {
                 isValueChanged = false;
@@ -9812,7 +10126,7 @@ export class FormDesigner {
                 if (selectedItem.formFieldAnnotationType === 'DropdownList') {
                     (element as HTMLInputElement).value = formFieldsData[parseInt(index.toString(), 10)].FormField.value;
                 } else {
-                    (element as HTMLInputElement).value = this.formFieldValue ? this.formFieldValue.value : selectedItem.value;
+                    (valueTarget as HTMLInputElement).value = this.formFieldValue ? this.formFieldValue.value : selectedItem.value;
                 }
             }
             // EJ2-856550 - to get select item while add multiline programatically.
@@ -9823,7 +10137,7 @@ export class FormDesigner {
                 if (selectedItem.formFieldAnnotationType === 'DropdownList') {
                     (element as HTMLInputElement).value = formFieldsData[parseInt(index.toString(), 10)].FormField.value;
                 } else {
-                    (element as HTMLInputElement).value = selectedItem.value;
+                    (valueTarget as HTMLInputElement).value = selectedItem.value;
                 }
             }
         }
@@ -10895,6 +11209,13 @@ export class FormDesigner {
         formFieldNameDiv.appendChild(formFieldNameContainer);
         formFieldNameMainDiv.appendChild(formFieldNameDiv);
         this.formFieldName = new TextBox({ type: 'text', floatLabelType: 'Always', placeholder: this.pdfViewer.localeObj.getConstant('Name'), value: selectedItem.name, cssClass: 'e-pv-properties-formfield-name' }, (formFieldNameContainer as HTMLInputElement));
+        this.formFieldNameError = createElement('div', {
+            className: 'e-pv-properties-name-error',
+            innerHTML: 'This field can’t be grouped.'
+        });
+        this.formFieldNameError.style.cssText = 'display:none;color:#e3165b;font-size:11px;margin-top:2px;';
+        formFieldNameMainDiv.appendChild(this.formFieldNameError);
+        this.formFieldName.element.addEventListener('focusout', this.updateNameGroupingError.bind(this));
         textStyleContainer.appendChild(formFieldNameMainDiv);
         const formFieldTooltipMainDiv: HTMLElement = createElement('div', { className: 'e-pv-properties-form-field-tooltip-main-div' });
         const formFieldTooltipDiv: HTMLElement = createElement('div', { className: 'e-pv-properties-tooltip-edit-prop' });
@@ -14049,6 +14370,24 @@ export class FormDesigner {
             (inputElement as HTMLInputElement).parentElement.style.backgroundColor = (
                 inputElement as HTMLInputElement).style.backgroundColor;
         }
+        // DateTime composite: keep the calendar/date picker button visually in sync
+        // with the read-only state of the field. The button lives inside the
+        // `e-pv-datetime-composite` wrapper, which is either the inputElement itself
+        // or its parent (depending on whether the inner text input was passed in).
+        const hostElement: HTMLElement = document.getElementById(selectedItem.id + '_content_html_element');
+        let pickerBtn: HTMLElement = hostElement ? hostElement.querySelector('.e-pv-datetime-picker-btn') : null;
+        if (!pickerBtn && inputElement) {
+            pickerBtn = (inputElement as HTMLElement).classList && (inputElement as HTMLElement).classList.contains('e-pv-datetime-composite')
+                ? (inputElement as HTMLElement).querySelector('.e-pv-datetime-picker-btn')
+                : ((inputElement as HTMLElement).parentElement ? (inputElement as HTMLElement).parentElement.querySelector('.e-pv-datetime-picker-btn') : null);
+        }
+        if (pickerBtn) {
+            if (isReadOnly) {
+                pickerBtn.classList.add('e-disabled');
+            } else {
+                pickerBtn.classList.remove('e-disabled');
+            }
+        }
         if (!isReadOnly && (inputElement as HTMLInputElement).disabled) {
             (inputElement as HTMLInputElement).disabled = false;
         }
@@ -14096,6 +14435,28 @@ export class FormDesigner {
     }
 
     private setRequiredToElement(selectedItem: PdfFormFieldBaseModel, inputElement: Element, isRequired: boolean): void {
+        const dtHost: HTMLElement = (inputElement as HTMLElement).classList &&
+            (inputElement as HTMLElement).classList.contains('e-pv-datetime-composite') ? inputElement as HTMLElement :
+            ((inputElement as HTMLElement).parentElement && (inputElement as HTMLElement).parentElement.classList &&
+            (inputElement as HTMLElement).parentElement.classList.contains('e-pv-datetime-composite') ?
+                (inputElement as HTMLElement).parentElement : null);
+        if (dtHost) {
+            // DateTime composite: single outer chrome; text input and picker button must not draw their own border.
+            const dtText: HTMLElement = dtHost.querySelector('.e-pv-datetime-text') as HTMLElement;
+            const dtBtn: HTMLElement = dtHost.querySelector('.e-pv-datetime-picker-btn') as HTMLElement;
+            const color: string = isRequired ? 'red' : (selectedItem.borderColor as string);
+            if (dtText) {
+                (dtText as HTMLInputElement).required = isRequired;
+                dtText.style.border = 'none';
+            }
+            dtHost.style.borderStyle = 'solid';
+            dtHost.style.borderColor = color;
+            dtHost.style.borderWidth = (selectedItem.thickness > 0 ? selectedItem.thickness : 1) + 'px';
+            if (dtBtn) {
+                dtBtn.style.borderLeftColor = color;
+            }
+            return;
+        }
         if (isRequired) {
             (inputElement as HTMLInputElement).required = true;
             (inputElement as HTMLInputElement).style.border = '1px solid red';
@@ -14137,6 +14498,7 @@ export class FormDesigner {
         this.borderColorValue = null;
         this.formFieldBorderWidth = null;
         this.formFieldName = null;
+        this.formFieldNameError = null;
         this.formFieldChecked = null;
         this.formFieldReadOnly = null;
         this.formFieldRequired = null;
@@ -14394,7 +14756,8 @@ export class FormDesigner {
         if (textFieldSettings.visibility && this.textFieldPropertyChanged.isVisibilityChanged && textFieldSettings.visibility !== 'visible') {
             drawingObject.visibility = textFieldSettings.visibility;
         }
-        if (!isNullOrUndefined(textFieldSettings.isPrint) && this.textFieldPropertyChanged.isPrintChanged) {
+        if (!isNullOrUndefined(textFieldSettings.isPrint) && this.textFieldPropertyChanged.isPrintChanged &&
+            textFieldSettings.isPrint !== true) {
             drawingObject.isPrint = textFieldSettings.isPrint;
         }
         if (!isNullOrUndefined(textFieldSettings.isMultiline) && this.textFieldPropertyChanged.isMultilineChanged &&

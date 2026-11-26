@@ -4035,6 +4035,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.fixedHeaderElement = null;
             }
             if (!eventArgs.cancel) {
+                this.destroyPopupPositionObserver();
                 if (this.isPopupOpen && this.allowFiltering && this.isDeviceFullScreen && Browser.isDevice && Browser.isIos){
                     document.documentElement.scrollTo({
                         top: this.iOSscrollPosition.y,
@@ -4140,7 +4141,13 @@ export class DropDownList extends DropDownBase implements IInput {
         if (isNullOrUndefined(observerTarget)) {
             return;
         }
-        this.popupPositionObserver = new MutationObserver((): void => {
+        this.popupPositionObserver = new MutationObserver((mutations: MutationRecord[]): void => {
+            // Ignore the component's own changes (focus / icon-animation classes) to avoid needless refresh cycles.
+            const external: boolean = mutations.some((m: MutationRecord): boolean =>
+                isNullOrUndefined(this.inputWrapper) || !this.inputWrapper.container.contains(m.target));
+            if (!external) {
+                return;
+            }
             clearTimeout(this.popupPositionRefreshTimer);
             this.popupPositionRefreshTimer = setTimeout((): void => {
                 if (
@@ -4157,6 +4164,13 @@ export class DropDownList extends DropDownBase implements IInput {
             attributes: true,
             attributeFilter: ['style', 'class']
         });
+        // Content added or removed before the input (for example a delayed validation message) is a direct child change
+        // of one of its ancestors, so watch only those child lists (not their subtrees) up to, but excluding, the body.
+        let ancestor: HTMLElement = observerTarget.parentElement;
+        while (ancestor && ancestor !== document.body && ancestor !== document.documentElement) {
+            this.popupPositionObserver.observe(ancestor, { childList: true });
+            ancestor = ancestor.parentElement;
+        }
     }
 
     private destroyPopupPositionObserver(): void {
@@ -5055,7 +5069,6 @@ export class DropDownList extends DropDownBase implements IInput {
      */
     public hidePopup(e?: MouseEvent | KeyboardEventArgs | TouchEvent): void {
         /* eslint-enable valid-jsdoc, jsdoc/require-param */
-        this.destroyPopupPositionObserver();
         if (this.isEscapeKey && this.getModuleName() === 'dropdownlist') {
             if (!isNullOrUndefined(this.inputElement)) {
                 Input.setValue(this.text, this.inputElement, this.floatLabelType, this.showClearButton);

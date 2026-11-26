@@ -19,6 +19,7 @@ import { _JpegDecoder } from './graphics/images/jpeg-decoder';
 import { _PngDecoder } from './graphics/images/png-decoder';
 import { CompressedStreamWriter } from '@syncfusion/ej2-compression';
 import { _CjkWidthTable, _PdfFontMetrics, _StandardWidthTable, _WidthTable } from './fonts/pdf-font-metrics';
+import { _OtfScript } from './enumerator';
 import { _PdfAbstractSyntaxElement } from './security/digital-signature/asn1/abstract-syntax';
 import { _PdfUniqueEncodingElement } from './security/digital-signature/asn1/unique-encoding-element';
 /**
@@ -6493,7 +6494,6 @@ export function _decodeEmbeddedStream(stream: any): Uint8Array { // eslint-disab
     }
     throw new Error('Unsupported embedded file stream type.');
 }
-
 /**
  * Builds the Adobe DataPrep barcode payload: 0x81 0x01 followed by the zlib (Flate) compressed UTF-8 bytes of the text.
  *
@@ -6532,4 +6532,197 @@ export function _compressBarcodeData(text: string): Uint8Array {
         result[i + 2] = compressed.charCodeAt(i) & 0xFF;
     }
     return result;
+}
+
+/**
+ * Detects the significant Unicode script of the supplied text, skipping common, inherited,
+ * and unknown characters.
+ *
+ * @private
+ * @param {string} text - Text to classify.
+ * @returns {_OtfScript} Detected significant script or unknown.
+ */
+export function _detectOtfScript(text: string): _OtfScript {
+    let script: _OtfScript = _OtfScript.unknown;
+    if (text === null || typeof text === 'undefined' || text.length === 0) {
+        return script;
+    }
+    for (let i: number = 0; i < text.length; i++) {
+        let code: number = text.charCodeAt(i);
+        if (code >= 0xD800 && code <= 0xDBFF && i + 1 < text.length) {
+            const low: number = text.charCodeAt(i + 1);
+            if (low >= 0xDC00 && low <= 0xDFFF) {
+                code = 0x10000 + ((code - 0xD800) << 10) + (low - 0xDC00);
+                i++;
+            }
+        }
+        if (_isOtfDiscard(code)) {
+            continue;
+        }
+        const detected: _OtfScript = _classifyOtfScript(code);
+        if (detected !== _OtfScript.unknown) {
+            if (script === _OtfScript.unknown) {
+                script = detected;
+            } else if (script !== detected) {
+                return script;
+            }
+        }
+    }
+    return script;
+}
+/**
+ * Classifies a single Unicode scalar into a supported script.
+ *
+ * @private
+ * @param {number} code - Unicode scalar value.
+ * @returns {_OtfScript} Classified script or unknown.
+ */
+export function _classifyOtfScript(code: number): _OtfScript {
+    if ((code >= 0x0600 && code <= 0x06FF) || (code >= 0x0750 && code <= 0x077F) || (code >= 0x08A0 && code <= 0x08FF) ||
+        (code >= 0xFB50 && code <= 0xFDFF) || (code >= 0xFE70 && code <= 0xFEFF)) {
+        return _OtfScript.arabic;
+    }
+    if ((code >= 0x0590 && code <= 0x05FF) || (code >= 0xFB1D && code <= 0xFB4F)) {
+        return _OtfScript.hebrew;
+    }
+    if ((code >= 0x0900 && code <= 0x097F) || (code >= 0xA8E0 && code <= 0xA8FF) || (code >= 0x11B00 && code <= 0x11B5F)) {
+        return _OtfScript.devanagari;
+    }
+    if (code >= 0x0980 && code <= 0x09FF) {
+        return _OtfScript.bengali;
+    }
+    if (code >= 0x0A00 && code <= 0x0A7F) {
+        return _OtfScript.gurmukhi;
+    }
+    if (code >= 0x0A80 && code <= 0x0AFF) {
+        return _OtfScript.gujarati;
+    }
+    if (code >= 0x0B00 && code <= 0x0B7F) {
+        return _OtfScript.oriya;
+    }
+    if (code >= 0x0B80 && code <= 0x0BFF) {
+        return _OtfScript.tamil;
+    }
+    if (code >= 0x0C00 && code <= 0x0C7F) {
+        return _OtfScript.telugu;
+    }
+    if (code >= 0x0C80 && code <= 0x0CFF) {
+        return _OtfScript.kannada;
+    }
+    if (code >= 0x0D00 && code <= 0x0DFF) {
+        return _OtfScript.malayalam;
+    }
+    if (code >= 0x0E00 && code <= 0x0E7F) {
+        return _OtfScript.thai;
+    }
+    if ((code >= 0x1780 && code <= 0x17FF) || (code >= 0x19E0 && code <= 0x19FF)) {
+        return _OtfScript.khmer;
+    }
+    return _OtfScript.unknown;
+}
+/**
+ * Determines whether a code point is ignorable for script detection.
+ *
+ * @private
+ * @param {number} code - Unicode scalar value.
+ * @returns {boolean} True when the code point is ignorable.
+ */
+export function _isOtfDiscard(code: number): boolean {
+    return code < 0x0370 || (code >= 0x2000 && code <= 0x206F) ||
+        (code >= 0xFE00 && code <= 0xFE0F) || code === 0xFEFF;
+}
+/**
+ * Gets the legacy OpenType script tag tried when the preferred tag is absent.
+ *
+ * @private
+ * @param {string} tag - Preferred OpenType script tag.
+ * @returns {string} Legacy tag, or null when none exists.
+ */
+export function _getLegacyOtfScriptTag(tag: string): string {
+    switch (tag) {
+    case 'bng2': return 'beng';
+    case 'dev2': return 'deva';
+    case 'gjr2': return 'gujr';
+    case 'gur2': return 'guru';
+    case 'knd2': return 'knda';
+    case 'mlm2': return 'mlym';
+    case 'ory2': return 'orya';
+    case 'tml2': return 'taml';
+    case 'tel2': return 'telu';
+    default: return null;
+    }
+}
+/**
+ * Gets the canonical decomposition of a two-part Indic vowel sign
+ * (pre-base part and post-base/length part).
+ *
+ * @private
+ * @param {number} code - Unicode scalar value.
+ * @returns {number[]} Decomposed code points, or null when the code is not a split vowel.
+ */
+export function _getIndicSplitVowel(code: number): number[] {
+    switch (code) {
+    case 0x09CB: return [0x09C7, 0x09BE];
+    case 0x09CC: return [0x09C7, 0x09D7];
+    case 0x0B4B: return [0x0B47, 0x0B3E];
+    case 0x0B4C: return [0x0B47, 0x0B57];
+    case 0x0BCA: return [0x0BC6, 0x0BBE];
+    case 0x0BCB: return [0x0BC7, 0x0BBE];
+    case 0x0BCC: return [0x0BC6, 0x0BD7];
+    case 0x0D4A: return [0x0D46, 0x0D3E];
+    case 0x0D4B: return [0x0D47, 0x0D3E];
+    case 0x0D4C: return [0x0D46, 0x0D57];
+    default: return null;
+    }
+}
+/**
+ * Gets the OpenType GSUB or GPOS feature application order for a script.
+ *
+ * @private
+ * @param {string} scriptTag - OpenType script tag.
+ * @param {boolean} isGsub - True for GSUB features, false for GPOS features.
+ * @returns {string[]} Ordered feature tags (Indic order for non-listed scripts).
+ */
+export function _getOtfFeatures(scriptTag: string, isGsub: boolean): string[] {
+    if (isGsub) {
+        switch (scriptTag) {
+        case 'arab':
+            return ['ccmp', 'locl', 'isol', 'fina', 'fin2', 'fin3', 'medi', 'med2', 'init', 'rlig', 'calt', 'liga', 'mset'];
+        case 'thai':
+            return ['ccmp', 'locl', 'liga', 'clig', 'calt', 'rlig'];
+        case 'khmr':
+            return ['ccmp', 'locl', 'pref', 'blwf', 'abvf', 'pstf', 'cfar', 'pres', 'abvs', 'blws', 'psts', 'clig', 'calt',
+                'liga'];
+        default:
+            return ['locl', 'ccmp', 'nukt', 'akhn', 'rphf', 'rkrf', 'pref', 'blwf', 'half', 'pstf', 'vatu',
+                'cjct', 'pres', 'abvs', 'blws', 'psts', 'haln', 'calt', 'rlig', 'liga', 'clig'];
+        }
+    }
+    switch (scriptTag) {
+    case 'arab':
+        return ['curs', 'kern', 'mark', 'mkmk'];
+    case 'thai':
+        return ['kern', 'mark', 'mkmk'];
+    default:
+        return ['dist', 'abvm', 'blwm', 'kern', 'mark', 'mkmk'];
+    }
+}
+/**
+ * Gets the Arabic joining state a positional feature applies to.
+ *
+ * @private
+ * @param {string} tag - Feature tag.
+ * @returns {number} Joining state (1 isolated, 2 initial, 3 medial, 4 final), or 0 when not positional.
+ */
+export function _getOtfPositionalJoining(tag: string): number {
+    switch (tag) {
+    case 'isol': return 1;
+    case 'init': return 2;
+    case 'medi':
+    case 'med2': return 3;
+    case 'fina':
+    case 'fin2':
+    case 'fin3': return 4;
+    default: return 0;
+    }
 }

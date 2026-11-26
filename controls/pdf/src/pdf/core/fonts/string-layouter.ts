@@ -1,6 +1,9 @@
 import { PdfStringFormat } from './pdf-string-format';
-import { PdfFont } from './pdf-standard-font';
-import { _PdfWordWrapType } from './../enumerator';
+import { PdfFont, PdfTrueTypeFont } from './pdf-standard-font';
+import { _OtfGlyphInfoList, _OtfLayoutEngine } from './complex-script';
+import { _detectOtfScript } from '../utils';
+import { _UnicodeTrueTypeFont } from './unicode-true-type-font';
+import { _OtfScript, _PdfWordWrapType, PdfTextDirection } from './../enumerator';
 import { Size } from '../pdf-document-helper';
 /**
  * Lays out text into lines within a given size using the specified font and format.
@@ -163,6 +166,101 @@ export class _PdfStringLayouter {
         return this._font.getLineWidth(line, this._format);
     }
     /**
+     * Shapes the specified line when eligible.
+     *
+     * @private
+     * @param {string} line Line to shape.
+     * @returns {_OtfGlyphInfoList} Shaped glyph list or null.
+     */
+    _shapeLine(line: string): _OtfGlyphInfoList {
+        const formatEnabled: boolean = this._format !== null && typeof this._format !== 'undefined' &&
+            this._format.complexScript;
+        if (!formatEnabled) {
+            const retained: _OtfGlyphInfoList = this._retainedShapedList(line);
+            if (retained !== null) {
+                return retained;
+            }
+            return null;
+        }
+        if (!(this._font instanceof PdfTrueTypeFont)) {
+            return null;
+        }
+        const ttfFont: PdfTrueTypeFont = this._font as PdfTrueTypeFont;
+        if (!ttfFont.isUnicode || !(ttfFont._fontInternal instanceof _UnicodeTrueTypeFont)) {
+            return null;
+        }
+        return new _OtfLayoutEngine()._shapeTextForFont(line, ttfFont, ttfFont._fontInternal);
+    }
+    /**
+     * Returns the shaped glyph list retained on the font for the exact text, or
+     * null when no complex-script shaping has been produced for it.
+     *
+     * @private
+     * @param {string} line - Text to look up.
+     * @returns {_OtfGlyphInfoList} Retained shaped list or null.
+     */
+    private _retainedShapedList(line: string): _OtfGlyphInfoList {
+        if (!(this._font instanceof PdfTrueTypeFont)) {
+            return null;
+        }
+        const ttfFont: PdfTrueTypeFont = this._font as PdfTrueTypeFont;
+        const retained: any = ttfFont._retainedShapedList(line); // eslint-disable-line
+        return (retained !== null && typeof retained !== 'undefined') ? retained as _OtfGlyphInfoList : null;
+    }
+    /**
+     * Computes the scaled width in points of a shaped glyph list including format
+     * adjustments, used for single-line shaped measurement.
+     *
+     * @private
+     * @param {_OtfGlyphInfoList} list - Shaped glyph list.
+     * @returns {number} Width in points.
+     */
+    private _getShapedWidthInternal(list: _OtfGlyphInfoList): number {
+        const ttfFont: PdfTrueTypeFont = this._font as PdfTrueTypeFont;
+        let units: number = 0;
+        for (let i: number = 0; i < list._length; i++) {
+            const glyph: any = list._glyphs[i]; // eslint-disable-line
+            units += glyph._width + glyph._xAdvance;
+        }
+        let width: number = units * (0.001 * ttfFont.size);
+        if (this._format !== null && typeof this._format !== 'undefined') {
+            if (this._format.characterSpacing !== 0) {
+                width += list._length * this._format.characterSpacing;
+            }
+        }
+        return width;
+    }
+    /**
+     * Computes the shaped width of a glyph list for line layout, including the
+     * pending line indent handling of the caller.
+     *
+     * @private
+     * @param {_OtfGlyphInfoList} list - Shaped glyph list to measure.
+     * @returns {number} Width in points.
+     */
+    private _getShapedLineWidth(list: _OtfGlyphInfoList): number {
+        return this._getShapedWidthInternal(list);
+    }
+    /**
+     * Attaches shaped lines to a per-line layout result and resolves the line
+     * direction for later visual ordering (RTL for Arabic/Hebrew runs).
+     *
+     * @private
+     * @param {_PdfStringLayoutResult} lineResult - Per-line result to finalize.
+     * @param {_LineInfo[]} lines - Shaped lines to attach.
+     * @returns {void} nothing.
+     */
+    private _finalizeShapedResult(lineResult: _PdfStringLayoutResult, lines: _LineInfo[]): void {
+        lineResult._layoutLines = lines;
+        const script: _OtfScript = _detectOtfScript(this._reader._text);
+        const rtl: boolean = (this._format !== null && typeof this._format !== 'undefined' &&
+            this._format.textDirection === PdfTextDirection.rightToLeft) ||
+            script === _OtfScript.arabic || script === _OtfScript.hebrew;
+        for (let i: number = 0; i < lines.length; i++) {
+            lines[<number>i]._bidiLevels = rtl ? [2] : [1];
+        }
+    }
+    /**
      * Breaks a single input line into layout chunks according to wrap rules.
      *
      * @private
@@ -175,9 +273,79 @@ export class _PdfStringLayouter {
         lineResult._lineHeight = this._getLineHeight();
         const lines: _LineInfo[] = [];
         const maxWidth: number = this._size[0];
-        let lineWidth: number = this._getLineWidth(line) + lineIndent;
         let lineType: _LineType = _LineType.firstParagraphLine;
         let readWord: boolean = true;
+        const shapedList: _OtfGlyphInfoList = this._shapeLine(line);
+        let lineWidth: number = 0;
+        if (shapedList === null) {
+            lineWidth = this._getLineWidth(line) + lineIndent;
+        }
+        if (shapedList !== null) {
+            const shapedWidth: number = this._getShapedLineWidth(shapedList);
+            const shapedInfo: _LineInfo = new _LineInfo();
+            shapedInfo._text = line;
+            shapedInfo._width = shapedWidth + lineIndent;
+            shapedInfo._lineType = _LineType.newLineBreak | lineType;
+            shapedInfo._openTypeGlyphList = shapedList;
+            if (maxWidth <= 0 || Math.round(shapedInfo._width) <= Math.round(maxWidth)) {
+                lines.push(shapedInfo);
+                const size: Size = lineResult._actualSize;
+                size.height = size.height + this._getLineHeight();
+                size.width = Math.max(size.width, shapedInfo._width);
+                lineResult._size = size;
+            } else {
+                let rest: string = line;
+                let indent: number = lineIndent;
+                let type: _LineType = lineType;
+                while (rest.length > 0) {
+                    let breakAt: number = -1;
+                    let fittedList: _OtfGlyphInfoList = null;
+                    let fittedWidth: number = 0;
+                    let end: number = 0;
+                    while (end < rest.length) {
+                        end = rest.indexOf(' ', end + 1);
+                        if (end < 0) {
+                            end = rest.length;
+                        }
+                        const candidate: string = rest.substring(0, end);
+                        const candidateList: _OtfGlyphInfoList = this._shapeLine(candidate);
+                        const candidateWidth: number = (candidateList !== null) ?
+                            this._getShapedWidthInternal(candidateList) : this._getLineWidth(candidate);
+                        if (breakAt >= 0 && Math.round(candidateWidth + indent) > Math.round(maxWidth)) {
+                            break;
+                        }
+                        breakAt = end;
+                        fittedList = candidateList;
+                        fittedWidth = candidateWidth;
+                    }
+                    if (breakAt <= 0) {
+                        breakAt = rest.indexOf(' ');
+                        if (breakAt < 0) {
+                            breakAt = rest.length;
+                        }
+                        fittedList = this._shapeLine(rest.substring(0, breakAt));
+                        fittedWidth = (fittedList !== null) ?
+                            this._getShapedWidthInternal(fittedList) : this._getLineWidth(rest.substring(0, breakAt));
+                    }
+                    const fitted: string = rest.substring(0, breakAt);
+                    const fittedInfo: _LineInfo = new _LineInfo();
+                    fittedInfo._text = fitted;
+                    fittedInfo._width = fittedWidth + indent;
+                    fittedInfo._lineType = ((breakAt < rest.length) ? _LineType.layoutBreak : _LineType.newLineBreak) | type;
+                    fittedInfo._openTypeGlyphList = fittedList;
+                    lines.push(fittedInfo);
+                    const size: Size = lineResult._actualSize;
+                    size.height = size.height + this._getLineHeight();
+                    size.width = Math.max(size.width, fittedInfo._width);
+                    lineResult._size = size;
+                    rest = rest.substring(breakAt).replace(/^\s+/, '');
+                    indent = 0;
+                    type = _LineType.none;
+                }
+            }
+            this._finalizeShapedResult(lineResult, lines);
+            return lineResult;
+        }
         if (maxWidth <= 0 || Math.round(lineWidth) <= Math.round(maxWidth)) {
             this._addToLineResult(lineResult, lines, line, lineWidth, _LineType.newLineBreak | lineType);
         } else {
@@ -221,16 +389,16 @@ export class _PdfStringLayouter {
                         }
                     } else {
                         if (this._getLineWidth(word.toString()) > maxWidth) {
-                            if (typeof this._format !== 'undefined' && this._format !== null ) {
+                            if (typeof this._format !== 'undefined' && this._format !== null) {
                                 this._format._wordWrap = _PdfWordWrapType.character;
                             }
                         } else {
-                            if (typeof this._format !== 'undefined' && this._format !== null ) {
+                            if (typeof this._format !== 'undefined' && this._format !== null) {
                                 this._format._wordWrap = _PdfWordWrapType.word;
                             }
                         }
                         if (this._getWrapType() !== _PdfWordWrapType.character || !readWord) {
-                            const stringValue : string = builder.toString();
+                            const stringValue: string = builder.toString();
                             if (stringValue !== ' ') {
                                 this._addToLineResult(lineResult, lines, stringValue, lineWidth, _LineType.layoutBreak | lineType);
                             }
@@ -387,7 +555,17 @@ export class _PdfStringLayouter {
         const line: string = info._text.trim();
         let lineWidth: number = info._width;
         if (line.length !== info._text.length) {
-            lineWidth = this._getLineWidth(line);
+            if (info._openTypeGlyphList) {
+                const trimmedList: _OtfGlyphInfoList = this._shapeLine(line);
+                if (trimmedList !== null) {
+                    info._openTypeGlyphList = trimmedList;
+                    lineWidth = this._getShapedWidthInternal(trimmedList);
+                } else {
+                    lineWidth = this._getLineWidth(line);
+                }
+            } else {
+                lineWidth = this._getLineWidth(line);
+            }
             if ((info._lineType & _LineType.firstParagraphLine) > 0) {
                 lineWidth += this._getLineIndent(firstLine);
             }
@@ -503,6 +681,19 @@ export class _LineInfo {
      * @private
      */
     _lineType: _LineType;
+    /**
+     * Shaped glyph list retained for measurement and drawing parity.
+     * Present only when the complex-script shaped path produced this line.
+     *
+     * @private
+     */
+    _openTypeGlyphList?: _OtfGlyphInfoList;
+    /**
+     * Text direction resolved for the line: 1 = LTR, 2 = RTL (complex-script path).
+     *
+     * @private
+     */
+    _bidiLevels?: number[];
 }
 /**
  * Specifies flags that describe how a line is broken and positioned.

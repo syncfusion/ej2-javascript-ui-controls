@@ -433,6 +433,8 @@ export const virtaulKeyHandler: string = 'virtaul-key-handler';
 /** @hidden */
 export const virtaulCellFocus: string = 'virtaul-cell-focus';
 /** @hidden */
+export const domVirtualTabFocus: string = 'dom-virtual-tab-focus';
+/** @hidden */
 export const virtualScrollEditActionBegin: string = 'virtual-scroll-edit-action-begin';
 /** @hidden */
 export const virtualScrollEditSuccess: string = 'virtual-scroll-edit-success';
@@ -630,3 +632,9 @@ export const beforeDomVirtualRenderRows: string = 'before-dom-virtual-rows-rende
 export const registerWebMcpTools: string = 'registerWebMcpTools';
 /** @hidden */
 export const getWebMcpTools: string = 'getWebMcpTools';
+/** @hidden */
+export const toolPanelPropertyChanged: string = 'tool-panel-property-changed';
+/** @hidden */
+export const toolPanelFilterDialog: string = 'tool-panel-filter-dialog';
+/** @hidden */
+export const toolPanelFilterDialogOpen: string = 'tool-panel-filter-dialog-open';

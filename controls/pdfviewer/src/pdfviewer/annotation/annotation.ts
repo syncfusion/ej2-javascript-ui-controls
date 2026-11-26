@@ -3686,6 +3686,20 @@ export class Annotation {
                     let inputElement: Element = null;
                     if (document.getElementById(annotation.id.split('_')[0] + '_content_html_element')) {
                         inputElement = document.getElementById(annotation.id.split('_')[0] + '_content_html_element').firstElementChild.firstElementChild;
+                        // R-FIX-DTP-UNDO: drill into the DateTime composite inner text input.
+                        // For isDateField Textbox/PasswordField the firstElementChild.firstElementChild
+                        // resolves to the composite wrapper <div class="e-pv-datetime-composite">,
+                        // not the inner <input>. Setting .value on the wrapper is a silent no-op,
+                        // so undo/redo of the FormField Value Change action has no visible effect.
+                        if ((formFieldAnnotationType === 'Textbox' || formFieldAnnotationType === 'PasswordField')
+                            && inputElement && inputElement.classList
+                            && inputElement.classList.contains('e-pv-datetime-composite')) {
+                            const inner: HTMLInputElement =
+                                inputElement.querySelector('.e-pv-formfield-input') as HTMLInputElement;
+                            if (inner) {
+                                inputElement = inner;
+                            }
+                        }
                     }
                     if (formFieldAnnotationType === 'Textbox' || formFieldAnnotationType === 'PasswordField') {
                         formFieldModel.value = value;

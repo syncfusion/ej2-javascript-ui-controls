@@ -9,3 +9,4 @@ export * from './column-chooser-settings-model';
 export * from './highlight-settings';
 export * from './status-bar-settings';
 export * from './status-bar-settings-model';
+export * from './tool-panel-settings-model';

@@ -340,6 +340,7 @@ export class PivotButton implements IAction {
                         'data-basefield': this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(field[i as number].baseField) : field[i as number].baseField,
                         'data-baseitem': this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(field[i as number].baseItem) : field[i as number].baseItem,
                         'data-allowcrossgroup': field[i as number].allowCrossGroupCalculation ? 'true' : 'false',
+                        'data-runningtotaldirection': field[i as number].runningTotalDirection ? field[i as number].runningTotalDirection : '',
                         'role': 'button'
                     }
                 });
@@ -458,10 +459,6 @@ export class PivotButton implements IAction {
                 (axis === 'values' && field[i as number].type ? field[i as number].type : fieldObj.aggregateType);
             if (axis === 'values') {
                 aggregation = aggregation || 'Sum';
-                if (this.parent.dataType === 'pivot' && fieldObj.type === 'string' && !isCalculatedField &&
-                    this.menuOption.stringAggregateTypes.indexOf(aggregation as AggregateTypes) === -1) {
-                    aggregation = 'Count';
-                }
             } else if (aggregation !== 'DistinctCount' && fieldObj.type !== 'number') {
                 // Date-typed value fields keep their configured Min/Max summary in
                 // the button caption and tooltip (PIVOT-MINMAX); string and other
@@ -497,6 +494,15 @@ export class PivotButton implements IAction {
             text : (text + ' (' + filterMem + ')') : (this.parent.dataType === 'olap' ?
             text : (!this.parent.dataSourceSettings.showAggregationOnValueField || axis !== 'values' || isCalculatedField || aggregation === 'CalculatedField' ?
                 text : this.parent.localeObj.getConstant(aggregation) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + text));
+        if (axis === 'values' && this.parent.dataType !== 'olap' && this.parent.dataSourceSettings.mode !== 'Server' &&
+            this.parent.dataSourceSettings.showAggregationOnValueField && field[i as number].runningTotalDirection &&
+            (aggregation === 'RunningTotals' || aggregation === 'PercentageOfRunningTotals')) {
+            const key: string = 'runningTotal' + field[i as number].runningTotalDirection +
+                (aggregation === 'PercentageOfRunningTotals' ? 'Percent' : '') + 'Caption';
+            const caption: string = this.parent.localeObj.getConstant(key).replace('{0}', text);
+            buttonText.innerText = caption;
+            buttonText.title = caption;
+        }
         return buttonText;
     }
     private getTypeStatus(field: IFieldOptions[], i: number, buttonElement: HTMLElement): void {
@@ -1211,7 +1217,7 @@ export class PivotButton implements IAction {
             mode: mode
         };
         if (mode === 'Percent' && operand1 !== null && operand1 !== undefined && operand1 !== '' &&
-            !(/^[0-9]+$/.test(String(operand1).trim()) && Number(operand1) >= 1 && Number(operand1) <= 100)) {
+            !(Number(operand1) > 0 && Number(operand1) <= 100)) {
             this.parent.pivotCommon.errorDialog.createErrorDialog(
                 this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('invalidPercentage'));
             return;
@@ -1322,6 +1328,8 @@ export class PivotButton implements IAction {
                         const instanceId: string = buttonElement.getAttribute('data-instance-id');
                         if (instanceId && this.parent.dataType === 'pivot') {
                             (this.parent.engineModule as PivotEngine).removeValueInstance(instanceId);
+                            this.parent.setProperties({ dataSourceSettings: { values: this.parent.dataSourceSettings.values.filter(
+                                (value: IFieldOptions) => value.instanceId !== instanceId) } }, true);
                         } else {
                             this.parent.setProperties({ dataSourceSettings: { values: [] } }, true);
                         }

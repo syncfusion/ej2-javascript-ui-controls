@@ -1,4 +1,4 @@
-import { Property, Complex, Collection, ChildProperty, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';import { IDataSet, IDataOptions, IFieldOptions, IFilter, ISort, ICalculatedFieldSettings } from '../base/engine';import { IDrillOptions, IValueSortSettings, IFormatSettings, IConditionalFormatSettings, IGroupSettings } from '../base/engine';import { SummaryTypes, Sorting, FilterType, Operators, Condition, DateGroup, GroupType, ProviderType, RenderMode, TopBottomMode } from '../base/types';import { DataSourceType } from '../base/types';import { IStyle, ICustomGroups, IAuthenticationInfo } from '../base/engine';import { DataManager } from '@syncfusion/ej2-data';import { GrandTotalsPosition, SubTotalsPosition } from '../common/base/enum';
+import { Property, Complex, Collection, ChildProperty, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';import { IDataSet, IDataOptions, IFieldOptions, IFilter, ISort, ICalculatedFieldSettings } from '../base/engine';import { IDrillOptions, IValueSortSettings, IFormatSettings, IConditionalFormatSettings, IGroupSettings } from '../base/engine';import { SummaryTypes, Sorting, FilterType, Operators, Condition, DateGroup, GroupType, ProviderType, RenderMode, TopBottomMode } from '../base/types';import { DataSourceType } from '../base/types';import { IStyle, ICustomGroups, IAuthenticationInfo } from '../base/engine';import { DataManager } from '@syncfusion/ej2-data';import { GrandTotalsPosition, SubTotalsPosition, RunningTotalDirection } from '../common/base/enum';
 
 /**
  * Interface for a class FieldOptions
@@ -86,6 +86,17 @@ export interface FieldOptionsModel {
      * @default false
      */
     allowCrossGroupCalculation?: boolean;
+
+    /**
+     * Allows you to set the direction in which the `RunningTotals` and `PercentageOfRunningTotals` aggregate types accumulate the values.
+     * This public option is exposed to end users through the value field settings dialog.
+     * `Row` accumulates from left to right across the columns of each row, and `Column` accumulates from top to bottom down the rows of each column.
+     * When it is not set, the direction is determined by the position of the value fields in the pivot table.
+     * > It is applicable only for relational data source.
+     *
+     * @default null
+     */
+    runningTotalDirection?: RunningTotalDirection;
 
     /**
      * Allows to show or hide sub-totals to a specific field in row/column axis of the pivot table.
@@ -177,7 +188,8 @@ export interface FieldOptionsModel {
      * Allows you to create group folder for fields in pivot field list.
      * Allows user to set the group (i.e., folder) name for selected fields that used to be displayed in the field list tree.
      * The name can be a `/` delimited folder path (for example, `Sales/Regional`) to nest folders to any depth.
-     * A single trailing `/` is ignored; an empty name elsewhere is invalid and the field is shown at the root.
+     * Surrounding spaces and one blank segment at each path boundary are ignored; spaces within names are preserved.
+     * Whitespace-only segments are omitted. A path without names or with an interior empty segment is invalid and the field is shown at the root.
      * Nested folders are shown when at least one field's path contains `/`; names are case-sensitive and must not contain `/`.
      * > It is applicable only for relational data source.
      */

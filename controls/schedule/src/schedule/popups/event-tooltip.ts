@@ -16,6 +16,7 @@ import * as events from '../base/constant';
 export class EventTooltip {
     private parent: Schedule;
     private tooltipObj: Tooltip;
+    private interaction: { target: HTMLElement, start: Date, end: Date } = null;
 
     constructor(parent: Schedule) {
         this.parent = parent;
@@ -84,7 +85,7 @@ export class EventTooltip {
             this.parent.renderTemplates();
             return;
         }
-        const record: Record<string, any> = this.parent.eventBase.getEventByGuid(args.target.getAttribute('data-guid'));
+        const record: Record<string, any> = this.getRecord(args.target);
         if (isNullOrUndefined(record)) {
             this.setContent('No Title');
             return;
@@ -165,7 +166,7 @@ export class EventTooltip {
         if (args.element && this.parent.isReact && !isNullOrUndefined(this.parent.eventSettings.tooltipTemplate) ) {
             addClass([args.element], cls.TOOLTIP_HIDDEN_CLASS);
         }
-        const record: Record<string, any> = this.parent.eventBase.getEventByGuid(args.target.getAttribute('data-guid'));
+        const record: Record<string, any> = this.getRecord(args.target);
         if (isNullOrUndefined(record)) {
             return;
         }
@@ -184,6 +185,10 @@ export class EventTooltip {
         });
     }
     private onTooltipClose(args: TooltipEventArgs): void {
+        if (this.interaction) {
+            args.cancel = true;
+            return;
+        }
         if (args.element) {
             removeClass([args.element], cls.POPUP_OPEN);
             addClass([args.element], cls.POPUP_CLOSE);
@@ -195,6 +200,87 @@ export class EventTooltip {
 
     private setContent(content: string | HTMLElement | Function): void {
         this.tooltipObj.setProperties({ content: content, windowCollision: true }, true);
+    }
+
+    /**
+     * Returns the event of the target; while it is dragged or resized in Exact mode, the clone values replace the saved ones.
+     *
+     * @param {Element} target - Specifies the appointment element.
+     * @returns {Record<string, any>} Returns the event data.
+     */
+    private getRecord(target: Element): Record<string, any> {
+        const isClone: boolean = !!this.interaction && target.classList.contains(cls.CLONE_ELEMENT_CLASS);
+        const source: Element = isClone ? this.interaction.target : target;
+        const record: Record<string, any> = this.parent.eventBase.getEventByGuid(source.getAttribute('data-guid'));
+        if (isNullOrUndefined(record) || !this.interaction || (this.interaction.target !== source)) {
+            return record;
+        }
+        const data: Record<string, any> = { ...record };
+        data[this.parent.eventFields.startTime] = new Date(this.interaction.start.getTime());
+        data[this.parent.eventFields.endTime] = new Date(this.interaction.end.getTime());
+        return data;
+    }
+
+    /**
+     * Shows the tooltip with the current drag or resize values and keeps it open until the interaction ends.
+     * It is created once; later calls only refresh the content and let the tooltip trail the pointer like any event tooltip.
+     *
+     * @param {HTMLElement} target - Specifies the appointment element that is dragged or resized.
+     * @param {Date} start - Specifies the start of the clone.
+     * @param {Date} end - Specifies the end of the clone.
+     * @param {MouseEvent} pointer - Specifies the current pointer event.
+     * @returns {void}
+     */
+    public showInteraction(target: HTMLElement, start: Date, end: Date, pointer?: MouseEvent): void {
+        if (isNullOrUndefined(target)) {
+            return;
+        }
+        const popup: HTMLElement = this.getPopupElement();
+        const isOpen: boolean = !!this.interaction && this.interaction.target === target && !!popup;
+        this.interaction = { target: target, start: start, end: end };
+        if (!isOpen) {
+            target.removeAttribute('data-tooltip-id');
+            this.tooltipObj.open(target);
+        } else {
+            this.refreshContent(target);
+        }
+        const event: MouseEvent = pointer && (pointer as any).event ? (pointer as any).event : pointer;
+        if (event && this.getPopupElement() && !this.parent.isAdaptive) {
+            // the tooltip's own mouse trail placement, driven by the pointer of the interaction
+            (this.tooltipObj as any).onMouseMove(event);
+            this.getPopupElement().style.pointerEvents = 'none';
+        }
+    }
+
+    private getPopupElement(): HTMLElement {
+        return (this.tooltipObj as any).tooltipEle as HTMLElement;
+    }
+
+    private refreshContent(target: HTMLElement): void {
+        target.removeAttribute('data-tooltip-id');
+        this.onBeforeRender({ target: target, cancel: false } as unknown as TooltipEventArgs);
+        const contentEle: HTMLElement = this.getPopupElement().querySelector('.e-tip-content');
+        let content: any = this.tooltipObj.content;
+        if (typeof content === 'function') {
+            content = content();
+        }
+        if (!contentEle) {
+            return;
+        }
+        if (typeof content === 'string') {
+            contentEle.innerHTML = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(content) : content;
+        } else if (content instanceof HTMLElement) {
+            contentEle.innerHTML = '';
+            contentEle.appendChild(content);
+        }
+    }
+
+    public endInteraction(): void {
+        if (!this.interaction) {
+            return;
+        }
+        this.interaction = null;
+        this.tooltipObj.close();
     }
 
     public close(): void {

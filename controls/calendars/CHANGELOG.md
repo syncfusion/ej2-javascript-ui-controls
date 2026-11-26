@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 35.2.14 (2026-11-26)
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- `#I888978` - The issue with "DateRangePicker previous month and next month navigation buttons not keyboard accessible" has been resolved.
+
 ## 35.2.12 (2026-11-18)
 
 ### Datepicker

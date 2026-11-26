@@ -485,3 +485,41 @@ export const ALLDAY_APPOINTMENT_SCROLL : string = 'e-all-day-scroll';
 export const ALLDAY_APPOINTMENT_AUTO : string = 'e-all-day-auto';
 /** @private */
 export const CLIPBOARD_CLASS : string = 'e-clipboard';
+/** @private */
+export const FIXED_WRAP_CLASS: string = 'e-fixed-wrap';
+/** @private */
+export const FIXED_RESOURCE_WRAP_CLASS: string = 'e-fixed-resource-wrap';
+/** @private */
+export const FIXED_CONTENT_WRAP_CLASS: string = 'e-fixed-content-wrap';
+/** @private */
+export const FIXED_CONTENT_TABLE_CLASS: string = 'e-fixed-content-table';
+/** @private */
+export const FIXED_EVENT_TABLE_CLASS: string = 'e-fixed-event-table';
+/** @private */
+export const FIXED_SEPARATOR_CLASS: string = 'e-fixed-separator';
+/** @private */
+export const FIXED_STRIP_CLASS: string = 'e-fixed-strip';
+/** @private */
+export const FIXED_STRIP_TIME_WRAP_CLASS: string = 'e-fixed-strip-time-wrap';
+
+
+/** @private */
+export const SUMMARY_ROW_CLASS: string = 'e-summary-row';
+/** @private */
+export const SUMMARY_COLUMN_CLASS: string = 'e-summary-column';
+/** @private */
+export const SUMMARY_CELL_CLASS: string = 'e-summary-cell';
+/** @private */
+export const SUMMARY_ROW_HEADER_CLASS: string = 'e-summary-row-header';
+/** @private */
+export const SUMMARY_COLUMN_HEADER_CLASS: string = 'e-summary-column-header';
+/** @private */
+export const SUMMARY_GRAND_TOTAL_CLASS: string = 'e-summary-grand-total';
+/** @private */
+export const SUMMARY_WRAP_CLASS: string = 'e-summary-wrap';
+/** @private */
+export const GROUP_SUMMARY_ROW_CLASS: string = 'e-group-summary-row';
+/** @private */
+export const GROUP_SUMMARY_CELL_CLASS: string = 'e-group-summary-cell';
+/** @private */
+export const GROUP_SUMMARY_COLUMN_CELL_CLASS: string = 'e-group-summary-column-cell';

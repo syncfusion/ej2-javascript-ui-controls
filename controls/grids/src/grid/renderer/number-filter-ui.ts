@@ -10,7 +10,7 @@ import { MultiSelect, CheckBoxSelection, DropDownList } from '@syncfusion/ej2-dr
 import { DataManager, DataUtil, Query } from '@syncfusion/ej2-data';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
 import * as literals from '../base/string-literals';
-import { getZIndexCalcualtion, toggleFilterUI } from '../base/util';
+import { getZIndexCalcualtion, toggleFilterUI, getFilterDlgElement } from '../base/util';
 
 /**
  * `numberfilterui` render number column.
@@ -29,6 +29,7 @@ export class NumberFilterUI implements IFilterMUI {
     private filter: Filter;
     private multiSelectCheckBoxInstance: HTMLElement;
     private dialogObj: Dialog;
+    private dlgElement: Element;
     private dropdownOpen: Function;
     private dropdownComplete: Function;
 
@@ -59,11 +60,14 @@ export class NumberFilterUI implements IFilterMUI {
         args.target.appendChild(this.multiSelectCheckBoxInstance);
         this.createNumericTextBox(args);
         this.createMultiSelectDropDown(args);
-        toggleFilterUI(args.getOptrInstance.dropOptr.value as string, args.column.uid, args.column, args.column.type, args.dialogObj);
+        this.dlgElement = getFilterDlgElement(args.dialogObj, args.target);
+        toggleFilterUI(args.getOptrInstance.dropOptr.value as string, args.column.uid, args.column, args.column.type, args.dialogObj,
+                       this.dlgElement);
     }
 
     public write(args: IFilterWrite): void {
-        const operatorDropdown: DropDownList = this.parent.filterModule.filterModule.getOperatorDropdown();
+        const operatorDropdown: DropDownList = args.getOptrInstance ? args.getOptrInstance.dropOptr :
+            this.parent.filterModule.filterModule.getOperatorDropdown();
         const numericObject: NumericTextBox = this.getNumericInstance(args.column.uid);
         const multiSelectObject: MultiSelect = this.getMultiSelectInstance(args.column.uid);
         if (operatorDropdown.value === 'in' || operatorDropdown.value === 'notin') {
@@ -129,11 +133,11 @@ export class NumberFilterUI implements IFilterMUI {
     }
 
     private getNumericInstance(uid: string): NumericTextBox {
-        return (<EJ2Intance>document.querySelector(`#numberui-${uid}`)).ej2_instances[0];
+        return this.numericTxtObj || (<EJ2Intance>document.querySelector(`#numberui-${uid}`)).ej2_instances[0];
     }
 
     private getMultiSelectInstance(uid: string): MultiSelect {
-        return (<EJ2Intance>document.querySelector(`#multiselectnumberui-${uid}`)).ej2_instances[0];
+        return this.multiSelectObj || (<EJ2Intance>document.querySelector(`#multiselectnumberui-${uid}`)).ej2_instances[0];
     }
 
     private openPopup(args: { popup: Popup }): void {
@@ -146,7 +150,8 @@ export class NumberFilterUI implements IFilterMUI {
         };
     }
 
-    public destroy(): void {
+    public destroy(args?: { element?: Element }): void {
+        if (args && args.element && this.dlgElement && args.element !== this.dlgElement) { return; }
         this.parent.off(events.filterMenuClose, this.destroy);
         this.parent.off(events.destroy, this.destroy);
         if (this.numericTxtObj && !this.numericTxtObj.isDestroyed) {

@@ -1,4 +1,4 @@
-import { Property, Browser, Component, ModuleDeclaration, createElement, setStyleAttribute, Fetch, getInstance } from '@syncfusion/ej2-base';import { EmitType, EventHandler, Complex, ChildProperty, Collection, isNullOrUndefined, remove, initializeTelemetry } from '@syncfusion/ej2-base';import { Internationalization, L10n, NotifyPropertyChanges, INotifyPropertyChanged, compile, formatUnit } from '@syncfusion/ej2-base';import { removeClass, addClass, Event, KeyboardEventArgs, setValue, getValue, closest, select, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { MouseEventArgs, initializeCSPTemplate  } from '@syncfusion/ej2-base';import { PivotEngine, IAxisSet, IDataOptions, IDataSet, FieldItemInfo, INumberIndex, IValueSortSettings } from '../../base/engine';import { IGroupSettings, IFieldListOptions } from '../../base/engine';import { IDrilledItem, ICustomProperties, ISort, IFilter, IFieldOptions, ICalculatedFields, IDrillOptions } from '../../base/engine';import { IConditionalFormatSettings, IStringIndex, IField, IFormatSettings } from '../../base/engine';import { Tooltip, TooltipEventArgs, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import * as events from '../../common/base/constant';import { registerWebMcpTools } from '../../common/base/constant';import * as cls from '../../common/base/css-constant';import { AxisFields } from '../../common/grouping-bar/axis-field-renderer';import { LoadEventArgs, EnginePopulatingEventArgs, DrillThroughEventArgs, MultiLevelLabelRenderEventArgs, EditCompletedEventArgs, ExportPageSize, ExcelExportProperties, PdfExportProperties, WebMcpTool, WebMcpToolExecuteEventArgs } from '../../common/base/interface';import { BeforeServiceInvokeEventArgs, FetchRawDataArgs, UpdateRawDataArgs, PivotActionBeginEventArgs, PivotActionCompleteEventArgs } from '../../common/base/interface';import { MultiLevelLabelClickEventArgs, PivotActionInfo, AfterServiceInvokeEventArgs, PivotColumn, ChartLabelInfo, PivotActionFailureEventArgs } from '../../common/base/interface';import { FetchReportArgs, LoadReportArgs, RenameReportArgs, RemoveReportArgs, ToolbarArgs } from '../../common/base/interface';import { PdfCellRenderArgs, NewReportArgs, ChartSeriesCreatedEventArgs, AggregateEventArgs, SelectionSettings } from '../../common/base/interface';import { ResizeInfo, ScrollInfo, ColumnRenderEventArgs, PivotCellSelectedEventArgs, SaveReportArgs, ExportCompleteEventArgs, FocusedCellInfo } from '../../common/base/interface';import { CellClickEventArgs, FieldDroppedEventArgs, HyperCellClickEventArgs, ExcelHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs } from '../../common/base/interface';import { BeforeExportEventArgs, EnginePopulatedEventArgs, BeginDrillThroughEventArgs, DrillArgs, CSVParseResult } from '../../common/base/interface';import { FieldListRefreshedEventArgs, MemberFilteringEventArgs, FieldDropEventArgs } from '../../common/base/interface';import { MemberEditorOpenEventArgs, FieldRemoveEventArgs, AggregateMenuOpenEventArgs } from '../../common/base/interface';import { CalculatedFieldCreateEventArgs, NumberFormattingEventArgs, FieldDragStartEventArgs, HeadersSortEventArgs, DocumentWithAdoptedSheets } from '../../common/base/interface';import { Render } from '../renderer/render';import { PivotCommon } from '../../common/base/pivot-common';import { Common } from '../../common/actions/common';import { GroupingBar } from '../../common/grouping-bar/grouping-bar';import { DataSourceSettingsModel, DrillOptionsModel, FieldOptionsModel, FormatSettingsModel } from '../../model/datasourcesettings-model';import { DataSourceSettings } from '../../model/datasourcesettings';import { GridSettings } from '../model/gridsettings';import { GridSettingsModel } from '../model/gridsettings-model';import { PivotButton } from '../../common/actions/pivot-button';import { PivotFieldList } from '../../pivotfieldlist/base/field-list';import { Grid, QueryCellInfoEventArgs, ColumnModel, Reorder, Resize, getObject, Column } from '@syncfusion/ej2-grids';import { SelectionType, ContextMenuItemModel, SelectionSettingsModel } from '@syncfusion/ej2-grids';import { CellSelectEventArgs, RowSelectEventArgs, ResizeArgs, getScrollBarWidth } from '@syncfusion/ej2-grids';import { RowDeselectEventArgs, ContextMenuClickEventArgs } from '@syncfusion/ej2-grids';import { EditSettingsModel, HeaderCellInfoEventArgs, CellDeselectEventArgs } from '@syncfusion/ej2-grids';import { ColumnDragEventArgs } from '@syncfusion/ej2-grids';import { PdfQueryCellInfoEventArgs, PdfHeaderQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { ExcelExport } from '../actions/excel-export';import { PDFExport } from '../actions/pdf-export';import { CalculatedField } from '../../common/calculatedfield/calculated-field';import { KeyboardInteraction } from '../actions/keyboard';import { PivotContextMenu } from '../../common/popups/context-menu';import { DataManager, ReturnOption, Query } from '@syncfusion/ej2-data';import { FieldList } from '../../common/actions/field-list';import { ConditionalFormatting } from '../../common/conditionalformatting/conditional-formatting';import { VirtualScroll } from '../actions/virtualscroll';import { DrillThrough } from '../actions/drill-through';import { Condition, GroupType, Sorting } from '../../base/types';import { EditMode, ToolbarItems, View, Primary, AggregateTypes, ChartSeriesType, PivotTableContextMenuItem, PagerPosition } from '../../common';import { PivotUtil } from '../../base/util';import { getTokenFields } from '../../base/adjacent-difference';import { Toolbar } from '../../common/popups/toolbar';import { PivotChart } from '../../pivotchart/index';import { ChartSettings } from '../model/chartsettings';import { ChartSettingsModel } from '../model/chartsettings-model';import { Chart, ITooltipRenderEventArgs, ILoadedEventArgs, IPointEventArgs, AccumulationChart, ILegendClickEventArgs, IPrintEventArgs } from '@syncfusion/ej2-charts';import { IAnimationCompleteEventArgs, ILegendRenderEventArgs, ITextRenderEventArgs, IPointRenderEventArgs, ISeriesRenderEventArgs } from '@syncfusion/ej2-charts';import { IMouseEventArgs, IDragCompleteEventArgs, IZoomCompleteEventArgs, IScrollEventArgs } from '@syncfusion/ej2-charts';import { IResizeEventArgs, IAxisLabelRenderEventArgs, ExportType } from '@syncfusion/ej2-charts';import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';import { ClickEventArgs, BeforeOpenCloseMenuEventArgs, ItemModel } from '@syncfusion/ej2-navigations';import { OlapEngine, IOlapCustomProperties, ITupInfo, IDrillInfo, IOlapField } from '../../base/olap/engine';import { NumberFormatting } from '../../common/popups/formatting-dialog';import { Grouping } from '../../common/popups/grouping';import { Pager } from '../actions/pager';import { ChartExport } from '../../pivotchart/actions/chart-export';import { Save } from '@syncfusion/ej2-file-utils';import { Workbook } from '@syncfusion/ej2-excel-export';import { ExportType as PivotExportType } from '../../common/base/enum';import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-strategy';import { IFocus } from '@syncfusion/ej2-grids/src/grid/base/interface';import { WebMcpPivotView } from '../actions/webmcp-adapter';import { FlatLayout } from '../actions/flat-layout';import { cloneFlat, serializeFlatSettings, restoreFlatSettings } from '../../common/base/flat-util';import { FlatSettings } from '../model/flatsettings';import { FlatSettingsModel } from '../model/flatsettings-model';
+import { VirtualContentLayout } from '../../common/base/interface';import { ServerEngineResponse, PivotTemplate, CompiledPivotTemplate, PivotModuleConstructor, ServerFieldMember, ServerRequestMetadata } from '../../common/base/interface';import { RenderedStyleUtil } from '../../base/rendered-style-util';import { Property, Browser, Component, ModuleDeclaration, createElement, setStyleAttribute, Fetch, getInstance } from '@syncfusion/ej2-base';import { EmitType, EventHandler, Complex, ChildProperty, Collection, isNullOrUndefined, remove, initializeTelemetry } from '@syncfusion/ej2-base';import { Internationalization, L10n, NotifyPropertyChanges, INotifyPropertyChanged, compile, formatUnit } from '@syncfusion/ej2-base';import { removeClass, addClass, Event, KeyboardEventArgs, setValue, getValue, closest, select, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { MouseEventArgs, initializeCSPTemplate  } from '@syncfusion/ej2-base';import { PivotEngine, IAxisSet, IDataOptions, IDataSet, FieldItemInfo, INumberIndex, IValueSortSettings } from '../../base/engine';import { IGroupSettings, IFieldListOptions } from '../../base/engine';import { IDrilledItem, ICustomProperties, ISort, IFilter, IFieldOptions, ICalculatedFields, IDrillOptions } from '../../base/engine';import { IConditionalFormatSettings, IStringIndex, IField, IFormatSettings } from '../../base/engine';import { Dialog, Popup, Tooltip, TooltipEventArgs, createSpinner, showSpinner, hideSpinner, getZindexPartial } from '@syncfusion/ej2-popups';import * as events from '../../common/base/constant';import { registerWebMcpTools } from '../../common/base/constant';import * as cls from '../../common/base/css-constant';import { AxisFields } from '../../common/grouping-bar/axis-field-renderer';import { LoadEventArgs, EnginePopulatingEventArgs, DrillThroughEventArgs, MultiLevelLabelRenderEventArgs, EditCompletedEventArgs, ExportPageSize, ExcelExportProperties, PdfExportProperties, WebMcpTool, WebMcpToolExecuteEventArgs } from '../../common/base/interface';import { BeforeServiceInvokeEventArgs, FetchRawDataArgs, UpdateRawDataArgs, PivotActionBeginEventArgs, PivotActionCompleteEventArgs } from '../../common/base/interface';import { MultiLevelLabelClickEventArgs, PivotActionInfo, AfterServiceInvokeEventArgs, PivotColumn, ChartLabelInfo, PivotActionFailureEventArgs } from '../../common/base/interface';import { FetchReportArgs, LoadReportArgs, RenameReportArgs, RemoveReportArgs, ToolbarArgs } from '../../common/base/interface';import { PdfCellRenderArgs, NewReportArgs, ChartSeriesCreatedEventArgs, AggregateEventArgs, SelectionSettings } from '../../common/base/interface';import { ResizeInfo, ScrollInfo, ColumnRenderEventArgs, PivotCellSelectedEventArgs, SaveReportArgs, ExportCompleteEventArgs, FocusedCellInfo, HtmlExportProperties, ImageExportProperties, PivotViewPrintEventArgs } from '../../common/base/interface';import { FullScreenState, FullScreenScrollState, FullScreenOverflowState } from '../../common/base/interface';import { CellClickEventArgs, FieldDroppedEventArgs, HyperCellClickEventArgs, ExcelHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs } from '../../common/base/interface';import { BeforeExportEventArgs, EnginePopulatedEventArgs, BeginDrillThroughEventArgs, DrillArgs, CSVParseResult } from '../../common/base/interface';import { FieldListRefreshedEventArgs, MemberFilteringEventArgs, FieldDropEventArgs } from '../../common/base/interface';import { MemberEditorOpenEventArgs, FieldRemoveEventArgs, AggregateMenuOpenEventArgs } from '../../common/base/interface';import { CalculatedFieldCreateEventArgs, NumberFormattingEventArgs, FieldDragStartEventArgs, HeadersSortEventArgs, DocumentWithAdoptedSheets } from '../../common/base/interface';import { Render } from '../renderer/render';import { PivotCommon } from '../../common/base/pivot-common';import { Common } from '../../common/actions/common';import { GroupingBar } from '../../common/grouping-bar/grouping-bar';import { DataSourceSettingsModel, DrillOptionsModel, FieldOptionsModel, FormatSettingsModel } from '../../model/datasourcesettings-model';import { DataSourceSettings } from '../../model/datasourcesettings';import { GridSettings } from '../model/gridsettings';import { GridSettingsModel } from '../model/gridsettings-model';import { PivotButton } from '../../common/actions/pivot-button';import { PivotFieldList } from '../../pivotfieldlist/base/field-list';import { Grid, QueryCellInfoEventArgs, ColumnModel, Reorder, Resize, getObject, Column } from '@syncfusion/ej2-grids';import { SelectionType, ContextMenuItemModel, SelectionSettingsModel } from '@syncfusion/ej2-grids';import { CellSelectEventArgs, RowSelectEventArgs, ResizeArgs, getScrollBarWidth } from '@syncfusion/ej2-grids';import { RowDeselectEventArgs, ContextMenuClickEventArgs } from '@syncfusion/ej2-grids';import { EditSettingsModel, HeaderCellInfoEventArgs, CellDeselectEventArgs } from '@syncfusion/ej2-grids';import { ColumnDragEventArgs } from '@syncfusion/ej2-grids';import { PdfQueryCellInfoEventArgs, PdfHeaderQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { ExcelExport } from '../actions/excel-export';import { PDFExport } from '../actions/pdf-export';import { HtmlExport } from '../actions/html-export';import { CalculatedField } from '../../common/calculatedfield/calculated-field';import { KeyboardInteraction } from '../actions/keyboard';import { PivotContextMenu } from '../../common/popups/context-menu';import { DataManager, ReturnOption, Query } from '@syncfusion/ej2-data';import { FieldList } from '../../common/actions/field-list';import { ConditionalFormatting } from '../../common/conditionalformatting/conditional-formatting';import { VirtualScroll } from '../actions/virtualscroll';import { DrillThrough } from '../actions/drill-through';import { Condition, GroupType, Sorting } from '../../base/types';import { EditMode, ToolbarItems, View, Primary, AggregateTypes, ChartSeriesType, PivotTableContextMenuItem, PagerPosition } from '../../common';import { PivotUtil } from '../../base/util';import { getTokenFields } from '../../base/adjacent-difference';import { Toolbar } from '../../common/popups/toolbar';import { PivotChart } from '../../pivotchart/index';import { ChartSettings } from '../model/chartsettings';import { ChartSettingsModel } from '../model/chartsettings-model';import { Chart, ITooltipRenderEventArgs, ILoadedEventArgs, IPointEventArgs, AccumulationChart, ILegendClickEventArgs, IPrintEventArgs } from '@syncfusion/ej2-charts';import { IAnimationCompleteEventArgs, ILegendRenderEventArgs, ITextRenderEventArgs, IPointRenderEventArgs, ISeriesRenderEventArgs } from '@syncfusion/ej2-charts';import { IMouseEventArgs, IDragCompleteEventArgs, IZoomCompleteEventArgs, IScrollEventArgs } from '@syncfusion/ej2-charts';import { IResizeEventArgs, IAxisLabelRenderEventArgs, ExportType } from '@syncfusion/ej2-charts';import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';import { ClickEventArgs, BeforeOpenCloseMenuEventArgs, ItemModel, ContextMenu } from '@syncfusion/ej2-navigations';import { OlapEngine, IOlapCustomProperties, ITupInfo, IDrillInfo, IOlapField } from '../../base/olap/engine';import { NumberFormatting } from '../../common/popups/formatting-dialog';import { Grouping } from '../../common/popups/grouping';import { Pager } from '../actions/pager';import { ChartExport } from '../../pivotchart/actions/chart-export';import { Save } from '@syncfusion/ej2-file-utils';import { Workbook } from '@syncfusion/ej2-excel-export';import { ExportType as PivotExportType, ImageExportType } from '../../common/base/enum';import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-strategy';import { IFocus } from '@syncfusion/ej2-grids/src/grid/base/interface';import { WebMcpPivotView } from '../actions/webmcp-adapter';import { FlatLayout } from '../actions/flat-layout';import { cloneFlat, serializeFlatSettings, restoreFlatSettings } from '../../common/base/flat-util';import { FlatSettings } from '../model/flatsettings';import { FlatSettingsModel } from '../model/flatsettings-model';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -12,7 +12,7 @@ export interface GroupingBarSettingsModel {
      * > By default, the filter icon is enabled in the `Grouping Bar`.
      *
      * @default true
-     * @remarks
+     * Remarks:
      * - Effective only when `showGroupingBar` is `true`.
      * - To disable globally, set {@link GroupingBarSettings.showFilterIcon} to `false`.
      * - To disable for a specific field, set `showFilterIcon: false` in that field within {@link DataSourceSettings} (e.g., `rows`, `columns`).
@@ -35,7 +35,7 @@ export interface GroupingBarSettingsModel {
      * > By default, the sort icon is enabled in the `Grouping Bar`.
      *
      * @default true
-     * @remarks
+     * Remarks:
      * - Effective only when `showGroupingBar` is `true`.
      * - Default behavior: Enabled for all fields; members are initially arranged in ascending order.
      * - To disable globally, set {@link GroupingBarSettings.showSortIcon} to `false`.
@@ -58,7 +58,7 @@ export interface GroupingBarSettingsModel {
      * > By default, the remove icon is enabled in the `Grouping Bar`.
      *
      * @default true
-     * @remarks
+     * Remarks:
      * - Effective only when `showGroupingBar` is `true`.
      * - To disable globally, set {@link GroupingBarSettings.showRemoveIcon} to `false`.
      * - To disable for a specific field, set `showRemoveIcon: false` in that field within {@link DataSourceSettings} (e.g., `rows`, `columns`).
@@ -81,7 +81,7 @@ export interface GroupingBarSettingsModel {
      * > By default, the icon to set aggregate types is enabled in the `Grouping Bar`.
      *
      * @default true
-     * @remarks
+     * Remarks:
      * - Effective only when `showGroupingBar` is `true`.
      * - To disable globally, set {@link GroupingBarSettings.showValueTypeIcon} to `false`.
      *
@@ -102,7 +102,7 @@ export interface GroupingBarSettingsModel {
      * > By default, the `Grouping Bar` UI will be shown to both pivot table as well as pivot chart.
      *
      * @default Both
-     * @remarks
+     * Remarks:
      * - Effective only when `showGroupingBar` is `true`.
      * - Possible values: `'Table'`, `'Chart'`, `'Both'`.
      *
@@ -123,7 +123,7 @@ export interface GroupingBarSettingsModel {
      * > By default, all fields are available for drag-and-drop operation in the `Grouping Bar`.
      *
      * @default true
-     * @remarks
+     * Remarks:
      * - Effective only when `showGroupingBar` is `true`.
      *
      * @example
@@ -144,7 +144,7 @@ export interface GroupingBarSettingsModel {
      * > This property is applicable only for relational data source.
      *
      * @default false
-     * @remarks
+     * Remarks:
      * - Effective only when `showGroupingBar` is `true`.
      * - Applicable only for relational data sources.
      *
@@ -171,7 +171,7 @@ export interface CellEditSettingsModel {
      * Allows to add a new record to the data grid used to update the appropriate cells in the pivot table.
      *
      * @default false
-     * @remarks
+     * Remarks:
      * - Effective only when `editing` is enabled and the `editing` UI is available (for example, in the `drill-through` grid).
      * - To enable this icon, set the property `allowAdding` in `editSettings` to `true`.
      *
@@ -189,7 +189,7 @@ export interface CellEditSettingsModel {
      * Allows to edit the existing record in the data grid that used to update the appropriate cells in the pivot table.
      *
      * @default false
-     * @remarks
+     * Remarks:
      * - Effective only when `editing` is enabled and the `editing` UI is available (for example, in the `drill-through` grid).
      * - To enable this icon, set the property `allowEditing` in `editSettings` to `true`.
      *
@@ -207,7 +207,7 @@ export interface CellEditSettingsModel {
      * Allows to delete the existing record from the data grid that used to update the appropriate cells in the pivot table.
      *
      * @default false
-     * @remarks
+     * Remarks:
      * - Effective only when `editing` is enabled and the `editing` UI is available (for example, in the `drill-through` grid).
      * - To enable this icon, set the property `allowDeleting` in `editSettings` to `true`.
      *
@@ -225,7 +225,7 @@ export interface CellEditSettingsModel {
      * Allows an additional column appended in the data grid layout holds the command buttons to perform the CRUD operations to edit, delete, and update the raw items to the data grid that used to update the appropriate cells in the pivot table.
      *
      * @default false
-     * @remarks
+     * Remarks:
      * - Effective only when `editing` is enabled and the `editing` UI is available (for example, in the drill-through grid).
      * - To enable this column, set the property `allowCommandColumns` in `editSettings` to `true`.
      *
@@ -244,7 +244,7 @@ export interface CellEditSettingsModel {
      * > The `allowInlineEditing` property supports all modes of editing.
      *
      * @default false
-     * @remarks
+     * Remarks:
      * - Effective only when `editing` is enabled and the `editing` UI is available (for example, in the `drill-through` grid).
      *
      * @example
@@ -266,7 +266,7 @@ export interface CellEditSettingsModel {
      *   It is possible to perform bulk changes like add, edit and delete data of the cells and finally save to the data source by clicking “Update” toolbar button.
      *
      * @default Normal
-     * @remarks
+     * Remarks:
      * - `Normal` mode is enabled for CRUD operations in the data grid by default.
      * - Effective only when `editing` is enabled and the `editing` UI is available (for example, the `drill-through` grid).
      *
@@ -284,7 +284,7 @@ export interface CellEditSettingsModel {
      * Allows to restrict CRUD operations by double-clicking the appropriate value cell in the pivot table.
      *
      * @default true
-     * @remarks
+     * Remarks:
      * - Effective only when `allowEditing` is `true` in {@link CellEditSettings}.
      * - Primarily used in `Batch` edit mode for direct cell access.
      * - To disable, set to `false` in {@link PivotView.editSettings}.
@@ -305,7 +305,7 @@ export interface CellEditSettingsModel {
      * > To use this option, it requires {@link CellEditSettings.mode} is `Batch`, meaning, the `showConfirmDialog` option is only applicable for `Batch` edit mode.
      *
      * @default true
-     * @remarks
+     * Remarks:
      * - Effective only when `editing` is enabled via {@link PivotView.editSettings}.
      *
      * @example
@@ -324,7 +324,7 @@ export interface CellEditSettingsModel {
      * > The `showDeleteConfirmDialog` property supports all modes of editing.
      *
      * @default false
-     * @remarks
+     * Remarks:
      * - Effective only when editing is enabled via {@link PivotView.editSettings}.
      * - Supported in all edit modes: `Normal`, `Dialog`, and `Batch`.
      *
@@ -349,7 +349,7 @@ export interface ConditionalSettingsModel {
     /**
      * Allows to specify the value field caption to get visibility of hyperlink option for specific measure.
      *
-     * @remarks
+     * Remarks:
      * - Effective only within `hyperlinkSettings.conditionalSettings`.
      * - Must exactly match the `caption` of a value item in {@link DataSourceSettings.values}.
      *
@@ -374,7 +374,7 @@ export interface ConditionalSettingsModel {
     /**
      * Allows to specify the row or column header to get visibility of hyperlink option for specific row or column header.
      *
-     * @remarks
+     * Remarks:
      * - Effective only within `hyperlinkSettings.conditionalSettings`.
      * - Must exactly match the displayed header `caption` (for example, a member such as `Country`).
      *
@@ -406,7 +406,7 @@ export interface ConditionalSettingsModel {
      * * NotBetween: Allows to get the cells that have a value that is not between the start and end value.
      *
      * @default NotEquals
-     * @remarks
+     * Remarks:
      * - When `conditions` is `Between` or `NotBetween`, both `value1` (start) and `value2` (end) must be specified.
      *
      * @example
@@ -425,7 +425,7 @@ export interface ConditionalSettingsModel {
      * Allows to set the start value to get visibility of hyperlink option based on the condition applied.
      * For example, if the start value is 500 and the condition Equals is used, the hyperlink should be enabled to the cells that hold the value of 500 alone.
      *
-     * @remarks
+     * Remarks:
      * - For `Condition.Between` and `Condition.NotBetween`, this is the lower bound of the range.
      *
      * @example
@@ -444,7 +444,7 @@ export interface ConditionalSettingsModel {
      * > This option will be used by default when the operator **Between** and **NotBetween** is chosen to apply.
      * End value used by the comparison defined in {@link conditions}.
      *
-     * @remarks
+     * Remarks:
      * - Used when `conditions` is `Condition.Between` or `Condition.NotBetween`; acts as the upper bound.
      * - Must be specified together with {@link value1} for range-based operators.
      *
@@ -469,7 +469,7 @@ export interface HyperlinkSettingsModel {
     /**
      * Allows to set the visibility of hyperlink in all cells that are currently shown in the pivot table.
      *
-     * @remarks
+     * Remarks:
      * - Applies to the current view only. To target specific fields or values, use `hyperlinkSettings.conditionalSettings`.
      *
      * @example
@@ -486,7 +486,7 @@ export interface HyperlinkSettingsModel {
     /**
      * Allows to set the visibility of hyperlink in row headers that are currently shown in the pivot table.
      *
-     * @remarks
+     * Remarks:
      * - Applies to the current view only.
      * - To enable hyperlinks globally for all visible cells, use `hyperlinkSettings.showHyperlink`.
      * - To target specific fields or values, use `hyperlinkSettings.conditionalSettings`.
@@ -506,7 +506,7 @@ export interface HyperlinkSettingsModel {
     /**
      * Allows to set the visibility of hyperlink in column headers that are currently shown in the pivot table.
      *
-     * @remarks
+     * Remarks:
      * - Applies to the current view only.
      * - To enable hyperlinks globally for all visible cells, use `hyperlinkSettings.showHyperlink`.
      * - To target specific fields or values, use `hyperlinkSettings.conditionalSettings`.
@@ -526,7 +526,7 @@ export interface HyperlinkSettingsModel {
     /**
      * Allows to set the visibility of hyperlink in value cells that are currently shown in the pivot table.
      *
-     * @remarks
+     * Remarks:
      * - Applies to the current view only.
      * - To enable hyperlinks globally for all visible cells, use `hyperlinkSettings.showHyperlink`.
      * - To target specific fields or values, use `hyperlinkSettings.conditionalSettings`.
@@ -546,7 +546,7 @@ export interface HyperlinkSettingsModel {
     /**
      * Allows to set the visibility of hyperlink in summary cells that are currently shown in the pivot table.
      *
-     * @remarks
+     * Remarks:
      * - Applies to the current view only.
      * - To enable hyperlinks globally for all visible cells, use `hyperlinkSettings.showHyperlink`.
      * - To target specific fields or values, use `hyperlinkSettings.conditionalSettings`.
@@ -570,7 +570,7 @@ export interface HyperlinkSettingsModel {
      * * `value1`: Allows to set the start value.
      * * `value2`: Allows to set the end value. This option will be used by default when the operator **Between** and **NotBetween** is chosen to apply.
      *
-     * @remarks
+     * Remarks:
      * - When `conditions` is `Between` or `NotBetween`, both `value1` and `value2` must be provided.
      *
      * @example
@@ -590,7 +590,7 @@ export interface HyperlinkSettingsModel {
     /**
      * Header caption (row or column) used to set the visibility of hyperlink in the cells based on specific row or column header.
      *
-     * @remarks
+     * Remarks:
      * - Must exactly match the displayed header caption. For hierarchical captions, use a dot-separated path (for example, "FY 2015.Q1.Units Sold").
      *
      * @example
@@ -627,7 +627,7 @@ export interface PageSettingsModel {
     /**
      * Allows to set the total number of records to be displayed on each page of the pivot table’s column axis.
      *
-     * @remarks
+     * Remarks:
      * - Affects the column pager. Increase to show more columns per page.
      *
      * @example
@@ -644,7 +644,7 @@ export interface PageSettingsModel {
     /**
      * Allows to set the total number of records to be displayed on each page of the pivot table’s row axis.
      *
-     * @remarks
+     * Remarks:
      * - Affects the row pager. Increase to show more rows per page.
      *
      * @example
@@ -661,7 +661,7 @@ export interface PageSettingsModel {
     /**
      * Allows to set the current column page number to be displayed in the pivot table.
      *
-     * @remarks
+     * Remarks:
      * - Set to navigate between column pages.
      *
      * @example
@@ -678,7 +678,7 @@ export interface PageSettingsModel {
     /**
      * Allows to set the current row page number to be displayed in the pivot table.
      *
-     * @remarks
+     * Remarks:
      * - Set to navigate between row pages.
      *
      * @example
@@ -702,7 +702,7 @@ export interface PagerSettingsModel {
     /**
      * Allows to display the `Pager` UI either at top or bottom of the `Pivot Table` UI.
      *
-     * @remarks
+     * Remarks:
      * - Controls where the pager renders relative to the Pivot Table.
      * - Typical values: 'Top' or 'Bottom'.
      *
@@ -721,7 +721,7 @@ export interface PagerSettingsModel {
      * When the property is set to “true”, it allows to display the row and column paging options as vice versa.
      * > In `Pager` UI, paging options for column axis will be shown at left-side and for row will be shown at right-side.
      *
-     * @remarks
+     * Remarks:
      * - When `true`, column paging appears on the left and row paging on the right (swapped layout).
      * - When `false`, uses the default layout.
      *
@@ -767,7 +767,7 @@ export interface PagerSettingsModel {
     /**
      * Allows to show row page size information in the `Pager` UI.
      *
-     * @remarks
+     * Remarks:
      * - When enabled, allows viewing or changing how many rows are shown per page.
      *
      * @example
@@ -786,7 +786,7 @@ export interface PagerSettingsModel {
     /**
      * Allows to show column page size information in the `Pager` UI.
      *
-     * @remarks
+     * Remarks:
      * - When enabled, allows viewing or changing how many columns are shown per page.
      *
      * @example
@@ -805,7 +805,7 @@ export interface PagerSettingsModel {
     /**
      * Allows to choose from a variety of page sizes in the `Paging` UI that can be used to display the pivot table's rows.
      *
-     * @remarks
+     * Remarks:
      * - When enabled, allows viewing or changing how many rows are shown per page.
      *
      * @example
@@ -824,7 +824,7 @@ export interface PagerSettingsModel {
     /**
      * Allows to choose from a variety of page sizes in the `Paging` UI that can be used to display the pivot table's columns.
      *
-     * @remarks
+     * Remarks:
      * - One of these values can be selected to control how many columns are shown per page.
      *
      * @example
@@ -843,7 +843,7 @@ export interface PagerSettingsModel {
     /**
      * Allows the `Paging` UI to be displayed with the absolute minimum of information by hiding all paging data except for the navigation options.
      *
-     * @remarks
+     * Remarks:
      * - When `true`, the pager shows only the essential navigation UI (previous/next, etc.).
      *
      * @example
@@ -860,7 +860,7 @@ export interface PagerSettingsModel {
     /**
      * Allows the `Pager` UI to be customized by using an HTML string or the element's ID to display custom elements instead of the standard ones.
      *
-     * @remarks
+     * Remarks:
      * - Use this to fully customize the pager (for example, add custom labels or layout).
      * - When a string is provided, it can be raw HTML or an element selector/ID.
      *
@@ -877,7 +877,7 @@ export interface PagerSettingsModel {
      * @aspType string
      * @see {@link PagerSettings}
      */
-    template?: string | Function;
+    template?: string | PivotTemplate;
 
 }
 
@@ -961,7 +961,7 @@ export interface VirtualScrollSettingsModel {
      * or also show the previous and next page in the pivot table. By rendering only the rows and columns relevant to the current view port for display
      * in the pivot table, it improves the pivot table's performance.
      *
-     * @remarks
+     * Remarks:
      * - `false` (default): Renders the current viewport plus the previous and next pages to provide smoother scrolling.
      * - `true`: Renders only the rows and columns in the current viewport, reducing CPU and memory usage.
      * - Improves performance for large datasets during initial render and UI actions (`drill up/down`, `sorting`, `filtering`).
@@ -1442,6 +1442,20 @@ export interface PivotViewModel extends ComponentModel{
     allowPdfExport?: boolean;
 
     /**
+     * Allows the rendered pivot table to be exported as a standalone HTML document using the public `exportToHTML` API.
+     *
+     * @default false
+     */
+    allowHtmlExport?: boolean;
+
+    /**
+     * Allows the current PivotView composition to be exported as an image using the public `exportToImage` API.
+     *
+     * @default false
+     */
+    allowImageExport?: boolean;
+
+    /**
      * Allows the pivot table component to be updated only on demand, meaning,
      * you can perform a variety of operations such as drag-and-drop fields between row, column, value and filter axes,
      * apply sorting and filtering inside the Field List, resulting the field list UI would be updated on its own, but not the pivot table.
@@ -1517,7 +1531,7 @@ export interface PivotViewModel extends ComponentModel{
      * @default null
      * @aspType string
      */
-    cellTemplate?: string | Function;
+    cellTemplate?: string | PivotTemplate;
 
     /**
      * It allows to define the "ID" of div which is used as template in toolbar panel.
@@ -1525,7 +1539,7 @@ export interface PivotViewModel extends ComponentModel{
      * @default null
      * @aspType string
      */
-    toolbarTemplate?: string | Function;
+    toolbarTemplate?: string | PivotTemplate;
 
     /**
      * Allows the tooltip element to be customized with either an HTML string or the element’s ID,
@@ -1534,7 +1548,7 @@ export interface PivotViewModel extends ComponentModel{
      * @default null
      * @aspType string
      */
-    tooltipTemplate?: string | Function;
+    tooltipTemplate?: string | PivotTemplate;
 
     /**
      * Allows the appearance of the loading indicator to be customized with either an HTML string or the element’s ID,
@@ -1543,7 +1557,7 @@ export interface PivotViewModel extends ComponentModel{
      * @default null
      * @aspType string
      */
-    spinnerTemplate?: string | Function;
+    spinnerTemplate?: string | PivotTemplate;
 
     /**
      * Allows you to show the grouping UI in the pivot table that automatically groups date, time, number and string at runtime.
@@ -1735,13 +1749,13 @@ export interface PivotViewModel extends ComponentModel{
      * @event beforePdfExport
      * @hidden
      */
-    beforePdfExport?: EmitType<Object>;
+    beforePdfExport?: EmitType<unknown>;
 
     /**
      * @event beforeExcelExport
      * @hidden
      */
-    beforeExcelExport?: EmitType<Object>;
+    beforeExcelExport?: EmitType<unknown>;
 
     /**
      * @event beforeColumnsRender
@@ -1792,10 +1806,19 @@ export interface PivotViewModel extends ComponentModel{
     chartLegendClick?: EmitType<ILegendClickEventArgs>;
 
     /**
+     * Allows cancellation, htmlContent customization, or selection of rendered Table, Chart or Both.
+     * Both starts the chart on a separate printed page. Omit view to preserve the default composition.
+     *
      * @event beforePrint
-     * @hidden
      */
-    beforePrint?: EmitType<IPrintEventArgs>;
+    beforePrint?: EmitType<PivotViewPrintEventArgs>;
+
+    /**
+     * Public event triggered after the current PivotView has finished printing.
+     *
+     * @event printComplete
+     */
+    printComplete?: EmitType<object>;
 
     /**
      * @event animationComplete
@@ -2061,21 +2084,21 @@ export interface PivotViewModel extends ComponentModel{
      *
      * @event dataBound
      */
-    dataBound?: EmitType<Object>;
+    dataBound?: EmitType<unknown>;
 
     /**
      * It triggers when the pivot table component is created.
      *
      * @event created
      */
-    created?: EmitType<Object>;
+    created?: EmitType<unknown>;
 
     /**
      * It triggers when pivot table component getting destroyed.
      *
      * @event destroyed
      */
-    destroyed?: EmitType<Object>;
+    destroyed?: EmitType<unknown>;
 
     /**
      * It allows to set properties for exporting.

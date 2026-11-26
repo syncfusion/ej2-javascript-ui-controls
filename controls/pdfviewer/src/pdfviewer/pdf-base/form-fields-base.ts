@@ -748,8 +748,13 @@ export class FormFieldsBase {
         textbox.readOnly = formFieldAttributes.isReadonly as boolean;
         textbox.required = formFieldAttributes.isRequired as boolean;
         textbox.textAlignment = this.getTextAlignment(formFieldAttributes.textAlign as string);
-        textbox.visibility = this.getFormFieldsVisibility(formFieldAttributes.visibility as string);
+        textbox.visibility = this.getFormFieldsVisibility(formFieldAttributes.visibility as string, formFieldAttributes.isPrint);
         textbox.text = isNullOrUndefined(formFieldAttributes.value) ? '' : formFieldAttributes.value as string;
+        if ((formFieldAttributes as IFormField & { isDateField?: boolean }).isDateField && textbox.text) {
+            const actions: ActionsSettingsModel = (formFieldAttributes as IFormField & { actions?: ActionsSettingsModel }).actions;
+            textbox.text = this.pdfViewer.formFieldsModule.getValidDateTimeValue(
+                textbox.text, this.pdfViewerBase.getActionsFormatScript(actions));
+        }
         textbox.toolTip = isNullOrUndefined(formFieldAttributes.tooltip) ? '' : formFieldAttributes.tooltip as string;
         textbox.color = {r: formFieldAttributes.fontColor.r, g: formFieldAttributes.fontColor.g, b: formFieldAttributes.fontColor.b};
         textbox.borderColor = {r: formFieldAttributes.borderColor.r, g: formFieldAttributes.borderColor.g,
@@ -950,7 +955,7 @@ export class FormFieldsBase {
         }
         comboBox.required = formFieldAttributes.isRequired as boolean;
         comboBox.readOnly = formFieldAttributes.isReadonly as boolean;
-        comboBox.visibility = this.getFormFieldsVisibility(formFieldAttributes.visibility as string);
+        comboBox.visibility = this.getFormFieldsVisibility(formFieldAttributes.visibility as string, formFieldAttributes.isPrint);
         comboBox.backColor = {r: formFieldAttributes.backgroundColor.r, g: formFieldAttributes.backgroundColor.g,
             b: formFieldAttributes.backgroundColor.b};
         const isTransparentBg: boolean = formFieldAttributes.backgroundColor.a === 0 ? true : false;
@@ -999,7 +1004,7 @@ export class FormFieldsBase {
         checkBoxField.readOnly = formFieldAttributes.isReadonly as boolean;
         checkBoxField.required = formFieldAttributes.isRequired as boolean;
         checkBoxField.checked = formFieldAttributes.isChecked as boolean;
-        checkBoxField.visibility = this.getFormFieldsVisibility(formFieldAttributes.visibility as string);
+        checkBoxField.visibility = this.getFormFieldsVisibility(formFieldAttributes.visibility as string, formFieldAttributes.isPrint);
         checkBoxField.exportValue = formFieldAttributes.value as string;
         checkBoxField.backColor = {r: formFieldAttributes.backgroundColor.r, g: formFieldAttributes.backgroundColor.g,
             b: formFieldAttributes.backgroundColor.b};
@@ -1108,7 +1113,7 @@ export class FormFieldsBase {
         }
         listBox.readOnly = formFieldAttributes.isReadonly as boolean;
         listBox.required = formFieldAttributes.isRequired as boolean;
-        listBox.visibility = this.getFormFieldsVisibility(formFieldAttributes.visibility as string);
+        listBox.visibility = this.getFormFieldsVisibility(formFieldAttributes.visibility as string, formFieldAttributes.isPrint);
         listBox.toolTip = isNullOrUndefined(formFieldAttributes.tooltip) ? '' : formFieldAttributes.tooltip as string;
         if (!isFieldRotated) {
             listBox.rotate = this.getFormfieldRotation(loadedPage.rotation);
@@ -1167,7 +1172,7 @@ export class FormFieldsBase {
                 radioButtonItem.backColor = {r: radiobuttonItem.backgroundColor.r, g: radiobuttonItem.backgroundColor.g,
                     b: radiobuttonItem.backgroundColor.b, isTransparent: true};
             }
-            radioButtonItem.visibility = this.getFormFieldsVisibility(radiobuttonItem.visibility);
+            radioButtonItem.visibility = this.getFormFieldsVisibility(radiobuttonItem.visibility, radiobuttonItem.isPrint);
             field.add(radioButtonItem);
             const selectedRadios: IRadiobuttonItem[] = formFieldAttributes.radiobuttonItem
                 .filter((item: IRadiobuttonItem) => item.isUnisonSelected === true);
@@ -1239,6 +1244,9 @@ export class FormFieldsBase {
         }
         else if (formFieldAttributes.visibility === 'visible') {
             signatureField.visible = true;
+            if (formFieldAttributes.isPrint === false) {
+                signatureField.visibility = PdfFormFieldVisibility.visibleNotPrintable;
+            }
         }
         if (formFieldAttributes.signatureType === 'Text') {
             this.drawDesignerFieldFreeTextAnnotations(signatureField, signatureFieldName, formFieldAttributes);
@@ -1662,11 +1670,11 @@ export class FormFieldsBase {
     }
 
     //Need to check the form field visibility property
-    private getFormFieldsVisibility(visibility: string): PdfFormFieldVisibility {
+    private getFormFieldsVisibility(visibility: string, isPrint?: boolean): PdfFormFieldVisibility {
         let fieldVisibility: PdfFormFieldVisibility;
         switch (visibility) {
         case 'visible':
-            fieldVisibility = PdfFormFieldVisibility.visible;
+            fieldVisibility = isPrint === false ? PdfFormFieldVisibility.visibleNotPrintable : PdfFormFieldVisibility.visible;
             break;
         case 'hidden':
             fieldVisibility = PdfFormFieldVisibility.hidden;
@@ -1892,6 +1900,7 @@ export class FormFieldsBase {
         formFields.Alignment = textBox.textAlignment;
         formFields.MaxLength = textBox.maxLength;
         formFields.Visible = textBox.visibility;
+        formFields.IsPrint = textBox.visibility !== PdfFormFieldVisibility.visibleNotPrintable;
         formFields.InsertSpaces = textBox.insertSpaces;
         if (!isNullOrUndefined(font)){
             formFields.Font = this.fontConvert(font as PdfFont, textBox);
@@ -2004,6 +2013,7 @@ export class FormFieldsBase {
         formFields.IsRequired = comboBoxField.required;
         formFields.IsReadonly = comboBoxField.readOnly;
         formFields.Visible = comboBoxField.visibility;
+        formFields.IsPrint = comboBoxField.visibility !== PdfFormFieldVisibility.visibleNotPrintable;
         formFields.RotationAngle = this.GetRotateAngle(comboBoxField.page.rotation);
         formFields.Alignment = comboBoxField.textAlignment;
         if (comboBoxField._dictionary.has('CustomData')) {
@@ -2093,6 +2103,7 @@ export class FormFieldsBase {
         formFields.IsReadonly = chkField.readOnly;
         formFields.IsRequired = chkField.required;
         formFields.Visible = chkitem.visibility;
+        formFields.IsPrint = chkitem.visibility !== PdfFormFieldVisibility.visibleNotPrintable;
         formFields.Value = chkitem.exportValue;
         if (!isNullOrUndefined(checkBoxIndex)) {
             formFields.CheckBoxIndex = checkBoxIndex;
@@ -2189,6 +2200,7 @@ export class FormFieldsBase {
         formFields.IsReadonly = listBoxField.readOnly;
         formFields.IsRequired = listBoxField.required;
         formFields.Visible = listBoxField.visibility;
+        formFields.IsPrint = listBoxField.visibility !== PdfFormFieldVisibility.visibleNotPrintable;
         formFields.MultiSelect = listBoxField.multiSelect;
         //Need to implement selected value
         if (itemCount > 0) {
@@ -2251,6 +2263,7 @@ export class FormFieldsBase {
         formFields.IsRequired = parent.required;
         formFields.IsReadonly = parent.readOnly;
         formFields.Visible = parent.visibility;
+        formFields.IsPrint = parent.visibility !== PdfFormFieldVisibility.visibleNotPrintable;
         formFields.RotationAngle = this.GetRotateAngle(item.page.rotation);
         if (parent._dictionary.has('CustomData')) {
             formFields.CustomData = JSON.parse(parent._dictionary.get('CustomData'));
@@ -2501,10 +2514,10 @@ export class FormFieldsBase {
         formFields.IsReadonly = btnField.readOnly;
         formFields.IsRequired = btnField.required;
         formFields.Visible = btnField.visibility;
+        formFields.IsPrint = btnField.visibility !== PdfFormFieldVisibility.visibleNotPrintable;
         formFields.Value = btnField.text;
         formFields.RotationAngle = this.GetRotateAngle(btnField.page.rotation);
         formFields.Text = btnField.text;
-        formFields.IsPrint = true;
         formFields.Actions = this.parseButtonFieldActions(btnField);
         if (btnField._dictionary.has('CustomData')) {
             formFields.CustomData = JSON.parse(btnField._dictionary.get('CustomData'));
@@ -2873,7 +2886,7 @@ export class FormFieldsBase {
         button.text = isNullOrUndefined(formFieldAttributes.value) ? '' : formFieldAttributes.value as string;
         button.readOnly = formFieldAttributes.isReadonly as boolean;
         button.required = formFieldAttributes.isRequired as boolean;
-        button.visibility = this.getFormFieldsVisibility(formFieldAttributes.visibility as string);
+        button.visibility = this.getFormFieldsVisibility(formFieldAttributes.visibility as string, formFieldAttributes.isPrint);
         button.toolTip = isNullOrUndefined(formFieldAttributes.tooltip) ? '' : formFieldAttributes.tooltip as string;
         if (!isNullOrUndefined(formFieldAttributes.backgroundColor)) {
             const isTransparentBg: boolean = formFieldAttributes.backgroundColor.a === 0 ? true : false;
@@ -3250,6 +3263,7 @@ export class FormFieldsBase {
         formFields.IsReadonly = signatureField.readOnly;
         formFields.IsRequired = signatureField.required;
         formFields.Visible = signatureField.visibility;
+        formFields.IsPrint = signatureField.visibility !== PdfFormFieldVisibility.visibleNotPrintable;
         if (!isNullOrUndefined(signatureField.borderColor)) {
             formFields.BorderColor = {
                 R: signatureField.borderColor.r, G: signatureField.borderColor.g,

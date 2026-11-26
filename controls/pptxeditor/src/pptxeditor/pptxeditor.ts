@@ -964,6 +964,9 @@ export class PptxEditor extends Component<HTMLElement> implements INotifyPropert
 
     private touchStart: { x: number; y: number } | null = null;
 
+    /** Pending touch-only ribbon selection sync (debounced while handles are dragged). */
+    private selectionSyncTimer: number | null = null;
+
     // Stable listener identity for editor-scoped keyboard input.
     private readonly onEditorKeyDownBound: (event: KeyboardEvent) => void = (event: KeyboardEvent): void =>
         this.onEditorKeyDown(event);
@@ -1811,6 +1814,10 @@ export class PptxEditor extends Component<HTMLElement> implements INotifyPropert
             this.onFullscreenChangeBound
         );
         document.removeEventListener('selectionchange', this.onSelectionChangeBound);
+        if (this.selectionSyncTimer !== null) {
+            window.clearTimeout(this.selectionSyncTimer);
+            this.selectionSyncTimer = null;
+        }
         this.element.removeEventListener('keydown', this.onEditorKeyDownBound);
         this.element.removeEventListener('touchstart', this.onEditorTouchStartBound);
         this.element.removeEventListener('touchend', this.onEditorTouchEndBound);
@@ -3386,9 +3393,25 @@ export class PptxEditor extends Component<HTMLElement> implements INotifyPropert
      * slide text selection changes (cheap no-op when the state is unchanged).
      */
     private onSlideSelectionChanged(): void {
-        if (this.toolbarModule) {
-            this.toolbarModule.refreshSelectionState();
+        if (!this.toolbarModule) {
+            return;
         }
+        // Touch: selectionchange fires continuously while a selection handle is dragged. Rewriting
+        // ribbon DOM mid-drag makes mobile browsers drop the selection, so wait until it settles.
+        if (typeof window !== 'undefined' && typeof window.matchMedia === 'function' &&
+            window.matchMedia('(pointer: coarse)').matches) {
+            if (this.selectionSyncTimer !== null) {
+                window.clearTimeout(this.selectionSyncTimer);
+            }
+            this.selectionSyncTimer = window.setTimeout((): void => {
+                this.selectionSyncTimer = null;
+                if (this.toolbarModule) {
+                    this.toolbarModule.refreshSelectionState();
+                }
+            }, 300);
+            return;
+        }
+        this.toolbarModule.refreshSelectionState();
     }
 
     private onEditorKeyDown(event: KeyboardEvent): void {

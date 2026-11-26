@@ -29,7 +29,8 @@ export class KeyboardInteraction {
         leftArrow: 'leftArrow',
         rightArrow: 'rightArrow',
         escape: 'escape',
-        ctrlShiftF: 'ctrl+shift+f'
+        ctrlShiftF: 'ctrl+shift+f',
+        ctrlM: 'ctrl+m'
     };
     private pivotViewKeyboardModule: KeyboardEvents;
     private timeOutObj: ReturnType<typeof setTimeout>;
@@ -72,8 +73,24 @@ export class KeyboardInteraction {
         case 'rightArrow':
             this.processSelection(e);
             break;
+        case 'ctrlM':
+            if (closest(e.target as Element, '.e-pivotview') === this.parent.element &&
+                this.parent.element.contains(document.activeElement)) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.parent.setFullScreen(!this.parent.isFullScreen);
+            }
+            break;
         case 'escape':
-            this.clearSelection();
+            if (e.defaultPrevented && this.parent.isFullScreen) {
+                break;
+            }
+            if (this.parent.isFullScreen) {
+                e.preventDefault();
+                this.parent.setFullScreen(false);
+            } else {
+                this.clearSelection();
+            }
             break;
         case 'ctrlShiftF':
             this.toggleFieldList(e);

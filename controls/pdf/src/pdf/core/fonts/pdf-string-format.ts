@@ -57,6 +57,67 @@ export class PdfStringFormat {
      */
     _isList: boolean = false;
     /**
+     * Indicates whether complex-script shaping is enabled.
+     *
+     * @private
+     */
+    private _complexScript: boolean = false;
+    /**
+     * Gets a value indicating whether complex-script text rendering is enabled.
+     *
+     * @returns {boolean} `true` if complex-script rendering is enabled; otherwise, `false`.
+     * ```typescript
+     * // Create a new PDF document
+     * let document: PdfDocument = new PdfDocument();
+     * // Add a new page
+     * let page: PdfPage = document.addPage();
+     * // Create a Unicode TrueType font
+     * let font: PdfTrueTypeFont = new PdfTrueTypeFont(fontData, 12);
+     * // Create a string format and enable complex-script rendering
+     * let format: PdfStringFormat = new PdfStringFormat();
+     * format.complexScript = true;
+     * // Get the complex-script rendering state
+     * let enabled: boolean = format.complexScript;
+     * // Draw Tamil text using the string format
+     * page.graphics.drawString('தமிழ் உலகின் தொன்மையான செம்மொழிகளில் ஒன்றாகும்.', font,
+     *     {x: 0, y: 0, width: 500, height: 100}, new PdfBrush({r: 0, g: 0, b: 0}), format);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get complexScript(): boolean {
+        return this._complexScript;
+    }
+    /**
+     * Sets a value indicating whether complex-script text rendering is enabled.
+     *
+     * @param {boolean} value `true` to enable complex-script rendering; otherwise, `false`.
+     * ```typescript
+     * // Create a new PDF document
+     * let document: PdfDocument = new PdfDocument();
+     * // Add a new page
+     * let page: PdfPage = document.addPage();
+     * // Create a Unicode TrueType font
+     * let font: PdfTrueTypeFont = new PdfTrueTypeFont(fontData, 12);
+     * // Create a string format
+     * let format: PdfStringFormat = new PdfStringFormat();
+     * // Enable complex-script rendering
+     * format.complexScript = true;
+     * // Draw Tamil text using the string format
+     * page.graphics.drawString('தமிழ் உலகின் தொன்மையான செம்மொழிகளில் ஒன்றாகும்.', font,
+     *     {x: 0, y: 0, width: 500, height: 100}, new PdfBrush({r: 0, g: 0, b: 0}), format);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set complexScript(value: boolean) {
+        this._complexScript = value;
+    }
+    /**
      * Initializes a new instance of the `PdfStringFormat` class.
      *
      * ```typescript

@@ -1,6 +1,7 @@
 /**
  * Opened presentation package document (public handle).
  */
+import { OoxmlElement } from '../xml/dom';
 import { addSlideToPresentation, bindSlideCollection, buildCreatePackage, AddSlideOptions, SlideCollection } from '../create/index';
 import { flushPresentationModel, loadPresentationModel, PresentationModel } from '../presentation/load';
 import { PresentationError } from '../errors';
@@ -11,14 +12,27 @@ import { notePresentation } from '../../features/hyperlinks-actions/facade';
 import { SecurityLimits } from '../security/limits';
 import { loadThemePart, resolveSchemeColor as resolveSchemeColorView, EffectiveColorContext, ResolvedColor,
     SchemeColorValue, ThemePart } from '../theme/index';
-import { findAllRegExpOnDocument, findAllStringOnDocument, findRegExpOnDocument, findStringOnDocument } from '../text/find/find-on-slide';
+import { findAllRegExpOnDocument, findAllStringOnDocument, findRegExpOnDocument, findStringOnDocument, SearchablePart } from '../text/find/find-on-slide';
+import { getNotes } from '../../features/notes/get-notes';
 import { TextFindMatch } from '../text/find/text-find-match';
 import { DIGITAL_SIGNATURE_ORIGIN_PART_NAME, DIGITAL_SIGNATURE_ORIGIN_REL_TYPE, VBA_PROJECT_REL_TYPE } from './constants';
+import { FORMAT_MAIN_CONTENT_TYPES, FormatType, formatIsMacroEnabled, getFormatTypeFromExtension } from './format-type';
+export { FormatType, getFormatTypeFromContentType, getFormatTypeFromExtension } from './format-type';
+import { stringIncludes, arrayAt } from '../util/es5-compat';
+import { BuiltInProperties } from '../properties/builtin-set';
+import { CustomProperties } from '../properties/custom-set';
+import { LayoutSlide } from '../presentation';
+import { PresentationSection } from '../presentation/presentation-section';
+import { SectionCollection } from '../presentation/section-collection';
 import { ensureContentTypesForParts, serializeContentTypes, ContentTypesModel } from './content-types';
 import { createHostPartRelationshipAccess, HostPartRelationshipAccess } from './host-part-relationship-access';
 import { validateLicense } from '@syncfusion/ej2-base';
 import { addWaterMark } from './watermark';
-import { openPresentationPackage, OpenPresentationOptions } from './open';
+import { openPresentationBytes, OpenPresentationOptions } from './open';
+import { wasEncryptedContainer } from './encryption';
+import { applyModifyVerifier, assertPasswordAcceptable, encryptIfPending, hasModifyVerifier, PendingEncryption, removeModifyVerifier } from './encryption';
+import { InvalidPasswordError } from '../security/errors';
+import { _decode } from '../errors';
 import { OpcPackage, PackagePart } from './package-model';
 import { createPackagePartAccess, PackagePartAccess } from './package-part-access';
 import { relationshipsPartName } from './paths';
@@ -30,6 +44,24 @@ import { Save } from '@syncfusion/ej2-file-utils';
 /** OOXML presentation MIME type used for browser downloads (ECMA-376 / IANA). */
 const PRESENTATION_MIME_TYPE: string = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
 
+/**
+ * Decodes {@link Presentation.open} input once so encryption detection and OPC
+ * load share the same bytes.
+ *
+ * @param {Uint8Array | ArrayBuffer | number[] | string} input - Package bytes or base64.
+ * @returns {Uint8Array} Package bytes.
+ */
+function openInputBytes(input: Uint8Array | ArrayBuffer | number[] | string): Uint8Array {
+    if (typeof input === 'string') {
+        const decoded: Uint8Array | Array<number> = _decode(input, false);
+        return decoded instanceof Uint8Array ? decoded : new Uint8Array(decoded);
+    }
+    if (input instanceof Uint8Array) {
+        return input;
+    }
+    return new Uint8Array(input);
+}
+
 export { OpenPresentationInput, OpenPresentationOptions } from './open';
 
 /**
@@ -37,13 +69,6 @@ export { OpenPresentationInput, OpenPresentationOptions } from './open';
  *
  * @internal
  */
-import { stringIncludes, arrayAt } from '../util/es5-compat';
-import { BuiltInProperties } from '../properties/builtin-set';
-import { CustomProperties } from '../properties/custom-set';
-import { LayoutSlide } from '../presentation';
-import { PresentationSection } from '../presentation/presentation-section';
-import { SectionCollection } from '../presentation/section-collection';
-
 const DIGITAL_SIGNATURE_MUTATION_WARNING: string = '[@syncfusion/ej2-pptx] Warning: This presentation has digital signatures. Mutations invalidate signatures.\n' +
     'Call removeDigitalSignatures() before mutating if you wish to produce a clean file.';
 /** Absolute URI prefix for OPC digital-signature packaging parts. */
@@ -82,9 +107,10 @@ export interface CreatePresentationOptions {
  * is a read view of `a:clrScheme`. Scheme colour **resolve** returns a
  * {@link ResolvedColor} view and never replaces authored `a:schemeClr` with RGB.
  *
- * `find` / `findAll` search slide body text only (shape `txBody` and table cell
- * text in `sldIdLst` order). Notes, masters, and layouts are out of scope for
- * Phase 7.
+ * `find` / `findAll` search slide body text, each slide's notes slide when one
+ * exists, then slide masters, then slide layouts. Replace and highlight go
+ * through the returned match's text part, so they write back to the same part
+ * the match came from.
  */
 export class Presentation {
     /** @internal */
@@ -101,12 +127,18 @@ export class Presentation {
     private readonly builtIn: BuiltInProperties;
     private readonly custom: CustomProperties;
     /**
-     * Cached once at construction: macro-enabled main content type and/or
-     * presentation→vbaProject relationship (never re-scanned on save).
+     * Cached at construction: macro-enabled main content type and/or
+     * presentation→vbaProject relationship. Updated when saving with explicit FormatType.
      *
      * @internal
      */
-    private readonly macrosPresent: boolean;
+    private macrosPresent: boolean;
+    /**
+     * Password from {@link Presentation.encrypt}, applied on the next save only.
+     *
+     * @internal
+     */
+    private pendingEncryption: PendingEncryption | undefined;
     /**
      * Whether package-root relationships include a digital-signature origin.
      * Cleared by {@link Presentation.removeDigitalSignatures}.
@@ -147,6 +179,7 @@ export class Presentation {
             slide.attachOnMutate(onMutate);
             slide.attachSiblingSlides(siblingSlides);
             slide.attachPresentation(this);
+            this.bindNotesResolver(slide);
 
         }
         for (let i: number = 0; i < this.model.masters.length; i++) {
@@ -170,6 +203,7 @@ export class Presentation {
             slide.attachOnMutate(onMutate);
             slide.attachSiblingSlides(siblingSlides);
             slide.attachPresentation(this);
+            this.bindNotesResolver(slide);
             return slide;
         }, (slide: Slide) => {
             this.warnSignatureOnce();
@@ -202,11 +236,11 @@ export class Presentation {
     /**
      * Opens an OPC presentation package from raw bytes or a base64 string.
      *
-     * @throws {Error} When the package is encrypted / OFFCRYPTO CFB or ZIP traditional encryption is present.
+     * @throws {Error} When an encrypted package is opened without a password, the password is wrong, or ZIP traditional encryption is present.
      * @throws {Error} When a security limit is exceeded.
      * @throws {Error} When the package is not a valid presentation OPC package.
-     * @remarks Same factory style as {@link Presentation.create}. Package load logic lives in the package module; this method is the public open entry. Unknown parts and relationship types are retained for round-trip. External relationship targets are never fetched. Macro-enabled main content types are accepted as packages; macros are never executed. Encrypted OFFCRYPTO / OLE CFB packages are refused. Decrypt-open is not supported.
-     * @example ```ts const doc = await Presentation.open(bytes); const fromBase64 = await Presentation.open(base64String); const main =
+     * @remarks Same factory style as {@link Presentation.create}. Package load logic lives in the package module; this method is the public open entry. Unknown parts and relationship types are retained for round-trip. External relationship targets are never fetched. Macro-enabled main content types are accepted as packages; macros are never executed. An OFFCRYPTO / OLE CFB package is decrypted with `options.password` (or the second string argument) using `@syncfusion/ej2-office-common` before the OPC parse.
+     * @example ```ts const doc = await Presentation.open(bytes); const fromBase64 = await Presentation.open(base64String); const locked = await Presentation.open(bytes, 'secret'); const main =
      * doc.getPart(doc.presentationPartName); const out = await doc.save(); ```
      * @param {*} input - Entire `.pptx` (or related) package as `Uint8Array`,
      * @param {OpenPresentationOptions} options - Optional security limit overrides.
@@ -214,10 +248,15 @@ export class Presentation {
      */
     static async open(
         input: Uint8Array | ArrayBuffer | number[] | string,
-        options: OpenPresentationOptions = {}
+        options: OpenPresentationOptions | string = {}
     ): Promise<Presentation> {
-        const pkg: OpcPackage = await openPresentationPackage(input, options);
+        const resolved: OpenPresentationOptions = typeof options === 'string' ? { password: options } : options;
+        const source: Uint8Array = openInputBytes(input);
+        const pkg: OpcPackage = await openPresentationBytes(source, resolved);
         const opened: Presentation = new Presentation(pkg);
+        if (wasEncryptedContainer(source) && typeof resolved.password === 'string' && resolved.password.length > 0) {
+            opened.pendingEncryption = { password: resolved.password };
+        }
         notePresentation(opened);
         return opened;
     }
@@ -519,13 +558,14 @@ export class Presentation {
      * @returns {PackagePartAccess} Access bag with relationship get/replace, part get/set, content-type
      */
     packagePartAccess(): PackagePartAccess {
-        return createPackagePartAccess(this.pkg);
+        return createPackagePartAccess(this.pkg, (): OoxmlElement => this.model.root);
     }
     /**
-     * Finds the first occurrence of `text` in slide body text.
+     * Finds the first occurrence of `text` across slides, notes, masters, and layouts.
      *
-     * @remarks Walk order: `slides` (`p:sldIdLst`) → shape tree (groups expanded) → paragraphs → concatenated `a:r` runs. Table cells are
-     * searched row-major. Does not search notes, masters, or layouts. Does not mutate the package. **API-RULES R2.3:** boolean parameters
+     * @remarks Walk order: `slides` (`p:sldIdLst`), then each slide's existing notes slide, then masters (`p:sldMasterIdLst`), then layouts.
+     * Within a part: shape tree (groups expanded) → paragraphs → concatenated `a:r` runs. Table cells are searched row-major. A notes part
+     * is read only when the slide already has one; searching never creates notes. Does not mutate the package. **API-RULES R2.3:** boolean parameters
      * keep positional form for Phase 7 (string + two booleans); prefer overload clarity over an options bag. Spec:
      * `docs/specs/035-find-text.md`; ADR `docs/adr/2026-09-16-find-text.md`.
      * @param {string} text - Non-empty needle; empty string yields no match.
@@ -535,7 +575,7 @@ export class Presentation {
      */
     find(text: string, caseSensitive: boolean, wholeWord: boolean): TextFindMatch | undefined;
     /**
-     * Finds the first RegExp match in slide body text.
+     * Finds the first RegExp match across slides, notes, masters, and layouts.
      *
      * @param {RegExp} regex - Pattern; caller flags `i`/`u`/`m`/`s`/`y` are honored. Internal
      * @returns {TextFindMatch | undefined} First {@link TextFindMatch}, or `undefined`.
@@ -549,14 +589,14 @@ export class Presentation {
      * @returns {TextFindMatch | undefined} The result.
      */
     find(textOrRegex: string | RegExp, caseSensitive?: boolean, wholeWord?: boolean): TextFindMatch | undefined {
-        const slides: Array<Slide> = this.model.slides;
+        const parts: ReadonlyArray<SearchablePart> = this.searchableParts();
         if (typeof textOrRegex === 'string') {
-            return findStringOnDocument(slides, textOrRegex, caseSensitive === true, wholeWord === true);
+            return findStringOnDocument(parts, textOrRegex, caseSensitive === true, wholeWord === true);
         }
-        return findRegExpOnDocument(slides, textOrRegex);
+        return findRegExpOnDocument(parts, textOrRegex);
     }
     /**
-     * Finds all occurrences of `text` in slide body text (non-overlapping, advance
+     * Finds all occurrences of `text` across slides, notes, masters, and layouts (non-overlapping, advance
      * by match length within each paragraph).
      *
      * @remarks Same walk and purity rules as `find`. **API-RULES R2.3:** positional booleans retained for Phase 7. Spec:
@@ -568,7 +608,7 @@ export class Presentation {
      */
     findAll(text: string, caseSensitive: boolean, wholeWord: boolean): ReadonlyArray<TextFindMatch>;
     /**
-     * Finds all RegExp matches in slide body text.
+     * Finds all RegExp matches across slides, notes, masters, and layouts.
      *
      * @param {RegExp} regex - Pattern; caller flags honored; `g` is not required for multi-match.
      * @returns {*} Matches in document walk order (may be empty).
@@ -582,43 +622,113 @@ export class Presentation {
      * @returns {*} The result.
      */
     findAll(textOrRegex: string | RegExp, caseSensitive?: boolean, wholeWord?: boolean): ReadonlyArray<TextFindMatch> {
-        const slides: Array<Slide> = this.model.slides;
+        const parts: ReadonlyArray<SearchablePart> = this.searchableParts();
         if (typeof textOrRegex === 'string') {
-            return findAllStringOnDocument(slides, textOrRegex, caseSensitive === true, wholeWord === true);
+            return findAllStringOnDocument(parts, textOrRegex, caseSensitive === true, wholeWord === true);
         }
-        return findAllRegExpOnDocument(slides, textOrRegex);
+        return findAllRegExpOnDocument(parts, textOrRegex);
+    }
+    /**
+     * Slides, their existing notes, masters, then layouts, in search order.
+     *
+     * @internal
+     * @returns {ReadonlyArray<SearchablePart>} Parts in document walk order.
+     */
+    private searchableParts(): ReadonlyArray<SearchablePart> {
+        const parts: SearchablePart[] = [];
+        const slides: ReadonlyArray<Slide> = this.model.slides;
+        const owner: Slide | undefined = slides.length > 0 ? arrayAt(slides, 0) : undefined;
+        for (let i: number = 0; i < slides.length; i++) {
+            const slide: Slide = arrayAt(slides, i);
+            parts.push({ shapes: slide.shapes, slideIndex: i, slide });
+            const notes = slide.existingNotes();
+            if (notes !== undefined) {
+                parts.push({ shapes: notes.shapes, slideIndex: i, slide });
+            }
+        }
+        if (owner !== undefined) {
+            for (let i: number = 0; i < this.model.masters.length; i++) {
+                parts.push({ shapes: arrayAt(this.model.masters, i).shapes, slideIndex: -1, slide: owner });
+            }
+            const layouts = Array.from(this.model.layoutsByPartName.values());
+            for (let i: number = 0; i < layouts.length; i++) {
+                parts.push({ shapes: arrayAt(layouts, i).shapes, slideIndex: -1, slide: owner });
+            }
+        }
+        return parts;
+    }
+    /**
+     * Wires notes lookup so find can read an existing notes part without creating one.
+     *
+     * @internal
+     * @param {Slide} slide - Slide to bind.
+     * @returns {void} Nothing.
+     */
+    private bindNotesResolver(slide: Slide): void {
+        const access = this.packagePartAccess();
+        slide.attachNotesResolver(() => getNotes(slide, access, { autoPersist: true }));
     }
     /**
      * Serializes the package to OPC ZIP bytes.
      *
-     * @remarks Flushes the presentation and slide DOM models into part bytes, then writes all known parts (including opaque unknown parts and retained trash-item streams). Content types cover every OPC part; ECMA-376 trash items (`/[trash]/HHHH.dat`) are written as ZIP entries but never listed in `[Content_Types].xml`. Relationship documents are re-emitted from the model. ZIP layout is not byte-identical to the input; semantic part-set equality is. Compression method is store (0) for determinism. `p:sldIdLst` is written in model order with stable `@id` / `@r:id` values. Slide part names are not renamed to reflect order. Theme and colour-map markup are preserved; resolve never rewrites them.
+     * @remarks Flushes the presentation and slide DOM models into part bytes, then writes all known parts (including opaque unknown parts and retained trash-item streams). Content types cover every OPC part; ECMA-376 trash items (`/[trash]/HHHH.dat`) are written as ZIP entries but never listed in `[Content_Types].xml`. Relationship documents are re-emitted from the model. ZIP layout is not byte-identical to the input; semantic part-set equality is. Compression method is store (0) for determinism. `p:sldIdLst` is written in model order with stable `@id` / `@r:id` values. Slide part names are not renamed to reflect order. Theme and colour-map markup are preserved; resolve never rewrites them. With no argument the main-part content type stays the loaded type, or `FormatType.Pptx` for a newly created presentation.
      * @example ```ts const bytes = await doc.save(); ```
      * @returns {*} A new `Uint8Array` containing the complete package.
      */
     save(): Promise<Uint8Array>;
     /**
+     * Serializes the package as the given {@link FormatType}.
+     *
+     * @remarks Rewrites only the presentation main-part content type to the type
+     * cited for that format. Macro-enabled targets (`.pptm`, `.potm`) keep an
+     * existing `vbaProject.bin` and its relationship as opaque bytes. Non-macro
+     * targets drop the VBA relationship, content-type override, and part. A
+     * non-macro source saved as macro-enabled does **not** invent a VBA project.
+     * Package relationships (`officeDocument`) are unchanged.
+     * @example ```ts const bytes = await doc.save(FormatType.Potx); ```
+     * @param {FormatType} format - Target package format.
+     * @returns {*} A new `Uint8Array` containing the complete package.
+     */
+    save(format: FormatType): Promise<Uint8Array>;
+    /**
      * Serializes the package and writes the OPC ZIP to a filesystem path.
      *
      * @remarks Performs the same package flush and ZIP emission as {@link Presentation.save} with no argument,
-         then writes those bytes with Node.js `fs.promises.writeFile`. Available only where `node:fs/promises` can be loaded (Node.js ≥ 20.11). Browsers and other runtimes without that module throw. Does not create missing parent directories. Overwrites an existing file at `fileName`. Path validation beyond a non-empty string is left to the host filesystem (symlinks, permissions, traversal).
+     * then writes those bytes via `@syncfusion/ej2-file-utils` `Save.save`. The extension selects the format:
+     * `.pptx`, `.pptm`, `.potx`, or `.potm` (see {@link getFormatTypeFromExtension}). Other extensions throw.
+     * Does not create missing parent directories. Overwrites an existing file at `fileName`.
      * @example ```ts await doc.save('out/deck.pptx'); ```
-     * @param {string} fileName - Destination path (absolute or relative). Must be a
+     * @param {string} fileName - Destination path (absolute or relative). Must be a non-empty path whose extension is a supported presentation format.
      * @returns {*} Resolves when the file has been written.
      */
     save(fileName: string): Promise<void>;
     /**
      *
-     * @param {string} fileName - The fileName value.
-     * @returns {*} The result.
+     * @param {string | FormatType} fileNameOrFormat - Path or {@link FormatType}.
+     * @returns {*} Bytes when no path is given; otherwise `void` after the file write.
      */
-    async save(fileName?: string): Promise<Uint8Array | void> {
-        if (typeof fileName === 'string' && fileName.trim().length === 0) {
-            throw new TypeError('fileName must be a non-empty path');
+    async save(fileNameOrFormat?: string | FormatType): Promise<Uint8Array | void> {
+        let format: FormatType | undefined;
+        let fileName: string | undefined;
+        if (typeof fileNameOrFormat === 'number') {
+            if (FORMAT_MAIN_CONTENT_TYPES[fileNameOrFormat] === undefined) {
+                throw new TypeError('format must be a FormatType value');
+            }
+            format = fileNameOrFormat;
+        } else if (typeof fileNameOrFormat === 'string') {
+            if (fileNameOrFormat.trim().length === 0) {
+                throw new TypeError('fileName must be a non-empty path');
+            }
+            format = getFormatTypeFromExtension(fileNameOrFormat);
+            fileName = fileNameOrFormat;
         }
         this.applySaveTimeLicenseWatermark();
-        const bytes: Uint8Array = this.serializePackageBytes();
-        if (typeof fileName === 'string') {
-            Save.save(fileName, new Blob([bytes], { type: PRESENTATION_MIME_TYPE }));
+        if (format !== undefined) {
+            this.applySaveFormat(format);
+        }
+        const bytes: Uint8Array = encryptIfPending(this.serializePackageBytes(), this.pendingEncryption);
+        if (fileName !== undefined) {
+            Save.save(fileName, new Blob([bytes], { type: mimeTypeForFormat(format) }));
         } else {
             return bytes;
         }
@@ -638,6 +748,12 @@ export class Presentation {
      * @internal
      * @returns {void} Nothing.
      */
+    /**
+     * Save-time license watermark gate.
+     *
+     * @internal
+     * @returns {void} Nothing.
+     */
     private applySaveTimeLicenseWatermark(): void {
         let unlicensed: boolean = false;
         try {
@@ -649,6 +765,44 @@ export class Presentation {
             return;
         }
         addWaterMark(this);
+    }
+    /**
+     * Builds OPC ZIP bytes from the live package model (shared by both `save` forms).
+     *
+     * @internal
+     * @returns {Uint8Array} Complete package bytes.
+     */
+    /**
+     * Applies a target package format before serialization.
+     *
+     * @remarks Updates the presentation main-part content type and content-type
+     * override only. VBA parts stay opaque: kept when the target is macro-enabled,
+     * removed when it is not. No VBA bytes are generated.
+     * @internal
+     * @param {FormatType} format - Target format.
+     * @returns {void} Nothing.
+     */
+    private applySaveFormat(format: FormatType): void {
+        const mainName: string = this.pkg.presentationPartName;
+        const mainPart: PackagePart = this.pkg.parts.get(mainName);
+        if (mainPart === undefined) {
+            return;
+        }
+        const nextType: string = FORMAT_MAIN_CONTENT_TYPES[format];
+        this.pkg.parts.set(mainName, {
+            name: mainPart.name,
+            contentType: nextType,
+            data: mainPart.data
+        });
+        if (this.pkg.contentTypes.overrides.has(mainName)) {
+            this.pkg.contentTypes.overrides.set(mainName, nextType);
+        }
+        if (formatIsMacroEnabled(format)) {
+            this.macrosPresent = detectHasMacros(this.pkg);
+            return;
+        }
+        stripVbaProject(this.pkg, mainName);
+        this.macrosPresent = false;
     }
     /**
      * Builds OPC ZIP bytes from the live package model (shared by both `save` forms).
@@ -697,6 +851,134 @@ export class Presentation {
         zipParts.set('/[Content_Types].xml', ctBytes);
         return writeZip(zipParts);
     }
+    /**
+     * Encrypts the package with a password on the next {@link Presentation.save}.
+     *
+     * @remarks Does not rewrite parts until save. Save then emits an ECMA-376
+     * Agile OFFCRYPTO compound file (AES-256 / SHA-512) via
+     * `@syncfusion/ej2-office-common` `encryptPackage`. The password is not
+     * written into any OPC part. Calling again replaces the pending password.
+     * Opening an encrypted package with a password keeps that password for later
+     * saves. A later {@link Presentation.removeEncryption} cancels it.
+     * @example ```ts presentation.encrypt('syncfusion'); await presentation.save(); ```
+     * @param {string} password - Open password (1–255 characters).
+     * @returns {void} Nothing.
+     */
+    encrypt(password: string): void {
+        if (typeof password !== 'string') {
+            throw new InvalidPasswordError('Invalid password');
+        }
+        assertPasswordAcceptable(password);
+        this.pendingEncryption = { password };
+    }
+    /**
+     * Cancels package encryption so the next save is a plain OPC ZIP.
+     *
+     * @remarks Clears a password set by {@link Presentation.encrypt} and a
+     * password retained from {@link Presentation.open} of an encrypted package.
+     * Until this is called, later saves of that instance stay encrypted with
+     * the same password.
+     * @example ```ts presentation.removeEncryption(); await presentation.save(); ```
+     * @returns {void} Nothing.
+     */
+    removeEncryption(): void {
+        this.pendingEncryption = undefined;
+    }
+    /**
+     * Whether the presentation carries write protection (`p:modifyVerifier`).
+     * Whether the presentation carries write protection (`p:modifyVerifier`).
+     *
+     * @remarks Presence of the element is the signal PowerPoint uses for
+     * "read-only recommended". The password is not recovered.
+     * Citation: Transitional `pml.xsd` `CT_Presentation` / `CT_ModifyVerifier`.
+     * @returns {boolean} `true` when `p:modifyVerifier` is present.
+     */
+    get isWriteProtected(): boolean {
+        return hasModifyVerifier(this.model.root);
+    }
+    /**
+     * Marks the presentation write-protected (read-only recommended).
+     *
+     * @remarks Writes `p:modifyVerifier` on the presentation root: SHA-512 Agile
+     * hash, 100000 spins, random salt from office-common. The password itself
+     * is not stored. Persisted on the next save. Replaces an existing verifier.
+     * Citation: `pml.xsd` `CT_ModifyVerifier`; [MS-OFFCRYPTO] §2.3.4.11.
+     * @example ```ts pptxDoc.setWriteProtection('MYPASSWORD'); await pptxDoc.save(); ```
+     * @param {string} password - Write-protection password (1–255 characters).
+     * @returns {void} Nothing.
+     */
+    setWriteProtection(password: string): void {
+        if (typeof password !== 'string') {
+            throw new InvalidPasswordError('Invalid password');
+        }
+        applyModifyVerifier(this.model.root, password);
+    }
+    /**
+     * Removes write protection (`p:modifyVerifier`) when present.
+     *
+     * @remarks Other presentation children are left in place. A following save
+     * emits a presentation without the verifier.
+     * @example ```ts if (pptxDoc.isWriteProtected) { pptxDoc.removeWriteProtection(); } ```
+     * @returns {void} Nothing.
+     */
+    removeWriteProtection(): void {
+        removeModifyVerifier(this.model.root);
+    }
+}
+/**
+ * Browser download MIME type for a saved format.
+ *
+ * @remarks IANA / Office media types. Falls back to the PPTX type when the
+ * format is omitted (no-argument save of an already-loaded package).
+ * @param {FormatType | undefined} format - Selected format, if any.
+ * @returns {string} MIME type string.
+ */
+function mimeTypeForFormat(format: FormatType | undefined): string {
+    if (format === FormatType.Pptm) {
+        return 'application/vnd.ms-powerpoint.presentation.macroEnabled.12';
+    }
+    if (format === FormatType.Potx) {
+        return 'application/vnd.openxmlformats-officedocument.presentationml.template';
+    }
+    if (format === FormatType.Potm) {
+        return 'application/vnd.ms-powerpoint.template.macroEnabled.12';
+    }
+    return PRESENTATION_MIME_TYPE;
+}
+/**
+ * Drops VBA packaging when saving a non-macro format.
+ *
+ * @remarks Removes the presentation→vbaProject relationship, the opaque
+ * `vbaProject.bin` part, and its content-type override. Does not parse the
+ * part. Other unknown parts are left in place.
+ * @param {OpcPackage} pkg - Live package.
+ * @param {string} presentationPartName - Presentation main part URI.
+ * @returns {void} Nothing.
+ */
+function stripVbaProject(pkg: OpcPackage, presentationPartName: string): void {
+    const rels: Array<PackageRelationship> | undefined = pkg.partRelationships.get(presentationPartName);
+    if (rels === undefined) {
+        return;
+    }
+    const kept: PackageRelationship[] = [];
+    for (let i: number = 0; i < rels.length; i++) {
+        const rel: PackageRelationship = arrayAt(rels, i);
+        if (rel.type !== VBA_PROJECT_REL_TYPE) {
+            kept.push(rel);
+            continue;
+        }
+        if (rel.targetPartName !== undefined) {
+            removePart(pkg, rel.targetPartName);
+            const lower: string = rel.targetPartName.toLowerCase();
+            if (lower.endsWith('/vbaproject.bin')) {
+                const sigName: string = rel.targetPartName.slice(0, rel.targetPartName.length - 'vbaProject.bin'.length) + 'vbaProjectSignature.bin';
+                if (pkg.parts.has(sigName)) {
+                    removePart(pkg, sigName);
+                }
+            }
+        }
+    }
+    pkg.partRelationships.set(presentationPartName, kept);
 }
 /**
  * Detects VBA/macro packaging from presentation main content type and/or

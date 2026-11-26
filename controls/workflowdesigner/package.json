@@ -1,0 +1,48 @@
+{
+	"name": "@syncfusion/ej2-workflow-designer",
+	"version": "35.1.37",
+	"description": "Syncfusion EJ2 Workflow Designer component for creating, connecting, configuring and persisting visual workflows.",
+	"author": "Syncfusion Inc.",
+	"license": "SEE LICENSE IN license",
+	"main": "./dist/ej2-workflow-designer.umd.min.js",
+	"module": "./index.js",
+	"es2015": "./dist/es6/ej2-workflow-designer.es5.js",
+	"typings": "index.d.ts",
+	"dependencies": {
+		"@syncfusion/ej2-base": "*",
+		"@syncfusion/ej2-buttons": "*",
+		"@syncfusion/ej2-calendars": "*",
+		"@syncfusion/ej2-diagrams": "*",
+		"@syncfusion/ej2-dropdowns": "*",
+		"@syncfusion/ej2-inputs": "*",
+		"@syncfusion/ej2-interactive-chat": "*",
+		"@syncfusion/ej2-navigations": "*",
+		"@syncfusion/ej2-popups": "*"
+	},
+	"keywords": [
+		"ej2",
+		"syncfusion",
+		"workflow",
+		"workflow designer",
+		"workflow automation",
+		"diagram",
+		"flowchart",
+		"visual designer"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/syncfusion/ej2-javascript-ui-controls"
+	},
+	"homepage": "https://www.syncfusion.com/",
+	"scripts": {
+		"build": "gulp build"
+	},
+	"config": {
+		"ghooks": {
+			"pre-commit": "gulp pre-commit",
+			"pre-push": "gulp pre-push",
+			"commit-msg": "gulp commit-msg"
+		}
+	},
+	"status": "preview"
+}

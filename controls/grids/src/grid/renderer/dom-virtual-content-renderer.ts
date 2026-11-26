@@ -112,6 +112,7 @@ export class DomVirtualContentRenderer extends ContentRender implements IRendere
         if (this.parent.isRowDomVirtualization()) {
             this.parent.on(events.selectVirtualRow, this.selectVirtualRow, this);
             this.parent.on(events.virtaulCellFocus, this.domVirtualCellFocus, this);
+            this.parent.on(events.domVirtualTabFocus, this.domVirtualTabFocus, this);
             this.parent.on(events.resetVirtualFocus, this.resetVirtualFocus, this);
         }
         this.parent.on(events.applyDomVirtualRowHeight, this.onApplyDomVirtualRowHeight, this);
@@ -237,6 +238,9 @@ export class DomVirtualContentRenderer extends ContentRender implements IRendere
                     this.pendingSelectIndex = -1;
                     (this.parent.selectRow as Function)(indexToSelect);
                 }
+            }
+            if (this.parent.selectionModule) {
+                this.parent.selectionModule.restoreCellSelection();
             }
             this.focusCell();
             this.restoreEdit(args);
@@ -656,6 +660,10 @@ export class DomVirtualContentRenderer extends ContentRender implements IRendere
             }
             return;
         }
+        if (element && element.classList.contains(literals.rowCell) && (e.action === 'tab' || e.action === 'shiftTab')) {
+            this.scrollForTabFocus(element as HTMLElement, e.action);
+            return;
+        }
         if (element && element.classList.contains(literals.rowCell)
             && e && (e.action === 'upArrow' || e.action === 'downArrow'
                 || e.action === 'shiftEnter' || e.action === 'enter')) {
@@ -698,18 +706,61 @@ export class DomVirtualContentRenderer extends ContentRender implements IRendere
         }
     }
 
+    private domVirtualTabFocus(args: { action: string, isHandled: boolean }): void {
+        args.isHandled = this.scrollForTabFocus(document.activeElement as HTMLElement, args.action);
+    }
+
+    private scrollForTabFocus(cell: HTMLElement, action: string): boolean {
+        const isGrouped: boolean = this.parent.groupSettings && this.parent.groupSettings.columns.length > 0;
+        if (this.parent.isEdit || isGrouped || !cell || !cell.classList.contains(literals.rowCell)) { return false; }
+        const row: HTMLElement = cell.parentElement as HTMLElement;
+        const isTab: boolean = action === 'tab';
+        const cells: HTMLElement[] = [].slice.call(row.getElementsByClassName(literals.rowCell));
+        const visibleCells: HTMLElement[] = cells.filter((rowCell: HTMLElement) => !rowCell.classList.contains('e-hide'));
+        if (!visibleCells.length || cell !== visibleCells[isTab ? visibleCells.length - 1 : 0]) { return false; }
+        const nextRowIndex: number = parseInt(row.getAttribute(literals.ariaRowIndex) as string, 10) - 1 + (isTab ? 1 : -1);
+        if (isNaN(nextRowIndex) || nextRowIndex < 0 || nextRowIndex >= this.totalRecords) { return false; }
+        const nextRow: Element = (this.parent.getRowByIndex as Function)(nextRowIndex);
+        if (nextRow && !(isTab ? ensureLastRow(nextRow, this.parent)
+            : ensureFirstRow(nextRow, this.parent.getRowHeight() * 2, this.parent))) { return false; }
+        this.rowIndex = nextRowIndex;
+        this.cellIndex = cells.indexOf(visibleCells[isTab ? 0 : visibleCells.length - 1]);
+        this.activeKey = action;
+        const scrollEle: HTMLElement = this.parent.getContent().firstElementChild as HTMLElement;
+        const visibleRowCount: number = Math.floor(scrollEle.offsetHeight / this.parent.getRowHeight()) - 1;
+        scrollEle.scrollTop = isTab ? Math.max(0, this.getRowTopOffset(nextRowIndex - visibleRowCount))
+            : this.getRowTopOffset(nextRowIndex);
+        if (this.virtualEle.verticalScrollbar) {
+            this.virtualEle.verticalScrollbar.scrollTop = scrollEle.scrollTop;
+        }
+        return true;
+    }
+
     private focusCell(): void {
         if (!this.activeKey) { return; }
         const row: Element = (this.parent.getRowByIndex as Function)(this.rowIndex);
         if (!row) { return; }
         const cells: HTMLCollectionOf<Element> = row.getElementsByClassName(literals.rowCell);
         const cell: HTMLElement = cells[parseInt(this.cellIndex.toString(), 10)] as HTMLElement;
+        const isTabKey: boolean = this.activeKey === 'tab' || this.activeKey === 'shiftTab';
         if (cell) {
-            cell.focus({ preventScroll: true });
+            if (isTabKey) {
+                this.parent.focusModule.domVirtualFocusCell = cell;
+            } else {
+                cell.focus({ preventScroll: true });
+            }
         }
-        if (this.parent.selectionSettings && !this.parent.selectionSettings.checkboxOnly) {
+        if (this.parent.selectionSettings && !this.parent.selectionSettings.checkboxOnly && !isTabKey) {
             (this.parent.selectRow as Function)(
                 parseInt(row.getAttribute(literals.ariaRowIndex) as string, 10) - 1);
+        }
+        const mode: string = this.parent.selectionSettings ? this.parent.selectionSettings.mode : '';
+        if (cell && !isTabKey && (mode === 'Cell' || mode === 'Both') && this.parent.selectionModule
+            && !cell.classList.contains('e-cellselectionbackground')) {
+            this.parent.selectionModule.selectCell({
+                rowIndex: parseInt(row.getAttribute(literals.ariaRowIndex) as string, 10) - 1,
+                cellIndex: parseInt(cell.getAttribute(literals.ariaColIndex) as string, 10) - 1
+            }, true);
         }
         this.activeKey = '';
     }

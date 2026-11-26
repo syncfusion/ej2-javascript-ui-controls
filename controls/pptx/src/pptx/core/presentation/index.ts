@@ -8,6 +8,8 @@ export { flushPresentationModel, loadPresentationModel, PresentationModel } from
 export { LayoutSlide, LayoutSlideOptions } from '../slideimplementation/layoutslide';
 export { MasterSlide, MasterSlideOptions } from '../slideimplementation/masterslide';
 export { HyperlinkView, Slide } from '../slideimplementation/slide';
+export { DateTimeFormatType, HeaderFooter, HeadersFooters } from '../headers-footers/index';
+
 export { PresentationSection } from './presentation-section';
 export { Section } from './section';
 export { SectionCollection } from './section-collection';

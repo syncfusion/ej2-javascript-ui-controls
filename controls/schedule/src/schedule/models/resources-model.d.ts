@@ -77,6 +77,15 @@ export interface ResourcesModel {
     expandedField?: string;
 
     /**
+     * It maps the `fixed` field from the dataSource, which is used to specify whether each resource row in
+     * timeline views needs to be placed in the fixed region at the top of the content area by default.
+     * The Scheduler only reads this field and never writes the fixed state back to the data.
+     *
+     * @default 'Fixed'
+     */
+    fixedField?: string;
+
+    /**
      * It maps the `groupID` field from the dataSource, which is used to specify under which parent resource,
      *  the child should be grouped.
      *
